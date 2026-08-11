@@ -1,0 +1,100 @@
+name: medinv
+
+# The application container never bundles a database backend (briefing
+# 10./19.) — it always talks to whichever MEDINV_DB_CONNECTION is
+# configured via .env. Defaults to sqlite (zero extra services). Uncomment
+# the `mariadb` or `postgres` service and matching MEDINV_DB_* vars in .env
+# to switch backend; `docker compose --profile mariadb up` / `--profile
+# postgres up` starts the matching service alongside the app.
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      # The single port nginx listens on: SPA + same-origin API (what the
+      # browser uses; see docker/nginx.conf.template — there is no separate
+      # API-only port). Host and container ports are kept identical so
+      # APP_URL/SANCTUM_STATEFUL_DOMAINS below don't need a separate
+      # "external port" concept.
+      - "${MEDINV_PortWeb:-8080}:${MEDINV_PortWeb:-8080}"
+    environment:
+      APP_KEY: ${APP_KEY:-}
+      # The public URL this instance is actually reachable at (e.g. behind
+      # a reverse proxy on a real domain) — used both as Laravel's APP_URL
+      # and, unless SANCTUM_STATEFUL_DOMAINS is set explicitly, folded into
+      # it automatically (see docker/entrypoint.sh). Leave unset for plain
+      # localhost/127.0.0.1 access; both are always accepted regardless.
+      MEDINV_URL: ${MEDINV_URL:-}
+      APP_URL: ${APP_URL:-}
+      # Left empty by default so entrypoint.sh computes it from
+      # localhost/127.0.0.1 + MEDINV_URL (see CLAUDE.md's "Auth: Sanctum
+      # SPA cookies" section) — a mismatch here silently breaks login from
+      # that origin ("Session store not set on request" / 500, easy to
+      # mistake for wrong credentials). Set this directly only if that
+      # heuristic doesn't cover your setup.
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-}
+      MEDINV_DB_CONNECTION: ${MEDINV_DB_CONNECTION:-sqlite}
+      MEDINV_DB_HOST: ${MEDINV_DB_HOST:-mariadb}
+      MEDINV_DB_PORT: ${MEDINV_DB_PORT:-3306}
+      MEDINV_DB_DATABASE: ${MEDINV_DB_DATABASE:-medinv}
+      MEDINV_DB_USERNAME: ${MEDINV_DB_USERNAME:-medinv}
+      MEDINV_DB_PASSWORD: ${MEDINV_DB_PASSWORD:-medinv}
+      MEDINV_DB_PREFIX: ${MEDINV_DB_PREFIX:-MEDINV_}
+      SESSION_DRIVER: database
+      # briefing chapter 16.
+      MEDINV_ADMINUSER: ${MEDINV_ADMINUSER:?MEDINV_ADMINUSER is required}
+      MEDINV_ADMINPASS: ${MEDINV_ADMINPASS:?MEDINV_ADMINPASS is required}
+      MEDINV_LOGLEVEL: ${MEDINV_LOGLEVEL:-INFO}
+      MEDINV_TRUSTEDIP: ${MEDINV_TRUSTEDIP:-}
+      MEDINV_RESTOREBACKUP: ${MEDINV_RESTOREBACKUP:-}
+      MEDINV_SEED_SAMPLE_LIBRARY: ${MEDINV_SEED_SAMPLE_LIBRARY:-false}
+      MEDINV_PortWeb: ${MEDINV_PortWeb:-8080}
+    volumes:
+      - storage:/var/www/backend/storage
+      - sqlite-data:/var/www/backend/database
+    depends_on:
+      mariadb:
+        condition: service_healthy
+        required: false
+      postgres:
+        condition: service_healthy
+        required: false
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:11
+    profiles: ["mariadb"]
+    environment:
+      MARIADB_DATABASE: ${MEDINV_DB_DATABASE:-medinv}
+      MARIADB_USER: ${MEDINV_DB_USERNAME:-medinv}
+      MARIADB_PASSWORD: ${MEDINV_DB_PASSWORD:-medinv}
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB: ${MEDINV_DB_DATABASE:-medinv}
+      POSTGRES_USER: ${MEDINV_DB_USERNAME:-medinv}
+      POSTGRES_PASSWORD: ${MEDINV_DB_PASSWORD:-medinv}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MEDINV_DB_USERNAME:-medinv}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  storage:
+  sqlite-data:
+  mariadb-data:
+  postgres-data:

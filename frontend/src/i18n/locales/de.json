@@ -1,0 +1,113 @@
+{
+  "common": {
+    "name": "Name",
+    "email": "E-Mail"
+  },
+  "nav": {
+    "home": "Startseite",
+    "capture": "Erfassung",
+    "libraries": "Bibliotheken",
+    "statistics": "Statistiken",
+    "administration": "Administration"
+  },
+  "dashboard": {
+    "noLibraries": "Für Sie sind noch keine Bibliotheken sichtbar.",
+    "allLibraries": "Alle {{count}} Bibliotheken anzeigen"
+  },
+  "login": {
+    "title": "Anmelden",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "submit": "Anmelden",
+    "mailServerWarning": "Der Mailserver ist nicht erreichbar oder falsch konfiguriert. Die Passwort-Zurücksetzen-Funktion ist deaktiviert.",
+    "forgotPassword": "Passwort vergessen?"
+  },
+  "userMenu": {
+    "settings": "Benutzerdefinierte Einstellungen",
+    "logout": "Abmelden"
+  },
+  "libraries": {
+    "title": "Bibliotheken",
+    "create": "Bibliothek anlegen",
+    "view": "Anzeigen",
+    "delete": "Löschen",
+    "noItems": "Diese Bibliothek enthält noch keine Einträge.",
+    "confirmDelete": "Bibliothek „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+    "mediaTypeLabel": "Medienart",
+    "mediaType": {
+      "book": "Buch",
+      "cd": "CD",
+      "dvd_bluray": "DVD/Blu-ray"
+    }
+  },
+  "capture": {
+    "title": "Erfassung",
+    "single": "Einzelerfassung",
+    "scan": "Scannen",
+    "eanIsbnPlaceholder": "EAN / ISBN",
+    "textFileImport": "Textdatei-Import",
+    "duplicate": "Dieses Medium ist in dieser Bibliothek bereits vorhanden.",
+    "noMatch": "Kein Metadaten-Treffer — bitte manuell anlegen.",
+    "chooseCandidate": "Bitte wählen Sie einen Treffer oder lehnen Sie alle ab.",
+    "rejectAll": "Alle Treffer ablehnen"
+  },
+  "search": {
+    "placeholder": "Suche…",
+    "resultsFor": "Suche: „{{query}}“",
+    "fuzzy": "Fuzzy-Suche"
+  },
+  "statistics": {
+    "title": "Statistiken",
+    "itemCount": "Bestand",
+    "totalValue": "Gesamtwert"
+  },
+  "settings": {
+    "template": {
+      "label": "Template",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "language": {
+      "label": "Sprache"
+    }
+  },
+  "admin": {
+    "title": "Administration",
+    "users": "Benutzer",
+    "plugins": "Metadaten-Plugins",
+    "backups": "Backups",
+    "settings": "Systemeinstellungen",
+    "confirmDeleteUser": "Benutzer „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+    "confirmDeleteBackup": "Backup „{{filename}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+    "passwordHint": "Mindestens 10 Zeichen, mit mindestens einem Großbuchstaben, einem Kleinbuchstaben, einer Ziffer und einem Sonderzeichen.",
+    "table": {
+      "level": "Level",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Aktiv",
+      "deactivated": "Deaktiviert"
+    },
+    "actions": {
+      "deactivate": "Deaktivieren",
+      "reactivate": "Reaktivieren",
+      "createBackupNow": "Backup jetzt erstellen",
+      "download": "Herunterladen",
+      "createUser": "Benutzer anlegen",
+      "edit": "Bearbeiten",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "delete": "Löschen"
+    },
+    "errors": {
+      "protected_account": "Dies ist das vordefinierte Administrator-Konto und kann nicht bearbeitet, deaktiviert oder gelöscht werden.",
+      "passwordPolicy": "Das Passwort muss mindestens 10 Zeichen lang sein und einen Großbuchstaben, einen Kleinbuchstaben, eine Ziffer und ein Sonderzeichen enthalten."
+    }
+  },
+  "errors": {
+    "invalid_credentials": "Ungültige Anmeldedaten.",
+    "account_locked": "Zu viele Fehlversuche. Dieses Konto ist vorübergehend gesperrt.",
+    "account_deactivated": "Dieses Konto wurde deaktiviert.",
+    "generic": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut oder wenden Sie sich an einen Administrator."
+  }
+}

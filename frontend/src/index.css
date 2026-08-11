@@ -1,0 +1,239 @@
+/*
+ * MedInv theming (briefing 10./11.4): two ship-with templates, light and
+ * dark, toggled via [data-template] on <html> (see theme/ThemeContext.tsx).
+ * Additional templates are meant to be nachrüstbar — extending this file
+ * into per-template CSS files loaded by key is the natural next step once
+ * more than two exist.
+ */
+:root {
+  --color-bg: #f7f7f8;
+  --color-surface: #ffffff;
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b6b70;
+  --color-border: #e0e0e3;
+  --color-accent: #2f6fed;
+  --color-danger: #c62828;
+  --color-danger-bg: #fdecea;
+
+  color-scheme: light;
+}
+
+:root[data-template='dark'] {
+  --color-bg: #16171a;
+  --color-surface: #1f2024;
+  --color-text: #f0f0f2;
+  --color-text-muted: #a0a0a6;
+  --color-border: #2e2f34;
+  --color-accent: #6a9bff;
+  --color-danger: #ff6b6b;
+  --color-danger-bg: #3a1f1f;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+a {
+  color: var(--color-accent);
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header__left,
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+/* Logo component (src/components/Logo.tsx) — used in the header and on the login screen. */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo__mark {
+  border-radius: 6px;
+  display: block;
+}
+
+.logo__wordmark {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.app-shell__body {
+  display: flex;
+  flex: 1;
+}
+
+/* Sidebar (briefing 11.2). TODO: collapse into an expandable menu on mobile. */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 200px;
+  padding: 1rem;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar a {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.sidebar a.active {
+  background: var(--color-accent);
+  color: white;
+}
+
+.app-shell__content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.app-shell__footer {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu__dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.user-menu__dropdown a,
+.user-menu__dropdown button {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 320px;
+  padding: 2rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.login-form__brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.login-form__footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.version-badge {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.login-form input {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.login-form__forgot[aria-disabled='true'] {
+  pointer-events: none;
+  color: var(--color-text-muted);
+}
+
+.warning {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+.warning--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}

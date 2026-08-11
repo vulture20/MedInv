@@ -1,0 +1,3 @@
+# DE: Enthält echte Zugangsdaten (siehe .env.template) – nicht einchecken.
+# EN: Holds real credentials (see .env.template) – don't commit this.
+.env

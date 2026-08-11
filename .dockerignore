@@ -1,0 +1,13 @@
+backend/vendor
+backend/node_modules
+backend/.env
+backend/database/database.sqlite
+backend/storage/app/backups/*.zip
+backend/storage/logs/*.log
+backend/.phpunit.result.cache
+
+frontend/node_modules
+frontend/dist
+frontend/.env
+
+.git

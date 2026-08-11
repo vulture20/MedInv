@@ -1,0 +1,48 @@
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile      on;
+    client_max_body_size 20m;
+
+    # Web port (MEDINV_PortWeb, briefing 16.-style env var): the only port
+    # nginx listens on. Serves the built React SPA and, on the same port,
+    # proxies /api + /sanctum straight to php-fpm — this is what the browser
+    # talks to, kept same-origin so Sanctum's SPA cookie auth and CORS need
+    # no cross-port configuration (see frontend/src/api/client.ts,
+    # VITE_API_BASE_URL=""). There is deliberately no separate API-only
+    # port: every API consumer, browser or otherwise, uses this port's
+    # /api prefix so the boundary between "web" and "API" stays a single,
+    # consistently-enforced path prefix rather than two parallel surfaces.
+    server {
+        listen ${MEDINV_PortWeb};
+        server_name _;
+
+        location ^~ /api/ {
+            include fastcgi_params;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_param SCRIPT_FILENAME /var/www/backend/public/index.php;
+        }
+
+        location ^~ /sanctum/ {
+            include fastcgi_params;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_param SCRIPT_FILENAME /var/www/backend/public/index.php;
+        }
+
+        # Everything else that looks like a PHP/API entrypoint must NOT
+        # fall through to the SPA's index.html — only /api and /sanctum are
+        # proxied to php-fpm (above); nothing else on this port reaches
+        # Laravel at all, keeping the API surface strictly limited to those
+        # two prefixes.
+        location / {
+            root /var/www/spa;
+            try_files $uri $uri/ /index.html;
+        }
+    }
+}

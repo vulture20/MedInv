@@ -1,0 +1,113 @@
+{
+  "common": {
+    "name": "Name",
+    "email": "Email"
+  },
+  "nav": {
+    "home": "Home",
+    "capture": "Capture",
+    "libraries": "Libraries",
+    "statistics": "Statistics",
+    "administration": "Administration"
+  },
+  "dashboard": {
+    "noLibraries": "No libraries are visible to you yet.",
+    "allLibraries": "Show all {{count}} libraries"
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email address",
+    "password": "Password",
+    "submit": "Sign in",
+    "mailServerWarning": "The mail server is unreachable or misconfigured. Password reset is disabled.",
+    "forgotPassword": "Forgot your password?"
+  },
+  "userMenu": {
+    "settings": "Custom settings",
+    "logout": "Log out"
+  },
+  "libraries": {
+    "title": "Libraries",
+    "create": "Create library",
+    "view": "View",
+    "delete": "Delete",
+    "noItems": "This library doesn't contain any items yet.",
+    "confirmDelete": "Delete library “{{name}}”? This cannot be undone.",
+    "mediaTypeLabel": "Media type",
+    "mediaType": {
+      "book": "Book",
+      "cd": "CD",
+      "dvd_bluray": "DVD/Blu-ray"
+    }
+  },
+  "capture": {
+    "title": "Capture",
+    "single": "Single entry",
+    "scan": "Scan",
+    "eanIsbnPlaceholder": "EAN / ISBN",
+    "textFileImport": "Text file import",
+    "duplicate": "This item already exists in this library.",
+    "noMatch": "No metadata match — add manually.",
+    "chooseCandidate": "Please choose a match or reject all of them.",
+    "rejectAll": "Reject all matches"
+  },
+  "search": {
+    "placeholder": "Search…",
+    "resultsFor": "Search: “{{query}}”",
+    "fuzzy": "Fuzzy search"
+  },
+  "statistics": {
+    "title": "Statistics",
+    "itemCount": "Item count",
+    "totalValue": "Total value"
+  },
+  "settings": {
+    "template": {
+      "label": "Template",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": {
+      "label": "Language"
+    }
+  },
+  "admin": {
+    "title": "Administration",
+    "users": "Users",
+    "plugins": "Metadata plugins",
+    "backups": "Backups",
+    "settings": "System settings",
+    "confirmDeleteUser": "Delete user “{{name}}”? This cannot be undone.",
+    "confirmDeleteBackup": "Delete backup “{{filename}}”? This cannot be undone.",
+    "passwordHint": "At least 10 characters, with at least one uppercase letter, one lowercase letter, one digit and one special character.",
+    "table": {
+      "level": "Level",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "deactivated": "Deactivated"
+    },
+    "actions": {
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "createBackupNow": "Create backup now",
+      "download": "Download",
+      "createUser": "Create user",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "errors": {
+      "protected_account": "This is the predefined administrator account and cannot be edited, deactivated or deleted.",
+      "passwordPolicy": "The password must be at least 10 characters long and contain an uppercase letter, a lowercase letter, a digit and a special character."
+    }
+  },
+  "errors": {
+    "invalid_credentials": "Invalid credentials.",
+    "account_locked": "Too many failed attempts. This account is temporarily locked.",
+    "account_deactivated": "This account has been deactivated.",
+    "generic": "Login failed. Please try again later or contact an administrator."
+  }
+}
