@@ -1,0 +1,74 @@
+name: Docker Image CI
+
+# Builds docker/Dockerfile (the single image that bundles backend + frontend,
+# see CLAUDE.md's "Two apps, one deployable image" section) and publishes it
+# to the GitHub Container Registry (ghcr.io) — no external registry account
+# or secrets needed, GITHUB_TOKEN is enough.
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch: # allows manually re-running a build from the Actions tab
+
+env:
+  REGISTRY: ghcr.io
+  # ghcr.io requires a lowercase image name; github.repository ("vulture20/MedInv")
+  # keeps the repo's actual casing, so it's lowercased in a separate step below
+  # rather than used directly here.
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # required to push to ghcr.io
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lowercase image name
+        run: echo "IMAGE_NAME_LC=${IMAGE_NAME,,}" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Skipped for pull_request builds (no push permission on PRs from forks) —
+      # the build itself still runs above to catch breakage before merging.
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive image tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: . # repo root — docker/Dockerfile expects to COPY backend/ and frontend/ from here
+          file: docker/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Uncomment to also publish arm64 images (e.g. Raspberry Pi) — roughly
+          # doubles build time since amd64 CI runners cross-compile via QEMU:
+          # platforms: linux/amd64,linux/arm64
