@@ -20,8 +20,14 @@ class EnsureUserIsActive
         $user = $request->user();
 
         if ($user && ! $user->is_active) {
-            auth()->guard('sanctum')->logout();
-
+            // No auth()->guard('sanctum')->logout() here (there used to be one): the
+            // 'sanctum' guard used by the `auth:sanctum` middleware is a stateless,
+            // per-request RequestGuard, which has no logout() method at all — calling
+            // it threw a BadMethodCallException, turning what should be a clean 403
+            // into a 500 for every deactivated account's very next request. Rejecting
+            // via the 403 below already prevents this and any further request from
+            // reaching the route; a stateless per-request guard has nothing to "log
+            // out" of the way a session guard would.
             return response()->json(['message' => 'Account is deactivated.'], 403);
         }
 
