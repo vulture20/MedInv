@@ -22,9 +22,16 @@ class ExportImportService
 
     /**
      * @param  int[]|null  $libraryIds  Null exports all libraries ("alle", briefing 9.1).
-     * @return array{format_version: int, exported_at: string, libraries: array, system_settings: array}
+     * @param  bool  $includeUsers  Whether to also embed every user account (incl. hashed
+     *                              password) under `users`. Deliberately opt-in and off by
+     *                              default: an ordinary admin-initiated multi-library export
+     *                              to share with another instance (briefing 9.1) has no reason
+     *                              to leak every account's password hash. BackupService::create()
+     *                              is the one caller that passes true — a backup is meant to be
+     *                              a full snapshot of this instance, users included.
+     * @return array{format_version: int, exported_at: string, libraries: array, system_settings: array, users?: array}
      */
-    public function exportLibraries(?array $libraryIds = null): array
+    public function exportLibraries(?array $libraryIds = null, bool $includeUsers = false): array
     {
         $query = Library::query()->with('shares');
 
@@ -32,7 +39,7 @@ class ExportImportService
             $query->whereIn('id', $libraryIds);
         }
 
-        return [
+        $data = [
             'format_version' => 1,
             'exported_at' => now()->toIso8601String(),
             // Included unconditionally (BackupService::create() always exports "alle" and
@@ -55,6 +62,24 @@ class ExportImportService
                 )->all(),
             ])->all(),
         ];
+
+        if ($includeUsers) {
+            // No `id` (a restore assigns new ones, same as libraries above) and no
+            // remember_token/API tokens — those are session-bound and shouldn't
+            // travel between instances.
+            $data['users'] = User::query()->get()->map(fn (User $user) => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'password' => $user->password,
+                'level' => $user->level,
+                'is_active' => $user->is_active,
+                'is_protected' => $user->is_protected,
+                'preferred_language' => $user->preferred_language,
+                'preferred_template' => $user->preferred_template,
+            ])->all();
+        }
+
+        return $data;
     }
 
     /**
@@ -64,16 +89,22 @@ class ExportImportService
      * rename | merge | overwrite | skip | cancel.
      *
      * @param  array<string, string>  $conflictResolutions  Keyed by library name.
-     * @param  bool  $restoreSettings  Whether to also apply $data['system_settings'] (present
-     *                                 since exportLibraries() started including it) onto this
+     * @param  bool  $restoreSettings  Whether to also apply $data['system_settings'] and
+     *                                 $data['users'] (present since exportLibraries() started
+     *                                 including them, the latter only when it was called with
+     *                                 includeUsers: true — i.e. from a backup) onto this
      *                                 instance. Opt-in and defaulted to false: an ordinary
      *                                 library import shouldn't silently overwrite the target's
-     *                                 mail/backup/security configuration.
-     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool}
+     *                                 mail/backup/security configuration or its user accounts.
+     *                                 Users are upserted by email — an existing account is
+     *                                 updated (attributes + password hash) rather than
+     *                                 duplicated, since a restore is meant to reinstate the
+     *                                 backed-up instance's state.
+     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[]}
      */
     public function importLibraries(array $data, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
     {
-        $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [], 'settings_restored' => false];
+        $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [], 'settings_restored' => false, 'users_restored' => []];
 
         if (($conflictResolutions['__all__'] ?? null) === 'cancel') {
             return $result;
@@ -84,6 +115,21 @@ class ExportImportService
                 SystemSetting::set($key, $value);
             }
             $result['settings_restored'] = true;
+        }
+
+        if ($restoreSettings && ! empty($data['users'])) {
+            foreach ($data['users'] as $userData) {
+                User::query()->updateOrCreate(['email' => $userData['email']], [
+                    'name' => $userData['name'],
+                    'password' => $userData['password'],
+                    'level' => $userData['level'],
+                    'is_active' => $userData['is_active'],
+                    'is_protected' => $userData['is_protected'] ?? false,
+                    'preferred_language' => $userData['preferred_language'] ?? 'de',
+                    'preferred_template' => $userData['preferred_template'] ?? 'light',
+                ]);
+                $result['users_restored'][] = $userData['email'];
+            }
         }
 
         DB::transaction(function () use ($data, $importingAs, $conflictResolutions, &$result) {

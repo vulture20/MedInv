@@ -29,7 +29,10 @@ class BackupService
 
     public function create(string $trigger = 'manual', ?string $intervalMode = null): Backup
     {
-        $data = $this->exportImportService->exportLibraries(null);
+        // includeUsers: true — a backup is a full snapshot of this instance (briefing
+        // 9.2), unlike an ordinary admin-initiated library export (9.1), which never
+        // carries user accounts/password hashes. See exportLibraries()'s docblock.
+        $data = $this->exportImportService->exportLibraries(null, includeUsers: true);
         $filename = 'medinv-backup-'.now()->format('Ymd-His').'.zip';
         $path = self::DIR.'/'.$filename;
 
