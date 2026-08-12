@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Domain\Libraries\DuplicateEanException;
 use App\Domain\Libraries\LibraryAccessService;
 use App\Domain\Libraries\MediaItemService;
+use App\Domain\Metadata\CoverDownloadService;
 use App\Domain\Metadata\MetadataImportService;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Metadata search/import (briefing 8.). Chosen-candidate confirmation
@@ -23,6 +25,7 @@ class MetadataController extends Controller
         private readonly LibraryAccessService $access,
         private readonly MetadataImportService $importService,
         private readonly MediaItemService $mediaItemService,
+        private readonly CoverDownloadService $coverDownloadService,
     ) {}
 
     /** All admin-visible plugins, or only those enabled for a media type (briefing 15.). */
@@ -58,14 +61,32 @@ class MetadataController extends Controller
 
         $data = $request->validate([
             'attributes' => ['required', 'array'],
-            'attributes.ean' => ['required', 'string'],
-            'cover_url' => ['nullable', 'string'], // TODO: download + store under storage/app/covers, see 8.3 step 5.
+            'cover_url' => ['nullable', 'string'],
         ]);
+
+        // Deliberately not an `attributes.ean` validation rule: combining a top-level
+        // 'array' rule with a rule on one specific nested key makes Laravel treat
+        // `attributes` as "structured" and silently drop every OTHER key from
+        // validate()'s output (title, authors, ... — everything except `ean` itself)
+        // instead of passing them through to MediaItemService::create() below, which
+        // needs the full, media-type-varying attribute set, not just `ean`. Confirmed
+        // via a failing NOT NULL constraint in testing before this was caught.
+        if (empty($data['attributes']['ean']) || ! is_string($data['attributes']['ean'])) {
+            throw ValidationException::withMessages(['attributes.ean' => 'The attributes.ean field is required.']);
+        }
 
         try {
             $item = $this->mediaItemService->create($library, $data['attributes']);
         } catch (DuplicateEanException $e) {
             return response()->json(['message' => $e->getMessage(), 'ean' => $e->ean], 409);
+        }
+
+        if (! empty($data['cover_url'])) {
+            $coverPath = $this->coverDownloadService->download($data['cover_url'], $library->media_type, $item->ean);
+
+            if ($coverPath) {
+                $item->update(['cover_path' => $coverPath]);
+            }
         }
 
         return response()->json($item, 201);

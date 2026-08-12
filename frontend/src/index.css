@@ -257,3 +257,12 @@ td {
   padding: 0.5rem;
   border-bottom: 1px solid var(--color-border);
 }
+
+.media-item-list__cover {
+  width: 2rem;
+  height: 2.75rem;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  border-radius: 2px;
+}

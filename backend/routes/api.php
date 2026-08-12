@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         // the controllers (owner or admin), see 7. and 6.
         Route::get('/libraries/{library}/items', [MediaItemController::class, 'index']);
         Route::get('/libraries/{library}/items/{item}', [MediaItemController::class, 'show']);
+        Route::get('/libraries/{library}/items/{item}/cover', [MediaItemController::class, 'cover']);
         Route::post('/libraries/{library}/items', [MediaItemController::class, 'store']);
         Route::put('/libraries/{library}/items/{item}', [MediaItemController::class, 'update']);
         Route::delete('/libraries/{library}/items/{item}', [MediaItemController::class, 'destroy']);

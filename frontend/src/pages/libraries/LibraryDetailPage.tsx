@@ -16,6 +16,7 @@ interface MediaItem {
   id: number
   title: string
   ean: string
+  cover_path?: string | null
   authors?: string | null
   artist?: string | null
   director?: string | null
@@ -86,6 +87,17 @@ export function LibraryDetailPage() {
         <ul className="media-item-list">
           {items?.data.map((item) => (
             <li key={item.id}>
+              {/* Served through the API (MediaItemController::cover()), not a direct
+                  storage URL — see CoverDownloadService's docblock for why — so it
+                  needs the session cookie even cross-origin in local dev. */}
+              {item.cover_path && (
+                <img
+                  className="media-item-list__cover"
+                  src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
+                  crossOrigin="use-credentials"
+                  alt=""
+                />
+              )}
               <strong>{item.title}</strong>
               {subtitle(item, library.media_type) && <> — {subtitle(item, library.media_type)}</>}
               {' — '}

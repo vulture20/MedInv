@@ -8,6 +8,7 @@ use App\Domain\Libraries\MediaItemService;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Media item CRUD, scoped to a single library and its fixed media_type
@@ -34,6 +35,25 @@ class MediaItemController extends Controller
         abort_unless($this->access->canRead($request->user(), $library), 403);
 
         return $library->mediaItems()->findOrFail($item);
+    }
+
+    /**
+     * Streams a stored cover image (see CoverDownloadService, briefing 8.3
+     * step 5). Served through the API rather than a direct storage URL —
+     * covers live on the `local` disk, not `public` (see
+     * CoverDownloadService's docblock) — which also means this gets the
+     * same LibraryAccessService::canRead() check every other read of this
+     * library's items already goes through (4.3: unshared -> invisible).
+     */
+    public function cover(Request $request, Library $library, int $item)
+    {
+        abort_unless($this->access->canRead($request->user(), $library), 403);
+
+        $record = $library->mediaItems()->findOrFail($item);
+
+        abort_if(! $record->cover_path, 404);
+
+        return Storage::disk('local')->response($record->cover_path);
     }
 
     /**
