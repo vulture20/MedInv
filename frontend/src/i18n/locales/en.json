@@ -101,7 +101,13 @@
       "edit": "Edit",
       "save": "Save",
       "cancel": "Cancel",
-      "delete": "Delete"
+      "delete": "Delete",
+      "sendInvite": "Send invitation email"
+    },
+    "userInvite": {
+      "hint": "The mail server is not configured — an invitation email cannot be sent right now.",
+      "sent": "Invitation email sent successfully.",
+      "failed": "The user was created, but the invitation email could not be sent."
     },
     "errors": {
       "protected_account": "This is the predefined administrator account and cannot be edited, deactivated or deleted.",

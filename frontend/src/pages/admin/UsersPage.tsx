@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../auth/AuthContext'
 import { apiClient } from '../../api/client'
 import { describeError } from './adminErrors'
 
@@ -12,14 +13,27 @@ interface AdminUser {
   is_protected: boolean
 }
 
-const emptyNewUser = { name: '', email: '', password: '', level: 'user' as AdminUser['level'] }
+interface CreateUserResponse extends AdminUser {
+  invite_sent?: boolean
+  invite_error?: string | null
+}
+
+const emptyNewUser = {
+  name: '',
+  email: '',
+  password: '',
+  level: 'user' as AdminUser['level'],
+  sendInvite: false,
+}
 
 /** User management (briefing 15.): list, create, edit, (de)activate, delete. */
 export function UsersPage() {
   const { t } = useTranslation()
+  const { mailServerHealthy } = useAuth()
   const [users, setUsers] = useState<AdminUser[]>([])
   const [newUser, setNewUser] = useState(emptyNewUser)
   const [createUserError, setCreateUserError] = useState<string | null>(null)
+  const [inviteStatus, setInviteStatus] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editUser, setEditUser] = useState<{ name: string; email: string; level: AdminUser['level'] } | null>(null)
   const [editError, setEditError] = useState<string | null>(null)
@@ -45,8 +59,19 @@ export function UsersPage() {
   async function createUser(e: React.FormEvent) {
     e.preventDefault()
     setCreateUserError(null)
+    setInviteStatus(null)
     try {
-      await apiClient.post('/admin/users', newUser)
+      const { name, email, password, level, sendInvite } = newUser
+      const { data } = await apiClient.post<CreateUserResponse>('/admin/users', {
+        name,
+        email,
+        password,
+        level,
+        send_invite: sendInvite,
+      })
+      if (sendInvite) {
+        setInviteStatus(data.invite_sent ? t('admin.userInvite.sent') : t('admin.userInvite.failed'))
+      }
       setNewUser(emptyNewUser)
       await loadUsers()
     } catch (err) {
@@ -198,8 +223,21 @@ export function UsersPage() {
             <option value="admin">admin</option>
           </select>
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={newUser.sendInvite}
+            disabled={!mailServerHealthy}
+            onChange={(e) => setNewUser({ ...newUser, sendInvite: e.target.checked })}
+          />
+          {t('admin.actions.sendInvite')}
+        </label>
+        {/* Same gate as LoginPage's "forgot password" link (briefing 12.2) — sending an
+            invite that can only fail isn't worth offering. */}
+        {!mailServerHealthy && <p>{t('admin.userInvite.hint')}</p>}
         <button type="submit">{t('admin.actions.createUser')}</button>
         {createUserError && <p role="alert">{createUserError}</p>}
+        {inviteStatus && <p role="status">{inviteStatus}</p>}
       </form>
     </section>
   )

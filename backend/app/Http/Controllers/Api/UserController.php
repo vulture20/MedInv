@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Mail\MailStatusService;
 use App\Http\Controllers\Controller;
+use App\Mail\UserInvitationMail;
 use App\Models\User;
 use App\Rules\MedInvPasswordPolicy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 /**
@@ -21,6 +24,8 @@ use Illuminate\Validation\Rule;
  */
 class UserController extends Controller
 {
+    public function __construct(private readonly MailStatusService $mailStatus) {}
+
     public function index()
     {
         return User::query()->orderBy('name')->get();
@@ -33,9 +38,48 @@ class UserController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', new MedInvPasswordPolicy],
             'level' => ['required', Rule::in(['guest', 'user', 'admin'])],
+            'send_invite' => ['sometimes', 'boolean'],
         ]);
 
-        return response()->json(User::query()->create($data), 201);
+        $sendInvite = (bool) ($data['send_invite'] ?? false);
+        unset($data['send_invite']);
+
+        $user = User::query()->create($data);
+        $response = $user->toArray();
+
+        if ($sendInvite) {
+            [$response['invite_sent'], $response['invite_error']] = $this->sendInvite($request, $user);
+        }
+
+        return response()->json($response, 201);
+    }
+
+    /**
+     * Best-effort: a failed invitation must never undo the account that was
+     * just created (the admin can still hand out credentials manually, or
+     * the frontend greys the checkbox out whenever mailServerHealthy is
+     * false in the first place — see UsersPage.tsx). Mirrors
+     * AdminSettingsController::testMail()'s not_configured/failure split.
+     *
+     * @return array{0: bool, 1: string|null}
+     */
+    private function sendInvite(Request $request, User $user): array
+    {
+        if (! $this->mailStatus->isConfigured()) {
+            $this->logApiError($request, 'not_configured', 'Invitation mail skipped: mail server is not configured.');
+
+            return [false, 'not_configured'];
+        }
+
+        try {
+            Mail::to($user->email)->send(new UserInvitationMail($user));
+        } catch (\Throwable $e) {
+            $this->logApiError($request, 'invite_mail_failed', $e->getMessage());
+
+            return [false, $e->getMessage()];
+        }
+
+        return [true, null];
     }
 
     public function update(Request $request, User $user)

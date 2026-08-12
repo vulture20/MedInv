@@ -101,7 +101,13 @@
       "edit": "Bearbeiten",
       "save": "Speichern",
       "cancel": "Abbrechen",
-      "delete": "Löschen"
+      "delete": "Löschen",
+      "sendInvite": "Einladungsmail senden"
+    },
+    "userInvite": {
+      "hint": "Der Mailserver ist nicht konfiguriert — eine Einladungsmail kann derzeit nicht verschickt werden.",
+      "sent": "Einladungsmail erfolgreich versendet.",
+      "failed": "Der Benutzer wurde angelegt, aber die Einladungsmail konnte nicht versendet werden."
     },
     "errors": {
       "protected_account": "Dies ist das vordefinierte Administrator-Konto und kann nicht bearbeitet, deaktiviert oder gelöscht werden.",
