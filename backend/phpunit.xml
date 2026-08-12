@@ -26,6 +26,7 @@
         <env name="MEDINV_DB_CONNECTION" value="sqlite"/>
         <env name="MEDINV_DB_DATABASE" value=":memory:"/>
         <env name="MEDINV_DB_URL" value=""/>
+        <env name="MEDINV_LOGLEVEL" value="WARNING"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

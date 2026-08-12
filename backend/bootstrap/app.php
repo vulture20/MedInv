@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureUserHasLevel;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\LogFrontendAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+
+        // Every request the SPA makes against the API — see LogFrontendAccess's
+        // docblock for why this, not the nginx-served static files, is what
+        // "frontend access" means from Laravel's side of the stack.
+        $middleware->api(append: [LogFrontendAccess::class]);
 
         $middleware->alias([
             'active' => EnsureUserIsActive::class,

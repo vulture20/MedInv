@@ -44,7 +44,7 @@ class AdminSettingsController extends Controller
                 'throttle_window_minutes' => SystemSetting::get('security.throttle_window_minutes', 5),
                 'throttle_lock_minutes' => SystemSetting::get('security.throttle_lock_minutes', 30),
             ],
-            'loglevel' => SystemSetting::get('loglevel', env('MEDINV_LOGLEVEL', 'INFO')),
+            'loglevel' => SystemSetting::get('loglevel', env('MEDINV_LOGLEVEL', 'WARNING')),
         ];
     }
 
