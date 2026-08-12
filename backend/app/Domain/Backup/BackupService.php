@@ -98,20 +98,38 @@ class BackupService
     }
 
     /**
-     * TODO: restoration UI flow. The conflict-resolution *logic* itself
-     * (rename/merge/overwrite/skip/cancel) already exists in
-     * ExportImportService::importLibraries() and is reused here; what's
-     * still open is: (a) reading the backup zip back into the same array
-     * shape exportLibraries() produces, and (b) the two trigger paths from
-     * 9.3 — POST from the admin UI, and MEDINV_RESTOREBACKUP evaluated in
-     * docker/entrypoint.sh at container start (see AdminSettingsController
-     * and console command Console\Commands\RestoreBackupOnBoot, not yet
-     * implemented). $restoreSettings is already threaded through from
-     * BackupController so it needs no further change once (a)/(b) land —
-     * see ExportImportService::importLibraries()'s $restoreSettings param.
+     * Restores a backup (briefing 9.3): reads manifest.json back out of the
+     * zip into the same array shape exportLibraries() produces, then hands
+     * it to ExportImportService::importLibraries(), which already carries
+     * the conflict-resolution logic (rename/merge/overwrite/skip/cancel)
+     * shared with ordinary instance-to-instance import (9.1). Both trigger
+     * paths from 9.3 use this: BackupController::restore() (admin UI, with
+     * $conflictResolutions/$restoreSettings chosen interactively per
+     * request) and Console\Commands\RestoreBackupOnBoot
+     * (MEDINV_RESTOREBACKUP at container start, unattended).
      */
     public function restore(Backup $backup, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
     {
-        throw new \RuntimeException('Not yet implemented — see method docblock.');
+        $path = Storage::disk(self::DISK)->path(self::DIR.'/'.$backup->filename);
+
+        $zip = new ZipArchive;
+        if ($zip->open($path) !== true) {
+            throw new \RuntimeException("Could not open backup archive: {$backup->filename}");
+        }
+
+        $manifest = $zip->getFromName('manifest.json');
+        $zip->close();
+
+        if ($manifest === false) {
+            throw new \RuntimeException("Backup archive is missing manifest.json: {$backup->filename}");
+        }
+
+        $data = json_decode($manifest, true);
+
+        if (! is_array($data)) {
+            throw new \RuntimeException("Backup archive contains an invalid manifest.json: {$backup->filename}");
+        }
+
+        return $this->exportImportService->importLibraries($data, $importingAs, $conflictResolutions, $restoreSettings);
     }
 }

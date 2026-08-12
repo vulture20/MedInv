@@ -88,7 +88,16 @@ class ExportImportService
      * name that already exists at the target (briefing 9.1 + 9.3):
      * rename | merge | overwrite | skip | cancel.
      *
-     * @param  array<string, string>  $conflictResolutions  Keyed by library name.
+     * @param  array<string, string>  $conflictResolutions  Keyed by library name; two sentinel
+     *                                                      keys are recognized alongside real library names:
+     *                                                      `__all__` => `cancel` aborts the whole restore/import
+     *                                                      before anything is written, and `__default__` sets the
+     *                                                      resolution for any library not otherwise listed — used by
+     *                                                      Console\Commands\RestoreBackupOnBoot (MEDINV_RESTOREBACKUP,
+     *                                                      briefing 9.3), which restores unattended at container start
+     *                                                      with no admin available to choose per-library, unlike
+     *                                                      BackupController::restore()'s interactive admin-UI path.
+     *                                                      Without `__default__`, an unlisted library is skipped.
      * @param  bool  $restoreSettings  Whether to also apply $data['system_settings'] and
      *                                 $data['users'] (present since exportLibraries() started
      *                                 including them, the latter only when it was called with
@@ -143,7 +152,7 @@ class ExportImportService
                     continue;
                 }
 
-                $resolution = $conflictResolutions[$libraryData['name']] ?? 'skip';
+                $resolution = $conflictResolutions[$libraryData['name']] ?? $conflictResolutions['__default__'] ?? 'skip';
 
                 match ($resolution) {
                     'rename' => $this->createLibraryFromExport(

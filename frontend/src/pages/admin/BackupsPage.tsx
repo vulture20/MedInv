@@ -19,6 +19,15 @@ interface BackupSettings {
   retention_max_age_days: number | null
 }
 
+interface RestoreResult {
+  created: string[]
+  merged: string[]
+  overwritten: string[]
+  skipped: string[]
+  settings_restored: boolean
+  users_restored: string[]
+}
+
 /** Backups (briefing 9.2): on-demand creation/download/delete plus the schedule/retention config. */
 export function BackupsPage() {
   const { t } = useTranslation()
@@ -26,6 +35,19 @@ export function BackupsPage() {
   const [settings, setSettings] = useState<BackupSettings | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSaved, setSettingsSaved] = useState(false)
+
+  // Which backup's restore form is expanded, and its two options — briefing 9.3's
+  // full per-library rename/merge/overwrite/skip picker needs to know which
+  // libraries the backup actually contains, which nothing currently exposes
+  // ahead of attempting the restore; "overwrite every conflicting library" (via
+  // BackupController::restore()'s `conflict_resolutions.__default__`, the same
+  // sentinel Console\Commands\RestoreBackupOnBoot uses) keeps this usable without
+  // that. A library not present in the backup at all is never touched either way.
+  const [restoringId, setRestoringId] = useState<number | null>(null)
+  const [overwriteExisting, setOverwriteExisting] = useState(false)
+  const [restoreSettings, setRestoreSettings] = useState(false)
+  const [restoreResult, setRestoreResult] = useState<string | null>(null)
+  const [restoreError, setRestoreError] = useState<string | null>(null)
 
   async function loadBackups() {
     const { data } = await apiClient.get<Backup[]>('/admin/backups')
@@ -53,6 +75,36 @@ export function BackupsPage() {
     await loadBackups()
   }
 
+  function startRestore(backup: Backup) {
+    setRestoringId(backup.id)
+    setOverwriteExisting(false)
+    setRestoreSettings(false)
+    setRestoreResult(null)
+    setRestoreError(null)
+  }
+
+  async function confirmRestore(backup: Backup) {
+    if (!window.confirm(t('admin.backupRestore.confirm', { filename: backup.filename }))) return
+    setRestoreError(null)
+    try {
+      const { data } = await apiClient.post<RestoreResult>(`/admin/backups/${backup.id}/restore`, {
+        conflict_resolutions: overwriteExisting ? { __default__: 'overwrite' } : {},
+        restore_settings: restoreSettings,
+      })
+      setRestoreResult(
+        t('admin.backupRestore.success', {
+          created: data.created.length,
+          overwritten: data.overwritten.length,
+          merged: data.merged.length,
+          skipped: data.skipped.length,
+        }),
+      )
+      setRestoringId(null)
+    } catch (err) {
+      setRestoreError(describeError(err, t))
+    }
+  }
+
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault()
     if (!settings) return
@@ -77,10 +129,39 @@ export function BackupsPage() {
             <li key={b.id}>
               {b.filename} — {(b.size_bytes / 1024).toFixed(1)} KB — {b.trigger} — {b.status}{' '}
               <a href={`${apiClient.defaults.baseURL}/admin/backups/${b.id}/download`}>{t('admin.actions.download')}</a>{' '}
-              <button onClick={() => void deleteBackup(b)}>{t('admin.actions.delete')}</button>
+              <button onClick={() => void deleteBackup(b)}>{t('admin.actions.delete')}</button>{' '}
+              {restoringId === b.id ? (
+                <button onClick={() => setRestoringId(null)}>{t('admin.actions.cancel')}</button>
+              ) : (
+                <button onClick={() => startRestore(b)}>{t('admin.actions.restore')}</button>
+              )}
+              {restoringId === b.id && (
+                <div>
+                  <p>{t('admin.backupRestore.warning')}</p>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={overwriteExisting}
+                      onChange={(e) => setOverwriteExisting(e.target.checked)}
+                    />
+                    {t('admin.backupRestore.overwriteExisting')}
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={restoreSettings}
+                      onChange={(e) => setRestoreSettings(e.target.checked)}
+                    />
+                    {t('admin.backupRestore.restoreSettings')}
+                  </label>
+                  <button onClick={() => void confirmRestore(b)}>{t('admin.backupRestore.submit')}</button>
+                  {restoreError && <p role="alert">{restoreError}</p>}
+                </div>
+              )}
             </li>
           ))}
         </ul>
+        {restoreResult && <p role="status">{restoreResult}</p>}
       </section>
 
       {settings && (

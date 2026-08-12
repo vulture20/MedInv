@@ -104,7 +104,16 @@
       "save": "Speichern",
       "cancel": "Abbrechen",
       "delete": "Löschen",
-      "sendInvite": "Einladungsmail senden"
+      "sendInvite": "Einladungsmail senden",
+      "restore": "Wiederherstellen"
+    },
+    "backupRestore": {
+      "warning": "Vorhandene Bibliotheken mit gleichem Namen werden standardmäßig übersprungen (bleiben unverändert), es sei denn, Sie wählen unten \"Überschreiben\".",
+      "overwriteExisting": "Vorhandene Bibliotheken mit gleichem Namen überschreiben statt überspringen",
+      "restoreSettings": "Systemeinstellungen und Benutzerkonten mit wiederherstellen",
+      "submit": "Wiederherstellung bestätigen",
+      "confirm": "Backup „{{filename}}“ wiederherstellen? Dies kann nicht rückgängig gemacht werden.",
+      "success": "Wiederherstellung abgeschlossen: {{created}} neu angelegt, {{overwritten}} überschrieben, {{merged}} zusammengeführt, {{skipped}} übersprungen."
     },
     "userInvite": {
       "hint": "Der Mailserver ist nicht konfiguriert — eine Einladungsmail kann derzeit nicht verschickt werden.",

@@ -104,7 +104,16 @@
       "save": "Save",
       "cancel": "Cancel",
       "delete": "Delete",
-      "sendInvite": "Send invitation email"
+      "sendInvite": "Send invitation email",
+      "restore": "Restore"
+    },
+    "backupRestore": {
+      "warning": "Existing libraries with the same name are skipped (left untouched) by default unless you choose \"Overwrite\" below.",
+      "overwriteExisting": "Overwrite existing libraries with the same name instead of skipping them",
+      "restoreSettings": "Also restore system settings and user accounts",
+      "submit": "Confirm restore",
+      "confirm": "Restore backup \"{{filename}}\"? This cannot be undone.",
+      "success": "Restore complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped."
     },
     "userInvite": {
       "hint": "The mail server is not configured — an invitation email cannot be sent right now.",

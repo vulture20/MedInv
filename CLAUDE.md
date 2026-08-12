@@ -82,10 +82,11 @@ Laravel 11+'s default `local` filesystem disk root is `storage/app/private` (`ba
 ### The DB is update-ready: migrations run automatically, with a safety net
 `docker/entrypoint.sh` runs `php artisan migrate --force` on every container start, so a new image with new migration files applies its schema changes with no manual step. Immediately before that, it runs `php artisan medinv:pre-update-backup` (`app/Console/Commands/PreUpdateBackupCommand.php`), which creates a backup via `BackupService` — but only when there are pending migrations *and* the database was already initialized (i.e. this is a real update, not first install or an unchanged restart) — so an update has a restore point without backing up on every ordinary restart.
 
+### Backup restore has two trigger paths, one shared implementation
+`BackupService::restore()` (briefing 9.3) reads a backup zip's `manifest.json` back out and hands it to `ExportImportService::importLibraries()` — the same conflict-resolution logic (rename/merge/overwrite/skip/cancel) instance-to-instance import already uses (briefing 9.1), so restore isn't a separate code path. The two triggers differ only in who picks the per-library resolution: `BackupController::restore()` takes `conflict_resolutions`/`restore_settings` from the admin UI request interactively, while `Console\Commands\RestoreBackupOnBoot` (`php artisan medinv:restore-backup <filename>`, run from `docker/entrypoint.sh` whenever `MEDINV_RESTOREBACKUP` is set) has no admin to ask and instead overwrites every conflicting library unconditionally via `importLibraries()`'s `__default__` conflict-resolution sentinel, plus always restores settings and user accounts — `MEDINV_RESTOREBACKUP`'s whole purpose is bringing the instance to exactly the backed-up state, e.g. resetting a demo/staging deployment on every restart.
+
 ## Known-incomplete areas (check before assuming something works)
 
-- `BackupService::restore()` — throws "not yet implemented"; conflict-resolution logic (rename/merge/overwrite/skip) already exists and is shared via `ExportImportService::importLibraries()`, but wiring a backup zip back through it isn't done.
-- `docker/entrypoint.sh` only warns if `MEDINV_RESTOREBACKUP` is set — no auto-restore-on-boot yet (depends on the above).
 - Camera-based barcode scanning (briefing 7.2) is a `TODO` in `frontend/src/pages/capture/CapturePage.tsx` — only the hardware-scanner/manual-entry and text-file import paths are wired up.
 - `SearchService`'s `fuzzy` flag only relaxes case-sensitivity today; no real typo-tolerant matching yet.
 - `StatisticsService` returns per-library counts/value only; the genre/language/year/etc. distributions from briefing 14 are not implemented.

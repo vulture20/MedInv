@@ -69,12 +69,17 @@ php artisan migrate --force
 # firstOrCreate() means re-running on every boot is safe.
 php artisan db:seed --force
 
-# MEDINV_RESTOREBACKUP: restore a named backup on boot (briefing 9.3).
-# TODO: BackupService::restore() itself is not yet implemented (see its
-# docblock) — wire up `php artisan medinv:restore-backup "$MEDINV_RESTOREBACKUP"`
-# here once it is, instead of only warning.
+# MEDINV_RESTOREBACKUP: restore a named backup on boot (briefing 9.3), for
+# automated deployments — the unattended counterpart to the interactive
+# admin-UI restore. Runs on every boot the variable is set, same as
+# db:seed above; see RestoreBackupOnBoot's docblock for why it overwrites
+# conflicting libraries and restores settings/users unconditionally rather
+# than asking (there's no admin present to ask). A failure here (unknown
+# filename, no admin account yet) is logged by the command itself and does
+# not stop the container from starting — a bad MEDINV_RESTOREBACKUP value
+# shouldn't brick an otherwise-working instance.
 if [ -n "$MEDINV_RESTOREBACKUP" ]; then
-    echo "WARNING: MEDINV_RESTOREBACKUP=$MEDINV_RESTOREBACKUP was set, but automatic restore-on-boot is not yet implemented."
+    php artisan medinv:restore-backup "$MEDINV_RESTOREBACKUP" || true
 fi
 
 # MEDINV_TRUSTEDIP is read directly via env() at request time
