@@ -25,7 +25,7 @@ interface MailSettings {
  */
 export function MailPage() {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, refreshMailStatus } = useAuth()
   const [settings, setSettings] = useState<MailSettings | null>(null)
   const [password, setPassword] = useState('')
   const [saved, setSaved] = useState(false)
@@ -66,6 +66,7 @@ export function MailPage() {
       setSettings({ ...settings, healthy: data.healthy })
       setPassword('')
       setSaved(true)
+      void refreshMailStatus()
     } catch (err) {
       setError(describeError(err, t))
     }
@@ -84,6 +85,7 @@ export function MailPage() {
     try {
       await apiClient.post('/admin/settings/mail/test', { to: testTo })
       setTestResult(t('admin.mailSettings.testMailSent'))
+      void refreshMailStatus()
     } catch (err) {
       if (isAxiosError(err)) {
         const data = err.response?.data as { error_code?: string; message?: string } | undefined

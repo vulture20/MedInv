@@ -19,6 +19,14 @@ interface AuthContextValue {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  /**
+   * Re-fetches `mail_server_healthy` from `/me` without touching `loading`/`user`
+   * flow. Call this after saving mail settings or sending a test mail
+   * (AdminSettingsController::updateMail/testMail) so the app-wide indicator
+   * (e.g. the "forgot password" gate on LoginPage) doesn't stay stale from
+   * whenever this session last logged in or loaded.
+   */
+  refreshMailStatus: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -44,6 +52,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh()
   }, [refresh])
 
+  const refreshMailStatus = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get<{ mail_server_healthy: boolean }>('/me')
+      setMailServerHealthy(data.mail_server_healthy)
+    } catch {
+      // Leave the current value in place — a failed refresh shouldn't flip
+      // the indicator or affect the logged-in user/session state.
+    }
+  }, [])
+
   const login = useCallback(async (email: string, password: string) => {
     await fetchCsrfCookie()
     const { data } = await apiClient.post<{ user: User; mail_server_healthy: boolean }>('/login', {
@@ -60,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, mailServerHealthy, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, mailServerHealthy, loading, login, logout, refreshMailStatus }}>
       {children}
     </AuthContext.Provider>
   )
