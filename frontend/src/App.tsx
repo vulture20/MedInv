@@ -4,6 +4,8 @@ import { ThemeProvider } from './theme/ThemeContext'
 import { AppLayout } from './layout/AppLayout'
 import { RequireAuth, RequireAdmin } from './components/RequireAuth'
 import { LoginPage } from './pages/login/LoginPage'
+import { ForgotPasswordPage } from './pages/password/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/password/ResetPasswordPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { CapturePage } from './pages/capture/CapturePage'
 import { LibrariesPage } from './pages/libraries/LibrariesPage'
@@ -32,6 +34,8 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/password/forgot" element={<ForgotPasswordPage />} />
+            <Route path="/password/reset" element={<ResetPasswordPage />} />
 
             <Route element={<RequireAuth />}>
               <Route element={<AppLayout />}>

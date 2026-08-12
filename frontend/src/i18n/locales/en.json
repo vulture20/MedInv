@@ -163,6 +163,26 @@
       "saved": "Log level saved."
     }
   },
+  "passwordReset": {
+    "forgotTitle": "Forgot password",
+    "forgotIntro": "Enter your email address. If an account exists for it, you'll receive a link to reset your password.",
+    "sendLink": "Request link",
+    "linkSent": "If that address exists, an email with a reset link has been sent.",
+    "resetTitle": "Set a new password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "resetSubmit": "Reset password",
+    "resetSuccess": "Your password has been reset. You can now sign in.",
+    "backToLogin": "Back to sign in",
+    "errors": {
+      "invalid_token": "This link is invalid or has expired. Please request a new one.",
+      "invalid_user": "No account exists for this email address.",
+      "throttled": "Please wait a moment before trying again.",
+      "reset_failed": "The password could not be reset.",
+      "mail_unavailable": "The mail server is not configured or unreachable. Please contact an administrator.",
+      "generic": "That didn't work. Please try again later."
+    }
+  },
   "errors": {
     "invalid_credentials": "Invalid credentials.",
     "account_locked": "Too many failed attempts. This account is temporarily locked.",

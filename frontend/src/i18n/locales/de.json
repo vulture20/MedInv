@@ -163,6 +163,26 @@
       "saved": "Log-Level gespeichert."
     }
   },
+  "passwordReset": {
+    "forgotTitle": "Passwort vergessen",
+    "forgotIntro": "Geben Sie Ihre E-Mail-Adresse ein. Falls dazu ein Konto existiert, erhalten Sie einen Link zum Zurücksetzen Ihres Passworts.",
+    "sendLink": "Link anfordern",
+    "linkSent": "Falls diese Adresse existiert, wurde eine E-Mail mit einem Reset-Link verschickt.",
+    "resetTitle": "Neues Passwort vergeben",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "resetSubmit": "Passwort zurücksetzen",
+    "resetSuccess": "Ihr Passwort wurde erfolgreich zurückgesetzt. Sie können sich jetzt anmelden.",
+    "backToLogin": "Zurück zur Anmeldung",
+    "errors": {
+      "invalid_token": "Dieser Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.",
+      "invalid_user": "Zu dieser E-Mail-Adresse existiert kein Konto.",
+      "throttled": "Bitte warten Sie kurz, bevor Sie es erneut versuchen.",
+      "reset_failed": "Das Passwort konnte nicht zurückgesetzt werden.",
+      "mail_unavailable": "Der Mailserver ist nicht konfiguriert oder nicht erreichbar. Bitte wenden Sie sich an einen Administrator.",
+      "generic": "Das hat leider nicht funktioniert. Bitte versuchen Sie es später erneut."
+    }
+  },
   "errors": {
     "invalid_credentials": "Ungültige Anmeldedaten.",
     "account_locked": "Zu viele Fehlversuche. Dieses Konto ist vorübergehend gesperrt.",

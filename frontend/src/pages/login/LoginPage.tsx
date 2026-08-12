@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { useAuth } from '../../auth/AuthContext'
@@ -83,9 +83,9 @@ export function LoginPage() {
           {t('login.submit')}
         </button>
 
-        <a href="/password/forgot" aria-disabled={!mailServerHealthy} className="login-form__forgot">
+        <Link to="/password/forgot" aria-disabled={!mailServerHealthy} className="login-form__forgot">
           {t('login.forgotPassword')}
-        </a>
+        </Link>
 
         <div className="login-form__footer">
           <VersionBadge />

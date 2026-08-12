@@ -5,15 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Domain\Mail\MailStatusService;
 use App\Http\Controllers\Controller;
 use App\Rules\MedInvPasswordPolicy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Self-service, email-based password reset (briefing 12.3). Disabled
  * whenever the mail server is unreachable/misconfigured (12.2) — the
  * frontend greys the entry point out using AuthController::me()'s
  * mail_server_healthy flag, and this controller re-checks it server-side.
+ * Consumed by the frontend's ForgotPasswordPage/ResetPasswordPage
+ * (frontend/src/pages/password/).
  */
 class PasswordResetController extends Controller
 {
@@ -21,7 +23,7 @@ class PasswordResetController extends Controller
 
     public function sendResetLink(Request $request)
     {
-        $this->ensureMailHealthy();
+        $this->ensureMailHealthy($request);
 
         $request->validate(['email' => ['required', 'email']]);
 
@@ -33,7 +35,7 @@ class PasswordResetController extends Controller
 
     public function reset(Request $request)
     {
-        $this->ensureMailHealthy();
+        $this->ensureMailHealthy($request);
 
         $data = $request->validate([
             'token' => ['required', 'string'],
@@ -46,16 +48,38 @@ class PasswordResetController extends Controller
         });
 
         if ($status !== Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages(['email' => __($status)]);
+            // Laravel's PasswordBroker statuses (Password::INVALID_TOKEN/INVALID_USER/
+            // RESET_THROTTLED) are translation keys into a lang/ directory this project
+            // doesn't have (see CLAUDE.md: everything else uses an error_code, not
+            // Laravel's own __($status) prose) — mapped onto our own error_code
+            // convention instead so the frontend can translate them properly.
+            $errorCode = match ($status) {
+                Password::INVALID_TOKEN => 'invalid_token',
+                Password::INVALID_USER => 'invalid_user',
+                Password::RESET_THROTTLED => 'throttled',
+                default => 'reset_failed',
+            };
+
+            return $this->resetError($request, $errorCode, "Password reset failed: {$status}");
         }
 
         return response()->json(['message' => 'Password has been reset.']);
     }
 
-    private function ensureMailHealthy(): void
+    private function ensureMailHealthy(Request $request): void
     {
         if (! $this->mailStatus->isHealthy()) {
-            abort(503, 'Password reset is unavailable: mail server is not configured or unreachable.');
+            $message = 'Password reset is unavailable: mail server is not configured or unreachable.';
+            $this->logApiError($request, 'mail_unavailable', $message);
+
+            abort(response()->json(['error_code' => 'mail_unavailable', 'message' => $message], 503));
         }
+    }
+
+    private function resetError(Request $request, string $code, string $message): JsonResponse
+    {
+        $this->logApiError($request, $code, $message);
+
+        return response()->json(['error_code' => $code, 'message' => $message], 422);
     }
 }
