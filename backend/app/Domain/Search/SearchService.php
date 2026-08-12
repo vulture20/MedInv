@@ -9,6 +9,7 @@ use App\Models\MediaCd;
 use App\Models\MediaDvdBluray;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Cross-media-type search over every attribute (briefing 13.), scoped to
@@ -38,8 +39,13 @@ class SearchService
                 ->whereIn('library_id', $visibleLibraryIds)
                 ->where(function ($q) use ($columns, $query, $fuzzy) {
                     foreach ($columns as $column) {
+                        // MediaDvdBluray::$SEARCHABLE_COLUMNS includes `cast`, a reserved SQL
+                        // keyword (CAST(expr AS type)) — unquoted, `LOWER(cast)` parses as the
+                        // start of a CAST expression and blows up with a syntax error. wrap()
+                        // applies the connection-appropriate identifier quoting (double quotes
+                        // on sqlite/postgres, backticks on mysql/mariadb) instead of hardcoding one.
                         $fuzzy
-                            ? $q->orWhereRaw('LOWER('.$column.') LIKE ?', ['%'.mb_strtolower($query).'%'])
+                            ? $q->orWhereRaw('LOWER('.DB::getQueryGrammar()->wrap($column).') LIKE ?', ['%'.mb_strtolower($query).'%'])
                             : $q->orWhere($column, 'like', "%{$query}%");
                     }
                 })

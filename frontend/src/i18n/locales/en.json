@@ -54,7 +54,9 @@
   "search": {
     "placeholder": "Search…",
     "resultsFor": "Search: “{{query}}”",
-    "fuzzy": "Fuzzy search"
+    "submit": "Search",
+    "fuzzy": "Fuzzy search",
+    "error": "Search failed. Please try again."
   },
   "statistics": {
     "title": "Statistics",

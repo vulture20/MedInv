@@ -54,7 +54,9 @@
   "search": {
     "placeholder": "Suche…",
     "resultsFor": "Suche: „{{query}}“",
-    "fuzzy": "Fuzzy-Suche"
+    "submit": "Suchen",
+    "fuzzy": "Fuzzy-Suche",
+    "error": "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
   "statistics": {
     "title": "Statistiken",
