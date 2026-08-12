@@ -33,8 +33,13 @@ class MailStatusService
             default => 'smtp',
         };
 
+        // 'none' additionally suppresses the opportunistic STARTTLS upgrade a bare
+        // 'smtp' scheme would otherwise attempt — see AppServiceProvider::boot()'s
+        // matching auto_tls handling for the actual mail-sending transport.
+        $query = $encryption === 'none' ? '?auto_tls=0' : '';
+
         try {
-            $transport = Transport::fromDsn("{$scheme}://{$host}:{$port}");
+            $transport = Transport::fromDsn("{$scheme}://{$host}:{$port}{$query}");
             $transport->start();
 
             return true;

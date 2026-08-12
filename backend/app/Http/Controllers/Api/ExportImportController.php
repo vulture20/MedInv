@@ -32,18 +32,28 @@ class ExportImportController extends Controller
     /**
      * Same conflict-resolution options as backup restore (briefing 9.1 + 9.3):
      * rename | merge | overwrite | skip per library name, or __all__=cancel.
+     * `restore_settings` opts into also applying the file's system_settings
+     * (see ExportImportService::exportLibraries()) onto this instance —
+     * off by default so an ordinary library import can't silently change
+     * mail/backup/security configuration.
      */
     public function import(Request $request)
     {
         $data = $request->validate([
             'file' => ['required', 'file'],
             'conflict_resolutions' => ['sometimes', 'array'],
+            'restore_settings' => ['sometimes', 'boolean'],
         ]);
 
         $payload = json_decode($data['file']->get(), true);
         abort_if(json_last_error() !== JSON_ERROR_NONE, 422, 'Invalid export file.');
 
-        $result = $this->service->importLibraries($payload, $request->user(), $data['conflict_resolutions'] ?? []);
+        $result = $this->service->importLibraries(
+            $payload,
+            $request->user(),
+            $data['conflict_resolutions'] ?? [],
+            $data['restore_settings'] ?? false,
+        );
 
         return response()->json($result);
     }

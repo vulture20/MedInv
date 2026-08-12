@@ -6,6 +6,7 @@ use App\Domain\Libraries\DuplicateEanException;
 use App\Domain\Libraries\MediaItemService;
 use App\Models\Library;
 use App\Models\LibraryShare;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +22,7 @@ class ExportImportService
 
     /**
      * @param  int[]|null  $libraryIds  Null exports all libraries ("alle", briefing 9.1).
-     * @return array{format_version: int, exported_at: string, libraries: array}
+     * @return array{format_version: int, exported_at: string, libraries: array, system_settings: array}
      */
     public function exportLibraries(?array $libraryIds = null): array
     {
@@ -34,6 +35,13 @@ class ExportImportService
         return [
             'format_version' => 1,
             'exported_at' => now()->toIso8601String(),
+            // Included unconditionally (BackupService::create() always exports "alle" and
+            // reuses this method) so a backup carries the full system configuration
+            // (mail/backup/security settings, briefing 15.) alongside the library data —
+            // restoring them is opt-in per importLibraries()'s $restoreSettings flag,
+            // since the settings of the *target* instance shouldn't change on every
+            // ordinary library import.
+            'system_settings' => SystemSetting::allAsArray(),
             'libraries' => $query->get()->map(fn (Library $library) => [
                 'name' => $library->name,
                 'description' => $library->description,
@@ -56,14 +64,26 @@ class ExportImportService
      * rename | merge | overwrite | skip | cancel.
      *
      * @param  array<string, string>  $conflictResolutions  Keyed by library name.
-     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[]}
+     * @param  bool  $restoreSettings  Whether to also apply $data['system_settings'] (present
+     *                                 since exportLibraries() started including it) onto this
+     *                                 instance. Opt-in and defaulted to false: an ordinary
+     *                                 library import shouldn't silently overwrite the target's
+     *                                 mail/backup/security configuration.
+     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool}
      */
-    public function importLibraries(array $data, User $importingAs, array $conflictResolutions = []): array
+    public function importLibraries(array $data, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
     {
-        $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => []];
+        $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [], 'settings_restored' => false];
 
         if (($conflictResolutions['__all__'] ?? null) === 'cancel') {
             return $result;
+        }
+
+        if ($restoreSettings && ! empty($data['system_settings'])) {
+            foreach ($data['system_settings'] as $key => $value) {
+                SystemSetting::set($key, $value);
+            }
+            $result['settings_restored'] = true;
         }
 
         DB::transaction(function () use ($data, $importingAs, $conflictResolutions, &$result) {

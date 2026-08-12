@@ -2,7 +2,7 @@
 
 **Projektname:** MedInv
 **Kategorie:** Medienverwaltung (responsive Web-Anwendung)
-**Stand:** Konzept-Entwurf, Version 8
+**Stand:** Konzept-Entwurf, Version 9
 
 ---
 
@@ -140,6 +140,7 @@ Der Metadaten-Import erfolgt über ein **Plugin-System**, sodass zusätzliche Qu
 - Exportierte Daten sind so aufgebaut, dass sie sich auch **in eine andere MedInv-Instanz importieren** lassen (z. B. zur Migration auf einen neuen Server oder zur Zusammenführung von Beständen).
 - Der Import bietet dieselbe Auswahlmöglichkeit (einzelne Bibliotheken, mehrere oder alle aus einer Exportdatei).
 - Existiert am Ziel bereits eine Bibliothek mit identischem Namen, greift dieselbe Konflikt-Abfrage wie bei der Backup-Wiederherstellung (siehe Kap. 9.3).
+- Eine Export-/Backup-Datei enthält zusätzlich zu den Bibliotheken auch die **Systemeinstellungen** (Mailserver, Backup-Zeitplan, Sicherheits-Schwellenwerte, Loglevel, siehe Kap. 15). Beim Import ist deren Wiederherstellung **optional**: eine gesonderte Option ("Systemeinstellungen mit wiederherstellen") entscheidet, ob sie auf die Zielinstanz übernommen werden, oder ob nur die Bibliotheksdaten importiert werden und die Systemeinstellungen der Zielinstanz unangetastet bleiben.
 
 ### 9.2 Automatische Backups
 - Backups werden automatisch in einem **einstellbaren Intervall** erstellt. Für die Intervall-Konfiguration gibt es zwei Modi:
@@ -158,6 +159,7 @@ Der Metadaten-Import erfolgt über ein **Plugin-System**, sodass zusätzliche Qu
 
 ### 9.3 Download und Wiederherstellung von Backups
 - Vorhandene Backups lassen sich im Administrationsbereich als Datei **herunterladen** (z. B. für externe Archivierung) oder manuell **löschen**, zusätzlich zur automatischen Löschung nach den Aufbewahrungsregeln aus Kap. 9.2.
+- Da ein Backup auch die Systemeinstellungen enthält (Kap. 9.1), gilt bei der Wiederherstellung dieselbe Optionalität: die Systemeinstellungen werden nur bei ausdrücklicher Auswahl mit wiederhergestellt.
 - Die **Wiederherstellung** eines Backups ist auf zwei Wegen möglich:
   - über die **Benutzeroberfläche** (Administrationsbereich), oder
   - beim **Containerstart** über die Umgebungsvariable `MEDINV_RESTOREBACKUP` (Angabe des wiederherzustellenden Backups, z. B. für automatisierte Deployments).
@@ -236,10 +238,12 @@ Für den Mailversand (u. a. Passwort-Reset) wird der Mailserver zentral über di
 - SMTP-Port
 - SMTP-Benutzername (optional)
 - SMTP-Passwort (optional)
-- Verschlüsselung: SSL/TLS oder STARTTLS
+- Verschlüsselung: SSL/TLS, STARTTLS oder **keine Verschlüsselung** (für interne/lokale Relays ohne TLS-Unterstützung)
 - Absenderadresse und Absendername
 
 Ist der Mailserver **nicht erreichbar oder nicht bzw. fehlerhaft konfiguriert**, wird dies **Administratoren** beim Einloggen durch eine **rote Warnmeldung** angezeigt. Solange dieser Zustand besteht, ist die **Passwort-Reset-Funktion deaktiviert** (in der Oberfläche ausgegraut) und für Benutzer nicht nutzbar.
+
+Zusätzlich zur reinen Erreichbarkeitsprüfung (TCP-Verbindungsaufbau) lässt sich im Administrationsbereich eine **Testmail** an eine frei wählbare Adresse verschicken, um die konfigurierte Mailausgabe (Zugangsdaten, Absenderadresse, Relay-Regeln) tatsächlich Ende-zu-Ende zu prüfen statt nur die Verbindung.
 
 ### 12.3 Passwort-Reset
 Benutzer können ihr Passwort selbstständig über einen **E-Mail-basierten Reset-Prozess** zurücksetzen (Anforderung eines Reset-Links per Mail, Vergabe eines neuen, richtlinienkonformen Passworts). Voraussetzung sind eine hinterlegte, gültige E-Mail-Adresse je Benutzerkonto sowie eine funktionsfähige Mailserver-Anbindung (siehe Kap. 12.2).
@@ -286,6 +290,7 @@ Aus den Bibliotheksdaten sollen diverse Auswertungen generierbar sein, u. a. den
 - Konfiguration des Mailservers (SMTP) für den Mailversand inkl. Statusanzeige bei Fehlkonfiguration
 - Konfiguration der Brute-Force-Schutzschwellen (Fehlversuche, Zeitfenster, Sperrdauer)
 - **Loglevel-Einstellung:** einstellbar sowohl im Administrationsbereich als auch über die Umgebungsvariable `MEDINV_LOGLEVEL`, mit den Stufen DEBUG, INFO, WARNING, ERROR
+- **Log-Inhalt:** protokollierte Fehler (u. a. fehlgeschlagene Logins, verweigerte Aktionen gegen das geschützte Administrator-Konto, fehlgeschlagene Testmails) enthalten neben Fehler-Code und -Meldung auch die **IP-Adresse des anfragenden Clients**, damit sich ein gemeldetes Problem im Log nachvollziehen lässt.
 
 ---
 

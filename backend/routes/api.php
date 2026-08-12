@@ -85,6 +85,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
         Route::get('/settings', [AdminSettingsController::class, 'index']);
         Route::put('/settings/mail', [AdminSettingsController::class, 'updateMail']);
+        Route::post('/settings/mail/test', [AdminSettingsController::class, 'testMail']);
         Route::put('/settings/backup', [AdminSettingsController::class, 'updateBackup']);
         Route::put('/settings/security', [AdminSettingsController::class, 'updateSecurity']);
         Route::put('/settings/loglevel', [AdminSettingsController::class, 'updateLoglevel']);

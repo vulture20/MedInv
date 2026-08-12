@@ -76,13 +76,17 @@
     "users": "Benutzer",
     "plugins": "Metadaten-Plugins",
     "backups": "Backups",
+    "mail": "Mail",
     "settings": "Systemeinstellungen",
     "confirmDeleteUser": "Benutzer „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
     "confirmDeleteBackup": "Backup „{{filename}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
     "passwordHint": "Mindestens 10 Zeichen, mit mindestens einem Großbuchstaben, einem Kleinbuchstaben, einer Ziffer und einem Sonderzeichen.",
     "table": {
       "level": "Level",
-      "status": "Status"
+      "status": "Status",
+      "enabled": "Aktiviert",
+      "priority": "Priorität",
+      "mediaType": "Medientyp"
     },
     "status": {
       "active": "Aktiv",
@@ -102,6 +106,55 @@
     "errors": {
       "protected_account": "Dies ist das vordefinierte Administrator-Konto und kann nicht bearbeitet, deaktiviert oder gelöscht werden.",
       "passwordPolicy": "Das Passwort muss mindestens 10 Zeichen lang sein und einen Großbuchstaben, einen Kleinbuchstaben, eine Ziffer und ein Sonderzeichen enthalten."
+    },
+    "mailSettings": {
+      "host": "SMTP-Host",
+      "port": "Port",
+      "username": "Benutzername",
+      "password": "Passwort",
+      "passwordHint": "Leer lassen, um das aktuelle Passwort beizubehalten.",
+      "encryption": "Verschlüsselung",
+      "encryptionOptions": {
+        "ssl_tls": "SSL/TLS",
+        "starttls": "STARTTLS",
+        "none": "Keine Verschlüsselung"
+      },
+      "fromAddress": "Absenderadresse",
+      "fromName": "Absendername",
+      "healthy": "Der Mailserver ist erreichbar und korrekt konfiguriert.",
+      "unhealthy": "Der Mailserver ist nicht erreichbar oder nicht vollständig konfiguriert. Das Zurücksetzen des Passworts ist deaktiviert.",
+      "saved": "Mail-Einstellungen gespeichert.",
+      "testMail": "Testmail versenden",
+      "testMailTo": "Empfängeradresse",
+      "testMailSend": "Testmail senden",
+      "testMailSent": "Testmail erfolgreich versendet.",
+      "testMailNotConfigured": "Der Mailserver ist noch nicht konfiguriert.",
+      "testMailFailed": "Die Testmail konnte nicht versendet werden: {{message}}"
+    },
+    "backupSettings": {
+      "title": "Backup-Zeitplan",
+      "intervalMode": "Intervall",
+      "interval": {
+        "daily": "Täglich",
+        "weekly": "Wöchentlich",
+        "monthly": "Monatlich",
+        "cron": "Benutzerdefiniert (Cron-Ausdruck)"
+      },
+      "cronExpression": "Cron-Ausdruck",
+      "retentionCount": "Maximale Anzahl an Backups",
+      "retentionMaxAgeDays": "Backups löschen nach (Tagen)",
+      "saved": "Backup-Zeitplan gespeichert."
+    },
+    "securitySettings": {
+      "title": "Schutz vor Brute-Force-Angriffen",
+      "maxAttempts": "Max. Fehlversuche",
+      "windowMinutes": "Zeitfenster (Minuten)",
+      "lockMinutes": "Sperrdauer (Minuten)",
+      "saved": "Sicherheitseinstellungen gespeichert."
+    },
+    "logLevel": {
+      "title": "Log-Level",
+      "saved": "Log-Level gespeichert."
     }
   },
   "errors": {
