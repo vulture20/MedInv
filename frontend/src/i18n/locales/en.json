@@ -76,13 +76,17 @@
     "users": "Users",
     "plugins": "Metadata plugins",
     "backups": "Backups",
+    "mail": "Mail",
     "settings": "System settings",
     "confirmDeleteUser": "Delete user “{{name}}”? This cannot be undone.",
     "confirmDeleteBackup": "Delete backup “{{filename}}”? This cannot be undone.",
     "passwordHint": "At least 10 characters, with at least one uppercase letter, one lowercase letter, one digit and one special character.",
     "table": {
       "level": "Level",
-      "status": "Status"
+      "status": "Status",
+      "enabled": "Enabled",
+      "priority": "Priority",
+      "mediaType": "Media type"
     },
     "status": {
       "active": "Active",
@@ -102,6 +106,55 @@
     "errors": {
       "protected_account": "This is the predefined administrator account and cannot be edited, deactivated or deleted.",
       "passwordPolicy": "The password must be at least 10 characters long and contain an uppercase letter, a lowercase letter, a digit and a special character."
+    },
+    "mailSettings": {
+      "host": "SMTP host",
+      "port": "Port",
+      "username": "Username",
+      "password": "Password",
+      "passwordHint": "Leave blank to keep the current password.",
+      "encryption": "Encryption",
+      "encryptionOptions": {
+        "ssl_tls": "SSL/TLS",
+        "starttls": "STARTTLS",
+        "none": "No encryption"
+      },
+      "fromAddress": "From address",
+      "fromName": "From name",
+      "healthy": "The mail server is reachable and configured correctly.",
+      "unhealthy": "The mail server is unreachable or not fully configured. Password reset is disabled.",
+      "saved": "Mail settings saved.",
+      "testMail": "Send test email",
+      "testMailTo": "Recipient address",
+      "testMailSend": "Send test email",
+      "testMailSent": "Test email sent successfully.",
+      "testMailNotConfigured": "The mail server is not configured yet.",
+      "testMailFailed": "The test email could not be sent: {{message}}"
+    },
+    "backupSettings": {
+      "title": "Backup schedule",
+      "intervalMode": "Interval",
+      "interval": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "cron": "Custom (cron expression)"
+      },
+      "cronExpression": "Cron expression",
+      "retentionCount": "Keep at most this many backups",
+      "retentionMaxAgeDays": "Delete backups older than (days)",
+      "saved": "Backup schedule saved."
+    },
+    "securitySettings": {
+      "title": "Brute-force protection",
+      "maxAttempts": "Max. failed attempts",
+      "windowMinutes": "Time window (minutes)",
+      "lockMinutes": "Lockout duration (minutes)",
+      "saved": "Security settings saved."
+    },
+    "logLevel": {
+      "title": "Log level",
+      "saved": "Log level saved."
     }
   },
   "errors": {

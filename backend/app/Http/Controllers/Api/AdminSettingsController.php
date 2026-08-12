@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Domain\Mail\MailStatusService;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 /**
@@ -53,7 +55,7 @@ class AdminSettingsController extends Controller
             'port' => ['required', 'integer'],
             'username' => ['nullable', 'string'],
             'password' => ['nullable', 'string'],
-            'encryption' => ['required', Rule::in(['ssl_tls', 'starttls'])],
+            'encryption' => ['required', Rule::in(['ssl_tls', 'starttls', 'none'])],
             'from_address' => ['required', 'email'],
             'from_name' => ['required', 'string'],
         ]);
@@ -63,6 +65,42 @@ class AdminSettingsController extends Controller
         }
 
         return response()->json(['healthy' => $this->mailStatus->isHealthy()]);
+    }
+
+    /**
+     * Sends a real test message through the currently *saved* mail
+     * configuration (briefing 12.2) so an admin can verify it end-to-end
+     * instead of only checking the reachability probe — a successful TCP
+     * handshake (isHealthy()) doesn't guarantee auth/from-address/relay
+     * rules are actually correct. Failures are surfaced with an error_code
+     * and logged with the client IP (Controller::logApiError()) rather than
+     * only the raw SMTP exception text.
+     */
+    public function testMail(Request $request)
+    {
+        $data = $request->validate(['to' => ['required', 'email']]);
+
+        if (! $this->mailStatus->isConfigured()) {
+            return $this->mailError($request, 'not_configured', 'The mail server is not configured yet.');
+        }
+
+        try {
+            Mail::raw(
+                "This is a test message from MedInv, sent to verify the configured mail server.\n\nIf you received this, outgoing mail is working correctly.",
+                fn ($message) => $message->to($data['to'])->subject('MedInv — test message'),
+            );
+        } catch (\Throwable $e) {
+            return $this->mailError($request, 'mail_test_failed', $e->getMessage());
+        }
+
+        return response()->json(['sent' => true]);
+    }
+
+    private function mailError(Request $request, string $code, string $message): JsonResponse
+    {
+        $this->logApiError($request, $code, $message, 'error');
+
+        return response()->json(['error_code' => $code, 'message' => $message], 422);
     }
 
     public function updateBackup(Request $request)

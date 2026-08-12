@@ -41,10 +41,16 @@ class BackupController extends Controller
     /** @see BackupService::restore() for current implementation status. */
     public function restore(Request $request, Backup $backup)
     {
-        $data = $request->validate(['conflict_resolutions' => ['sometimes', 'array']]);
+        $data = $request->validate([
+            'conflict_resolutions' => ['sometimes', 'array'],
+            'restore_settings' => ['sometimes', 'boolean'],
+        ]);
 
-        return response()->json(
-            $this->backupService->restore($backup, $request->user(), $data['conflict_resolutions'] ?? [])
-        );
+        return response()->json($this->backupService->restore(
+            $backup,
+            $request->user(),
+            $data['conflict_resolutions'] ?? [],
+            $data['restore_settings'] ?? false,
+        ));
     }
 }

@@ -30,13 +30,19 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
+            $encryption = SystemSetting::get('mail.encryption', 'starttls');
+
             config([
                 'mail.default' => 'smtp',
                 'mail.mailers.smtp.host' => $host,
                 'mail.mailers.smtp.port' => SystemSetting::get('mail.port'),
                 'mail.mailers.smtp.username' => SystemSetting::get('mail.username'),
                 'mail.mailers.smtp.password' => SystemSetting::get('mail.password'),
-                'mail.mailers.smtp.scheme' => SystemSetting::get('mail.encryption') === 'ssl_tls' ? 'smtps' : null,
+                'mail.mailers.smtp.scheme' => $encryption === 'ssl_tls' ? 'smtps' : null,
+                // 'none' (briefing 12.2) disables the opportunistic STARTTLS upgrade Symfony
+                // Mailer otherwise attempts on a plain 'smtp' scheme — see EsmtpTransportFactory,
+                // where auto_tls=false forces $tls=false instead of null (auto-negotiate).
+                'mail.mailers.smtp.auto_tls' => $encryption !== 'none',
                 'mail.from.address' => SystemSetting::get('mail.from_address'),
                 'mail.from.name' => SystemSetting::get('mail.from_name'),
             ]);

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ThemeProvider } from './theme/ThemeContext'
 import { AppLayout } from './layout/AppLayout'
@@ -11,7 +11,12 @@ import { LibraryDetailPage } from './pages/libraries/LibraryDetailPage'
 import { StatisticsPage } from './pages/statistics/StatisticsPage'
 import { SearchPage } from './pages/search/SearchPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
-import { AdminPage } from './pages/admin/AdminPage'
+import { AdminLayout } from './pages/admin/AdminLayout'
+import { UsersPage } from './pages/admin/UsersPage'
+import { PluginsPage } from './pages/admin/PluginsPage'
+import { BackupsPage } from './pages/admin/BackupsPage'
+import { MailPage } from './pages/admin/MailPage'
+import { SystemSettingsPage } from './pages/admin/SystemSettingsPage'
 
 /**
  * Route tree mirrors the sidebar/header structure in briefing 11.2.
@@ -38,7 +43,14 @@ function App() {
                 <Route path="search" element={<SearchPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route element={<RequireAdmin />}>
-                  <Route path="admin" element={<AdminPage />} />
+                  <Route path="admin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="users" replace />} />
+                    <Route path="users" element={<UsersPage />} />
+                    <Route path="plugins" element={<PluginsPage />} />
+                    <Route path="backups" element={<BackupsPage />} />
+                    <Route path="mail" element={<MailPage />} />
+                    <Route path="settings" element={<SystemSettingsPage />} />
+                  </Route>
                 </Route>
               </Route>
             </Route>

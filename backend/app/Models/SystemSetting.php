@@ -32,4 +32,16 @@ class SystemSetting extends Model
         static::query()->updateOrCreate(['key' => $key], ['value' => $value]);
         Cache::forget("system_setting:{$key}");
     }
+
+    /**
+     * All settings as a flat key => value array, for inclusion in
+     * exports/backups (see ExportImportService::exportLibraries()). Named
+     * `allAsArray` rather than overriding Eloquent's static `all()`, which
+     * returns a Collection of models, not the key-value shape callers here
+     * actually want.
+     */
+    public static function allAsArray(): array
+    {
+        return static::query()->pluck('value', 'key')->all();
+    }
 }

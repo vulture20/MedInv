@@ -31,13 +31,13 @@ class AuthController extends Controller
         ]);
 
         if ($this->bruteForce->isLocked($credentials['email'])) {
-            return $this->loginError('account_locked', 'Too many failed attempts. This account is temporarily locked.');
+            return $this->loginError($request, 'account_locked', 'Too many failed attempts. This account is temporarily locked.');
         }
 
         if (! Auth::attempt($credentials, remember: true)) {
             $this->bruteForce->recordFailure($credentials['email']);
 
-            return $this->loginError('invalid_credentials', 'Invalid credentials.');
+            return $this->loginError($request, 'invalid_credentials', 'Invalid credentials.');
         }
 
         /** @var User $user */
@@ -46,7 +46,7 @@ class AuthController extends Controller
         if (! $user->is_active) {
             Auth::logout();
 
-            return $this->loginError('account_deactivated', 'This account has been deactivated.');
+            return $this->loginError($request, 'account_deactivated', 'This account has been deactivated.');
         }
 
         $this->bruteForce->clearFailures($credentials['email']);
@@ -64,10 +64,14 @@ class AuthController extends Controller
      * ValidationException — the frontend maps `error_code` to a translated
      * string via i18n (errors.* keys) rather than pattern-matching on
      * `message`, which would break the moment this text changes or a
-     * non-English API consumer is added.
+     * non-English API consumer is added. Also logged with the client's IP
+     * (see Controller::logApiError()) so a failed-login report can be
+     * cross-checked against storage/logs/laravel.log.
      */
-    private function loginError(string $code, string $message): JsonResponse
+    private function loginError(Request $request, string $code, string $message): JsonResponse
     {
+        $this->logApiError($request, $code, $message);
+
         return response()->json(['error_code' => $code, 'message' => $message], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 

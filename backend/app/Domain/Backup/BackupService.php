@@ -103,9 +103,11 @@ class BackupService
      * 9.3 — POST from the admin UI, and MEDINV_RESTOREBACKUP evaluated in
      * docker/entrypoint.sh at container start (see AdminSettingsController
      * and console command Console\Commands\RestoreBackupOnBoot, not yet
-     * implemented).
+     * implemented). $restoreSettings is already threaded through from
+     * BackupController so it needs no further change once (a)/(b) land —
+     * see ExportImportService::importLibraries()'s $restoreSettings param.
      */
-    public function restore(Backup $backup, User $importingAs, array $conflictResolutions = []): array
+    public function restore(Backup $backup, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
     {
         throw new \RuntimeException('Not yet implemented — see method docblock.');
     }

@@ -125,6 +125,26 @@ a {
   padding: 1.5rem;
 }
 
+/* Admin sub-navigation (briefing 15.), one tab per admin/*Page.tsx. */
+.admin-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-tabs a {
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  color: var(--color-text);
+  border-bottom: 2px solid transparent;
+}
+
+.admin-tabs a.active {
+  border-bottom-color: var(--color-accent);
+  font-weight: 600;
+}
+
 .app-shell__footer {
   display: flex;
   justify-content: center;

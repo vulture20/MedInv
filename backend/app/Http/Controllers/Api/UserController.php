@@ -41,7 +41,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         if ($user->is_protected) {
-            return $this->protectedAccountResponse('edited');
+            return $this->protectedAccountResponse($request, 'edited');
         }
 
         $data = $request->validate([
@@ -56,10 +56,10 @@ class UserController extends Controller
     }
 
     /** Deactivates without deleting (briefing 4.1) — login becomes impossible, history is kept. See destroy() to actually remove the account. */
-    public function deactivate(User $user)
+    public function deactivate(Request $request, User $user)
     {
         if ($user->is_protected) {
-            return $this->protectedAccountResponse('deactivated');
+            return $this->protectedAccountResponse($request, 'deactivated');
         }
 
         $user->update(['is_active' => false]);
@@ -79,10 +79,10 @@ class UserController extends Controller
      * predefined admin (is_protected, see DatabaseSeeder) is exempt so an
      * install can never be left without any admin account.
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         if ($user->is_protected) {
-            return $this->protectedAccountResponse('deleted');
+            return $this->protectedAccountResponse($request, 'deleted');
         }
 
         $user->delete();
@@ -95,13 +95,17 @@ class UserController extends Controller
      * admin account (edit, deactivate, delete). Uses an error_code rather
      * than only an English message, per CLAUDE.md's "API errors carry a
      * machine-readable error_code" convention — the frontend maps this to
-     * one translated string regardless of which action was attempted.
+     * one translated string regardless of which action was attempted. Also
+     * logged with the requesting client's IP (Controller::logApiError()).
      */
-    private function protectedAccountResponse(string $action): JsonResponse
+    private function protectedAccountResponse(Request $request, string $action): JsonResponse
     {
+        $message = "This account cannot be {$action}.";
+        $this->logApiError($request, 'protected_account', $message);
+
         return response()->json([
             'error_code' => 'protected_account',
-            'message' => "This account cannot be {$action}.",
+            'message' => $message,
         ], 422);
     }
 }
