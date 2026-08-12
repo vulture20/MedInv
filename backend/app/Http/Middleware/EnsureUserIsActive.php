@@ -28,7 +28,13 @@ class EnsureUserIsActive
             // via the 403 below already prevents this and any further request from
             // reaching the route; a stateless per-request guard has nothing to "log
             // out" of the way a session guard would.
-            return response()->json(['message' => 'Account is deactivated.'], 403);
+            // Same error_code an admin deactivating an account mid-session should be
+            // handled identically to being rejected at login (AuthController::login()
+            // uses the same 'account_deactivated' code) — see CLAUDE.md's "API errors
+            // carry a machine-readable error_code" convention. The frontend's response
+            // interceptor (api/client.ts) relies on this exact code rather than
+            // pattern-matching the English message, per GitHub issue #5.
+            return response()->json(['error_code' => 'account_deactivated', 'message' => 'Account is deactivated.'], 403);
         }
 
         return $next($request);

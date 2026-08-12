@@ -20,7 +20,8 @@
     "password": "Passwort",
     "submit": "Anmelden",
     "mailServerWarning": "Der Mailserver ist nicht erreichbar oder falsch konfiguriert. Die Passwort-Zurücksetzen-Funktion ist deaktiviert.",
-    "forgotPassword": "Passwort vergessen?"
+    "forgotPassword": "Passwort vergessen?",
+    "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
   },
   "userMenu": {
     "settings": "Benutzerdefinierte Einstellungen",

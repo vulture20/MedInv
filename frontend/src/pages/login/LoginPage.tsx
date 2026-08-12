@@ -19,7 +19,7 @@ const KNOWN_ERROR_CODES = ['invalid_credentials', 'account_locked', 'account_dea
  */
 export function LoginPage() {
   const { t } = useTranslation()
-  const { user, mailServerHealthy, login } = useAuth()
+  const { user, mailServerHealthy, login, sessionEndReason } = useAuth()
   const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -67,6 +67,15 @@ export function LoginPage() {
 
         {user && !mailServerHealthy && (
           <p className="warning warning--danger">{t('login.mailServerWarning')}</p>
+        )}
+        {/* Set by AuthContext when apiClient's interceptor sees a 401 (session
+            expired) or a 403 account_deactivated (briefing 4.1) on some other
+            request — see authEvents.ts. Cleared automatically on the next
+            successful login. */}
+        {!error && sessionEndReason && (
+          <p className="warning warning--danger">
+            {sessionEndReason === 'account_deactivated' ? t('errors.account_deactivated') : t('login.sessionExpired')}
+          </p>
         )}
         {error && <p className="warning warning--danger">{error}</p>}
 

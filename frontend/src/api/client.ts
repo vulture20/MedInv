@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios, { isAxiosError } from 'axios'
+import { notifySessionEnded } from './authEvents'
 
 /**
  * Backend base URL. The Laravel API lives at API_BASE + '/api/*'; the
@@ -28,12 +29,29 @@ export async function fetchCsrfCookie(): Promise<void> {
 }
 
 /**
- * TODO: a 401 here (session expired) should redirect to /login; a 403 with
- * `message: "Account is deactivated."` (briefing 4.1) should show a
- * dedicated notice instead of the generic error toast. Wire both up once
- * the app shell has a global toast/redirect mechanism.
+ * 401 (session expired — Sanctum rejected the cookie, e.g. it timed out or
+ * was invalidated server-side) and 403 with error_code `account_deactivated`
+ * (EnsureUserIsActive middleware — an admin deactivated this account
+ * mid-session, briefing 4.1) both mean the current session is over and no
+ * further request will succeed until a fresh login. Rather than a global
+ * toast (there isn't one — see notifySessionEnded()'s docblock),
+ * AuthContext reacts by clearing `user`, which RequireAuth already turns
+ * into a redirect to /login on its own; LoginPage reads *why* from
+ * useAuth().sessionEndReason to show a specific message instead of the
+ * generic error every other failed request still falls back to.
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error),
+  (error) => {
+    if (isAxiosError(error) && error.response) {
+      const { status, data } = error.response
+      if (status === 401) {
+        notifySessionEnded('session_expired')
+      } else if (status === 403 && (data as { error_code?: string })?.error_code === 'account_deactivated') {
+        notifySessionEnded('account_deactivated')
+      }
+    }
+
+    return Promise.reject(error)
+  },
 )

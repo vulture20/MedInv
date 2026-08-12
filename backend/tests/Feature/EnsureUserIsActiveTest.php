@@ -26,6 +26,6 @@ class EnsureUserIsActiveTest extends TestCase
         $response = $this->getJson('/api/me');
 
         $response->assertStatus(403);
-        $response->assertJson(['message' => 'Account is deactivated.']);
+        $response->assertJson(['error_code' => 'account_deactivated', 'message' => 'Account is deactivated.']);
     }
 }

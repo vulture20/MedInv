@@ -20,7 +20,8 @@
     "password": "Password",
     "submit": "Sign in",
     "mailServerWarning": "The mail server is unreachable or misconfigured. Password reset is disabled.",
-    "forgotPassword": "Forgot your password?"
+    "forgotPassword": "Forgot your password?",
+    "sessionExpired": "Your session has expired. Please sign in again."
   },
   "userMenu": {
     "settings": "Custom settings",

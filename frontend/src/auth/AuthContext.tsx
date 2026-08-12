@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { apiClient, fetchCsrfCookie } from '../api/client'
+import { onSessionEnded, type SessionEndReason } from '../api/authEvents'
 
 /** Mirrors backend/app/Models/User.php's fillable/visible fields. */
 export interface User {
@@ -27,6 +28,16 @@ interface AuthContextValue {
    * whenever this session last logged in or loaded.
    */
   refreshMailStatus: () => Promise<void>
+  /**
+   * Why the session just ended, if it was cut short mid-use rather than an
+   * ordinary logout — set from apiClient's response interceptor via
+   * authEvents.ts on a 401 (session expired) or a 403 `account_deactivated`
+   * (briefing 4.1, GitHub issue #5). `null` otherwise, including the normal
+   * "was never logged in" case. LoginPage reads this to show a specific
+   * message and clears it via clearSessionEndReason() once shown.
+   */
+  sessionEndReason: SessionEndReason | null
+  clearSessionEndReason: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -35,6 +46,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [mailServerHealthy, setMailServerHealthy] = useState(true)
   const [loading, setLoading] = useState(true)
+  const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null)
+
+  const clearSessionEndReason = useCallback(() => setSessionEndReason(null), [])
+
+  useEffect(() => {
+    // Only surfaces the message when a *known* session was cut short — reads
+    // the current user via the functional setUser form (rather than closing
+    // over `user`) so this effect can register once on mount instead of
+    // re-subscribing on every login/logout. An anonymous visitor's very
+    // first (expected) 401 from the initial /me check below must NOT show
+    // "your session expired": there never was one.
+    return onSessionEnded((reason) => {
+      setUser((current) => {
+        if (current) setSessionEndReason(reason)
+
+        return null
+      })
+    })
+  }, [])
 
   const refresh = useCallback(async () => {
     try {
@@ -70,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     setUser(data.user)
     setMailServerHealthy(data.mail_server_healthy)
+    setSessionEndReason(null)
   }, [])
 
   const logout = useCallback(async () => {
@@ -78,7 +109,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, mailServerHealthy, loading, login, logout, refreshMailStatus }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        mailServerHealthy,
+        loading,
+        login,
+        logout,
+        refreshMailStatus,
+        sessionEndReason,
+        clearSessionEndReason,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
