@@ -5,7 +5,6 @@ namespace App\Domain\Security;
 use App\Models\LoginAttempt;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Request as RequestFacade;
-use Illuminate\Support\Str;
 
 /**
  * Login throttle per briefing 12.4: default 6 failures within 5 minutes
@@ -65,22 +64,19 @@ class BruteForceProtection
     }
 
     /**
-     * TODO: replace with proper CIDR range matching once MEDINV_TRUSTEDIP's
-     * exact accepted format (single IP, CIDR block, comma list, ...) is
-     * finalized (briefing 12.4 / 16.). Currently supports a single IP or a
-     * `*`-wildcard pattern only.
+     * MEDINV_TRUSTEDIP (briefing 12.4/16.): a comma-separated list of bare
+     * IPv4/IPv6 addresses and/or CIDR blocks, e.g.
+     * "10.0.0.5, 192.168.1.0/24, ::1" — see CidrMatcher for the matching
+     * logic itself.
      */
     private function requestFromTrustedIp(): bool
     {
-        $trustedRange = env('MEDINV_TRUSTEDIP');
+        $trustedRanges = env('MEDINV_TRUSTEDIP');
 
-        if (! $trustedRange) {
+        if (! $trustedRanges) {
             return false;
         }
 
-        return Str::isMatch(
-            '/^'.str_replace(['.', '*'], ['\.', '.*'], $trustedRange).'$/',
-            (string) RequestFacade::ip(),
-        );
+        return CidrMatcher::matchesAny((string) RequestFacade::ip(), $trustedRanges);
     }
 }
