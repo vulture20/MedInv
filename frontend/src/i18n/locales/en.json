@@ -68,7 +68,17 @@
   "statistics": {
     "title": "Statistics",
     "itemCount": "Item count",
-    "totalValue": "Total value"
+    "totalValue": "Total value",
+    "dimension": {
+      "genre": "Genre",
+      "language": "Language",
+      "publisher": "Publisher",
+      "artist": "Artist",
+      "director": "Director",
+      "year": "Publication year"
+    },
+    "moreCount": "+{{count}} more",
+    "noDistributions": "No distribution data available."
   },
   "settings": {
     "template": {

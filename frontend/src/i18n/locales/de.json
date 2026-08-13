@@ -68,7 +68,17 @@
   "statistics": {
     "title": "Statistiken",
     "itemCount": "Bestand",
-    "totalValue": "Gesamtwert"
+    "totalValue": "Gesamtwert",
+    "dimension": {
+      "genre": "Genre",
+      "language": "Sprache",
+      "publisher": "Herausgeber",
+      "artist": "Künstler",
+      "director": "Regisseur",
+      "year": "Erscheinungsjahr"
+    },
+    "moreCount": "+{{count}} weitere",
+    "noDistributions": "Keine Verteilungsdaten vorhanden."
   },
   "settings": {
     "template": {
