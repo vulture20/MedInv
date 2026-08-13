@@ -88,13 +88,16 @@ export function LibraryDetailPage() {
             <li key={item.id}>
               {/* Opens MediaItemDetailDialog (view/edit/delete/move) below. */}
               <button type="button" className="media-item-list__row" onClick={() => setSelectedItem(item)}>
-                {/* Served through the API (MediaItemController::cover()), not a direct
-                    storage URL — see CoverDownloadService's docblock for why — so it
-                    needs the session cookie even cross-origin in local dev. */}
+                {/* The small generated thumbnail (MediaItemController::coverThumbnail()),
+                    not the full cover — this list can hold many rows, and CoverDownloadService
+                    already generates one alongside every stored cover for exactly this.
+                    Served through the API, not a direct storage URL — see
+                    CoverDownloadService's docblock for why — so it needs the session
+                    cookie even cross-origin in local dev. */}
                 {item.cover_path && (
                   <img
                     className="media-item-list__cover"
-                    src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
+                    src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover/thumbnail`}
                     crossOrigin="use-credentials"
                     alt=""
                   />

@@ -2,29 +2,42 @@
 
 namespace App\Domain\Metadata;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
- * Downloads a chosen candidate's cover image (briefing 8.3 step 5) and
- * stores it locally instead of just remembering the external URL — the
- * whole point being independence from the source provider staying up and
- * that URL staying valid (see GitHub issue #6). Stored on the `local` disk
- * (storage/app/private/covers/...), not the conventional `public` disk:
- * this project's single-port Docker deployment only proxies /api and
- * /sanctum to php-fpm (see CLAUDE.md's "Two apps, one deployable image"
- * section) — nginx never serves Laravel's public/storage symlink at all —
- * so covers are served back through MediaItemController::cover() instead
- * of a direct storage URL, same as how backups are downloaded through
+ * Cover image storage: downloading a chosen metadata candidate's cover
+ * (briefing 8.3 step 5, GitHub issue #6), manually uploading one from the
+ * media item detail dialog, and deleting one — plus generating the
+ * thumbnail every stored cover gets alongside it, used by the library
+ * item-list view instead of shipping the full-size image to every row.
+ * Stored on the `local` disk (storage/app/private/covers/...), not the
+ * conventional `public` disk: this project's single-port Docker deployment
+ * only proxies /api and /sanctum to php-fpm (see CLAUDE.md's "Two apps,
+ * one deployable image" section) — nginx never serves Laravel's
+ * public/storage symlink at all — so covers are served back through
+ * MediaItemController::cover()/coverThumbnail() instead of a direct
+ * storage URL, same as how backups are downloaded through
  * BackupController::download() rather than a public link.
+ *
+ * The thumbnail's path is deliberately *derived* from `cover_path`
+ * (thumbnailPath()) rather than stored as its own database column —
+ * `cover_path` already fully determines where a thumbnail lives, so a
+ * second column would just be a second, potentially-diverging source of
+ * truth for the same fact. This is also why the two files always travel
+ * together in store()/delete() rather than needing separate bookkeeping.
  */
 class CoverDownloadService
 {
     private const MAX_BYTES = 5 * 1024 * 1024;
 
     private const DIR = 'covers';
+
+    /** Longest side a thumbnail is scaled down to, preserving aspect ratio; never upscaled past the original. */
+    private const THUMBNAIL_MAX_DIMENSION = 160;
 
     /**
      * @return string|null The relative path to store as the item's `cover_path`,
@@ -50,15 +63,61 @@ class CoverDownloadService
             return null;
         }
 
-        $body = $response->body();
+        return $this->store($response->body(), $mediaType, $ean);
+    }
 
+    /**
+     * Manual cover upload (media item detail dialog's "upload cover"
+     * action). Laravel's `image`/`max` validation rules already ran at the
+     * controller boundary before this is called — store()'s own
+     * getimagesizefromstring() re-check below is defense in depth, not the
+     * only check, same paranoid stance download() already takes toward a
+     * remote server's claimed Content-Type.
+     */
+    public function uploadFromFile(UploadedFile $file, string $mediaType, string $ean): ?string
+    {
+        $contents = $file->get();
+
+        return $contents === false ? null : $this->store($contents, $mediaType, $ean);
+    }
+
+    /**
+     * Deletes a cover and its thumbnail from disk (media item detail
+     * dialog's "remove cover" action, cover replacement, and media item
+     * deletion — see MediaItemController::destroy()/uploadCover()/
+     * deleteCover()). Tolerates an already-missing file/null path so it's
+     * always safe to call, the same trade-off BackupService::delete() makes
+     * for its own Storage::delete() call.
+     */
+    public function delete(?string $coverPath): void
+    {
+        if ($coverPath === null) {
+            return;
+        }
+
+        Storage::disk('local')->delete([$coverPath, $this->thumbnailPath($coverPath)]);
+    }
+
+    /** Pure path derivation, no I/O — see this class's docblock for why there's no separate `thumbnail_path` column. */
+    public function thumbnailPath(string $coverPath): string
+    {
+        return dirname($coverPath).'/thumb_'.basename($coverPath);
+    }
+
+    /**
+     * Validates raw image bytes (regardless of source — a remote HTTP
+     * response or an uploaded file), stores the original under a
+     * randomized filename, and generates+stores its thumbnail alongside it.
+     */
+    private function store(string $body, string $mediaType, string $ean): ?string
+    {
         if ($body === '' || strlen($body) > self::MAX_BYTES) {
             return null;
         }
 
-        // Validated by actually decoding the image header rather than trusting the
-        // response's Content-Type — a misconfigured or malicious server could claim
-        // anything there.
+        // Validated by actually decoding the image header rather than trusting a
+        // claimed Content-Type/extension — a misconfigured or malicious source
+        // could claim anything there.
         $imageInfo = @getimagesizefromstring($body);
 
         if ($imageInfo === false) {
@@ -70,7 +129,70 @@ class CoverDownloadService
         $path = self::DIR."/{$mediaType}/{$filename}";
 
         Storage::disk('local')->put($path, $body);
+        $this->generateThumbnail($body, $imageInfo, $this->thumbnailPath($path));
 
         return $path;
+    }
+
+    /**
+     * Best-effort: a thumbnail that fails to generate (corrupt-but-valid-
+     * enough-for-getimagesizefromstring image, GD out of memory on a huge
+     * image, ...) must not fail the whole upload/download — the original
+     * cover was already stored above, and MediaItemController::
+     * coverThumbnail() falls back to serving the full image when no
+     * thumbnail file exists.
+     */
+    private function generateThumbnail(string $body, array $imageInfo, string $thumbnailPath): void
+    {
+        try {
+            $source = @imagecreatefromstring($body);
+
+            if ($source === false) {
+                return;
+            }
+
+            [$width, $height, $type] = $imageInfo;
+            $scale = min(1, self::THUMBNAIL_MAX_DIMENSION / max($width, $height));
+            $thumbWidth = max(1, (int) round($width * $scale));
+            $thumbHeight = max(1, (int) round($height * $scale));
+
+            $thumb = imagecreatetruecolor($thumbWidth, $thumbHeight);
+            // Preserve transparency (PNG/GIF/WEBP) instead of it turning solid black —
+            // imagecopyresampled() otherwise composites onto whatever the destination's
+            // default fill is.
+            imagealphablending($thumb, false);
+            imagesavealpha($thumb, true);
+            $transparent = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
+            imagefilledrectangle($thumb, 0, 0, $thumbWidth, $thumbHeight, $transparent);
+
+            imagecopyresampled($thumb, $source, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $width, $height);
+            imagedestroy($source);
+
+            $encoded = $this->encode($thumb, $type);
+            imagedestroy($thumb);
+
+            if ($encoded !== null) {
+                Storage::disk('local')->put($thumbnailPath, $encoded);
+            }
+        } catch (\Throwable $e) {
+            Log::info('Thumbnail generation failed.', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /** Encodes to the same format as the source image where GD supports it, JPEG otherwise. */
+    private function encode(\GdImage $image, int $imageType): ?string
+    {
+        ob_start();
+
+        $written = match ($imageType) {
+            IMAGETYPE_PNG => imagepng($image, quality: 6),
+            IMAGETYPE_GIF => imagegif($image),
+            IMAGETYPE_WEBP => function_exists('imagewebp') ? imagewebp($image) : imagejpeg($image, quality: 82),
+            default => imagejpeg($image, quality: 82),
+        };
+
+        $contents = ob_get_clean();
+
+        return $written ? $contents : null;
     }
 }

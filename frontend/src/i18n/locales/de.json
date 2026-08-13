@@ -48,6 +48,9 @@
     "moveToLibrary": "In Bibliothek verschieben",
     "selectLibrary": "Bibliothek auswählen…",
     "move": "Verschieben",
+    "uploadCover": "Cover hochladen",
+    "removeCover": "Cover entfernen",
+    "confirmRemoveCover": "Cover entfernen? Dies kann nicht rückgängig gemacht werden.",
     "fields": {
       "title": "Titel",
       "ean": "EAN",

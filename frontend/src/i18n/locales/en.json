@@ -48,6 +48,9 @@
     "moveToLibrary": "Move to library",
     "selectLibrary": "Select a library…",
     "move": "Move",
+    "uploadCover": "Upload cover",
+    "removeCover": "Remove cover",
+    "confirmRemoveCover": "Remove the cover? This cannot be undone.",
     "fields": {
       "title": "Title",
       "ean": "EAN",

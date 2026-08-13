@@ -204,6 +204,33 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     }
   }
 
+  async function uploadCover(file: File | undefined) {
+    if (!item || !file) return
+    setError(null)
+    const form = new FormData()
+    form.append('cover', file)
+    try {
+      const { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items/${item.id}/cover`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      onUpdated(data)
+    } catch (err) {
+      setError(describeSaveError(err))
+    }
+  }
+
+  async function removeCover() {
+    if (!item) return
+    if (!window.confirm(t('mediaItem.confirmRemoveCover'))) return
+    setError(null)
+    try {
+      const { data } = await apiClient.delete<MediaItem>(`/libraries/${library.id}/items/${item.id}/cover`)
+      onUpdated(data)
+    } catch (err) {
+      setError(describeSaveError(err))
+    }
+  }
+
   return (
     <dialog ref={dialogRef} onClose={onClose} className="media-item-dialog">
       {item && (
@@ -218,6 +245,27 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
               crossOrigin="use-credentials"
               alt=""
             />
+          )}
+
+          {editing && canWrite && (
+            <div className="media-item-dialog__cover-actions">
+              <label className="media-item-dialog__cover-upload-label">
+                {t('mediaItem.uploadCover')}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    void uploadCover(e.target.files?.[0])
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+              {item.cover_path && (
+                <button type="button" onClick={() => void removeCover()}>
+                  {t('mediaItem.removeCover')}
+                </button>
+              )}
+            </div>
           )}
 
           {editing ? (
