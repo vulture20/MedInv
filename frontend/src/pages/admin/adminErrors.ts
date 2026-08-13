@@ -18,8 +18,14 @@ import { isAxiosError } from 'axios'
 export function describeError(err: unknown, t: TFunction): string {
   if (!isAxiosError(err)) return t('errors.generic')
 
-  const data = err.response?.data as { error_code?: string; errors?: Record<string, string[]> } | undefined
+  const data = err.response?.data as
+    | { error_code?: string; errors?: Record<string, string[]>; libraries?: { id: number; name: string }[] }
+    | undefined
   if (data?.error_code === 'protected_account') return t('admin.errors.protected_account')
+  if (data?.error_code === 'owns_libraries') {
+    const names = (data.libraries ?? []).map((l) => l.name).join(', ')
+    return t('admin.errors.ownsLibraries', { libraries: names })
+  }
   if (data?.errors) {
     if (data.errors.password) return t('admin.errors.passwordPolicy')
 

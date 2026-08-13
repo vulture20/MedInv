@@ -53,6 +53,13 @@
       "add": "Add",
       "remove": "Remove",
       "saved": "Sharing settings saved."
+    },
+    "ownership": {
+      "title": "Ownership",
+      "hint": "Transfers this library, including all its shares, to another user.",
+      "selectUser": "Select a new owner…",
+      "transfer": "Transfer",
+      "confirm": "Transfer ownership of this library to \"{{name}}\"? You may lose access to it afterwards."
     }
   },
   "mediaItem": {
@@ -186,7 +193,8 @@
     },
     "errors": {
       "protected_account": "This is the predefined administrator account and cannot be edited, deactivated or deleted.",
-      "passwordPolicy": "The password must be at least 10 characters long and contain an uppercase letter, a lowercase letter, a digit and a special character."
+      "passwordPolicy": "The password must be at least 10 characters long and contain an uppercase letter, a lowercase letter, a digit and a special character.",
+      "ownsLibraries": "This account still owns the following libraries and cannot be deleted until they're transferred to another owner or deleted: {{libraries}}"
     },
     "mailSettings": {
       "host": "SMTP host",

@@ -59,6 +59,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::put('/libraries/{library}', [LibraryController::class, 'update']);
         Route::delete('/libraries/{library}', [LibraryController::class, 'destroy']);
         Route::put('/libraries/{library}/shares', [LibraryController::class, 'updateShares']);
+        Route::put('/libraries/{library}/owner', [LibraryController::class, 'transferOwnership']);
         // Share-target picker for updateShares() above — see UserController::shareable()'s docblock.
         Route::get('/users', [UserController::class, 'shareable']);
 

@@ -6,6 +6,7 @@ use App\Domain\Libraries\LibraryAccessService;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
 use App\Models\LibraryShare;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -67,6 +68,36 @@ class LibraryController extends Controller
         $library->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Transfers ownership of a library to another user (GitHub issue #34).
+     * Same permission rule as every other library-write action: the
+     * current owner or an admin — briefing 4.3 doesn't otherwise say who
+     * manages a library, and this is squarely that same "manage" bucket.
+     * The one thing this makes possible that update()/destroy() don't:
+     * moving a library out from under an account before deleting it (see
+     * UserController::destroy()'s rejection whenever the account still
+     * owns libraries, added alongside this).
+     */
+    public function transferOwnership(Request $request, Library $library)
+    {
+        abort_unless($this->access->canWrite($request->user(), $library), 403);
+
+        $data = $request->validate(['owner_id' => ['required', 'integer', Rule::exists('users', 'id')]]);
+
+        $newOwner = User::query()->findOrFail($data['owner_id']);
+
+        // A guest can't manage libraries at all (briefing 4.2) — making one the
+        // *owner* of a library would leave it with no one able to write to it
+        // except an admin.
+        if ($newOwner->isGuest()) {
+            throw ValidationException::withMessages(['owner_id' => 'The new owner cannot be a guest-level account.']);
+        }
+
+        $library->update(['owner_id' => $newOwner->id]);
+
+        return $library->load('owner:id,name', 'shares.user:id,name,email');
     }
 
     /** Replaces the full share list for a library (briefing 4.3). */

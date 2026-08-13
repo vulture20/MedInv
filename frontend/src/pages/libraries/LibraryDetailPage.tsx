@@ -77,6 +77,12 @@ export function LibraryDetailPage() {
   const [sharesSaved, setSharesSaved] = useState(false)
   const [sharesError, setSharesError] = useState<string | null>(null)
 
+  // Ownership transfer (GitHub issue #34) — reuses the same shareable-users
+  // list as sharing above; the picker only offers non-guest, non-self
+  // accounts, matching who's actually allowed to own a library.
+  const [newOwnerId, setNewOwnerId] = useState<number | ''>('')
+  const [ownerTransferError, setOwnerTransferError] = useState<string | null>(null)
+
   async function load() {
     setLoading(true)
     const [libraryRes, itemsRes, librariesRes, shareableUsersRes] = await Promise.all([
@@ -132,6 +138,25 @@ export function LibraryDetailPage() {
     if (!target) return
     setUserShares((prev) => [...prev, { user_id: target.id, name: target.name }])
     setAddUserId('')
+  }
+
+  async function transferOwnership() {
+    if (!library || newOwnerId === '') return
+    const target = shareableUsers.find((u) => u.id === newOwnerId)
+    if (!target) return
+    if (!window.confirm(t('libraries.ownership.confirm', { name: target.name }))) return
+    setOwnerTransferError(null)
+    try {
+      await apiClient.put(`/libraries/${library.id}/owner`, { owner_id: newOwnerId })
+      setNewOwnerId('')
+      // Re-fetches the library with its new owner — canManageShares below
+      // depends on it, so the sharing/ownership sections (and the item
+      // list, if the current user no longer has write access at all)
+      // reflect the change immediately rather than only after a manual reload.
+      await load()
+    } catch (err) {
+      setOwnerTransferError(describeError(err, t))
+    }
   }
 
   if (loading || !library) return <p>…</p>
@@ -205,6 +230,27 @@ export function LibraryDetailPage() {
             {sharesSaved && <p role="status">{t('libraries.sharing.saved')}</p>}
             {sharesError && <p role="alert">{sharesError}</p>}
           </form>
+        </section>
+      )}
+
+      {canManageShares && shareableUsers.length > 0 && (
+        <section>
+          <h2>{t('libraries.ownership.title')}</h2>
+          <p className="hint">{t('libraries.ownership.hint')}</p>
+          <p>
+            <select value={newOwnerId} onChange={(e) => setNewOwnerId(e.target.value ? Number(e.target.value) : '')}>
+              <option value="">{t('libraries.ownership.selectUser')}</option>
+              {shareableUsers.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>{' '}
+            <button type="button" disabled={newOwnerId === ''} onClick={() => void transferOwnership()}>
+              {t('libraries.ownership.transfer')}
+            </button>
+          </p>
+          {ownerTransferError && <p role="alert">{ownerTransferError}</p>}
         </section>
       )}
 

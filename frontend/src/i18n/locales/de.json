@@ -53,6 +53,13 @@
       "add": "Hinzufügen",
       "remove": "Entfernen",
       "saved": "Freigabe-Einstellungen gespeichert."
+    },
+    "ownership": {
+      "title": "Besitzer",
+      "hint": "Überträgt diese Bibliothek samt aller Freigaben auf einen anderen Benutzer.",
+      "selectUser": "Neuen Besitzer auswählen…",
+      "transfer": "Übertragen",
+      "confirm": "Besitz dieser Bibliothek an „{{name}}“ übertragen? Sie könnten danach den Zugriff darauf verlieren."
     }
   },
   "mediaItem": {
@@ -186,7 +193,8 @@
     },
     "errors": {
       "protected_account": "Dies ist das vordefinierte Administrator-Konto und kann nicht bearbeitet, deaktiviert oder gelöscht werden.",
-      "passwordPolicy": "Das Passwort muss mindestens 10 Zeichen lang sein und einen Großbuchstaben, einen Kleinbuchstaben, eine Ziffer und ein Sonderzeichen enthalten."
+      "passwordPolicy": "Das Passwort muss mindestens 10 Zeichen lang sein und einen Großbuchstaben, einen Kleinbuchstaben, eine Ziffer und ein Sonderzeichen enthalten.",
+      "ownsLibraries": "Dieses Konto besitzt noch folgende Bibliotheken und kann erst gelöscht werden, wenn diese übertragen oder gelöscht wurden: {{libraries}}"
     },
     "mailSettings": {
       "host": "SMTP-Host",
