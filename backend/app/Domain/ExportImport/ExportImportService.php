@@ -6,6 +6,7 @@ use App\Domain\Libraries\DuplicateEanException;
 use App\Domain\Libraries\MediaItemService;
 use App\Models\Library;
 use App\Models\LibraryShare;
+use App\Models\MetadataPlugin;
 use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -23,13 +24,17 @@ class ExportImportService
     /**
      * @param  int[]|null  $libraryIds  Null exports all libraries ("alle", briefing 9.1).
      * @param  bool  $includeUsers  Whether to also embed every user account (incl. hashed
-     *                              password) under `users`. Deliberately opt-in and off by
-     *                              default: an ordinary admin-initiated multi-library export
-     *                              to share with another instance (briefing 9.1) has no reason
-     *                              to leak every account's password hash. BackupService::create()
-     *                              is the one caller that passes true — a backup is meant to be
-     *                              a full snapshot of this instance, users included.
-     * @return array{format_version: int, exported_at: string, libraries: array, system_settings: array, users?: array}
+     *                              password) under `users`, and every metadata_plugins row
+     *                              (incl. provider config such as an API key, GitHub issue
+     *                              #29) under `metadata_plugins`. Deliberately opt-in and off
+     *                              by default: an ordinary admin-initiated multi-library
+     *                              export to share with another instance (briefing 9.1) has
+     *                              no reason to leak either — a plugin's stored API key is
+     *                              exactly as sensitive as an account's password hash.
+     *                              BackupService::create() is the one caller that passes
+     *                              true — a backup is meant to be a full snapshot of this
+     *                              instance, both included.
+     * @return array{format_version: int, exported_at: string, libraries: array, system_settings: array, users?: array, metadata_plugins?: array}
      */
     public function exportLibraries(?array $libraryIds = null, bool $includeUsers = false): array
     {
@@ -77,6 +82,15 @@ class ExportImportService
                 'preferred_language' => $user->preferred_language,
                 'preferred_template' => $user->preferred_template,
             ])->all();
+
+            $data['metadata_plugins'] = MetadataPlugin::query()->get()->map(fn (MetadataPlugin $plugin) => [
+                'provider_key' => $plugin->provider_key,
+                'name' => $plugin->name,
+                'media_type' => $plugin->media_type,
+                'enabled' => $plugin->enabled,
+                'priority' => $plugin->priority,
+                'config' => $plugin->config,
+            ])->all();
         }
 
         return $data;
@@ -98,22 +112,24 @@ class ExportImportService
      *                                                      with no admin available to choose per-library, unlike
      *                                                      BackupController::restore()'s interactive admin-UI path.
      *                                                      Without `__default__`, an unlisted library is skipped.
-     * @param  bool  $restoreSettings  Whether to also apply $data['system_settings'] and
-     *                                 $data['users'] (present since exportLibraries() started
-     *                                 including them, the latter only when it was called with
-     *                                 includeUsers: true — i.e. from a backup) onto this
-     *                                 instance. Opt-in and defaulted to false: an ordinary
-     *                                 library import shouldn't silently overwrite the target's
-     *                                 mail/backup/security configuration or its user accounts.
-     *                                 Users are upserted by email — an existing account is
-     *                                 updated (attributes + password hash) rather than
-     *                                 duplicated, since a restore is meant to reinstate the
-     *                                 backed-up instance's state.
-     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[]}
+     * @param  bool  $restoreSettings  Whether to also apply $data['system_settings'],
+     *                                 $data['users'] and $data['metadata_plugins'] (present
+     *                                 since exportLibraries() started including them, the
+     *                                 latter two only when it was called with includeUsers:
+     *                                 true — i.e. from a backup) onto this instance. Opt-in
+     *                                 and defaulted to false: an ordinary library import
+     *                                 shouldn't silently overwrite the target's
+     *                                 mail/backup/security configuration, user accounts, or
+     *                                 metadata-provider settings (incl. API keys). Users and
+     *                                 metadata_plugins are both upserted (by email /
+     *                                 provider_key respectively) rather than duplicated, since
+     *                                 a restore is meant to reinstate the backed-up instance's
+     *                                 state.
+     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[], plugins_restored: string[]}
      */
     public function importLibraries(array $data, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
     {
-        $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [], 'settings_restored' => false, 'users_restored' => []];
+        $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [], 'settings_restored' => false, 'users_restored' => [], 'plugins_restored' => []];
 
         if (($conflictResolutions['__all__'] ?? null) === 'cancel') {
             return $result;
@@ -138,6 +154,19 @@ class ExportImportService
                     'preferred_template' => $userData['preferred_template'] ?? 'light',
                 ]);
                 $result['users_restored'][] = $userData['email'];
+            }
+        }
+
+        if ($restoreSettings && ! empty($data['metadata_plugins'])) {
+            foreach ($data['metadata_plugins'] as $pluginData) {
+                MetadataPlugin::query()->updateOrCreate(['provider_key' => $pluginData['provider_key']], [
+                    'name' => $pluginData['name'],
+                    'media_type' => $pluginData['media_type'],
+                    'enabled' => $pluginData['enabled'],
+                    'priority' => $pluginData['priority'] ?? 0,
+                    'config' => $pluginData['config'] ?? null,
+                ]);
+                $result['plugins_restored'][] = $pluginData['provider_key'];
             }
         }
 

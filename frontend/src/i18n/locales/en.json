@@ -199,8 +199,11 @@
       "saved": "Default language saved."
     },
     "pluginConfig": {
-      "label": "Configuration (JSON)",
-      "invalidJson": "Invalid JSON."
+      "settings": "Settings",
+      "noConfig": "No settings required.",
+      "fields": {
+        "api_key": "API Key"
+      }
     }
   },
   "passwordReset": {

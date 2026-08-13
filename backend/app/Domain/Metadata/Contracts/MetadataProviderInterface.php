@@ -41,4 +41,16 @@ interface MetadataProviderInterface
      * @return array<int, MetadataCandidate>
      */
     public function search(string $query): array;
+
+    /**
+     * Declares the admin-editable fields of this provider's
+     * metadata_plugins.config JSON blob (briefing 8.1/15., GitHub issue
+     * #29) so PluginsPage.tsx can render a real settings form instead of a
+     * raw JSON textarea. Most providers need no configuration at all (an
+     * API key, like UpcMdbProvider's, is the exception) and simply return
+     * an empty array.
+     *
+     * @return MetadataProviderConfigField[]
+     */
+    public function configFields(): array;
 }

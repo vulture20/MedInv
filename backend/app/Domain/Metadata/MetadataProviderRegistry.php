@@ -45,6 +45,23 @@ class MetadataProviderRegistry
         }
     }
 
+    /**
+     * Every registered provider's declared config fields (GitHub issue #29),
+     * keyed by provider_key — what MetadataController::plugins() attaches to
+     * each metadata_plugins row so PluginsPage.tsx can render a settings
+     * form per plugin without knowing provider shapes ahead of time.
+     *
+     * @return Collection<string, array>
+     */
+    public function configFieldsByProviderKey(): Collection
+    {
+        return collect(static::defaultProviders())
+            ->map(fn (string $class) => app($class))
+            ->mapWithKeys(fn (MetadataProviderInterface $provider) => [
+                $provider->key() => collect($provider->configFields())->map->toArray()->all(),
+            ]);
+    }
+
     /** Enabled provider instances for the given media type, ordered by admin-configured priority. */
     public function enabledProvidersFor(string $mediaType): Collection
     {

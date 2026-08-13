@@ -7,6 +7,7 @@ use App\Domain\Libraries\LibraryAccessService;
 use App\Domain\Libraries\MediaItemService;
 use App\Domain\Metadata\CoverDownloadService;
 use App\Domain\Metadata\MetadataImportService;
+use App\Domain\Metadata\MetadataProviderRegistry;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
 use App\Models\MetadataPlugin;
@@ -26,9 +27,16 @@ class MetadataController extends Controller
         private readonly MetadataImportService $importService,
         private readonly MediaItemService $mediaItemService,
         private readonly CoverDownloadService $coverDownloadService,
+        private readonly MetadataProviderRegistry $registry,
     ) {}
 
-    /** All admin-visible plugins, or only those enabled for a media type (briefing 15.). */
+    /**
+     * All admin-visible plugins, or only those enabled for a media type
+     * (briefing 15.). Each row carries a `config_fields` attribute (GitHub
+     * issue #29) — declared by the matching provider class, not stored in
+     * the database — so PluginsPage.tsx can render a settings form per
+     * plugin instead of a raw JSON textarea.
+     */
     public function plugins(Request $request)
     {
         $query = MetadataPlugin::query();
@@ -37,7 +45,13 @@ class MetadataController extends Controller
             $query->where('media_type', $mediaType);
         }
 
-        return $query->orderBy('priority')->get();
+        $configFields = $this->registry->configFieldsByProviderKey();
+
+        return $query->orderBy('priority')->get()->map(function (MetadataPlugin $plugin) use ($configFields) {
+            $plugin->setAttribute('config_fields', $configFields->get($plugin->provider_key, []));
+
+            return $plugin;
+        });
     }
 
     public function search(Request $request, Library $library)

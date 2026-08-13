@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { describeError } from './adminErrors'
+
+interface ConfigField {
+  key: string
+  /** 'password' is rendered as a masked input, for secrets like an API key. */
+  type: 'text' | 'password'
+  required: boolean
+}
 
 interface Plugin {
   id: number
@@ -11,32 +18,48 @@ interface Plugin {
   enabled: boolean
   priority: number
   config: Record<string, unknown> | null
+  /** Declared by the matching backend provider class (GitHub issue #29) — not stored, computed per request. */
+  config_fields: ConfigField[]
+}
+
+/**
+ * A config field's key (e.g. "api_key") only travels as a stable identifier
+ * from the backend (see MetadataProviderConfigField's docblock) — same
+ * precedent as Library.media_type. The display label is resolved here via
+ * i18n, falling back to a humanized version of the key itself so a new
+ * provider's field still renders something reasonable before anyone adds a
+ * translation for it.
+ */
+function fieldLabel(t: (key: string, opts?: Record<string, unknown>) => string, key: string): string {
+  const translated = t(`admin.pluginConfig.fields.${key}`, { defaultValue: '' })
+  if (translated) return translated
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 /**
  * Metadata source plugins (briefing 8.2/15.): enable/disable and reorder
  * (lower priority is tried first, see MetadataImportService). New
  * providers are registered backend-side in MetadataProviderRegistry —
- * this page only toggles/reorders what's already registered, it can't add
- * new provider classes.
+ * this page only toggles/reorders/configures what's already registered, it
+ * can't add new provider classes.
  *
- * `config` (e.g. UpcMdbProvider's required `api_key`) is edited here as raw
- * JSON rather than a per-provider form — the column is a deliberately
- * generic per-provider settings bag (see MetadataPlugin's docblock), and a
- * bespoke field-by-field UI would need to know each provider's config
- * shape ahead of time, which the admin API itself doesn't.
+ * Provider-specific settings (e.g. UpcMdbProvider's `api_key`, GitHub issue
+ * #29) are edited in a real per-plugin settings dialog, one input per field
+ * the provider declares via `configFields()` — rather than the raw JSON
+ * textarea this used to be, which required knowing the exact shape of
+ * `config` ahead of time.
  */
 export function PluginsPage() {
   const { t } = useTranslation()
   const [plugins, setPlugins] = useState<Plugin[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [configDrafts, setConfigDrafts] = useState<Record<number, string>>({})
-  const [configErrors, setConfigErrors] = useState<Record<number, string | null>>({})
+  const [editingPluginId, setEditingPluginId] = useState<number | null>(null)
+  const [formValues, setFormValues] = useState<Record<string, string>>({})
+  const dialogRef = useRef<HTMLDialogElement>(null)
 
   async function load() {
     const { data } = await apiClient.get<Plugin[]>('/metadata/plugins')
     setPlugins(data)
-    setConfigDrafts(Object.fromEntries(data.map((p) => [p.id, JSON.stringify(p.config ?? {}, null, 2)])))
   }
 
   useEffect(() => {
@@ -55,16 +78,29 @@ export function PluginsPage() {
     }
   }
 
-  function saveConfig(plugin: Plugin) {
-    const draft = configDrafts[plugin.id] ?? ''
-    try {
-      const config = JSON.parse(draft) as Record<string, unknown>
-      setConfigErrors((prev) => ({ ...prev, [plugin.id]: null }))
-      void update(plugin, { config })
-    } catch {
-      setConfigErrors((prev) => ({ ...prev, [plugin.id]: t('admin.pluginConfig.invalidJson') }))
-    }
+  function openSettings(plugin: Plugin) {
+    setEditingPluginId(plugin.id)
+    setFormValues(Object.fromEntries(plugin.config_fields.map((f) => [f.key, String(plugin.config?.[f.key] ?? '')])))
+    dialogRef.current?.showModal()
   }
+
+  function closeSettings() {
+    dialogRef.current?.close()
+    setEditingPluginId(null)
+  }
+
+  async function saveSettings(e: React.FormEvent) {
+    e.preventDefault()
+    const plugin = plugins.find((p) => p.id === editingPluginId)
+    if (!plugin) return
+    // Omit blanked-out fields rather than storing empty strings — leaves the
+    // field simply absent from `config`, same as it never having been set.
+    const config = Object.fromEntries(Object.entries(formValues).filter(([, value]) => value !== ''))
+    await update(plugin, { config })
+    closeSettings()
+  }
+
+  const editingPlugin = plugins.find((p) => p.id === editingPluginId) ?? null
 
   return (
     <section>
@@ -77,7 +113,7 @@ export function PluginsPage() {
             <th>{t('admin.table.mediaType')}</th>
             <th>{t('admin.table.priority')}</th>
             <th>{t('admin.table.enabled')}</th>
-            <th>{t('admin.pluginConfig.label')}</th>
+            <th>{t('admin.pluginConfig.settings')}</th>
           </tr>
         </thead>
         <tbody>
@@ -97,22 +133,43 @@ export function PluginsPage() {
                 <input type="checkbox" checked={p.enabled} onChange={(e) => void update(p, { enabled: e.target.checked })} />
               </td>
               <td>
-                <textarea
-                  rows={4}
-                  cols={30}
-                  value={configDrafts[p.id] ?? ''}
-                  onChange={(e) => setConfigDrafts((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                />
-                <br />
-                <button type="button" onClick={() => saveConfig(p)}>
-                  {t('admin.actions.save')}
-                </button>
-                {configErrors[p.id] && <p role="alert">{configErrors[p.id]}</p>}
+                {p.config_fields.length === 0 ? (
+                  <span className="plugin-config__none">{t('admin.pluginConfig.noConfig')}</span>
+                ) : (
+                  <button type="button" onClick={() => openSettings(p)}>
+                    {t('admin.pluginConfig.settings')}
+                  </button>
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <dialog ref={dialogRef} onClose={() => setEditingPluginId(null)} className="plugin-config-dialog">
+        {editingPlugin && (
+          <form onSubmit={(e) => void saveSettings(e)}>
+            <h3>{editingPlugin.name}</h3>
+            {editingPlugin.config_fields.map((field) => (
+              <label key={field.key}>
+                {fieldLabel(t, field.key)}
+                <input
+                  type={field.type}
+                  required={field.required}
+                  value={formValues[field.key] ?? ''}
+                  onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                />
+              </label>
+            ))}
+            <div className="plugin-config-dialog__actions">
+              <button type="submit">{t('admin.actions.save')}</button>
+              <button type="button" onClick={closeSettings}>
+                {t('admin.actions.cancel')}
+              </button>
+            </div>
+          </form>
+        )}
+      </dialog>
     </section>
   )
 }

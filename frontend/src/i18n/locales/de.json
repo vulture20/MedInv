@@ -199,8 +199,11 @@
       "saved": "Standardsprache gespeichert."
     },
     "pluginConfig": {
-      "label": "Konfiguration (JSON)",
-      "invalidJson": "Ungültiges JSON."
+      "settings": "Einstellungen",
+      "noConfig": "Keine Einstellungen erforderlich.",
+      "fields": {
+        "api_key": "API-Key"
+      }
     }
   },
   "passwordReset": {

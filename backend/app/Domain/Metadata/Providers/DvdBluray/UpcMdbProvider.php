@@ -3,6 +3,7 @@
 namespace App\Domain\Metadata\Providers\DvdBluray;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
+use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Facades\Http;
@@ -39,6 +40,13 @@ class UpcMdbProvider implements MetadataProviderInterface
     public function mediaType(): string
     {
         return 'dvd_bluray';
+    }
+
+    public function configFields(): array
+    {
+        return [
+            new MetadataProviderConfigField('api_key', type: 'password', required: true),
+        ];
     }
 
     /**

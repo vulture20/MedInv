@@ -30,6 +30,12 @@ class OpenLibraryProvider implements MetadataProviderInterface
         return 'book';
     }
 
+    /** Open Library's read API is free and unauthenticated — nothing to configure. */
+    public function configFields(): array
+    {
+        return [];
+    }
+
     public function lookupByCode(string $code): array
     {
         $response = Http::get('https://openlibrary.org/api/books', [

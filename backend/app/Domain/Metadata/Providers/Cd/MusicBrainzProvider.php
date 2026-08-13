@@ -28,6 +28,12 @@ class MusicBrainzProvider implements MetadataProviderInterface
         return 'cd';
     }
 
+    /** MusicBrainz's web service is free and unauthenticated — nothing to configure. */
+    public function configFields(): array
+    {
+        return [];
+    }
+
     public function lookupByCode(string $code): array
     {
         $response = Http::withHeaders(['User-Agent' => 'MedInv/1.0'])
