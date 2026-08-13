@@ -6,6 +6,7 @@ use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
+use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
@@ -29,7 +30,8 @@ class MetadataProviderRegistry
             HardcoverProvider::class,
             // TODO: AmazonBookProvider (briefing 8.2 — Buch)
             MusicBrainzProvider::class,
-            // TODO: AmazonCdProvider, DiscogsProvider (briefing 8.2 — CD)
+            DiscogsProvider::class,
+            // TODO: AmazonCdProvider (briefing 8.2 — CD)
             UpcMdbProvider::class,
             // TODO: AmazonDvdBlurayProvider, EmunationProvider (briefing 8.2 — DVD/Blu-ray)
         ];
