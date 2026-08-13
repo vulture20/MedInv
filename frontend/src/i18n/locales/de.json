@@ -52,7 +52,11 @@
     "duplicate": "Dieses Medium ist in dieser Bibliothek bereits vorhanden.",
     "noMatch": "Kein Metadaten-Treffer — bitte manuell anlegen.",
     "chooseCandidate": "Bitte wählen Sie einen Treffer oder lehnen Sie alle ab.",
-    "rejectAll": "Alle Treffer ablehnen"
+    "rejectAll": "Alle Treffer ablehnen",
+    "cameraScan": "Mit Kamera scannen",
+    "cameraClose": "Kamera schließen",
+    "cameraHint": "Barcode vor die Kamera halten.",
+    "cameraAccessError": "Kein Kamerazugriff möglich. Bitte Berechtigung erteilen oder eine EAN/ISBN manuell eingeben."
   },
   "search": {
     "placeholder": "Suche…",

@@ -338,3 +338,12 @@ td {
     background: rgba(0, 0, 0, 0.4);
   }
 }
+
+/* Camera-based barcode scanning (briefing 7.2, CameraScanner.tsx). */
+.camera-scanner__video {
+  display: block;
+  max-width: 100%;
+  width: 360px;
+  border-radius: 8px;
+  background: #000;
+}

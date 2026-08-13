@@ -1,6 +1,12 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
+
+// The barcode decoder (@zxing/library) is a heavy dependency (~800KB) that
+// most captures never touch — hardware-scanner and manual entry cover the
+// common case. Loaded on demand only once the camera is actually opened,
+// instead of adding that weight to every visit of this page.
+const CameraScanner = lazy(() => import('./CameraScanner').then((m) => ({ default: m.CameraScanner })))
 
 interface Library {
   id: number
@@ -22,15 +28,11 @@ interface ScanResult {
 }
 
 /**
- * Bulk capture (briefing 7.2). The hardware-scanner and camera paths both
- * funnel into `submitCode()` — a hardware scanner types the code into
- * `codeInput` followed by Enter (its native behavior), which submits the
- * form exactly like a manually typed EAN would; a camera integration would
- * call the same handler with its decoded result.
- *
- * TODO: actual camera-based barcode decoding (briefing 7.2) — needs a
- * getUserMedia + decoder library (e.g. ZXing) wired into a "Scan via
- * camera" button here; deliberately left out of this scaffold.
+ * Bulk capture (briefing 7.2). The hardware-scanner, manual-entry and
+ * camera paths all funnel into `scanCode()` — a hardware scanner types the
+ * code into `codeInput` followed by Enter (its native behavior), which
+ * submits the form exactly like a manually typed EAN would, and
+ * `CameraScanner` calls the exact same handler with its decoded result.
  */
 export function CapturePage() {
   const { t } = useTranslation()
@@ -39,6 +41,7 @@ export function CapturePage() {
   const [codeInput, setCodeInput] = useState('')
   const [results, setResults] = useState<ScanResult[]>([])
   const [file, setFile] = useState<File | null>(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
 
   useEffect(() => {
     void apiClient.get<Library[]>('/libraries').then(({ data }) => {
@@ -47,13 +50,17 @@ export function CapturePage() {
     })
   }, [])
 
-  async function submitCode(e: React.FormEvent) {
-    e.preventDefault()
-    if (!libraryId || !codeInput.trim()) return
+  async function scanCode(code: string) {
+    if (!libraryId || !code.trim()) return
     const { data } = await apiClient.post<ScanResult>(`/libraries/${libraryId}/capture/scan`, {
-      ean: codeInput.trim(),
+      ean: code.trim(),
     })
     setResults((prev) => [data, ...prev])
+  }
+
+  async function submitCode(e: React.FormEvent) {
+    e.preventDefault()
+    await scanCode(codeInput)
     setCodeInput('')
   }
 
@@ -106,6 +113,16 @@ export function CapturePage() {
         </label>
         <button type="submit">{t('capture.scan')}</button>
       </form>
+
+      {cameraOpen ? (
+        <Suspense fallback={<p>…</p>}>
+          <CameraScanner onDecode={(code) => void scanCode(code)} onClose={() => setCameraOpen(false)} />
+        </Suspense>
+      ) : (
+        <button type="button" onClick={() => setCameraOpen(true)}>
+          {t('capture.cameraScan')}
+        </button>
+      )}
 
       <form onSubmit={submitTextFile}>
         <label>

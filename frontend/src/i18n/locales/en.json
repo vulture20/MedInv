@@ -52,7 +52,11 @@
     "duplicate": "This item already exists in this library.",
     "noMatch": "No metadata match — add manually.",
     "chooseCandidate": "Please choose a match or reject all of them.",
-    "rejectAll": "Reject all matches"
+    "rejectAll": "Reject all matches",
+    "cameraScan": "Scan with camera",
+    "cameraClose": "Close camera",
+    "cameraHint": "Hold a barcode in front of the camera.",
+    "cameraAccessError": "Could not access the camera. Please grant permission or enter an EAN/ISBN manually."
   },
   "search": {
     "placeholder": "Search…",

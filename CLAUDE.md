@@ -93,7 +93,6 @@ Laravel 11+'s default `local` filesystem disk root is `storage/app/private` (`ba
 
 ## Known-incomplete areas (check before assuming something works)
 
-- Camera-based barcode scanning (briefing 7.2) is a `TODO` in `frontend/src/pages/capture/CapturePage.tsx` — only the hardware-scanner/manual-entry and text-file import paths are wired up.
 - `StatisticsService` returns per-library counts/value only; the genre/language/year/etc. distributions from briefing 14 are not implemented.
 - Most metadata provider plugins from briefing 8.2 (Hardcover, Amazon, Google Books, Discogs, Emunation.ch) don't exist yet — see `MetadataProviderRegistry::defaultProviders()`.
 - Additional UI templates/language packs beyond the shipped light/dark + de/en are a stated extension point (briefing 10./11.4) but there's no installable-plugin mechanism for them yet — templates are a hardcoded `'light'|'dark'` union.
