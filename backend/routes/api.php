@@ -68,6 +68,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('/libraries/{library}/items', [MediaItemController::class, 'store']);
         Route::put('/libraries/{library}/items/{item}', [MediaItemController::class, 'update']);
         Route::delete('/libraries/{library}/items/{item}', [MediaItemController::class, 'destroy']);
+        Route::post('/libraries/{library}/items/{item}/move', [MediaItemController::class, 'move']);
 
         Route::post('/libraries/{library}/capture/scan', [CaptureController::class, 'scan']);
         Route::post('/libraries/{library}/capture/textfile', [CaptureController::class, 'textFile']);

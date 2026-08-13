@@ -285,6 +285,124 @@ td {
   border-radius: 2px;
 }
 
+/* Each media item is a full-width, unstyled <button> (LibraryDetailPage.tsx)
+ * so the whole row is clickable to open MediaItemDetailDialog, while still
+ * looking like the plain row it replaced. */
+.media-item-list__row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.25rem 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.media-item-list__row:hover {
+  color: var(--color-accent);
+}
+
+/* Media item detail/edit/delete/move dialog (LibraryDetailPage.tsx,
+ * MediaItemDetailDialog.tsx) — same native-<dialog> theming approach as
+ * PluginsPage's settings dialog (GitHub issue #29). */
+.media-item-dialog {
+  width: min(32rem, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.media-item-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.media-item-dialog h3 {
+  margin-top: 0;
+}
+
+.media-item-dialog__cover {
+  display: block;
+  max-width: 8rem;
+  max-height: 11rem;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.media-item-dialog__details {
+  margin: 0;
+}
+
+.media-item-dialog__details dt {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+}
+
+.media-item-dialog__details dd {
+  margin: 0;
+}
+
+.media-item-dialog__row {
+  display: contents;
+}
+
+.media-item-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.media-item-dialog input,
+.media-item-dialog select,
+.media-item-dialog textarea {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.media-item-dialog textarea {
+  min-height: 4rem;
+  resize: vertical;
+}
+
+.media-item-dialog__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.media-item-dialog__delete {
+  color: var(--color-danger);
+}
+
+.media-item-dialog__move {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.media-item-dialog__move label {
+  flex: 1;
+  margin-bottom: 0;
+}
+
 .spinner {
   display: inline-block;
   width: 1.5rem;

@@ -43,6 +43,36 @@
       "dvd_bluray": "DVD/Blu-ray"
     }
   },
+  "mediaItem": {
+    "confirmDelete": "Delete “{{title}}”? This cannot be undone.",
+    "moveToLibrary": "Move to library",
+    "selectLibrary": "Select a library…",
+    "move": "Move",
+    "fields": {
+      "title": "Title",
+      "ean": "EAN",
+      "description": "Description",
+      "release_date": "Release date",
+      "price": "Price",
+      "authors": "Author(s)",
+      "format": "Format",
+      "genre": "Genre",
+      "page_count": "Page count",
+      "language": "Language",
+      "publisher": "Publisher",
+      "isbn10": "ISBN-10",
+      "isbn13": "ISBN-13",
+      "artist": "Artist",
+      "medium": "Medium",
+      "asin": "ASIN",
+      "disc_count": "Number of discs",
+      "languages": "Language(s)",
+      "cast": "Cast",
+      "director": "Director",
+      "production_year": "Production year",
+      "runtime_minutes": "Runtime (minutes)"
+    }
+  },
   "capture": {
     "title": "Capture",
     "single": "Single entry",

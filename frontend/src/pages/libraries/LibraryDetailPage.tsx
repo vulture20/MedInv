@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
 
 interface Library {
   id: number
@@ -9,17 +10,6 @@ interface Library {
   description: string | null
   media_type: 'book' | 'cd' | 'dvd_bluray'
   owner: { id: number; name: string }
-}
-
-/** Media item fields vary by media_type (briefing 6.) — only the ones shown here are read. */
-interface MediaItem {
-  id: number
-  title: string
-  ean: string
-  cover_path?: string | null
-  authors?: string | null
-  artist?: string | null
-  director?: string | null
 }
 
 interface Paginated<T> {
@@ -52,20 +42,29 @@ export function LibraryDetailPage() {
   const { id } = useParams<{ id: string }>()
   const [library, setLibrary] = useState<Library | null>(null)
   const [items, setItems] = useState<Paginated<MediaItem> | null>(null)
+  const [libraries, setLibraries] = useState<Library[]>([])
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
+  async function load() {
+    setLoading(true)
+    const [libraryRes, itemsRes, librariesRes] = await Promise.all([
+      apiClient.get<Library>(`/libraries/${id}`),
+      apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, { params: { page } }),
+      // Needed for the detail dialog's "move to another library" target list
+      // (only libraries visible to this user are returned to begin with).
+      apiClient.get<Library[]>('/libraries'),
+    ])
+    setLibrary(libraryRes.data)
+    setItems(itemsRes.data)
+    setLibraries(librariesRes.data)
+    setLoading(false)
+  }
+
   useEffect(() => {
-    void (async () => {
-      setLoading(true)
-      const [libraryRes, itemsRes] = await Promise.all([
-        apiClient.get<Library>(`/libraries/${id}`),
-        apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, { params: { page } }),
-      ])
-      setLibrary(libraryRes.data)
-      setItems(itemsRes.data)
-      setLoading(false)
-    })()
+    void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, page])
 
   if (loading || !library) return <p>…</p>
@@ -87,25 +86,47 @@ export function LibraryDetailPage() {
         <ul className="media-item-list">
           {items?.data.map((item) => (
             <li key={item.id}>
-              {/* Served through the API (MediaItemController::cover()), not a direct
-                  storage URL — see CoverDownloadService's docblock for why — so it
-                  needs the session cookie even cross-origin in local dev. */}
-              {item.cover_path && (
-                <img
-                  className="media-item-list__cover"
-                  src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
-                  crossOrigin="use-credentials"
-                  alt=""
-                />
-              )}
-              <strong>{item.title}</strong>
-              {subtitle(item, library.media_type) && <> — {subtitle(item, library.media_type)}</>}
-              {' — '}
-              {item.ean}
+              {/* Opens MediaItemDetailDialog (view/edit/delete/move) below. */}
+              <button type="button" className="media-item-list__row" onClick={() => setSelectedItem(item)}>
+                {/* Served through the API (MediaItemController::cover()), not a direct
+                    storage URL — see CoverDownloadService's docblock for why — so it
+                    needs the session cookie even cross-origin in local dev. */}
+                {item.cover_path && (
+                  <img
+                    className="media-item-list__cover"
+                    src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
+                    crossOrigin="use-credentials"
+                    alt=""
+                  />
+                )}
+                <strong>{item.title}</strong>
+                {subtitle(item, library.media_type) && <> — {subtitle(item, library.media_type)}</>}
+                {' — '}
+                {item.ean}
+              </button>
             </li>
           ))}
         </ul>
       )}
+
+      <MediaItemDetailDialog
+        library={library}
+        item={selectedItem}
+        libraries={libraries}
+        onClose={() => setSelectedItem(null)}
+        onUpdated={(updated) => {
+          setItems((prev) => (prev ? { ...prev, data: prev.data.map((i) => (i.id === updated.id ? updated : i)) } : prev))
+          setSelectedItem(updated)
+        }}
+        onDeleted={() => {
+          setItems((prev) => (prev ? { ...prev, data: prev.data.filter((i) => i.id !== selectedItem?.id), total: prev.total - 1 } : prev))
+          setSelectedItem(null)
+        }}
+        onMoved={() => {
+          setItems((prev) => (prev ? { ...prev, data: prev.data.filter((i) => i.id !== selectedItem?.id), total: prev.total - 1 } : prev))
+          setSelectedItem(null)
+        }}
+      />
 
       {items && items.last_page > 1 && (
         <p>

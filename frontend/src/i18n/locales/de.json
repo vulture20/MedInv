@@ -43,6 +43,36 @@
       "dvd_bluray": "DVD/Blu-ray"
     }
   },
+  "mediaItem": {
+    "confirmDelete": "„{{title}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+    "moveToLibrary": "In Bibliothek verschieben",
+    "selectLibrary": "Bibliothek auswählen…",
+    "move": "Verschieben",
+    "fields": {
+      "title": "Titel",
+      "ean": "EAN",
+      "description": "Beschreibung",
+      "release_date": "Erscheinungstermin",
+      "price": "Preis",
+      "authors": "Autor(en)",
+      "format": "Format",
+      "genre": "Genre",
+      "page_count": "Seitenzahl",
+      "language": "Sprache",
+      "publisher": "Herausgeber",
+      "isbn10": "ISBN-10",
+      "isbn13": "ISBN-13",
+      "artist": "Künstler",
+      "medium": "Medium",
+      "asin": "ASIN",
+      "disc_count": "Anzahl der Discs",
+      "languages": "Sprache(n)",
+      "cast": "Besetzung",
+      "director": "Regisseur",
+      "production_year": "Produktionsjahr",
+      "runtime_minutes": "Spieldauer (Minuten)"
+    }
+  },
   "capture": {
     "title": "Erfassung",
     "single": "Einzelerfassung",

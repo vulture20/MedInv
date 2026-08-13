@@ -84,8 +84,19 @@ class MediaItemController extends Controller
         // EAN changes go through the same duplicate check as creation would; simplest to
         // disallow here and require delete+recreate, since briefing 5.1 focuses on capture.
         unset($rules['ean']);
+        // Drop 'required' specifically (title is the only field that has it —
+        // everything else in rulesFor() already starts with 'nullable') rather
+        // than positionally slicing off index 0. array_slice($rule, 1) used to
+        // sit here and silently discarded whichever rule happened to come
+        // first — for every 'nullable' field (i.e. everything except title)
+        // that meant discarding 'nullable' itself, so PUTting an explicit
+        // `null` to clear an optional field (e.g. from the media item detail
+        // dialog's edit form) 422ed with "must be a string" instead of
+        // clearing it. Confirmed live against a running dev server while
+        // building that dialog — no prior UI ever sent an explicit null for
+        // these fields, so this had gone unnoticed.
         $data = $request->validate(array_map(
-            fn ($rule) => ['sometimes', ...array_slice($rule, 1)],
+            fn ($rule) => ['sometimes', ...array_values(array_diff($rule, ['required']))],
             $rules
         ));
 
@@ -101,6 +112,46 @@ class MediaItemController extends Controller
         $library->mediaItems()->findOrFail($item)->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Moves a media item into a different library (media item detail
+     * dialog's "move" action). Requires write access to *both* libraries —
+     * moving something out of a library the user doesn't own/administer
+     * would let them empty it out from under its actual owner, and moving
+     * into one they can't write to would bypass that library's own write
+     * protection entirely. Restricted to same-media_type libraries: the
+     * record's model class only fits one specific media_type's table (see
+     * MediaItemService::move()'s docblock), so this isn't just a policy
+     * choice.
+     */
+    public function move(Request $request, Library $library, int $item)
+    {
+        abort_unless($this->access->canWrite($request->user(), $library), 403);
+
+        $record = $library->mediaItems()->findOrFail($item);
+        $data = $request->validate([
+            'target_library_id' => ['required', 'integer', 'exists:'.(new Library)->getTable().',id'],
+        ]);
+
+        $target = Library::query()->findOrFail($data['target_library_id']);
+        abort_unless($this->access->canWrite($request->user(), $target), 403);
+
+        if ($target->id === $library->id) {
+            return response()->json(['error_code' => 'same_library', 'message' => 'Item is already in this library.'], 422);
+        }
+
+        if ($target->media_type !== $library->media_type) {
+            return response()->json(['error_code' => 'media_type_mismatch', 'message' => 'Target library has a different media type.'], 422);
+        }
+
+        try {
+            $this->mediaItemService->move($record, $target);
+        } catch (DuplicateEanException $e) {
+            return response()->json(['message' => $e->getMessage(), 'ean' => $e->ean], 409);
+        }
+
+        return $record->fresh();
     }
 
     private function rulesFor(string $mediaType): array

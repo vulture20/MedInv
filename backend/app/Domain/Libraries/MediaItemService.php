@@ -37,4 +37,37 @@ class MediaItemService
             'dvd_bluray' => MediaDvdBluray::class,
         };
     }
+
+    /**
+     * Re-parents a media item into a different library (media item detail
+     * dialog's "move" action). The two libraries' media_type must already
+     * match by the time this is called — the record's own class (MediaBook/
+     * MediaCd/MediaDvdBluray, per briefing 6.'s fixed-per-type table split)
+     * only ever fits one specific media_type's table, so moving it into a
+     * library of a different media_type isn't just disallowed by policy,
+     * it's structurally meaningless; the caller (MediaItemController::move())
+     * is responsible for that check plus the write-access checks on both
+     * libraries. The destination's own per-library duplicate-EAN rule (5.1)
+     * still applies here exactly as it does on create() — moving a book into
+     * a library that already holds a copy with the same EAN is rejected the
+     * same way a fresh capture of it would be.
+     *
+     * @throws DuplicateEanException
+     */
+    public function move(Model $item, Library $destination): void
+    {
+        $modelClass = $this->modelClassFor($destination->media_type);
+
+        $duplicateExists = $modelClass::query()
+            ->where('library_id', $destination->id)
+            ->where('ean', $item->ean)
+            ->where('id', '!=', $item->id)
+            ->exists();
+
+        if ($duplicateExists) {
+            throw new DuplicateEanException($item->ean);
+        }
+
+        $item->update(['library_id' => $destination->id]);
+    }
 }
