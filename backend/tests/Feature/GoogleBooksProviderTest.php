@@ -9,53 +9,110 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * GoogleBooksProvider (GitHub issue #20). Fixture shape follows the
- * documented Volumes API response (https://developers.google.com/books/docs/v1/using)
- * — a live fetch during implementation was blocked by the shared-quota 429
- * ("Quota exceeded ... consumer 'project_number:...'") this class's own
- * docblock explains, so unlike OpenLibraryProviderTest these fixtures are
- * schema-accurate but not themselves a live-captured response.
+ * GoogleBooksProvider (GitHub issue #20, plus a follow-up bug report
+ * against the same issue). The Murdoku fixtures below are trimmed copies
+ * of real, live-fetched responses for EAN/ISBN-13 9783742310026 — the
+ * search-by-ISBN endpoint (`?q=isbn:...`) omits `publisher` entirely (and
+ * always reports `pageCount: 0` rather than omitting the key) for this
+ * record, even though a dedicated by-ID GET (.../volumes/{id}) has
+ * `publisher`. Neither response has `description`/`categories`/
+ * `imageLinks` at all — confirmed live to be genuinely absent from
+ * Google's own catalog for this particular (sparsely-catalogued) title,
+ * not something either endpoint is hiding.
  */
 class GoogleBooksProviderTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const VOLUMES_API = 'https://www.googleapis.com/books/v1/volumes*';
+    private const SEARCH_API = 'https://www.googleapis.com/books/v1/volumes?*';
 
-    private function volumeResponse(): array
+    private const BY_ID_API = 'https://www.googleapis.com/books/v1/volumes/*';
+
+    /** Search-endpoint result for "Project Hail Mary" — this one already has full volumeInfo, unlike Murdoku below. */
+    private function hailMarySearchResponse(): array
+    {
+        return [
+            'kind' => 'books#volumes',
+            'totalItems' => 1,
+            'items' => [$this->hailMaryVolume()],
+        ];
+    }
+
+    private function hailMaryVolume(): array
+    {
+        return [
+            'id' => 'zyTCAlFPjgYC',
+            'volumeInfo' => [
+                'title' => 'Project Hail Mary',
+                'authors' => ['Andy Weir'],
+                'publisher' => 'Ballantine Books',
+                'publishedDate' => '2021-05-04',
+                'description' => 'A lone astronaut must save the earth from disaster.',
+                'industryIdentifiers' => [
+                    ['type' => 'ISBN_10', 'identifier' => '0593135202'],
+                    ['type' => 'ISBN_13', 'identifier' => '9780593135204'],
+                ],
+                'pageCount' => 496,
+                'categories' => ['Fiction'],
+                'language' => 'en',
+                'imageLinks' => [
+                    'smallThumbnail' => 'http://books.google.com/books/content?id=zyTCAlFPjgYC&img=1&zoom=5',
+                    'thumbnail' => 'http://books.google.com/books/content?id=zyTCAlFPjgYC&img=1&zoom=1',
+                ],
+            ],
+        ];
+    }
+
+    /** Real (trimmed) `?q=isbn:9783742310026` response — no `publisher`, `pageCount` is a literal 0. */
+    private function murdokuSearchResponse(): array
     {
         return [
             'kind' => 'books#volumes',
             'totalItems' => 1,
             'items' => [
                 [
-                    'id' => 'zyTCAlFPjgYC',
+                    'id' => 'w3jE0QEACAAJ',
                     'volumeInfo' => [
-                        'title' => 'Project Hail Mary',
-                        'authors' => ['Andy Weir'],
-                        'publisher' => 'Ballantine Books',
-                        'publishedDate' => '2021-05-04',
-                        'description' => 'A lone astronaut must save the earth from disaster.',
+                        'title' => 'Murdoku',
+                        'authors' => ['Manuel Garand'],
+                        'publishedDate' => '2026',
                         'industryIdentifiers' => [
-                            ['type' => 'ISBN_10', 'identifier' => '0593135202'],
-                            ['type' => 'ISBN_13', 'identifier' => '9780593135204'],
+                            ['type' => 'ISBN_10', 'identifier' => '374231002X'],
+                            ['type' => 'ISBN_13', 'identifier' => '9783742310026'],
                         ],
-                        'pageCount' => 496,
-                        'categories' => ['Fiction'],
-                        'language' => 'en',
-                        'imageLinks' => [
-                            'smallThumbnail' => 'http://books.google.com/books/content?id=zyTCAlFPjgYC&img=1&zoom=5',
-                            'thumbnail' => 'http://books.google.com/books/content?id=zyTCAlFPjgYC&img=1&zoom=1',
-                        ],
+                        'pageCount' => 0,
+                        'language' => 'de',
                     ],
                 ],
             ],
         ];
     }
 
+    /** Real (trimmed) `.../v1/volumes/w3jE0QEACAAJ` response for the same book — has `publisher`, but still no `pageCount`/`description`/`categories`/`imageLinks`. */
+    private function murdokuVolumeResponse(): array
+    {
+        return [
+            'id' => 'w3jE0QEACAAJ',
+            'volumeInfo' => [
+                'title' => 'Murdoku',
+                'authors' => ['Manuel Garand'],
+                'publisher' => 'riva',
+                'publishedDate' => '2026',
+                'industryIdentifiers' => [
+                    ['type' => 'ISBN_10', 'identifier' => '374231002X'],
+                    ['type' => 'ISBN_13', 'identifier' => '9783742310026'],
+                ],
+                'language' => 'de',
+            ],
+        ];
+    }
+
     public function test_lookup_by_code_maps_the_first_item_to_a_candidate(): void
     {
-        Http::fake([self::VOLUMES_API => Http::response($this->volumeResponse(), 200)]);
+        Http::fake([
+            self::BY_ID_API => Http::response($this->hailMaryVolume(), 200),
+            self::SEARCH_API => Http::response($this->hailMarySearchResponse(), 200),
+        ]);
 
         $candidate = app(GoogleBooksProvider::class)->lookupByCode('9780593135204')[0];
 
@@ -73,7 +130,10 @@ class GoogleBooksProviderTest extends TestCase
 
     public function test_cover_urls_are_upgraded_from_http_to_https(): void
     {
-        Http::fake([self::VOLUMES_API => Http::response($this->volumeResponse(), 200)]);
+        Http::fake([
+            self::BY_ID_API => Http::response($this->hailMaryVolume(), 200),
+            self::SEARCH_API => Http::response($this->hailMarySearchResponse(), 200),
+        ]);
 
         $candidate = app(GoogleBooksProvider::class)->lookupByCode('9780593135204')[0];
 
@@ -81,39 +141,83 @@ class GoogleBooksProviderTest extends TestCase
         $this->assertNotEmpty($candidate->coverUrls);
     }
 
+    /** Regression test for the bug reported against EAN 9783742310026 — see class docblock. */
+    public function test_publisher_missing_from_the_search_result_is_filled_in_from_the_full_volume_record(): void
+    {
+        Http::fake([
+            self::BY_ID_API => Http::response($this->murdokuVolumeResponse(), 200),
+            self::SEARCH_API => Http::response($this->murdokuSearchResponse(), 200),
+        ]);
+
+        $candidate = app(GoogleBooksProvider::class)->lookupByCode('9783742310026')[0];
+
+        $this->assertSame('riva', $candidate->attributes['publisher']);
+        $this->assertSame('Murdoku', $candidate->attributes['title']);
+    }
+
+    public function test_a_literal_zero_page_count_is_treated_as_unknown_rather_than_a_real_value(): void
+    {
+        Http::fake([
+            self::BY_ID_API => Http::response($this->murdokuVolumeResponse(), 200),
+            self::SEARCH_API => Http::response($this->murdokuSearchResponse(), 200),
+        ]);
+
+        $candidate = app(GoogleBooksProvider::class)->lookupByCode('9783742310026')[0];
+
+        $this->assertNull($candidate->attributes['page_count']);
+    }
+
+    public function test_falls_back_to_the_search_result_when_the_full_volume_fetch_fails(): void
+    {
+        Http::fake([
+            self::BY_ID_API => Http::response([], 404),
+            self::SEARCH_API => Http::response($this->murdokuSearchResponse(), 200),
+        ]);
+
+        $candidate = app(GoogleBooksProvider::class)->lookupByCode('9783742310026')[0];
+
+        // No publisher available at all now (it only ever came from the
+        // failed by-ID call), but the rest of the search-result data is
+        // still used rather than the whole lookup failing.
+        $this->assertNull($candidate->attributes['publisher']);
+        $this->assertSame('Murdoku', $candidate->attributes['title']);
+    }
+
     public function test_no_candidates_when_the_api_has_no_matching_item(): void
     {
-        Http::fake([self::VOLUMES_API => Http::response(['kind' => 'books#volumes', 'totalItems' => 0], 200)]);
+        Http::fake([self::SEARCH_API => Http::response(['kind' => 'books#volumes', 'totalItems' => 0], 200)]);
 
         $candidates = app(GoogleBooksProvider::class)->lookupByCode('0000000000000');
 
         $this->assertSame([], $candidates);
     }
 
-    public function test_no_candidates_when_the_request_fails_eg_quota_exceeded(): void
+    public function test_no_candidates_when_the_search_request_fails_eg_quota_exceeded(): void
     {
-        Http::fake([self::VOLUMES_API => Http::response(['error' => ['code' => 429]], 429)]);
+        Http::fake([self::SEARCH_API => Http::response(['error' => ['code' => 429]], 429)]);
 
         $candidates = app(GoogleBooksProvider::class)->lookupByCode('9780593135204');
 
         $this->assertSame([], $candidates);
     }
 
-    public function test_search_maps_every_item(): void
+    public function test_search_maps_every_item_without_the_extra_by_id_enrichment_call(): void
     {
-        $response = $this->volumeResponse();
-        $response['items'][] = $response['items'][0];
+        $response = $this->hailMarySearchResponse();
+        $response['items'][] = $this->hailMaryVolume();
         $response['items'][1]['id'] = 'anotherId';
-        Http::fake([self::VOLUMES_API => Http::response($response, 200)]);
+        Http::fake([self::SEARCH_API => Http::response($response, 200)]);
 
         $candidates = app(GoogleBooksProvider::class)->search('project hail mary');
 
         $this->assertCount(2, $candidates);
         // search() has no known EAN for the query itself, unlike lookupByCode().
         $this->assertNull($candidates[0]->attributes['ean']);
+        // Deliberately no by-ID enrichment for search results — see search()'s docblock.
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), '/volumes/zyTCAlFPjgYC'));
     }
 
-    public function test_configured_api_key_is_sent_as_a_query_parameter(): void
+    public function test_configured_api_key_is_sent_as_a_query_parameter_on_both_requests(): void
     {
         MetadataPlugin::query()->create([
             'provider_key' => 'book.google_books',
@@ -122,16 +226,23 @@ class GoogleBooksProviderTest extends TestCase
             'enabled' => true,
             'config' => ['api_key' => 'secret-key-123'],
         ]);
-        Http::fake([self::VOLUMES_API => Http::response($this->volumeResponse(), 200)]);
+        Http::fake([
+            self::BY_ID_API => Http::response($this->hailMaryVolume(), 200),
+            self::SEARCH_API => Http::response($this->hailMarySearchResponse(), 200),
+        ]);
 
         app(GoogleBooksProvider::class)->lookupByCode('9780593135204');
 
-        Http::assertSent(fn ($request) => $request['key'] === 'secret-key-123');
+        Http::assertSent(fn ($request) => $request['key'] === 'secret-key-123' && str_contains($request->url(), '?q='));
+        Http::assertSent(fn ($request) => $request['key'] === 'secret-key-123' && str_contains($request->url(), '/volumes/zyTCAlFPjgYC'));
     }
 
     public function test_works_without_any_configured_api_key(): void
     {
-        Http::fake([self::VOLUMES_API => Http::response($this->volumeResponse(), 200)]);
+        Http::fake([
+            self::BY_ID_API => Http::response($this->hailMaryVolume(), 200),
+            self::SEARCH_API => Http::response($this->hailMarySearchResponse(), 200),
+        ]);
 
         $candidates = app(GoogleBooksProvider::class)->lookupByCode('9780593135204');
 

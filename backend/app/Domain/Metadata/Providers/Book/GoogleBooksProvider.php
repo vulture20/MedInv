@@ -65,7 +65,7 @@ class GoogleBooksProvider implements MetadataProviderInterface
             return [];
         }
 
-        return [$this->mapToCandidate($item, $code)];
+        return [$this->mapToCandidate($this->fetchFullVolume($item), $code)];
     }
 
     public function search(string $query): array
@@ -76,18 +76,48 @@ class GoogleBooksProvider implements MetadataProviderInterface
             return [];
         }
 
+        // Deliberately not enriched via fetchFullVolume() here (unlike
+        // lookupByCode()) — doing so for every one of up to 10 search hits
+        // would multiply the request count against Google's already tight
+        // shared quota (see this class's docblock) for a secondary/manual
+        // lookup path. Same asymmetry OpenLibraryProvider uses: its extra
+        // Editions-API call (issue #28) is only made from lookupByCode() too.
         return collect($response->json('items', []))
             ->map(fn (array $item) => $this->mapToCandidate($item, null))
             ->all();
     }
 
-    private function request(array $query): ?Response
+    /**
+     * The search endpoint (`?q=...`) returns an abbreviated `volumeInfo` —
+     * confirmed live (GitHub issue #20 follow-up, reported against EAN
+     * 9783742310026 "Murdoku"): its response omitted `publisher` entirely,
+     * even though a dedicated GET of the same volume ID
+     * (.../v1/volumes/{id}) includes it. Fetches the canonical by-ID record
+     * and prefers it, falling back to the original (still partially useful)
+     * search-result item if that second call fails — same two-call pattern
+     * as OpenLibraryProvider's Books-API + Editions-API split (issue #28).
+     */
+    private function fetchFullVolume(array $item): array
+    {
+        $id = $item['id'] ?? null;
+
+        if ($id === null) {
+            return $item;
+        }
+
+        $response = $this->request([], $id);
+
+        return $response?->json() ?? $item;
+    }
+
+    private function request(array $query, ?string $volumeId = null): ?Response
     {
         if ($apiKey = $this->apiKey()) {
             $query['key'] = $apiKey;
         }
 
-        $response = Http::get(self::BASE_URL, $query);
+        $url = $volumeId === null ? self::BASE_URL : self::BASE_URL.'/'.$volumeId;
+        $response = Http::get($url, $query);
 
         return $response->successful() ? $response : null;
     }
@@ -116,7 +146,11 @@ class GoogleBooksProvider implements MetadataProviderInterface
                 // hardcover/...) at all, unlike OpenLibrary's Editions API, so
                 // this is left unset rather than guessed from other fields.
                 'genre' => implode(', ', $info['categories'] ?? []),
-                'page_count' => $info['pageCount'] ?? null,
+                // Google uses a literal 0 (not an absent key) as its "unknown
+                // page count" placeholder for sparsely-catalogued records —
+                // observed live for EAN 9783742310026 ("Murdoku"). No real
+                // print book has zero pages, so 0 is treated as unknown too.
+                'page_count' => ! empty($info['pageCount']) ? $info['pageCount'] : null,
                 'language' => $info['language'] ?? null,
                 'publisher' => $info['publisher'] ?? null,
                 'release_date' => $info['publishedDate'] ?? null,
