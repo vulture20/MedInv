@@ -41,6 +41,18 @@
       "book": "Book",
       "cd": "CD",
       "dvd_bluray": "DVD/Blu-ray"
+    },
+    "sharing": {
+      "title": "Sharing",
+      "hint": "Controls who else can see this library, in addition to you. Only read access can be granted here.",
+      "guests": "Share with guests",
+      "allUsers": "Share with all users",
+      "specificUsers": "Specific users",
+      "noSpecificUsers": "Not shared with any specific user.",
+      "selectUser": "Select a user…",
+      "add": "Add",
+      "remove": "Remove",
+      "saved": "Sharing settings saved."
     }
   },
   "mediaItem": {

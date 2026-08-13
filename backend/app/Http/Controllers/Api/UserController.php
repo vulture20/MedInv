@@ -19,8 +19,9 @@ use Illuminate\Validation\Rule;
  * deactivate()) or actually deleted (destroy()); the predefined admin
  * account (is_protected, see DatabaseSeeder) is exempt from both of those
  * AND from being edited, so an install can never end up without a working
- * admin account. Registered under ->middleware('level:admin') in
- * routes/api.php.
+ * admin account. All of the above is registered under
+ * ->middleware('level:admin') in routes/api.php — the one exception is
+ * shareable() below, which any non-guest user can call.
  */
 class UserController extends Controller
 {
@@ -29,6 +30,27 @@ class UserController extends Controller
     public function index()
     {
         return User::query()->orderBy('name')->get();
+    }
+
+    /**
+     * Minimal user list (id + name only, no email/level/is_active) for
+     * populating the "share this library with a specific user" picker
+     * (LibraryDetailPage.tsx, GitHub issue #32). Unlike index() above,
+     * available to any non-guest user, not just admins — briefing 4.3 lets
+     * a library's owner (not just an admin) manage its own shares, and
+     * they need something to pick a target user from too. Excludes guest
+     * accounts (4.3's "einzelne Benutzer" scope is specifically about
+     * individual "Benutzer"-level accounts — guests are only ever covered
+     * by the separate blanket "Gäste" scope) and the requesting user
+     * themselves (sharing a library with yourself is meaningless).
+     */
+    public function shareable(Request $request)
+    {
+        return User::query()
+            ->where('id', '!=', $request->user()->id)
+            ->where('level', '!=', 'guest')
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     public function store(Request $request)

@@ -2,7 +2,16 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
+import { useAuth } from '../../auth/AuthContext'
+import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
+
+/** One row of App\Models\LibraryShare, as returned by LibraryController::show()'s `shares.user:id,name,email` eager load (briefing 4.3). */
+interface Share {
+  scope: 'guest' | 'all_users' | 'user'
+  user_id: number | null
+  user: { id: number; name: string } | null
+}
 
 interface Library {
   id: number
@@ -10,6 +19,13 @@ interface Library {
   description: string | null
   media_type: 'book' | 'cd' | 'dvd_bluray'
   owner: { id: number; name: string }
+  shares?: Share[]
+}
+
+/** GET /api/users (UserController::shareable()) — the share-target picker's option list. */
+interface ShareableUser {
+  id: number
+  name: string
 }
 
 interface Paginated<T> {
@@ -39,6 +55,7 @@ function subtitle(item: MediaItem, mediaType: Library['media_type']): string | n
  */
 export function LibraryDetailPage() {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const { id } = useParams<{ id: string }>()
   const [library, setLibrary] = useState<Library | null>(null)
   const [items, setItems] = useState<Paginated<MediaItem> | null>(null)
@@ -47,18 +64,42 @@ export function LibraryDetailPage() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
+  // Library sharing (briefing 4.3, GitHub issue #32) — editable local state,
+  // synced from `library.shares` whenever a fresh library loads (below),
+  // submitted as one combined array to PUT /libraries/{id}/shares on save
+  // (that endpoint replaces the full share list, it doesn't add/remove
+  // incrementally).
+  const [shareableUsers, setShareableUsers] = useState<ShareableUser[]>([])
+  const [guestShare, setGuestShare] = useState(false)
+  const [allUsersShare, setAllUsersShare] = useState(false)
+  const [userShares, setUserShares] = useState<{ user_id: number; name: string }[]>([])
+  const [addUserId, setAddUserId] = useState<number | ''>('')
+  const [sharesSaved, setSharesSaved] = useState(false)
+  const [sharesError, setSharesError] = useState<string | null>(null)
+
   async function load() {
     setLoading(true)
-    const [libraryRes, itemsRes, librariesRes] = await Promise.all([
+    const [libraryRes, itemsRes, librariesRes, shareableUsersRes] = await Promise.all([
       apiClient.get<Library>(`/libraries/${id}`),
       apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, { params: { page } }),
       // Needed for the detail dialog's "move to another library" target list
       // (only libraries visible to this user are returned to begin with).
       apiClient.get<Library[]>('/libraries'),
+      apiClient.get<ShareableUser[]>('/users'),
     ])
     setLibrary(libraryRes.data)
     setItems(itemsRes.data)
     setLibraries(librariesRes.data)
+    setShareableUsers(shareableUsersRes.data)
+    setGuestShare(libraryRes.data.shares?.some((s) => s.scope === 'guest') ?? false)
+    setAllUsersShare(libraryRes.data.shares?.some((s) => s.scope === 'all_users') ?? false)
+    setUserShares(
+      (libraryRes.data.shares ?? [])
+        .filter((s) => s.scope === 'user' && s.user)
+        .map((s) => ({ user_id: s.user!.id, name: s.user!.name })),
+    )
+    setSharesSaved(false)
+    setSharesError(null)
     setLoading(false)
   }
 
@@ -67,7 +108,37 @@ export function LibraryDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, page])
 
+  async function saveShares(e: React.FormEvent) {
+    e.preventDefault()
+    if (!library) return
+    setSharesError(null)
+    setSharesSaved(false)
+    const shares = [
+      ...(guestShare ? [{ scope: 'guest' }] : []),
+      ...(allUsersShare ? [{ scope: 'all_users' }] : []),
+      ...userShares.map((s) => ({ scope: 'user', user_id: s.user_id })),
+    ]
+    try {
+      await apiClient.put(`/libraries/${library.id}/shares`, { shares })
+      setSharesSaved(true)
+    } catch (err) {
+      setSharesError(describeError(err, t))
+    }
+  }
+
+  function addUserShare() {
+    if (addUserId === '') return
+    const target = shareableUsers.find((u) => u.id === addUserId)
+    if (!target) return
+    setUserShares((prev) => [...prev, { user_id: target.id, name: target.name }])
+    setAddUserId('')
+  }
+
   if (loading || !library) return <p>…</p>
+
+  // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
+  const canManageShares = user?.level === 'admin' || library.owner.id === user?.id
+  const usersAvailableToAdd = shareableUsers.filter((u) => !userShares.some((s) => s.user_id === u.id))
 
   return (
     <div>
@@ -79,6 +150,63 @@ export function LibraryDetailPage() {
         {t(`libraries.mediaType.${library.media_type}`)} — {library.owner.name}
       </p>
       {library.description && <p>{library.description}</p>}
+
+      {canManageShares && (
+        <section>
+          <h2>{t('libraries.sharing.title')}</h2>
+          <p className="hint">{t('libraries.sharing.hint')}</p>
+          <form onSubmit={(e) => void saveShares(e)}>
+            <label>
+              <input type="checkbox" checked={guestShare} onChange={(e) => setGuestShare(e.target.checked)} />
+              {t('libraries.sharing.guests')}
+            </label>
+            <label>
+              <input type="checkbox" checked={allUsersShare} onChange={(e) => setAllUsersShare(e.target.checked)} />
+              {t('libraries.sharing.allUsers')}
+            </label>
+
+            <div>
+              <h3>{t('libraries.sharing.specificUsers')}</h3>
+              {userShares.length === 0 ? (
+                <p className="hint">{t('libraries.sharing.noSpecificUsers')}</p>
+              ) : (
+                <ul>
+                  {userShares.map((share) => (
+                    <li key={share.user_id}>
+                      {share.name}{' '}
+                      <button
+                        type="button"
+                        onClick={() => setUserShares((prev) => prev.filter((s) => s.user_id !== share.user_id))}
+                      >
+                        {t('libraries.sharing.remove')}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {usersAvailableToAdd.length > 0 && (
+                <p>
+                  <select value={addUserId} onChange={(e) => setAddUserId(e.target.value ? Number(e.target.value) : '')}>
+                    <option value="">{t('libraries.sharing.selectUser')}</option>
+                    {usersAvailableToAdd.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>{' '}
+                  <button type="button" disabled={addUserId === ''} onClick={addUserShare}>
+                    {t('libraries.sharing.add')}
+                  </button>
+                </p>
+              )}
+            </div>
+
+            <button type="submit">{t('admin.actions.save')}</button>
+            {sharesSaved && <p role="status">{t('libraries.sharing.saved')}</p>}
+            {sharesError && <p role="alert">{sharesError}</p>}
+          </form>
+        </section>
+      )}
 
       {items && items.data.length === 0 ? (
         <p>{t('libraries.noItems')}</p>

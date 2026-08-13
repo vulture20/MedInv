@@ -41,6 +41,18 @@
       "book": "Buch",
       "cd": "CD",
       "dvd_bluray": "DVD/Blu-ray"
+    },
+    "sharing": {
+      "title": "Freigabe",
+      "hint": "Bestimmt, wer diese Bibliothek zusätzlich zu Ihnen sehen kann. Es kann hier nur Lesezugriff gewährt werden.",
+      "guests": "Für Gäste freigeben",
+      "allUsers": "Für alle Benutzer freigeben",
+      "specificUsers": "Einzelne Benutzer",
+      "noSpecificUsers": "Mit keinem einzelnen Benutzer geteilt.",
+      "selectUser": "Benutzer auswählen…",
+      "add": "Hinzufügen",
+      "remove": "Entfernen",
+      "saved": "Freigabe-Einstellungen gespeichert."
     }
   },
   "mediaItem": {
