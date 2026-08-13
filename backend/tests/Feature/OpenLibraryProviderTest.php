@@ -86,6 +86,27 @@ class OpenLibraryProviderTest extends TestCase
         ];
     }
 
+    /**
+     * Regression test for "the downloaded cover is much too small": the
+     * Books API's `cover` object is ordered small/medium/large (confirmed
+     * live, see the fixture above) — cover_urls[0] (what
+     * CoverDownloadService::download() actually fetches, via
+     * cover_urls[0] in CapturePage.tsx) must be the *large* URL despite
+     * that source ordering, not whichever came first in the response.
+     */
+    public function test_cover_urls_puts_the_large_cover_first_despite_the_apis_small_first_ordering(): void
+    {
+        Http::fake([
+            self::BOOKS_API => Http::response($this->booksApiResponseWithoutAuthors(), 200),
+            self::EDITIONS_API => Http::response($this->editionsApiResponse(), 200),
+            'https://openlibrary.org/authors/*.json' => Http::response(['name' => 'Ignored here'], 200),
+        ]);
+
+        $candidate = app(OpenLibraryProvider::class)->lookupByCode('9783823700166')[0];
+
+        $this->assertSame('https://covers.openlibrary.org/b/id/3274427-L.jpg', $candidate->coverUrls[0]);
+    }
+
     public function test_format_and_isbn10_are_read_from_the_editions_api(): void
     {
         Http::fake([

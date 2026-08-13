@@ -158,15 +158,45 @@ class GoogleBooksProvider implements MetadataProviderInterface
                 'isbn10' => $identifiers->firstWhere('type', 'ISBN_10')['identifier'] ?? null,
                 'ean' => $code,
             ],
-            // imageLinks URLs are documented (and observed live) as http://,
-            // not https:// — CapturePage.tsx renders these directly as
-            // <img src>, so upgrading avoids a mixed-content block on a
-            // deployment served over https (briefing 16., MEDINV_URL).
-            coverUrls: collect($info['imageLinks'] ?? [])
-                ->only(['large', 'medium', 'small', 'thumbnail', 'smallThumbnail'])
-                ->map(fn (string $url) => preg_replace('#^http://#', 'https://', $url))
-                ->values()
-                ->all(),
+            coverUrls: $this->coverUrls($info['imageLinks'] ?? []),
         );
+    }
+
+    /**
+     * Building the array by explicitly mapping the preferred key order,
+     * rather than Collection::only(['large', ..., 'smallThumbnail'])
+     * (which does NOT reorder — it filters to those keys while preserving
+     * whichever order the source `imageLinks` object itself used, so the
+     * previous code silently put whatever Google listed first, typically
+     * `smallThumbnail`, into cover_urls[0] regardless of the argument
+     * order's apparent intent).
+     *
+     * Every real response observed live for this class (both during
+     * initial implementation and the "cover is much too small" follow-up)
+     * only ever had `thumbnail`/`smallThumbnail` at all — `large`/`medium`/
+     * `small`/`extraLarge` are listed defensively per Google's documented
+     * schema but have never actually been seen. Both observed URLs encode
+     * a `zoom` query parameter that controls the returned resolution
+     * (confirmed live against books.google.com/books/content: zoom=1, the
+     * "thumbnail" default, is a mere 128x198px; zoom=3 reliably returns a
+     * genuinely large ~575x889px cover; zoom=5 and above wrap back around
+     * to the smallest size instead of erroring) — upgradeZoom() rewrites
+     * it to request that larger size instead of trusting whichever
+     * (small) rendition Google linked by default.
+     */
+    private function coverUrls(array $imageLinks): array
+    {
+        return collect(['extraLarge', 'large', 'medium', 'small', 'thumbnail', 'smallThumbnail'])
+            ->map(fn (string $size) => $imageLinks[$size] ?? null)
+            ->filter()
+            ->map(fn (string $url) => $this->upgradeZoom(preg_replace('#^http://#', 'https://', $url)))
+            ->values()
+            ->all();
+    }
+
+    /** No-op for a URL that never had a `zoom` parameter to begin with (e.g. a genuine `large`/`extraLarge` link, if Google ever actually sends one). */
+    private function upgradeZoom(string $url): string
+    {
+        return preg_replace('/([?&])zoom=\d+/', '$1zoom=3', $url) ?? $url;
     }
 }

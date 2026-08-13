@@ -126,7 +126,20 @@ class OpenLibraryProvider implements MetadataProviderInterface
                     ?? (strlen($code) === 10 ? $code : null),
                 'format' => $edition['physical_format'] ?? null,
             ],
-            coverUrls: collect($entry['cover'] ?? [])->only(['large', 'medium', 'small'])->values()->all(),
+            // Collection::only() does NOT reorder to the given key order — it filters
+            // to those keys while preserving the *source* array's own order, which for
+            // the Books API's `cover` object is small, medium, large (confirmed live).
+            // ->only(['large', 'medium', 'small']) therefore silently put the small
+            // cover first despite its apparent intent, so cover_urls[0] (what
+            // CapturePage.tsx actually downloads, CoverDownloadService::download())
+            // ended up storing the smallest size instead of the largest — reported as
+            // "the downloaded cover is much too small". Building the array explicitly
+            // in preference order instead actually orders it that way.
+            coverUrls: collect(['large', 'medium', 'small'])
+                ->map(fn (string $size) => $entry['cover'][$size] ?? null)
+                ->filter()
+                ->values()
+                ->all(),
         );
     }
 

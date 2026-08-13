@@ -141,6 +141,29 @@ class GoogleBooksProviderTest extends TestCase
         $this->assertNotEmpty($candidate->coverUrls);
     }
 
+    /**
+     * Regression test for "the downloaded cover is much too small": both
+     * imageLinks entries encode a small default `zoom` (1 and 5, per the
+     * real fixture below) — cover_urls[0] must request a larger rendition
+     * instead of whatever Google linked by default.
+     */
+    public function test_cover_urls_request_a_larger_zoom_level_than_googles_default(): void
+    {
+        Http::fake([
+            self::BY_ID_API => Http::response($this->hailMaryVolume(), 200),
+            self::SEARCH_API => Http::response($this->hailMarySearchResponse(), 200),
+        ]);
+
+        $candidate = app(GoogleBooksProvider::class)->lookupByCode('9780593135204')[0];
+
+        $this->assertNotEmpty($candidate->coverUrls);
+        foreach ($candidate->coverUrls as $url) {
+            $this->assertStringContainsString('zoom=3', $url);
+            $this->assertStringNotContainsString('zoom=1', $url);
+            $this->assertStringNotContainsString('zoom=5', $url);
+        }
+    }
+
     /** Regression test for the bug reported against EAN 9783742310026 — see class docblock. */
     public function test_publisher_missing_from_the_search_result_is_filled_in_from_the_full_volume_record(): void
     {
