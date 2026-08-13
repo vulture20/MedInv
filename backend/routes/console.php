@@ -53,3 +53,27 @@ Schedule::call(function () use ($backupService) {
     ->name('medinv-scheduled-backup')
     ->withoutOverlapping()
     ->onFailure(fn () => Log::error('Scheduled backup failed — see the exception logged above.'));
+
+/**
+ * Daily orphaned-cover-file cleanup (CleanupOrphanedCoversCommand,
+ * CoverCleanupService). Unlike the backup schedule above, this cadence
+ * isn't admin-configurable, so no deferred-due-check dance is needed here
+ * (nothing at registration time reads system_settings) — just a plain
+ * ->dailyAt(). 03:45, shortly after the backup schedule's fixed 03:00 hour
+ * (BackupService::scheduledBackupCronExpression()), to avoid the (harmless
+ * either way, but tidier) overlap of both jobs starting in the same minute.
+ *
+ * Schedule::call(fn () => Artisan::call(...)) rather than the more obvious
+ * Schedule::command('medinv:cleanup-covers') — the latter shells out to a
+ * brand new `php artisan ...` process (visible as a literal CLI string on
+ * the registered Event), which in tests runs against its own separate
+ * process state and therefore never touches this test's Storage::fake()
+ * disk, making the schedule itself untestable via `schedule:run`. Calling
+ * Artisan::call() from a closure runs in-process instead, same reasoning
+ * the backup schedule above already followed for its own Schedule::call().
+ */
+Schedule::call(fn () => Artisan::call('medinv:cleanup-covers'))
+    ->dailyAt('03:45')
+    ->name('medinv-cover-cleanup')
+    ->withoutOverlapping()
+    ->onFailure(fn () => Log::error('Cover cleanup failed — see the exception logged above.'));
