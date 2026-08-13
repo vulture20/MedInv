@@ -79,20 +79,76 @@ class OpenLibraryProvider implements MetadataProviderInterface
 
     private function mapToCandidate(string $code, array $entry): MetadataCandidate
     {
+        // The Books API queried above (jscmd=data) is convenient — it resolves
+        // author references to names and gives ready-made cover URLs — but it
+        // has two gaps, both confirmed live against the real API (GitHub issue
+        // #28, reported against EAN/ISBN-13 9783823700166):
+        //  - it never includes `physical_format` at all, for any edition
+        //    tested (with or without authors present), so `format` can't be
+        //    read from $entry no matter what;
+        //  - for editions with multiple authors it sometimes omits `authors`
+        //    entirely, even though the underlying edition record does list
+        //    them — just as unresolved /authors/{id} references rather than
+        //    names (observed for 9783823700166, a 4-author book; a 1-author
+        //    edition looked up the same way had `authors` resolved fine).
+        // The raw Editions API (openlibrary.org/isbn/{isbn}.json) has both —
+        // physical_format directly, and the authors as resolvable references
+        // — so it's fetched as a second call and used to fill both gaps.
+        $edition = $this->fetchEdition($code);
+
+        $authors = collect($entry['authors'] ?? [])->pluck('name')->filter()->implode(', ');
+        if ($authors === '') {
+            $authors = $this->resolveAuthorNames($edition['authors'] ?? []);
+        }
+
         return new MetadataCandidate(
             providerKey: $this->key(),
             sourceId: $code,
             attributes: [
-                'title' => $entry['title'] ?? null,
-                'authors' => collect($entry['authors'] ?? [])->pluck('name')->implode(', '),
-                'publisher' => collect($entry['publishers'] ?? [])->pluck('name')->first(),
-                'page_count' => $entry['number_of_pages'] ?? null,
-                'release_date' => $entry['publish_date'] ?? null,
+                'title' => $entry['title'] ?? $edition['title'] ?? null,
+                'authors' => $authors,
+                'publisher' => collect($entry['publishers'] ?? [])->pluck('name')->first()
+                    ?? ($edition['publishers'][0] ?? null),
+                'page_count' => $entry['number_of_pages'] ?? $edition['number_of_pages'] ?? null,
+                'release_date' => $entry['publish_date'] ?? $edition['publish_date'] ?? null,
                 'ean' => $code,
-                'isbn13' => strlen($code) === 13 ? $code : null,
-                'isbn10' => strlen($code) === 10 ? $code : null,
+                'isbn13' => $entry['identifiers']['isbn_13'][0]
+                    ?? ($edition['isbn_13'][0] ?? null)
+                    ?? (strlen($code) === 13 ? $code : null),
+                'isbn10' => $entry['identifiers']['isbn_10'][0]
+                    ?? ($edition['isbn_10'][0] ?? null)
+                    ?? (strlen($code) === 10 ? $code : null),
+                'format' => $edition['physical_format'] ?? null,
             ],
             coverUrls: collect($entry['cover'] ?? [])->only(['large', 'medium', 'small'])->values()->all(),
         );
+    }
+
+    /** Raw Editions API record for this ISBN — see mapToCandidate()'s docblock for why this is fetched in addition to the Books API. */
+    private function fetchEdition(string $code): array
+    {
+        $response = Http::get("https://openlibrary.org/isbn/{$code}.json");
+
+        return $response->successful() ? ($response->json() ?? []) : [];
+    }
+
+    /**
+     * Resolves raw `[{"key": "/authors/OL...A"}, ...]` references (the shape
+     * the Editions API — unlike the Books API — always uses for authors) into
+     * names, one request per author. Only reached as a fallback when the
+     * Books API's own (already-resolved) `authors` field came back empty.
+     */
+    private function resolveAuthorNames(array $authorRefs): string
+    {
+        return collect($authorRefs)
+            ->pluck('key')
+            ->filter()
+            ->map(function (string $key) {
+                $response = Http::get("https://openlibrary.org{$key}.json");
+
+                return $response->successful() ? $response->json('name') : null;
+            })
+            ->filter()
+            ->implode(', ');
     }
 }
