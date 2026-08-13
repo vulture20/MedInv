@@ -60,6 +60,25 @@ class BackupService
         return $backup;
     }
 
+    /**
+     * Resolves the admin-configured backup.interval_mode (briefing 9.2)
+     * into an actual cron expression for the Laravel scheduler
+     * (routes/console.php). The three "Einfacher Modus" choices don't
+     * carry their own time of day in the spec, so a single fixed,
+     * low-traffic hour is used for all of them; "Experten-Modus" uses the
+     * admin's own backup.cron_expression verbatim.
+     */
+    public function scheduledBackupCronExpression(): string
+    {
+        return match (SystemSetting::get('backup.interval_mode', 'daily')) {
+            'daily' => '0 3 * * *',
+            'weekly' => '0 3 * * 0',
+            'monthly' => '0 3 1 * *',
+            'cron' => SystemSetting::get('backup.cron_expression') ?: '0 3 * * *',
+            default => '0 3 * * *',
+        };
+    }
+
     public function download(Backup $backup): string
     {
         return Storage::disk(self::DISK)->path(self::DIR.'/'.$backup->filename);
