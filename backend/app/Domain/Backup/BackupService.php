@@ -11,9 +11,13 @@ use ZipArchive;
 
 /**
  * Backup creation, retention and restoration (briefing 9.2/9.3). A backup
- * is a zip containing manifest.json, the same structure ExportImportService
+ * is a zip containing manifest.json (the same structure ExportImportService
  * produces for a full ("alle") export — restoration therefore reuses
- * ExportImportService::importLibraries() and its conflict-resolution modes.
+ * ExportImportService::importLibraries() and its conflict-resolution modes)
+ * plus every cover image referenced by an item's `cover_path` (GitHub issue
+ * #26: a backup without them silently loses covers on restore, since
+ * cover_path only makes sense relative to *this* instance's `local` disk —
+ * see CoverDownloadService).
  *
  * Storage location: storage/app/private/backups (see docker-compose.yml — mounted
  * as the `backups` volume from docs/medinv-briefing.md chapter 19, so
@@ -24,6 +28,9 @@ class BackupService
     private const DISK = 'local';
 
     private const DIR = 'backups';
+
+    /** Must match CoverDownloadService::DIR — the prefix every item's cover_path is stored under on the `local` disk. */
+    private const COVERS_DIR = 'covers';
 
     public function __construct(private readonly ExportImportService $exportImportService) {}
 
@@ -44,6 +51,7 @@ class BackupService
         Storage::disk(self::DISK)->makeDirectory(self::DIR);
         $zip->open($absolutePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         $zip->addFile($tmpJson, 'manifest.json');
+        $this->addCoverFiles($zip, $data);
         $zip->close();
         unlink($tmpJson);
 
@@ -58,6 +66,59 @@ class BackupService
         $this->prune();
 
         return $backup;
+    }
+
+    /**
+     * Adds every cover image referenced anywhere in the export under its own
+     * cover_path (already relative to the `local` disk, e.g.
+     * `covers/book/1234-AbCdEfGh.jpg`, see CoverDownloadService) — using that
+     * same relative path as the zip entry name so restoreCoverFiles() can
+     * write it straight back without any translation table. Best-effort per
+     * file: a cover_path whose file is already gone (e.g. deleted by hand
+     * outside the app) is skipped rather than failing the whole backup, the
+     * same trade-off CoverDownloadService itself makes for a failed download.
+     */
+    private function addCoverFiles(ZipArchive $zip, array $data): void
+    {
+        $coverPaths = collect($data['libraries'] ?? [])
+            ->flatMap(fn (array $library) => collect($library['items'] ?? [])->pluck('cover_path'))
+            ->filter()
+            ->unique();
+
+        foreach ($coverPaths as $coverPath) {
+            if (Storage::disk(self::DISK)->exists($coverPath)) {
+                $zip->addFile(Storage::disk(self::DISK)->path($coverPath), $coverPath);
+            }
+        }
+    }
+
+    /**
+     * Writes every `covers/...` entry in the archive back onto the `local`
+     * disk at its original relative path, before importLibraries() recreates
+     * the items that reference them (restore() calls this first) — so a
+     * cover is already in place by the time an item pointing at it exists,
+     * and MediaItemController::cover() doesn't 404 for it post-restore.
+     * Restores every cover present in the zip regardless of which items
+     * conflict-resolution ends up actually (re-)creating — simpler and more
+     * robust than correlating the two, at the cost of occasionally leaving
+     * an unreferenced file behind for a library that was skipped, no worse
+     * than any other orphaned-cover case.
+     */
+    private function restoreCoverFiles(ZipArchive $zip): void
+    {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+
+            if ($name === false || ! str_starts_with($name, self::COVERS_DIR.'/')) {
+                continue;
+            }
+
+            $contents = $zip->getFromIndex($i);
+
+            if ($contents !== false) {
+                Storage::disk(self::DISK)->put($name, $contents);
+            }
+        }
     }
 
     /**
@@ -137,17 +198,25 @@ class BackupService
         }
 
         $manifest = $zip->getFromName('manifest.json');
-        $zip->close();
 
         if ($manifest === false) {
+            $zip->close();
+
             throw new \RuntimeException("Backup archive is missing manifest.json: {$backup->filename}");
         }
 
         $data = json_decode($manifest, true);
 
         if (! is_array($data)) {
+            $zip->close();
+
             throw new \RuntimeException("Backup archive contains an invalid manifest.json: {$backup->filename}");
         }
+
+        // Before the items that reference them are (re-)created below — see
+        // restoreCoverFiles()'s docblock.
+        $this->restoreCoverFiles($zip);
+        $zip->close();
 
         return $this->exportImportService->importLibraries($data, $importingAs, $conflictResolutions, $restoreSettings);
     }
