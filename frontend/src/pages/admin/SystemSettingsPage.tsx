@@ -12,10 +12,15 @@ interface SecuritySettings {
 type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR'
 type DefaultLanguage = 'de' | 'en'
 
+interface CoverCleanupSettings {
+  cleanup_enabled: boolean
+}
+
 /**
  * The remaining runtime settings that don't have a page of their own:
- * brute-force throttling (briefing 12.4, enforced by BruteForceProtection)
- * and the log level. Mail lives on its own page, backup schedule/retention
+ * brute-force throttling (briefing 12.4, enforced by BruteForceProtection),
+ * the log level, the default language, and the daily orphaned-cover-file
+ * cleanup toggle. Mail lives on its own page, backup schedule/retention
  * lives with the backups list — see pages/admin/{Mail,Backups}Page.tsx.
  */
 export function SystemSettingsPage() {
@@ -29,16 +34,21 @@ export function SystemSettingsPage() {
   const [defaultLanguage, setDefaultLanguage] = useState<DefaultLanguage | null>(null)
   const [localeSaved, setLocaleSaved] = useState(false)
   const [localeError, setLocaleError] = useState<string | null>(null)
+  const [coverCleanup, setCoverCleanup] = useState<CoverCleanupSettings | null>(null)
+  const [coverCleanupSaved, setCoverCleanupSaved] = useState(false)
+  const [coverCleanupError, setCoverCleanupError] = useState<string | null>(null)
 
   async function load() {
     const { data } = await apiClient.get<{
       security: SecuritySettings
       loglevel: LogLevel
       locale: { default_language: DefaultLanguage }
+      covers: CoverCleanupSettings
     }>('/admin/settings')
     setSecurity(data.security)
     setLoglevel(data.loglevel)
     setDefaultLanguage(data.locale.default_language)
+    setCoverCleanup(data.covers)
   }
 
   useEffect(() => {
@@ -86,6 +96,21 @@ export function SystemSettingsPage() {
       setLocaleSaved(true)
     } catch (err) {
       setLocaleError(describeError(err, t))
+    }
+  }
+
+  async function saveCoverCleanup(enabled: boolean) {
+    setCoverCleanupError(null)
+    setCoverCleanupSaved(false)
+    // Optimistic update so the checkbox feels immediate, same pattern as PluginsPage.tsx's enabled toggle.
+    setCoverCleanup({ cleanup_enabled: enabled })
+    try {
+      const { data } = await apiClient.put<CoverCleanupSettings>('/admin/settings/covers', { cleanup_enabled: enabled })
+      setCoverCleanup(data)
+      setCoverCleanupSaved(true)
+    } catch (err) {
+      setCoverCleanupError(describeError(err, t))
+      await load()
     }
   }
 
@@ -168,6 +193,23 @@ export function SystemSettingsPage() {
             {localeSaved && <p role="status">{t('admin.localeSettings.saved')}</p>}
             {localeError && <p role="alert">{localeError}</p>}
           </form>
+        </section>
+      )}
+
+      {coverCleanup && (
+        <section>
+          <h2>{t('admin.coverCleanup.title')}</h2>
+          <p className="hint">{t('admin.coverCleanup.hint')}</p>
+          <label>
+            <input
+              type="checkbox"
+              checked={coverCleanup.cleanup_enabled}
+              onChange={(e) => void saveCoverCleanup(e.target.checked)}
+            />
+            {t('admin.coverCleanup.enabled')}
+          </label>
+          {coverCleanupSaved && <p role="status">{t('admin.coverCleanup.saved')}</p>}
+          {coverCleanupError && <p role="alert">{coverCleanupError}</p>}
         </section>
       )}
     </>

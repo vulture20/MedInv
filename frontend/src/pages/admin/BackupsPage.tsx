@@ -28,10 +28,6 @@ interface RestoreResult {
   users_restored: string[]
 }
 
-interface CoverCleanupSettings {
-  cleanup_enabled: boolean
-}
-
 /** Backups (briefing 9.2): on-demand creation/download/delete plus the schedule/retention config. */
 export function BackupsPage() {
   const { t } = useTranslation()
@@ -39,9 +35,6 @@ export function BackupsPage() {
   const [settings, setSettings] = useState<BackupSettings | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSaved, setSettingsSaved] = useState(false)
-  const [coverCleanup, setCoverCleanup] = useState<CoverCleanupSettings | null>(null)
-  const [coverCleanupError, setCoverCleanupError] = useState<string | null>(null)
-  const [coverCleanupSaved, setCoverCleanupSaved] = useState(false)
 
   // Which backup's restore form is expanded, and its two options — briefing 9.3's
   // full per-library rename/merge/overwrite/skip picker needs to know which
@@ -62,9 +55,8 @@ export function BackupsPage() {
   }
 
   async function loadSettings() {
-    const { data } = await apiClient.get<{ backup: BackupSettings; covers: CoverCleanupSettings }>('/admin/settings')
+    const { data } = await apiClient.get<{ backup: BackupSettings }>('/admin/settings')
     setSettings(data.backup)
-    setCoverCleanup(data.covers)
   }
 
   useEffect(() => {
@@ -124,21 +116,6 @@ export function BackupsPage() {
       setSettingsSaved(true)
     } catch (err) {
       setSettingsError(describeError(err, t))
-    }
-  }
-
-  async function saveCoverCleanup(enabled: boolean) {
-    setCoverCleanupError(null)
-    setCoverCleanupSaved(false)
-    // Optimistic update so the checkbox feels immediate, same pattern as PluginsPage.tsx's enabled toggle.
-    setCoverCleanup({ cleanup_enabled: enabled })
-    try {
-      const { data } = await apiClient.put<CoverCleanupSettings>('/admin/settings/covers', { cleanup_enabled: enabled })
-      setCoverCleanup(data)
-      setCoverCleanupSaved(true)
-    } catch (err) {
-      setCoverCleanupError(describeError(err, t))
-      await loadSettings()
     }
   }
 
@@ -245,23 +222,6 @@ export function BackupsPage() {
             {settingsSaved && <p role="status">{t('admin.backupSettings.saved')}</p>}
             {settingsError && <p role="alert">{settingsError}</p>}
           </form>
-        </section>
-      )}
-
-      {coverCleanup && (
-        <section>
-          <h2>{t('admin.coverCleanup.title')}</h2>
-          <p className="hint">{t('admin.coverCleanup.hint')}</p>
-          <label>
-            <input
-              type="checkbox"
-              checked={coverCleanup.cleanup_enabled}
-              onChange={(e) => void saveCoverCleanup(e.target.checked)}
-            />
-            {t('admin.coverCleanup.enabled')}
-          </label>
-          {coverCleanupSaved && <p role="status">{t('admin.coverCleanup.saved')}</p>}
-          {coverCleanupError && <p role="alert">{coverCleanupError}</p>}
         </section>
       )}
     </>
