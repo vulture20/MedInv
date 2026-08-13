@@ -44,6 +44,9 @@ class AdminSettingsController extends Controller
                 'throttle_window_minutes' => SystemSetting::get('security.throttle_window_minutes', 5),
                 'throttle_lock_minutes' => SystemSetting::get('security.throttle_lock_minutes', 30),
             ],
+            'covers' => [
+                'cleanup_enabled' => SystemSetting::get('covers.cleanup_enabled', true),
+            ],
             'loglevel' => SystemSetting::get('loglevel', env('MEDINV_LOGLEVEL', 'WARNING')),
             'locale' => [
                 'default_language' => SystemSetting::get('locale.default_language', 'en'),
@@ -135,6 +138,16 @@ class AdminSettingsController extends Controller
         }
 
         return $this->index()['security'];
+    }
+
+    /** Toggles the daily orphaned-cover-file cleanup (CoverCleanupService, routes/console.php's `medinv-cover-cleanup` schedule). Default is enabled; disabling only affects that scheduled run, not `php artisan medinv:cleanup-covers` invoked by hand. */
+    public function updateCoverCleanup(Request $request)
+    {
+        $data = $request->validate(['cleanup_enabled' => ['required', 'boolean']]);
+
+        SystemSetting::set('covers.cleanup_enabled', $data['cleanup_enabled']);
+
+        return $this->index()['covers'];
     }
 
     public function updateLoglevel(Request $request)

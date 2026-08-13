@@ -37,6 +37,7 @@ class BackupExportTest extends TestCase
             'security.throttle_max_attempts',
             'security.throttle_window_minutes',
             'security.throttle_lock_minutes',
+            'covers.cleanup_enabled',
             'loglevel',
             'locale.default_language',
         ], array_keys($manifest['system_settings']));

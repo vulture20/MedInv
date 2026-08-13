@@ -222,6 +222,12 @@
       "lockMinutes": "Lockout duration (minutes)",
       "saved": "Security settings saved."
     },
+    "coverCleanup": {
+      "title": "Cover cleanup",
+      "hint": "Once a day, deletes cover/thumbnail files on disk that no media item references anymore.",
+      "enabled": "Automatically clean up orphaned cover files",
+      "saved": "Cover cleanup setting saved."
+    },
     "logLevel": {
       "title": "Log level",
       "saved": "Log level saved."

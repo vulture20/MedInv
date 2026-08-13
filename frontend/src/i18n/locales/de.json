@@ -222,6 +222,12 @@
       "lockMinutes": "Sperrdauer (Minuten)",
       "saved": "Sicherheitseinstellungen gespeichert."
     },
+    "coverCleanup": {
+      "title": "Cover-Bereinigung",
+      "hint": "Löscht einmal täglich Cover-/Thumbnail-Dateien auf der Festplatte, die von keinem Medium mehr referenziert werden.",
+      "enabled": "Verwaiste Cover-Dateien automatisch bereinigen",
+      "saved": "Einstellung zur Cover-Bereinigung gespeichert."
+    },
     "logLevel": {
       "title": "Log-Level",
       "saved": "Log-Level gespeichert."

@@ -103,6 +103,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('/settings/mail/test', [AdminSettingsController::class, 'testMail']);
         Route::put('/settings/backup', [AdminSettingsController::class, 'updateBackup']);
         Route::put('/settings/security', [AdminSettingsController::class, 'updateSecurity']);
+        Route::put('/settings/covers', [AdminSettingsController::class, 'updateCoverCleanup']);
         Route::put('/settings/loglevel', [AdminSettingsController::class, 'updateLoglevel']);
         Route::put('/settings/locale', [AdminSettingsController::class, 'updateLocale']);
     });

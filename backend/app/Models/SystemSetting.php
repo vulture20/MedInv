@@ -49,6 +49,7 @@ class SystemSetting extends Model
             'security.throttle_max_attempts' => 6,
             'security.throttle_window_minutes' => 5,
             'security.throttle_lock_minutes' => 30,
+            'covers.cleanup_enabled' => true,
             'loglevel' => env('MEDINV_LOGLEVEL', 'WARNING'),
             'locale.default_language' => 'en',
         ];

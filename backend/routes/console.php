@@ -56,12 +56,24 @@ Schedule::call(function () use ($backupService) {
 
 /**
  * Daily orphaned-cover-file cleanup (CleanupOrphanedCoversCommand,
- * CoverCleanupService). Unlike the backup schedule above, this cadence
- * isn't admin-configurable, so no deferred-due-check dance is needed here
- * (nothing at registration time reads system_settings) — just a plain
+ * CoverCleanupService), admin-toggleable via `covers.cleanup_enabled`
+ * (AdminSettingsController::updateCoverCleanup(), default enabled). Unlike
+ * the backup schedule above, the *cadence* here isn't admin-configurable,
+ * so no deferred-due-check dance is needed for that part — just a plain
  * ->dailyAt(). 03:45, shortly after the backup schedule's fixed 03:00 hour
  * (BackupService::scheduledBackupCronExpression()), to avoid the (harmless
  * either way, but tidier) overlap of both jobs starting in the same minute.
+ * The enabled/disabled check itself is still deferred into the closure
+ * (not evaluated at registration time) for the same reason the backup
+ * schedule's cron lookup is: this file loads on every console bootstrap,
+ * including `migrate --force` on a brand new database with no
+ * system_settings table yet.
+ *
+ * The setting only gates this *scheduled* run, deliberately — running
+ * `php artisan medinv:cleanup-covers` by hand always cleans up regardless,
+ * the same way a manually-triggered backup is exempt from the automatic
+ * backup retention policy (BackupService::prune()): an explicit, deliberate
+ * action isn't what the "disable the automatic job" setting is for.
  *
  * Schedule::call(fn () => Artisan::call(...)) rather than the more obvious
  * Schedule::command('medinv:cleanup-covers') — the latter shells out to a
@@ -72,7 +84,13 @@ Schedule::call(function () use ($backupService) {
  * Artisan::call() from a closure runs in-process instead, same reasoning
  * the backup schedule above already followed for its own Schedule::call().
  */
-Schedule::call(fn () => Artisan::call('medinv:cleanup-covers'))
+Schedule::call(function () {
+    if (! SystemSetting::get('covers.cleanup_enabled', true)) {
+        return;
+    }
+
+    Artisan::call('medinv:cleanup-covers');
+})
     ->dailyAt('03:45')
     ->name('medinv-cover-cleanup')
     ->withoutOverlapping()
