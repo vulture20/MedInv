@@ -28,20 +28,31 @@ use Illuminate\Support\Facades\Http;
  * apiKey() strips a leading "Bearer " defensively in case an admin pastes
  * the full copied string anyway.
  *
- * Query design: lookupByCode() is built directly off Hardcover's own
- * literal, official example query ("Get Edition Details by ISBN" in their
- * Editions schema docs) — high confidence. search() calls Hardcover's
- * Typesense-backed `search` field, whose *available fields per
- * query_type* are documented in full, but whose actual response envelope
- * shape is never shown as a literal example (only "the same Typesense
- * index used on the website") — inferred from Typesense's own
- * well-documented, engine-level {hits: [{document: {...}}]} response
- * convention and coded defensively (an unexpected shape degrades to an
- * empty result, see search()) rather than assumed to be exactly right.
- * Unlike OpenLibraryProvider/GoogleBooksProvider, this could not be
- * live-verified against the real API in this environment — doing so
- * requires a real Hardcover account and personal token, which wasn't
- * available; ask before assuming this needs redoing.
+ * Both lookupByCode() and search() were live-verified against the real API
+ * (a real account's token, EAN 9780547928227 "The Hobbit", and a free-text
+ * search for "the hobbit") — the response shapes below reflect what was
+ * actually observed, not just what the docs describe. Two things live data
+ * revealed that the documentation didn't:
+ *  - search()'s per-document `image` field (a cover image object) isn't
+ *    listed anywhere in Hardcover's documented Book search fields (only
+ *    `cover_color`, an extracted color, is) — but it's genuinely present
+ *    and populated in real responses, so it's used as this candidate's
+ *    cover, same as lookupByCode()'s.
+ *  - search()'s documents also carry a real `release_date` field directly
+ *    (not just `release_year`), contrary to the documented field list
+ *    (which only mentions `release_date_i`/`release_year`) — preferred
+ *    over synthesizing one from `release_year` when present.
+ *  - Both lookupByCode() and search() descriptions come back as raw HTML
+ *    (e.g. `<p>...</p>`, `<i>...</i>`), not plain text — stripped via
+ *    strip_tags() so it doesn't render as literal markup in the UI.
+ * search()'s overall envelope shape ({hits: [{document: {...}}]},
+ * Typesense's own well-known, engine-level convention) matched what was
+ * inferred before live-testing; the is_array() guard is kept regardless as
+ * cheap insurance against a future API change.
+ *
+ * lookupByCode() is built directly off Hardcover's own literal, official
+ * example query ("Get Edition Details by ISBN" in their Editions schema
+ * docs).
  */
 class HardcoverProvider implements MetadataProviderInterface
 {
@@ -135,11 +146,9 @@ class HardcoverProvider implements MetadataProviderInterface
             return [];
         }
 
-        // See this class's docblock: the exact shape of `results` is inferred
-        // from Typesense's standard {hits: [{document: {...}}]} response, not
-        // confirmed against a real Hardcover response — an unexpected shape
-        // here (e.g. a future API change, or this inference being wrong)
-        // degrades to an empty result rather than throwing.
+        // Confirmed live to be Typesense's standard {hits: [{document: {...}}]}
+        // shape (see this class's docblock) — kept defensive anyway as cheap
+        // insurance against a future API change.
         $hits = $response->json('data.search.results.hits');
 
         if (! is_array($hits)) {
@@ -163,7 +172,7 @@ class HardcoverProvider implements MetadataProviderInterface
             attributes: [
                 'title' => $book['title'] ?? null,
                 'authors' => collect($book['contributions'] ?? [])->pluck('author.name')->filter()->implode(', '),
-                'description' => $book['description'] ?? null,
+                'description' => $this->plainText($book['description'] ?? null),
                 'publisher' => $edition['publisher']['name'] ?? null,
                 'page_count' => $edition['pages'] ?? null,
                 'language' => $edition['language']['language'] ?? null,
@@ -177,29 +186,35 @@ class HardcoverProvider implements MetadataProviderInterface
         );
     }
 
-    /**
-     * The Typesense-backed search only documents cover_color (an extracted
-     * dominant color), not an actual cover image URL, for books — so unlike
-     * mapEditionToCandidate() this never has a cover to offer.
-     */
     private function mapSearchResultToCandidate(array $doc): MetadataCandidate
     {
         $isbns = collect($doc['isbns'] ?? []);
 
         return new MetadataCandidate(
             providerKey: $this->key(),
-            sourceId: (string) ($doc['slug'] ?? $doc['title'] ?? ''),
+            sourceId: (string) ($doc['id'] ?? $doc['slug'] ?? $doc['title'] ?? ''),
             attributes: [
                 'title' => $doc['title'] ?? null,
                 'authors' => implode(', ', $doc['author_names'] ?? []),
-                'description' => $doc['description'] ?? null,
+                'description' => $this->plainText($doc['description'] ?? null),
                 'page_count' => $doc['pages'] ?? null,
-                'release_date' => isset($doc['release_year']) ? "{$doc['release_year']}-01-01" : null,
+                'release_date' => $doc['release_date'] ?? (isset($doc['release_year']) ? "{$doc['release_year']}-01-01" : null),
                 'isbn13' => $isbns->first(fn ($isbn) => strlen((string) $isbn) === 13),
                 'isbn10' => $isbns->first(fn ($isbn) => strlen((string) $isbn) === 10),
             ],
-            coverUrls: [],
+            // The `image` field isn't in Hardcover's documented Book search
+            // fields list (only `cover_color`, an extracted color, is) — but
+            // it's genuinely present and populated in real responses (see
+            // this class's docblock), so it's used the same way
+            // mapEditionToCandidate() uses lookupByCode()'s image.
+            coverUrls: array_filter([$doc['image']['url'] ?? null]),
         );
+    }
+
+    /** Both lookupByCode() and search() return descriptions as raw HTML (confirmed live) — stripped so it doesn't render as literal markup. */
+    private function plainText(?string $html): ?string
+    {
+        return $html === null ? null : trim(strip_tags($html));
     }
 
     private function query(string $query, array $variables): ?Response

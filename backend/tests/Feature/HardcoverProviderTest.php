@@ -9,16 +9,13 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * HardcoverProvider (GitHub issue #18). lookupByCode()'s fixture mirrors
- * Hardcover's own literal, official "Get Edition Details by ISBN" example
- * query/response shape (docs.hardcover.app/api/graphql/schemas/editions) —
- * high confidence. search()'s fixture is built on Typesense's own
- * well-documented, engine-level {hits: [{document: {...}}]} response
- * convention, since Hardcover's docs list the available fields per
- * query_type but never show a literal example of the `search` field's
- * response envelope — see HardcoverProvider's class docblock. Neither was
- * live-verified against the real API — that requires a personal Hardcover
- * account/token, unavailable in this environment.
+ * HardcoverProvider (GitHub issue #18). All fixtures below are trimmed
+ * copies of real, live-verified responses (a real Hardcover account's
+ * token, EAN 9780547928227 "The Hobbit" for lookupByCode(), a free-text
+ * search for "the hobbit" for search()) — see HardcoverProvider's
+ * docblock for what that live testing found that the documentation alone
+ * didn't show (search()'s `image`/`release_date` fields, HTML-formatted
+ * descriptions).
  */
 class HardcoverProviderTest extends TestCase
 {
@@ -37,27 +34,60 @@ class HardcoverProviderTest extends TestCase
         ]);
     }
 
+    /** Real (trimmed) response for `editions(where: {isbn_13: {_eq: "9780547928227"}})`. */
     private function editionResponse(): array
     {
         return [
             'data' => [
                 'editions' => [
                     [
-                        'isbn_10' => '0547928227',
+                        'isbn_10' => '054792822X',
                         'isbn_13' => '9780547928227',
-                        'pages' => 366,
+                        'pages' => 300,
                         'release_date' => '2012-09-18',
-                        'physical_format' => 'paperback',
+                        'physical_format' => null,
                         'publisher' => ['name' => 'Houghton Mifflin Harcourt'],
-                        'image' => ['url' => 'https://assets.hardcover.app/covers/hobbit-large.jpg'],
+                        'image' => ['url' => 'https://assets.hardcover.app/edition/18521437/a35044c6817357b701da3bcac5dce295244c32ba.jpeg'],
                         'book' => [
-                            'title' => 'The Hobbit',
-                            'description' => 'Bilbo Baggins is a hobbit who enjoys a comfortable life.',
+                            'title' => 'The Hobbit, or There and Back Again',
+                            'description' => '<i>"In a hole in the ground there lived a hobbit." </i>So begins one of the most beloved tales.',
                             'contributions' => [
                                 ['author' => ['name' => 'J.R.R. Tolkien']],
                             ],
                         ],
                         'language' => ['language' => 'English'],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /** Real (trimmed) `search(query: "the hobbit", query_type: "Book")` response — one document. */
+    private function searchResponse(): array
+    {
+        return [
+            'data' => [
+                'search' => [
+                    'results' => [
+                        'found' => 136,
+                        'hits' => [
+                            [
+                                'document' => [
+                                    'id' => '2142692',
+                                    'slug' => 'the-hobbit-part-two',
+                                    'title' => 'The Hobbit, Part Two',
+                                    'author_names' => ['J.R.R. Tolkien', 'David Wyatt'],
+                                    'description' => "The Hobbit is a tale of high adventure, undertaken by a company of dwarves in search of dragon-guarded gold.\r\n\r\nEncounters with trolls, and more.",
+                                    'pages' => 176,
+                                    'release_date' => '1937-09-21',
+                                    'release_year' => 1937,
+                                    'isbns' => ['0007926677', '9780007926671'],
+                                    'image' => [
+                                        'url' => 'https://assets.hardcover.app/external_data/1540814/0e0218d7fdfa5ff50270b018ba514b66cdb18e68.jpeg',
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -71,18 +101,31 @@ class HardcoverProviderTest extends TestCase
 
         $candidate = app(HardcoverProvider::class)->lookupByCode('9780547928227')[0];
 
-        $this->assertSame('The Hobbit', $candidate->attributes['title']);
+        $this->assertSame('The Hobbit, or There and Back Again', $candidate->attributes['title']);
         $this->assertSame('J.R.R. Tolkien', $candidate->attributes['authors']);
-        $this->assertSame('Bilbo Baggins is a hobbit who enjoys a comfortable life.', $candidate->attributes['description']);
         $this->assertSame('Houghton Mifflin Harcourt', $candidate->attributes['publisher']);
-        $this->assertSame(366, $candidate->attributes['page_count']);
+        $this->assertSame(300, $candidate->attributes['page_count']);
         $this->assertSame('English', $candidate->attributes['language']);
         $this->assertSame('2012-09-18', $candidate->attributes['release_date']);
-        $this->assertSame('paperback', $candidate->attributes['format']);
-        $this->assertSame('0547928227', $candidate->attributes['isbn10']);
+        $this->assertNull($candidate->attributes['format']);
+        $this->assertSame('054792822X', $candidate->attributes['isbn10']);
         $this->assertSame('9780547928227', $candidate->attributes['isbn13']);
         $this->assertSame('9780547928227', $candidate->attributes['ean']);
-        $this->assertSame(['https://assets.hardcover.app/covers/hobbit-large.jpg'], $candidate->coverUrls);
+        $this->assertSame(['https://assets.hardcover.app/edition/18521437/a35044c6817357b701da3bcac5dce295244c32ba.jpeg'], $candidate->coverUrls);
+    }
+
+    /** Regression test: real responses return the description as raw HTML — confirmed live. */
+    public function test_html_in_the_description_is_stripped_to_plain_text(): void
+    {
+        $this->configureApiKey();
+        Http::fake([self::GRAPHQL_URL => Http::response($this->editionResponse(), 200)]);
+
+        $candidate = app(HardcoverProvider::class)->lookupByCode('9780547928227')[0];
+
+        $this->assertSame(
+            '"In a hole in the ground there lived a hobbit." So begins one of the most beloved tales.',
+            $candidate->attributes['description']
+        );
     }
 
     public function test_authors_are_joined_from_multiple_contributions(): void
@@ -110,6 +153,7 @@ class HardcoverProviderTest extends TestCase
     public function test_no_candidates_when_the_request_fails(): void
     {
         $this->configureApiKey();
+        // The real, documented (and live-confirmed) shape of an unauthenticated/invalid-token response.
         Http::fake([self::GRAPHQL_URL => Http::response(['error' => 'Unable to verify token'], 401)]);
 
         $candidates = app(HardcoverProvider::class)->lookupByCode('9780547928227');
@@ -164,43 +208,60 @@ class HardcoverProviderTest extends TestCase
     public function test_search_maps_documents_from_the_typesense_style_hits_envelope(): void
     {
         $this->configureApiKey();
-        Http::fake([self::GRAPHQL_URL => Http::response([
-            'data' => [
-                'search' => [
-                    'results' => [
-                        'hits' => [
-                            [
-                                'document' => [
-                                    'slug' => 'the-hobbit',
-                                    'title' => 'The Hobbit',
-                                    'author_names' => ['J.R.R. Tolkien'],
-                                    'description' => 'A hobbit sets out on an adventure.',
-                                    'pages' => 366,
-                                    'release_year' => 1937,
-                                    'isbns' => ['0547928227', '9780547928227'],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ], 200)]);
+        Http::fake([self::GRAPHQL_URL => Http::response($this->searchResponse(), 200)]);
 
         $candidates = app(HardcoverProvider::class)->search('the hobbit');
 
         $this->assertCount(1, $candidates);
-        $this->assertSame('The Hobbit', $candidates[0]->attributes['title']);
-        $this->assertSame('J.R.R. Tolkien', $candidates[0]->attributes['authors']);
-        $this->assertSame('1937-01-01', $candidates[0]->attributes['release_date']);
-        $this->assertSame('9780547928227', $candidates[0]->attributes['isbn13']);
-        $this->assertSame('0547928227', $candidates[0]->attributes['isbn10']);
-        $this->assertSame([], $candidates[0]->coverUrls);
+        $candidate = $candidates[0];
+        $this->assertSame('2142692', $candidate->sourceId);
+        $this->assertSame('The Hobbit, Part Two', $candidate->attributes['title']);
+        $this->assertSame('J.R.R. Tolkien, David Wyatt', $candidate->attributes['authors']);
+        $this->assertSame(176, $candidate->attributes['page_count']);
+        $this->assertSame('9780007926671', $candidate->attributes['isbn13']);
+        $this->assertSame('0007926677', $candidate->attributes['isbn10']);
+    }
+
+    /** Regression test: search() results carry a real `image` field even though it isn't in Hardcover's documented Book search fields list — confirmed live. */
+    public function test_search_results_use_the_undocumented_image_field_as_the_cover(): void
+    {
+        $this->configureApiKey();
+        Http::fake([self::GRAPHQL_URL => Http::response($this->searchResponse(), 200)]);
+
+        $candidate = app(HardcoverProvider::class)->search('the hobbit')[0];
+
+        $this->assertSame(
+            ['https://assets.hardcover.app/external_data/1540814/0e0218d7fdfa5ff50270b018ba514b66cdb18e68.jpeg'],
+            $candidate->coverUrls
+        );
+    }
+
+    /** Regression test: search() documents carry a real `release_date`, contrary to the documented field list — preferred over synthesizing one from `release_year`. */
+    public function test_search_prefers_the_real_release_date_over_a_synthesized_one(): void
+    {
+        $this->configureApiKey();
+        Http::fake([self::GRAPHQL_URL => Http::response($this->searchResponse(), 200)]);
+
+        $candidate = app(HardcoverProvider::class)->search('the hobbit')[0];
+
+        $this->assertSame('1937-09-21', $candidate->attributes['release_date']);
+    }
+
+    public function test_search_falls_back_to_a_synthesized_release_date_when_none_is_present(): void
+    {
+        $this->configureApiKey();
+        $response = $this->searchResponse();
+        unset($response['data']['search']['results']['hits'][0]['document']['release_date']);
+        Http::fake([self::GRAPHQL_URL => Http::response($response, 200)]);
+
+        $candidate = app(HardcoverProvider::class)->search('the hobbit')[0];
+
+        $this->assertSame('1937-01-01', $candidate->attributes['release_date']);
     }
 
     public function test_search_returns_empty_when_the_results_shape_is_unexpected(): void
     {
         $this->configureApiKey();
-        // Simulates the documented-but-unverified `results` shape turning out to be different in practice.
         Http::fake([self::GRAPHQL_URL => Http::response([
             'data' => ['search' => ['results' => ['found' => 0]]],
         ], 200)]);
