@@ -121,7 +121,7 @@ Der Metadaten-Import erfolgt über ein **Plugin-System**, sodass zusätzliche Qu
 ### 8.2 Vorgesehene Quellen je Medienart
 - **Buch:** Open Library, Hardcover, Amazon, Google Books
 - **CD:** MusicBrainz, Amazon, Discogs
-- **DVD/Blu-ray:** Amazon, UPCitemdb, Emunation.ch
+- **DVD/Blu-ray:** Amazon, UPCMDB, Emunation.ch
 
 ### 8.3 Ablauf
 1. Automatischer oder manueller Abgleich über EAN/ISBN bzw. Suchbegriffe.
@@ -383,7 +383,7 @@ medinv/
 │   │       │   └── discogs/
 │   │       └── dvd_bluray/
 │   │           ├── amazon/
-│   │           ├── upcitemdb/
+│   │           ├── upcmdb/
 │   │           └── emunation/
 │   │
 │   ├── database/                      # Datenbank-Abstraktionsschicht

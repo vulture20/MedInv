@@ -183,6 +183,10 @@
       "hint": "Used when a visitor's language is neither German nor English.",
       "defaultLanguage": "Default language",
       "saved": "Default language saved."
+    },
+    "pluginConfig": {
+      "label": "Configuration (JSON)",
+      "invalidJson": "Invalid JSON."
     }
   },
   "passwordReset": {

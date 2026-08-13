@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Metadata\MetadataProviderRegistry;
 use App\Models\Library;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -19,6 +20,17 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // MetadataProviderRegistry::defaultProviders() only lists which classes
+        // *could* run — MetadataImportService actually only calls providers with
+        // a corresponding, enabled metadata_plugins row (enabledProvidersFor()).
+        // Nothing else in the app ever created those rows, so a fresh install had
+        // zero enabled providers and every capture/search silently hit "no_match"
+        // regardless of what's implemented — found while wiring up UpcMdbProvider.
+        // firstOrCreate()-based like syncToDatabase() itself, so — same as the
+        // admin account below — this also self-heals an existing deployment on
+        // its next restart (db:seed --force runs on every container start).
+        app(MetadataProviderRegistry::class)->syncToDatabase();
+
         $adminEmail = env('MEDINV_ADMINUSER');
         $adminPassword = env('MEDINV_ADMINPASS');
 

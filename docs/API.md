@@ -389,7 +389,7 @@ Listet registrierte Metadaten-Provider-Plugins (briefing 8.1/8.2), optional gefi
 
 **Response `200`**: Array von MetadataPlugin-Objekten, sortiert nach `priority` (siehe [Datenmodelle](#metadataplugin)).
 
-> Aktuell ist je Medientyp nur **ein** Beispiel-Provider implementiert: OpenLibrary (Buch), MusicBrainz (CD), UPCitemdb (DVD/Blu-ray). Die übrigen aus briefing 8.2 (Hardcover, Amazon, Google Books, Discogs, Emunation.ch) sind `TODO`s in `MetadataProviderRegistry`.
+> Aktuell ist je Medientyp nur **ein** Beispiel-Provider implementiert: OpenLibrary (Buch), MusicBrainz (CD), UPCMDB (DVD/Blu-ray). Die übrigen aus briefing 8.2 (Hardcover, Amazon, Google Books, Discogs, Emunation.ch) sind `TODO`s in `MetadataProviderRegistry`.
 
 ### `GET /api/libraries/{library}/metadata/search`
 

@@ -183,6 +183,10 @@
       "hint": "Wird verwendet, wenn die Sprache eines Besuchers weder Deutsch noch Englisch ist.",
       "defaultLanguage": "Standardsprache",
       "saved": "Standardsprache gespeichert."
+    },
+    "pluginConfig": {
+      "label": "Konfiguration (JSON)",
+      "invalidJson": "Ungültiges JSON."
     }
   },
   "passwordReset": {

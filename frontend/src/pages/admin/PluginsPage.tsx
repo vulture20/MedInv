@@ -10,6 +10,7 @@ interface Plugin {
   media_type: 'book' | 'cd' | 'dvd_bluray'
   enabled: boolean
   priority: number
+  config: Record<string, unknown> | null
 }
 
 /**
@@ -18,22 +19,31 @@ interface Plugin {
  * providers are registered backend-side in MetadataProviderRegistry —
  * this page only toggles/reorders what's already registered, it can't add
  * new provider classes.
+ *
+ * `config` (e.g. UpcMdbProvider's required `api_key`) is edited here as raw
+ * JSON rather than a per-provider form — the column is a deliberately
+ * generic per-provider settings bag (see MetadataPlugin's docblock), and a
+ * bespoke field-by-field UI would need to know each provider's config
+ * shape ahead of time, which the admin API itself doesn't.
  */
 export function PluginsPage() {
   const { t } = useTranslation()
   const [plugins, setPlugins] = useState<Plugin[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [configDrafts, setConfigDrafts] = useState<Record<number, string>>({})
+  const [configErrors, setConfigErrors] = useState<Record<number, string | null>>({})
 
   async function load() {
     const { data } = await apiClient.get<Plugin[]>('/metadata/plugins')
     setPlugins(data)
+    setConfigDrafts(Object.fromEntries(data.map((p) => [p.id, JSON.stringify(p.config ?? {}, null, 2)])))
   }
 
   useEffect(() => {
     void load()
   }, [])
 
-  async function update(plugin: Plugin, patch: Partial<Pick<Plugin, 'enabled' | 'priority'>>) {
+  async function update(plugin: Plugin, patch: Partial<Pick<Plugin, 'enabled' | 'priority' | 'config'>>) {
     setError(null)
     // Optimistic update so a checkbox click / number edit feels immediate.
     setPlugins((prev) => prev.map((p) => (p.id === plugin.id ? { ...p, ...patch } : p)))
@@ -42,6 +52,17 @@ export function PluginsPage() {
     } catch (err) {
       setError(describeError(err, t))
       await load()
+    }
+  }
+
+  function saveConfig(plugin: Plugin) {
+    const draft = configDrafts[plugin.id] ?? ''
+    try {
+      const config = JSON.parse(draft) as Record<string, unknown>
+      setConfigErrors((prev) => ({ ...prev, [plugin.id]: null }))
+      void update(plugin, { config })
+    } catch {
+      setConfigErrors((prev) => ({ ...prev, [plugin.id]: t('admin.pluginConfig.invalidJson') }))
     }
   }
 
@@ -56,6 +77,7 @@ export function PluginsPage() {
             <th>{t('admin.table.mediaType')}</th>
             <th>{t('admin.table.priority')}</th>
             <th>{t('admin.table.enabled')}</th>
+            <th>{t('admin.pluginConfig.label')}</th>
           </tr>
         </thead>
         <tbody>
@@ -73,6 +95,19 @@ export function PluginsPage() {
               </td>
               <td>
                 <input type="checkbox" checked={p.enabled} onChange={(e) => void update(p, { enabled: e.target.checked })} />
+              </td>
+              <td>
+                <textarea
+                  rows={4}
+                  cols={30}
+                  value={configDrafts[p.id] ?? ''}
+                  onChange={(e) => setConfigDrafts((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                />
+                <br />
+                <button type="button" onClick={() => saveConfig(p)}>
+                  {t('admin.actions.save')}
+                </button>
+                {configErrors[p.id] && <p role="alert">{configErrors[p.id]}</p>}
               </td>
             </tr>
           ))}

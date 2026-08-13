@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Domain\Metadata\Providers\DvdBluray;
+
+use App\Domain\Metadata\Contracts\MetadataCandidate;
+use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Models\MetadataPlugin;
+use Illuminate\Support\Facades\Http;
+
+/**
+ * DVD/Blu-ray metadata plugin using the UPCMDB API (briefing 8.2 —
+ * DVD/Blu-ray). Previously implemented against the unrelated upcitemdb.com
+ * service under the same class/provider-key name — a mistranscription
+ * corrected here; UPCMDB (https://upcmdb.com/) is a distinct, movie-specific
+ * physical-media database (title/IMDb-ID/format/cast/... for DVD, Blu-ray,
+ * 4K releases) and requires an API key, unlike the free-tier lookup this
+ * class used to call. Amazon and Emunation.ch, the other two briefing 8.2
+ * sources for this media type, follow the same shape under this namespace.
+ *
+ * The API key is admin-configured per briefing 15.'s existing mechanism for
+ * this — metadata_plugins.config (see MetadataController::updatePlugin()) —
+ * rather than a new system_settings entry or MEDINV_* env var, since it's
+ * already exactly the place this app stores per-provider configuration.
+ */
+class UpcMdbProvider implements MetadataProviderInterface
+{
+    private const BASE_URL = 'https://us-central1-upcmdb-cbae5.cloudfunctions.net/api';
+
+    public function key(): string
+    {
+        return 'dvd_bluray.upcmdb';
+    }
+
+    public function name(): string
+    {
+        return 'UPCMDB';
+    }
+
+    public function mediaType(): string
+    {
+        return 'dvd_bluray';
+    }
+
+    /**
+     * This app's own `ean` column is a 13-digit EAN (see the media_dvd_blurays
+     * migration), so /v1/lookup/ean/:ean — not the separate UPC-12 or IMDb-ID
+     * endpoints UPCMDB also offers — is the correct match for what gets
+     * scanned/entered here.
+     */
+    public function lookupByCode(string $code): array
+    {
+        $apiKey = $this->apiKey();
+
+        if ($apiKey === null) {
+            return [];
+        }
+
+        $response = Http::withHeader('x-api-key', $apiKey)->get(self::BASE_URL.'/v1/lookup/ean/'.$code);
+
+        // 404 ("UPC not found in database") and any other failure (401/403/429,
+        // see UPCMDB's documented error codes) both just mean no candidate.
+        if ($response->failed()) {
+            return [];
+        }
+
+        // Unlike a search, a single lookup returns one JSON object directly,
+        // not an array/items envelope.
+        return [$this->mapToCandidate($response->json() ?? [], $code)];
+    }
+
+    public function search(string $query): array
+    {
+        $apiKey = $this->apiKey();
+
+        if ($apiKey === null) {
+            return [];
+        }
+
+        $response = Http::withHeader('x-api-key', $apiKey)->get(self::BASE_URL.'/v1/search', ['title' => $query]);
+
+        if ($response->failed()) {
+            return [];
+        }
+
+        return collect($response->json() ?? [])
+            ->map(fn (array $item) => $this->mapToCandidate($item, null))
+            ->all();
+    }
+
+    /**
+     * Read from the same metadata_plugins.config JSON blob the admin UI
+     * already edits for this provider (PluginsPage.tsx) — via a fresh
+     * Eloquent fetch, not a raw query builder ->value(), so the model's
+     * `config` => 'array' cast actually applies instead of returning the
+     * raw (possibly still-JSON-encoded) column value.
+     */
+    private function apiKey(): ?string
+    {
+        $config = MetadataPlugin::query()->where('provider_key', $this->key())->first()?->config;
+
+        return $config['api_key'] ?? null;
+    }
+
+    private function mapToCandidate(array $item, ?string $ean): MetadataCandidate
+    {
+        return new MetadataCandidate(
+            providerKey: $this->key(),
+            sourceId: $item['upc'] ?? ($ean ?? ''),
+            attributes: [
+                'title' => $item['title'] ?? null,
+                'description' => $item['plot'] ?? null,
+                'medium' => $item['format'] ?? null,
+                'director' => $item['director'] ?? null,
+                'cast' => $item['actors'] ?? null,
+                'production_year' => $item['year'] ?? null,
+                'runtime_minutes' => $this->parseRuntimeMinutes($item['runtime'] ?? null),
+                'ean' => $ean ?? $item['upc'] ?? null,
+            ],
+            // UPCMDB's documented response object carries no cover-image field
+            // (unlike the previous upcitemdb.com integration) — no cover to offer.
+            coverUrls: [],
+        );
+    }
+
+    /** UPCMDB returns runtime as e.g. "116 min" rather than a bare integer. */
+    private function parseRuntimeMinutes(?string $runtime): ?int
+    {
+        if ($runtime === null || ! preg_match('/(\d+)/', $runtime, $matches)) {
+            return null;
+        }
+
+        return (int) $matches[1];
+    }
+}
