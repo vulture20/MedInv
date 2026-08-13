@@ -37,6 +37,11 @@ services:
       MEDINV_DB_CONNECTION: ${MEDINV_DB_CONNECTION:-sqlite}
       MEDINV_DB_HOST: ${MEDINV_DB_HOST:-mariadb}
       MEDINV_DB_PORT: ${MEDINV_DB_PORT:-3306}
+      # A database *name* for mysql/mariadb/postgres — meaningless for the
+      # default sqlite backend, where entrypoint.sh ignores this var
+      # entirely and always uses a fixed path under the `storage` volume
+      # instead (see its comment, and GitHub issue #25: this default used
+      # to leak into the sqlite driver as a bogus relative file path).
       MEDINV_DB_DATABASE: ${MEDINV_DB_DATABASE:-medinv}
       MEDINV_DB_USERNAME: ${MEDINV_DB_USERNAME:-medinv}
       MEDINV_DB_PASSWORD: ${MEDINV_DB_PASSWORD:-medinv}
@@ -52,7 +57,14 @@ services:
       MEDINV_PortWeb: ${MEDINV_PortWeb:-8080}
     volumes:
       - storage:/var/www/backend/storage
-      - sqlite-data:/var/www/backend/database
+      # Kept named `sqlite-data`, not renamed, even though its mount point
+      # moved (see GitHub issue #25 / entrypoint.sh's comment on the sqlite
+      # path) — Compose matches volumes by name within a project, so an
+      # existing deployment's real data (already inside this named volume)
+      # keeps working automatically on `docker compose up` with no manual
+      # step; renaming the key here would make Compose treat it as a new,
+      # empty volume and silently orphan that existing data instead.
+      - sqlite-data:/var/www/backend/storage/database
     depends_on:
       mariadb:
         condition: service_healthy

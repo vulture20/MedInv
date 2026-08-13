@@ -41,14 +41,53 @@ fi
 # briefing 10.: DB backend chosen freely at setup). All DB_* Laravel
 # defaults are renamed to MEDINV_DB_* for this project (config/database.php)
 # so every MedInv-specific setting consistently starts with MEDINV_.
+#
+# The path is fixed and authoritative here, deliberately NOT reading an
+# inherited MEDINV_DB_DATABASE (unlike every other MEDINV_DB_* var) — see
+# GitHub issue #25. Two compounding bugs used to live here: (1)
+# docker-compose.yml sets MEDINV_DB_DATABASE=medinv by default, a value
+# that's only meaningful for mysql/mariadb/postgres (a database *name*, not
+# a file path) — inherited here as a bogus relative path, it silently
+# created the database at ./medinv (relative to `cd /var/www/backend`
+# above), entirely outside any mounted volume, so it never survived a
+# container recreation at all; (2) even fixing #1, the path this used to
+# fall back to (database/database.sqlite) lives inside the `database/`
+# application-code directory, which docker-compose.yml also mounted a
+# volume onto — meaning every future image update's changes to
+# database/migrations|seeders|factories got silently shadowed by that
+# volume's now-frozen copy from whenever it was first created, forever.
+# The database now lives under storage/database instead — nested inside
+# storage/, which was already a volume reserved for exactly this kind of
+# persisted runtime state (backups, logs, this file). For docker-compose
+# deployments this is handled transparently: docker-compose.yml still
+# declares the same *named* volume (`sqlite-data`) an existing deployment's
+# real data already lives in, just remounted at the new nested path
+# instead of the old, code-shadowing one — Compose matches volumes by
+# name, so the data carries over with no action needed here at all.
 if [ "${MEDINV_DB_CONNECTION:-sqlite}" = "sqlite" ]; then
-    SQLITE_PATH="${MEDINV_DB_DATABASE:-/var/www/backend/database/database.sqlite}"
+    SQLITE_PATH="/var/www/backend/storage/database/database.sqlite"
+
+    # Defensive fallback for anyone running the image directly (not via
+    # docker-compose.yml) who had mounted their own volume at the old
+    # path: a database.sqlite file found there gets moved into the new
+    # location on next boot, before migrate runs, instead of silently
+    # starting over on an empty database. Safe on every boot: a no-op
+    # once moved (or if nothing was ever there — the compose path above
+    # never populates this old location at all).
+    OLD_SQLITE_PATH="/var/www/backend/database/database.sqlite"
+    if [ -f "$OLD_SQLITE_PATH" ] && [ ! -f "$SQLITE_PATH" ]; then
+        echo "Found a database at the old location ($OLD_SQLITE_PATH) — moving it to $SQLITE_PATH (see GitHub issue #25)."
+        mkdir -p "$(dirname "$SQLITE_PATH")"
+        mv "$OLD_SQLITE_PATH" "$SQLITE_PATH"
+    fi
+
     mkdir -p "$(dirname "$SQLITE_PATH")"
     touch "$SQLITE_PATH"
     # php-fpm workers run as www-data (see php-fpm's default pool config) —
     # the file/dir must be writable by that user, not just root (this
     # entrypoint's own user).
     chown www-data:www-data "$(dirname "$SQLITE_PATH")" "$SQLITE_PATH"
+    export MEDINV_DB_DATABASE="$SQLITE_PATH"
 fi
 
 echo "Waiting for database connection..."

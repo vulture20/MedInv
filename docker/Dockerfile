@@ -32,8 +32,8 @@ COPY --from=backend-deps /usr/bin/composer /usr/local/bin/composer
 COPY backend/ ./
 COPY --from=backend-deps /app/vendor ./vendor
 RUN composer dump-autoload --optimize --no-dev \
-    && mkdir -p storage/framework/{cache,sessions,views} storage/logs storage/app/private/backups bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache database
+    && mkdir -p storage/framework/{cache,sessions,views} storage/logs storage/app/private/backups storage/database bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
 COPY --from=frontend-build /app/dist /var/www/spa
 
@@ -46,8 +46,12 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Persisted outside the image (see docker/docker-compose.yml volumes):
-# backups (9.2/9.3), logs, and the sqlite data file when that backend is chosen.
-VOLUME ["/var/www/backend/storage", "/var/www/backend/database"]
+# backups (9.2/9.3), logs, app_key, and the sqlite database file when that
+# backend is chosen (storage/database/, see entrypoint.sh — GitHub issue
+# #25 on why this deliberately isn't also /var/www/backend/database, which
+# holds application code (migrations/seeders/factories) that must stay
+# part of the image and pick up every update, not get frozen in a volume).
+VOLUME ["/var/www/backend/storage"]
 
 # Documented default for MEDINV_PortWeb (entrypoint.sh) — EXPOSE is metadata
 # only; the actual listen port is only known at container start, and
