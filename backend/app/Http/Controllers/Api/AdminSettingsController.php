@@ -51,6 +51,7 @@ class AdminSettingsController extends Controller
             'locale' => [
                 'default_language' => SystemSetting::get('locale.default_language', 'en'),
             ],
+            'timezone' => SystemSetting::get('timezone', 'UTC'),
         ];
     }
 
@@ -157,6 +158,24 @@ class AdminSettingsController extends Controller
         SystemSetting::set('loglevel', $data['loglevel']);
 
         return response()->json(['loglevel' => $data['loglevel']]);
+    }
+
+    /**
+     * The display timezone (GitHub issue #31) used only for filenames/text
+     * a human directly reads (SystemSetting::localNow()) — not applied to
+     * config('app.timezone')/PHP's default timezone at all, see that
+     * method's docblock for why. Validated against PHP's own list of
+     * recognized IANA identifiers rather than a hand-maintained enum, so
+     * it never drifts out of sync with what `DateTimeZone` actually
+     * accepts.
+     */
+    public function updateTimezone(Request $request)
+    {
+        $data = $request->validate(['timezone' => ['required', 'string', Rule::in(\DateTimeZone::listIdentifiers())]]);
+
+        SystemSetting::set('timezone', $data['timezone']);
+
+        return response()->json(['timezone' => $data['timezone']]);
     }
 
     /**

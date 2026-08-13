@@ -106,5 +106,6 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::put('/settings/covers', [AdminSettingsController::class, 'updateCoverCleanup']);
         Route::put('/settings/loglevel', [AdminSettingsController::class, 'updateLoglevel']);
         Route::put('/settings/locale', [AdminSettingsController::class, 'updateLocale']);
+        Route::put('/settings/timezone', [AdminSettingsController::class, 'updateTimezone']);
     });
 });

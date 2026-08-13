@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -50,6 +51,7 @@ class SystemSetting extends Model
             'security.throttle_window_minutes' => 5,
             'security.throttle_lock_minutes' => 30,
             'covers.cleanup_enabled' => true,
+            'timezone' => 'UTC',
             'loglevel' => env('MEDINV_LOGLEVEL', 'WARNING'),
             'locale.default_language' => 'en',
         ];
@@ -68,5 +70,29 @@ class SystemSetting extends Model
     public static function allAsArray(): array
     {
         return [...static::defaults(), ...static::query()->pluck('value', 'key')->all()];
+    }
+
+    /**
+     * Current time in the admin-configured display timezone (`timezone`
+     * setting, GitHub issue #31) — for filenames and other text a human
+     * directly reads (BackupService's backup filename,
+     * ExportImportController's export filename), not for anything stored
+     * or compared internally.
+     *
+     * Deliberately does NOT touch `config('app.timezone')` or PHP's global
+     * default timezone: `created_at`/`updated_at` columns are stored as
+     * naive datetimes with no timezone of their own, so changing the
+     * global default after records already exist would silently
+     * reinterpret old timestamps in the new zone while new ones use it
+     * going forward — the two would no longer agree on what "the same
+     * clock time" means. It would also shift exactly when the scheduled
+     * backup/cover-cleanup cron expressions in routes/console.php are
+     * considered due. `localNow()` only ever affects freshly-generated,
+     * human-facing text, never anything the app itself stores or reasons
+     * about.
+     */
+    public static function localNow(): Carbon
+    {
+        return now()->setTimezone(static::get('timezone', 'UTC'));
     }
 }

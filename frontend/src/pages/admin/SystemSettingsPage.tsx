@@ -17,11 +17,28 @@ interface CoverCleanupSettings {
 }
 
 /**
+ * IANA timezone identifiers, sourced from the browser's own Intl data
+ * (same underlying tzdata PHP's DateTimeZone validates against
+ * server-side, see AdminSettingsController::updateTimezone()) rather than
+ * a hand-maintained list that could drift out of sync or omit a zone the
+ * backend would otherwise accept.
+ */
+const TIMEZONES: string[] = (() => {
+  try {
+    return Intl.supportedValuesOf('timeZone')
+  } catch {
+    return ['UTC']
+  }
+})()
+
+/**
  * The remaining runtime settings that don't have a page of their own:
  * brute-force throttling (briefing 12.4, enforced by BruteForceProtection),
- * the log level, the default language, and the daily orphaned-cover-file
- * cleanup toggle. Mail lives on its own page, backup schedule/retention
- * lives with the backups list — see pages/admin/{Mail,Backups}Page.tsx.
+ * the log level, the default language, the daily orphaned-cover-file
+ * cleanup toggle, and the display timezone used for backup/export
+ * filenames (GitHub issue #31). Mail lives on its own page, backup
+ * schedule/retention lives with the backups list — see
+ * pages/admin/{Mail,Backups}Page.tsx.
  */
 export function SystemSettingsPage() {
   const { t } = useTranslation()
@@ -37,6 +54,9 @@ export function SystemSettingsPage() {
   const [coverCleanup, setCoverCleanup] = useState<CoverCleanupSettings | null>(null)
   const [coverCleanupSaved, setCoverCleanupSaved] = useState(false)
   const [coverCleanupError, setCoverCleanupError] = useState<string | null>(null)
+  const [timezone, setTimezone] = useState<string | null>(null)
+  const [timezoneSaved, setTimezoneSaved] = useState(false)
+  const [timezoneError, setTimezoneError] = useState<string | null>(null)
 
   async function load() {
     const { data } = await apiClient.get<{
@@ -44,11 +64,13 @@ export function SystemSettingsPage() {
       loglevel: LogLevel
       locale: { default_language: DefaultLanguage }
       covers: CoverCleanupSettings
+      timezone: string
     }>('/admin/settings')
     setSecurity(data.security)
     setLoglevel(data.loglevel)
     setDefaultLanguage(data.locale.default_language)
     setCoverCleanup(data.covers)
+    setTimezone(data.timezone)
   }
 
   useEffect(() => {
@@ -96,6 +118,20 @@ export function SystemSettingsPage() {
       setLocaleSaved(true)
     } catch (err) {
       setLocaleError(describeError(err, t))
+    }
+  }
+
+  async function saveTimezone(e: React.FormEvent) {
+    e.preventDefault()
+    if (!timezone) return
+    setTimezoneError(null)
+    setTimezoneSaved(false)
+    try {
+      const { data } = await apiClient.put<{ timezone: string }>('/admin/settings/timezone', { timezone })
+      setTimezone(data.timezone)
+      setTimezoneSaved(true)
+    } catch (err) {
+      setTimezoneError(describeError(err, t))
     }
   }
 
@@ -192,6 +228,28 @@ export function SystemSettingsPage() {
             <button type="submit">{t('admin.actions.save')}</button>
             {localeSaved && <p role="status">{t('admin.localeSettings.saved')}</p>}
             {localeError && <p role="alert">{localeError}</p>}
+          </form>
+        </section>
+      )}
+
+      {timezone && (
+        <section>
+          <h2>{t('admin.timezoneSettings.title')}</h2>
+          <p className="hint">{t('admin.timezoneSettings.hint')}</p>
+          <form onSubmit={saveTimezone}>
+            <label>
+              {t('admin.timezoneSettings.timezone')}
+              <select value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+                {TIMEZONES.map((tz) => (
+                  <option key={tz} value={tz}>
+                    {tz}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="submit">{t('admin.actions.save')}</button>
+            {timezoneSaved && <p role="status">{t('admin.timezoneSettings.saved')}</p>}
+            {timezoneError && <p role="alert">{timezoneError}</p>}
           </form>
         </section>
       )}

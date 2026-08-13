@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\ExportImport\ExportImportService;
 use App\Http\Controllers\Controller;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
@@ -25,8 +26,11 @@ class ExportImportController extends Controller
 
         $export = $this->service->exportLibraries($libraryIds);
 
+        // SystemSetting::localNow(), not now() — GitHub issue #31: this filename
+        // is what the admin actually sees in their downloads, so it should
+        // reflect their configured display timezone, not always UTC.
         return Response::json($export)
-            ->header('Content-Disposition', 'attachment; filename="medinv-export-'.now()->format('Ymd-His').'.json"');
+            ->header('Content-Disposition', 'attachment; filename="medinv-export-'.SystemSetting::localNow()->format('Ymd-His').'.json"');
     }
 
     /**

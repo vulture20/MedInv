@@ -40,7 +40,10 @@ class BackupService
         // 9.2), unlike an ordinary admin-initiated library export (9.1), which never
         // carries user accounts/password hashes. See exportLibraries()'s docblock.
         $data = $this->exportImportService->exportLibraries(null, includeUsers: true);
-        $filename = 'medinv-backup-'.now()->format('Ymd-His').'.zip';
+        // SystemSetting::localNow(), not now() — GitHub issue #31: the filename
+        // is the one place an admin actually reads this timestamp, so it should
+        // reflect their configured display timezone, not always UTC.
+        $filename = 'medinv-backup-'.SystemSetting::localNow()->format('Ymd-His').'.zip';
         $path = self::DIR.'/'.$filename;
 
         $tmpJson = tempnam(sys_get_temp_dir(), 'medinv-backup');
