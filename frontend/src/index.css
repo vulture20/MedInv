@@ -259,6 +259,12 @@ a {
   border-radius: 6px;
 }
 
+/* Small explanatory note under a form/section heading (e.g. BackupsPage's retention hint) — not an error/warning, just muted secondary text. */
+.hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
 .warning--danger {
   background: var(--color-danger-bg);
   color: var(--color-danger);

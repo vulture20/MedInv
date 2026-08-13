@@ -207,6 +207,7 @@
         "cron": "Custom (cron expression)"
       },
       "cronExpression": "Cron expression",
+      "retentionHint": "Only applies to automatic backups. Manually created backups don't count toward it and are never deleted automatically.",
       "retentionCount": "Keep at most this many backups",
       "retentionMaxAgeDays": "Delete backups older than (days)",
       "saved": "Backup schedule saved."

@@ -167,6 +167,7 @@ export function BackupsPage() {
       {settings && (
         <section>
           <h2>{t('admin.backupSettings.title')}</h2>
+          <p className="hint">{t('admin.backupSettings.retentionHint')}</p>
           <form onSubmit={saveSettings}>
             <label>
               {t('admin.backupSettings.intervalMode')}

@@ -154,7 +154,17 @@ class BackupService
     /**
      * Applies the retention defaults from briefing 9.2 (overridable via
      * system_settings): backups beyond the configured count or older than
-     * the configured max age are deleted automatically.
+     * the configured max age are deleted automatically. Manual backups
+     * (trigger='manual', an admin explicitly clicking "Create backup now")
+     * are deliberately exempt from both rules and from the count itself —
+     * an admin who takes a backup on purpose (e.g. right before a risky
+     * change) shouldn't have it silently swept away by the automatic
+     * backup schedule's *own* unrelated retention policy, nor have it
+     * eat into the number of automatic backups that policy is meant to
+     * keep. Automatic backups (trigger='automatic' — both the scheduled
+     * ones from routes/console.php and PreUpdateBackupCommand's
+     * pre-update safety net, neither of which an admin asked for by name)
+     * are the only ones this ever deletes.
      */
     public function prune(): void
     {
@@ -171,8 +181,10 @@ class BackupService
         $maxCount = (int) SystemSetting::get('backup.retention_count', $defaultCount);
         $maxAgeDays = (int) SystemSetting::get('backup.retention_max_age_days', $defaultMaxAgeDays);
 
-        $expired = Backup::query()->where('created_at', '<', now()->subDays($maxAgeDays))->get();
-        $excess = Backup::query()->orderByDesc('created_at')->get()->slice($maxCount);
+        $automatic = Backup::query()->where('trigger', '!=', 'manual');
+
+        $expired = (clone $automatic)->where('created_at', '<', now()->subDays($maxAgeDays))->get();
+        $excess = (clone $automatic)->orderByDesc('created_at')->get()->slice($maxCount);
 
         $expired->merge($excess)->unique('id')->each(fn (Backup $b) => $this->delete($b));
     }
