@@ -3,6 +3,7 @@
 namespace App\Domain\Metadata;
 
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
@@ -23,7 +24,8 @@ class MetadataProviderRegistry
     {
         return [
             OpenLibraryProvider::class,
-            // TODO: HardcoverProvider, AmazonBookProvider, GoogleBooksProvider (briefing 8.2 — Buch)
+            GoogleBooksProvider::class,
+            // TODO: HardcoverProvider, AmazonBookProvider (briefing 8.2 — Buch)
             MusicBrainzProvider::class,
             // TODO: AmazonCdProvider, DiscogsProvider (briefing 8.2 — CD)
             UpcMdbProvider::class,
