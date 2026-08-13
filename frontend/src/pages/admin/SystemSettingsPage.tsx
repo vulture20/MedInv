@@ -10,6 +10,7 @@ interface SecuritySettings {
 }
 
 type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR'
+type DefaultLanguage = 'de' | 'en'
 
 /**
  * The remaining runtime settings that don't have a page of their own:
@@ -25,11 +26,19 @@ export function SystemSettingsPage() {
   const [loglevel, setLoglevel] = useState<LogLevel | null>(null)
   const [loglevelSaved, setLoglevelSaved] = useState(false)
   const [loglevelError, setLoglevelError] = useState<string | null>(null)
+  const [defaultLanguage, setDefaultLanguage] = useState<DefaultLanguage | null>(null)
+  const [localeSaved, setLocaleSaved] = useState(false)
+  const [localeError, setLocaleError] = useState<string | null>(null)
 
   async function load() {
-    const { data } = await apiClient.get<{ security: SecuritySettings; loglevel: LogLevel }>('/admin/settings')
+    const { data } = await apiClient.get<{
+      security: SecuritySettings
+      loglevel: LogLevel
+      locale: { default_language: DefaultLanguage }
+    }>('/admin/settings')
     setSecurity(data.security)
     setLoglevel(data.loglevel)
+    setDefaultLanguage(data.locale.default_language)
   }
 
   useEffect(() => {
@@ -61,6 +70,22 @@ export function SystemSettingsPage() {
       setLoglevelSaved(true)
     } catch (err) {
       setLoglevelError(describeError(err, t))
+    }
+  }
+
+  async function saveLocale(e: React.FormEvent) {
+    e.preventDefault()
+    if (!defaultLanguage) return
+    setLocaleError(null)
+    setLocaleSaved(false)
+    try {
+      const { data } = await apiClient.put<{ default_language: DefaultLanguage }>('/admin/settings/locale', {
+        default_language: defaultLanguage,
+      })
+      setDefaultLanguage(data.default_language)
+      setLocaleSaved(true)
+    } catch (err) {
+      setLocaleError(describeError(err, t))
     }
   }
 
@@ -123,6 +148,25 @@ export function SystemSettingsPage() {
             <button type="submit">{t('admin.actions.save')}</button>
             {loglevelSaved && <p role="status">{t('admin.logLevel.saved')}</p>}
             {loglevelError && <p role="alert">{loglevelError}</p>}
+          </form>
+        </section>
+      )}
+
+      {defaultLanguage && (
+        <section>
+          <h2>{t('admin.localeSettings.title')}</h2>
+          <p>{t('admin.localeSettings.hint')}</p>
+          <form onSubmit={saveLocale}>
+            <label>
+              {t('admin.localeSettings.defaultLanguage')}
+              <select value={defaultLanguage} onChange={(e) => setDefaultLanguage(e.target.value as DefaultLanguage)}>
+                <option value="de">{t('settings.language.de')}</option>
+                <option value="en">{t('settings.language.en')}</option>
+              </select>
+            </label>
+            <button type="submit">{t('admin.actions.save')}</button>
+            {localeSaved && <p role="status">{t('admin.localeSettings.saved')}</p>}
+            {localeError && <p role="alert">{localeError}</p>}
           </form>
         </section>
       )}

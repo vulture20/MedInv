@@ -73,7 +73,9 @@
       "dark": "Dunkel"
     },
     "language": {
-      "label": "Sprache"
+      "label": "Sprache",
+      "de": "Deutsch",
+      "en": "Englisch"
     }
   },
   "admin": {
@@ -175,6 +177,12 @@
     "logLevel": {
       "title": "Log-Level",
       "saved": "Log-Level gespeichert."
+    },
+    "localeSettings": {
+      "title": "Standardsprache",
+      "hint": "Wird verwendet, wenn die Sprache eines Besuchers weder Deutsch noch Englisch ist.",
+      "defaultLanguage": "Standardsprache",
+      "saved": "Standardsprache gespeichert."
     }
   },
   "passwordReset": {

@@ -61,7 +61,7 @@ export function SettingsPage() {
         >
           {AVAILABLE_LANGUAGES.map((lng) => (
             <option key={lng} value={lng}>
-              {lng.toUpperCase()}
+              {t(`settings.language.${lng}`)}
             </option>
           ))}
         </select>

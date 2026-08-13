@@ -73,7 +73,9 @@
       "dark": "Dark"
     },
     "language": {
-      "label": "Language"
+      "label": "Language",
+      "de": "German",
+      "en": "English"
     }
   },
   "admin": {
@@ -175,6 +177,12 @@
     "logLevel": {
       "title": "Log level",
       "saved": "Log level saved."
+    },
+    "localeSettings": {
+      "title": "Default language",
+      "hint": "Used when a visitor's language is neither German nor English.",
+      "defaultLanguage": "Default language",
+      "saved": "Default language saved."
     }
   },
   "passwordReset": {

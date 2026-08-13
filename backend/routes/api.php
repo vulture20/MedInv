@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\UserController;
+use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Route;
 
 // Public (briefing 11.1: login screen is the only thing reachable unauthenticated).
@@ -25,6 +26,15 @@ Route::post('/password/reset', [PasswordResetController::class, 'reset']);
 Route::get('/version', fn () => response()->json([
     'name' => config('medinv.name'),
     'version' => config('medinv.version'),
+]));
+
+// Also needed before login: a visitor whose browser language is neither German nor
+// English falls back to this admin-configured default (briefing 11.4) instead of a
+// hardcoded 'en' — see frontend/src/i18n/index.ts's applyAdminDefaultLanguage().
+// Deliberately its own tiny route rather than folded into /version above, which is
+// documented as sourced solely from config/medinv.php, not the system_settings table.
+Route::get('/locale', fn () => response()->json([
+    'default_language' => SystemSetting::get('locale.default_language', 'en'),
 ]));
 
 // Sanctum SPA session auth (bootstrap/app.php: ->statefulApi()).
@@ -90,5 +100,6 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::put('/settings/backup', [AdminSettingsController::class, 'updateBackup']);
         Route::put('/settings/security', [AdminSettingsController::class, 'updateSecurity']);
         Route::put('/settings/loglevel', [AdminSettingsController::class, 'updateLoglevel']);
+        Route::put('/settings/locale', [AdminSettingsController::class, 'updateLocale']);
     });
 });

@@ -45,6 +45,9 @@ class AdminSettingsController extends Controller
                 'throttle_lock_minutes' => SystemSetting::get('security.throttle_lock_minutes', 30),
             ],
             'loglevel' => SystemSetting::get('loglevel', env('MEDINV_LOGLEVEL', 'WARNING')),
+            'locale' => [
+                'default_language' => SystemSetting::get('locale.default_language', 'en'),
+            ],
         ];
     }
 
@@ -141,5 +144,23 @@ class AdminSettingsController extends Controller
         SystemSetting::set('loglevel', $data['loglevel']);
 
         return response()->json(['loglevel' => $data['loglevel']]);
+    }
+
+    /**
+     * The language a visitor's browser falls back to when it declares
+     * neither German nor English (briefing 11.4) — read publicly (even
+     * pre-login) via GET /locale, see routes/api.php. Restricted to the two
+     * shipped languages for now, same as AccountSettingsController's own
+     * per-user preferred_language selector; once admin-managed language
+     * packs exist (GitHub issues #12/#15) this may need to accept those
+     * codes too.
+     */
+    public function updateLocale(Request $request)
+    {
+        $data = $request->validate(['default_language' => ['required', Rule::in(['de', 'en'])]]);
+
+        SystemSetting::set('locale.default_language', $data['default_language']);
+
+        return response()->json(['default_language' => $data['default_language']]);
     }
 }
