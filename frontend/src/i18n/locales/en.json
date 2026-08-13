@@ -9,7 +9,8 @@
     "capture": "Capture",
     "libraries": "Libraries",
     "statistics": "Statistics",
-    "administration": "Administration"
+    "administration": "Administration",
+    "toggleMenu": "Toggle menu"
   },
   "dashboard": {
     "noLibraries": "No libraries are visible to you yet.",

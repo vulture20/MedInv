@@ -2,6 +2,15 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 
+interface SidebarProps {
+  /**
+   * Whether the off-canvas panel is expanded on mobile (briefing 11.2). Has
+   * no visual effect above the ≤768px breakpoint, where the sidebar's CSS
+   * ignores this class and it renders inline as always.
+   */
+  open?: boolean
+}
+
 /**
  * Left sidebar (briefing 11.2): Startseite, Erfassung, Bibliotheken,
  * Statistiken, Administration. "Erfassung" needs write access to at least
@@ -9,12 +18,12 @@ import { useAuth } from '../auth/AuthContext'
  * write access to anything, and a user/admin's actual per-library
  * permissions are re-checked backend-side regardless.
  */
-export function Sidebar() {
+export function Sidebar({ open = false }: SidebarProps) {
   const { t } = useTranslation()
   const { user } = useAuth()
 
   return (
-    <nav className="sidebar" aria-label="Main navigation">
+    <nav id="app-sidebar" className={`sidebar${open ? ' sidebar--open' : ''}`} aria-label="Main navigation">
       <NavLink to="/" end>
         {t('nav.home')}
       </NavLink>

@@ -4,13 +4,20 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../auth/AuthContext'
 import { Logo } from '../components/Logo'
 
+interface HeaderProps {
+  /** Whether the mobile off-canvas sidebar is currently expanded (briefing 11.2). */
+  sidebarOpen: boolean
+  /** Toggles the mobile sidebar; the button itself is hidden above the ≤768px breakpoint. */
+  onToggleSidebar: () => void
+}
+
 /**
  * Top header (briefing 11.2): logo + app name + search on the left;
  * statistics/capture/administration quick-access + user menu on the right.
  * The quick-access icons duplicate sidebar entries deliberately — the
  * briefing calls this out as intentional convenience, not a bug (11.2 note).
  */
-export function Header() {
+export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
   const { t } = useTranslation()
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -25,6 +32,16 @@ export function Header() {
   return (
     <header className="app-header">
       <div className="app-header__left">
+        <button
+          type="button"
+          className="sidebar-toggle"
+          aria-label={t('nav.toggleMenu')}
+          aria-expanded={sidebarOpen}
+          aria-controls="app-sidebar"
+          onClick={onToggleSidebar}
+        >
+          ☰
+        </button>
         <Link to="/" className="app-header__brand">
           <Logo size={28} />
         </Link>

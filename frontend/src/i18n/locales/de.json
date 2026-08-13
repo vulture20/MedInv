@@ -9,7 +9,8 @@
     "capture": "Erfassung",
     "libraries": "Bibliotheken",
     "statistics": "Statistiken",
-    "administration": "Administration"
+    "administration": "Administration",
+    "toggleMenu": "Menü öffnen/schließen"
   },
   "dashboard": {
     "noLibraries": "Für Sie sind noch keine Bibliotheken sichtbar.",
