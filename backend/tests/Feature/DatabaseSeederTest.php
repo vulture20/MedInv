@@ -28,6 +28,7 @@ class DatabaseSeederTest extends TestCase
         $table = (new MetadataPlugin)->getTable();
         $this->assertDatabaseHas($table, ['provider_key' => 'book.open_library', 'enabled' => true]);
         $this->assertDatabaseHas($table, ['provider_key' => 'book.google_books', 'enabled' => true]);
+        $this->assertDatabaseHas($table, ['provider_key' => 'book.hardcover', 'enabled' => true]);
         $this->assertDatabaseHas($table, ['provider_key' => 'cd.musicbrainz', 'enabled' => true]);
         $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.upcmdb', 'enabled' => true]);
     }
@@ -37,7 +38,7 @@ class DatabaseSeederTest extends TestCase
         $this->seed();
         $this->seed();
 
-        $this->assertSame(4, MetadataPlugin::query()->count());
+        $this->assertSame(5, MetadataPlugin::query()->count());
     }
 
     public function test_a_freshly_seeded_install_actually_has_an_enabled_dvd_bluray_provider(): void

@@ -27,6 +27,9 @@ class MetadataPluginConfigFieldsTest extends TestCase
         $this->assertSame([
             ['key' => 'api_key', 'type' => 'password', 'required' => true],
         ], $fields->get('dvd_bluray.upcmdb'));
+        $this->assertSame([
+            ['key' => 'api_key', 'type' => 'password', 'required' => true],
+        ], $fields->get('book.hardcover'));
     }
 
     public function test_plugins_endpoint_attaches_config_fields_to_each_row(): void
