@@ -413,6 +413,7 @@ td {
 
 .media-item-dialog__move {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.5rem;
   margin-top: 1rem;
@@ -423,6 +424,14 @@ td {
 .media-item-dialog__move label {
   flex: 1;
   margin-bottom: 0;
+}
+
+/* Wraps onto its own line below the label/button (flex-wrap above) instead of squeezing next to them. */
+.media-item-dialog__move-error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.85rem;
 }
 
 .spinner {

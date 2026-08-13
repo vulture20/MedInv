@@ -143,6 +143,11 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   const [values, setValues] = useState<Record<string, string>>({})
   const [targetLibraryId, setTargetLibraryId] = useState<number | ''>('')
   const [error, setError] = useState<string | null>(null)
+  // Kept separate from `error` so a "this item already exists there" (or
+  // similar) failure renders right next to the "move to library" control
+  // that caused it, instead of at the top of the dialog where it read as
+  // unrelated to the edit form/cover controls shown above it.
+  const [moveError, setMoveError] = useState<string | null>(null)
 
   const specs = FIELD_SPECS[library.media_type]
 
@@ -150,6 +155,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     if (item) {
       setEditing(false)
       setError(null)
+      setMoveError(null)
       setValues(valuesFromItem(item, specs))
       dialogRef.current?.showModal()
     } else {
@@ -165,7 +171,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     (lib) => lib.id !== library.id && lib.media_type === library.media_type && (user?.level === 'admin' || lib.owner.id === user?.id)
   )
 
-  function describeSaveError(err: unknown): string {
+  function describeApiError(err: unknown): string {
     if (!isAxiosError(err)) return t('errors.generic')
     if (err.response?.status === 409) return t('capture.duplicate')
     const errors = (err.response?.data as { errors?: Record<string, string[]> } | undefined)?.errors
@@ -182,7 +188,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       onUpdated(data)
       setEditing(false)
     } catch (err) {
-      setError(describeSaveError(err))
+      setError(describeApiError(err))
     }
   }
 
@@ -195,12 +201,12 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
 
   async function move() {
     if (!item || targetLibraryId === '') return
-    setError(null)
+    setMoveError(null)
     try {
       await apiClient.post(`/libraries/${library.id}/items/${item.id}/move`, { target_library_id: targetLibraryId })
       onMoved()
     } catch (err) {
-      setError(describeSaveError(err))
+      setMoveError(describeApiError(err))
     }
   }
 
@@ -215,7 +221,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       })
       onUpdated(data)
     } catch (err) {
-      setError(describeSaveError(err))
+      setError(describeApiError(err))
     }
   }
 
@@ -227,7 +233,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       const { data } = await apiClient.delete<MediaItem>(`/libraries/${library.id}/items/${item.id}/cover`)
       onUpdated(data)
     } catch (err) {
-      setError(describeSaveError(err))
+      setError(describeApiError(err))
     }
   }
 
@@ -333,7 +339,13 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
             <div className="media-item-dialog__move">
               <label>
                 {t('mediaItem.moveToLibrary')}
-                <select value={targetLibraryId} onChange={(e) => setTargetLibraryId(e.target.value ? Number(e.target.value) : '')}>
+                <select
+                  value={targetLibraryId}
+                  onChange={(e) => {
+                    setTargetLibraryId(e.target.value ? Number(e.target.value) : '')
+                    setMoveError(null)
+                  }}
+                >
                   <option value="">{t('mediaItem.selectLibrary')}</option>
                   {moveTargets.map((lib) => (
                     <option key={lib.id} value={lib.id}>
@@ -345,6 +357,11 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
               <button type="button" disabled={targetLibraryId === ''} onClick={() => void move()}>
                 {t('mediaItem.move')}
               </button>
+              {moveError && (
+                <p role="alert" className="media-item-dialog__move-error">
+                  {moveError}
+                </p>
+              )}
             </div>
           )}
         </>
