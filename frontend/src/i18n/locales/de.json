@@ -1,7 +1,8 @@
 {
   "common": {
     "name": "Name",
-    "email": "E-Mail"
+    "email": "E-Mail",
+    "loading": "Wird geladen…"
   },
   "nav": {
     "home": "Startseite",

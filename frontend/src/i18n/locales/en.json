@@ -1,7 +1,8 @@
 {
   "common": {
     "name": "Name",
-    "email": "Email"
+    "email": "Email",
+    "loading": "Loading…"
   },
   "nav": {
     "home": "Home",
