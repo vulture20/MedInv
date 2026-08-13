@@ -3,11 +3,9 @@
 namespace Tests\Feature;
 
 use App\Domain\Metadata\CoverDownloadService;
+use App\Domain\Metadata\CurlImageFetcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -18,6 +16,13 @@ use Tests\TestCase;
  * the media item detail dialog's manual cover upload/delete + the
  * generated thumbnail every cover gets alongside it (used by
  * MediaItemController::coverThumbnail() for the library item-list view).
+ *
+ * download() tests mock CurlImageFetcher directly rather than using
+ * Http::fake() — CoverDownloadService fetches raw bytes via a real
+ * curl_exec() call (CurlImageFetcher), not Laravel's Guzzle-based Http
+ * client, specifically because Guzzle gets blocked by some image CDNs
+ * (see CurlImageFetcher's docblock) where raw curl doesn't; Http::fake()
+ * cannot intercept that call at all.
  */
 class CoverDownloadServiceTest extends TestCase
 {
@@ -47,10 +52,16 @@ class CoverDownloadServiceTest extends TestCase
         return $bytes;
     }
 
+    /** Mocks CurlImageFetcher::fetch() to return $bytes (or null, simulating a failed fetch) for any URL. */
+    private function fakeFetch(?string $bytes): void
+    {
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn($bytes));
+    }
+
     public function test_downloads_and_stores_a_valid_image(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/dune.jpg' => Http::response($this->fakeJpegBytes(), 200)]);
+        $this->fakeFetch($this->fakeJpegBytes());
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
 
@@ -64,7 +75,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_downloading_also_generates_a_thumbnail(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/dune.jpg' => Http::response($this->fakeJpegBytes(400, 300), 200)]);
+        $this->fakeFetch($this->fakeJpegBytes(400, 300));
         $service = app(CoverDownloadService::class);
 
         $path = $service->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
@@ -75,20 +86,19 @@ class CoverDownloadServiceTest extends TestCase
     public function test_thumbnail_is_scaled_down_but_never_upscaled(): void
     {
         Storage::fake('local');
-        $service = app(CoverDownloadService::class);
 
         // A large source: the thumbnail must be smaller than the original in both dimensions.
-        Http::fake(['https://covers.example.com/large.jpg' => Http::response($this->fakeJpegBytes(800, 600), 200)]);
-        $largePath = $service->download('https://covers.example.com/large.jpg', 'book', '9780000000001');
+        $this->fakeFetch($this->fakeJpegBytes(800, 600));
+        $largePath = app(CoverDownloadService::class)->download('https://covers.example.com/large.jpg', 'book', '9780000000001');
         [$origWidth, $origHeight] = getimagesize(Storage::disk('local')->path($largePath));
-        [$thumbWidth, $thumbHeight] = getimagesize(Storage::disk('local')->path($service->thumbnailPath($largePath)));
+        [$thumbWidth, $thumbHeight] = getimagesize(Storage::disk('local')->path(app(CoverDownloadService::class)->thumbnailPath($largePath)));
         $this->assertLessThan($origWidth, $thumbWidth);
         $this->assertLessThan($origHeight, $thumbHeight);
 
         // A source already smaller than the thumbnail cap: must stay exactly the original size, not be upscaled.
-        Http::fake(['https://covers.example.com/tiny.jpg' => Http::response($this->fakeJpegBytes(2, 2), 200)]);
-        $tinyPath = $service->download('https://covers.example.com/tiny.jpg', 'book', '9780000000002');
-        [$tinyThumbWidth, $tinyThumbHeight] = getimagesize(Storage::disk('local')->path($service->thumbnailPath($tinyPath)));
+        $this->fakeFetch($this->fakeJpegBytes(2, 2));
+        $tinyPath = app(CoverDownloadService::class)->download('https://covers.example.com/tiny.jpg', 'book', '9780000000002');
+        [$tinyThumbWidth, $tinyThumbHeight] = getimagesize(Storage::disk('local')->path(app(CoverDownloadService::class)->thumbnailPath($tinyPath)));
         $this->assertSame(2, $tinyThumbWidth);
         $this->assertSame(2, $tinyThumbHeight);
     }
@@ -96,7 +106,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_thumbnail_preserves_png_transparency(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/logo.png' => Http::response($this->fakeTransparentPngBytes(), 200)]);
+        $this->fakeFetch($this->fakeTransparentPngBytes());
         $service = app(CoverDownloadService::class);
 
         $path = $service->download('https://covers.example.com/logo.png', 'book', '9780000000001');
@@ -110,7 +120,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_rejects_non_image_content(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/dune.jpg' => Http::response('<html>not an image</html>', 200)]);
+        $this->fakeFetch('<html>not an image</html>');
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
 
@@ -121,7 +131,8 @@ class CoverDownloadServiceTest extends TestCase
     public function test_rejects_a_failed_response(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/dune.jpg' => Http::response('Not Found', 404)]);
+        // CurlImageFetcher itself already turns a non-2xx status into null — see its own unit-level coverage.
+        $this->fakeFetch(null);
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
 
@@ -131,7 +142,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_rejects_oversized_content(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/dune.jpg' => Http::response(str_repeat('a', 6 * 1024 * 1024), 200)]);
+        $this->fakeFetch(str_repeat('a', 6 * 1024 * 1024));
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
 
@@ -141,20 +152,18 @@ class CoverDownloadServiceTest extends TestCase
     public function test_rejects_a_non_http_url_without_attempting_a_request(): void
     {
         Storage::fake('local');
-        Http::fake();
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
 
         $path = app(CoverDownloadService::class)->download('file:///etc/passwd', 'book', '9780000000001');
 
         $this->assertNull($path);
-        Http::assertNothingSent();
     }
 
+    /** A transport-level failure (DNS, timeout, connection refused, ...) is exactly what CurlImageFetcher::fetch() itself turns into null — see this test's use of that same contract. */
     public function test_a_connection_failure_is_handled_gracefully(): void
     {
         Storage::fake('local');
-        Http::fake(function (HttpRequest $request) {
-            throw new ConnectionException('Could not connect.');
-        });
+        $this->fakeFetch(null);
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
 

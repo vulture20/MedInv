@@ -6,6 +6,7 @@ use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -80,6 +81,41 @@ class DiscogsProviderTest extends TestCase
             'https://i.discogs.com/hIw4ia_ID1C8cpC3OWnjIYGZyJgqFGPoeVdzVpHq3Rk.jpeg',
             'https://i.discogs.com/other-image.jpeg',
         ], $candidate->coverUrls);
+    }
+
+    /** @return array<string, array{0: ?string, 1: ?string}> [released, expected release_date] */
+    public static function releasedDateCases(): array
+    {
+        return [
+            'full ISO date, unchanged' => ['1997-07-01', '1997-07-01'],
+            'bare year' => ['2006', '2006-01-01'],
+            'year + month, unknown day' => ['1980-01-00', '1980-01-01'],
+            'year only, month and day both unknown' => ['1980-00-00', '1980-01-01'],
+            'absent entirely' => [null, null],
+        ];
+    }
+
+    /**
+     * Regression test for "the release year wasn't imported correctly":
+     * `released` is free-form and inconsistently populated — confirmed
+     * live across real releases: a full ISO date, a bare year, a
+     * year-with-unknown-month/day, or absent. All four normalize to a
+     * real date instead of the raw (sometimes unparseable-as-a-clean-date)
+     * string being stored directly.
+     */
+    #[DataProvider('releasedDateCases')]
+    public function test_release_date_normalizes_every_shape_discogs_actually_returns(?string $raw, ?string $expected): void
+    {
+        $response = $this->releaseResponse();
+        $response['released'] = $raw;
+        Http::fake([
+            self::RELEASE_API => Http::response($response, 200),
+            self::SEARCH_API => Http::response($this->searchResponse(), 200),
+        ]);
+
+        $candidate = app(DiscogsProvider::class)->lookupByCode('724385522925')[0];
+
+        $this->assertSame($expected, $candidate->attributes['release_date']);
     }
 
     public function test_no_candidates_when_no_search_result_matches(): void

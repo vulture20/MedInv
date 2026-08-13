@@ -3,7 +3,6 @@
 namespace App\Domain\Metadata;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -39,6 +38,8 @@ class CoverDownloadService
     /** Longest side a thumbnail is scaled down to, preserving aspect ratio; never upscaled past the original. */
     private const THUMBNAIL_MAX_DIMENSION = 160;
 
+    public function __construct(private readonly CurlImageFetcher $imageFetcher) {}
+
     /**
      * @return string|null The relative path to store as the item's `cover_path`,
      *                     or null if the download/validation failed — a dead or
@@ -51,19 +52,12 @@ class CoverDownloadService
             return null;
         }
 
-        try {
-            $response = Http::timeout(10)->get($url);
-        } catch (\Throwable $e) {
-            Log::info('Cover download failed.', ['url' => $url, 'error' => $e->getMessage()]);
+        // CurlImageFetcher, not Http::get() — see that class's docblock for why
+        // (a real, live-confirmed bug: Cloudflare-fronted image CDNs, e.g.
+        // Discogs', block Laravel's Guzzle-based client but not raw curl).
+        $body = $this->imageFetcher->fetch($url);
 
-            return null;
-        }
-
-        if (! $response->successful()) {
-            return null;
-        }
-
-        return $this->store($response->body(), $mediaType, $ean);
+        return $body === null ? null : $this->store($body, $mediaType, $ean);
     }
 
     /**

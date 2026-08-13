@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\CurlImageFetcher;
 use App\Models\Library;
 use App\Models\MediaBook;
 use App\Models\User;
@@ -10,7 +11,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/** GitHub issue #6: MetadataController::import() actually downloads the chosen cover now. */
+/**
+ * GitHub issue #6: MetadataController::import() actually downloads the
+ * chosen cover now. Cover-download tests mock CurlImageFetcher directly
+ * rather than Http::fake() — see CoverDownloadServiceTest's docblock for
+ * why (CoverDownloadService fetches raw bytes via a real curl_exec() call
+ * that Http::fake() cannot intercept).
+ */
 class MetadataImportCoverTest extends TestCase
 {
     use RefreshDatabase;
@@ -37,7 +44,7 @@ class MetadataImportCoverTest extends TestCase
     public function test_import_downloads_and_attaches_the_chosen_cover(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/dune.jpg' => Http::response($this->fakeJpegBytes(), 200)]);
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn($this->fakeJpegBytes()));
         $owner = $this->actingAsOwner();
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
 
@@ -54,7 +61,7 @@ class MetadataImportCoverTest extends TestCase
     public function test_import_succeeds_even_when_the_cover_download_fails(): void
     {
         Storage::fake('local');
-        Http::fake(['https://covers.example.com/dune.jpg' => Http::response('Not Found', 404)]);
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn(null));
         $owner = $this->actingAsOwner();
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
 

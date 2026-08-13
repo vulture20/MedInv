@@ -29,15 +29,33 @@ use Illuminate\Support\Facades\Http;
  * (a second call, GET /releases/{id}) for the matched result — confirmed
  * live that the search endpoint's own summary objects never carry a
  * `notes`/description field and always report an empty `cover_image`/
- * `thumb` (Discogs appears to omit image data from search results
- * entirely for unauthenticated requests), while the full release record
- * has both, plus the precise ISO `released` date instead of just a bare
- * `year`. Same two-call shape as OpenLibraryProvider's Books-API +
+ * `thumb` for an unauthenticated request (an authenticated one does get
+ * real values there too, confirmed live against a real personal token —
+ * but this class never uses that field either way, see below), while the
+ * full release record's `images` array is populated regardless of
+ * authentication. Same two-call shape as OpenLibraryProvider's Books-API +
  * Editions-API split (issue #28). search() deliberately stays
  * single-call — enriching up to 10 results would burn through nearly half
  * of Discogs' already-tight unauthenticated per-minute quota in one
  * search, the same reasoning GoogleBooksProvider's search() already
  * follows.
+ *
+ * A cover URL extracted correctly here can still fail to actually become
+ * a stored cover: Discogs' image CDN (i.discogs.com) blocks the request
+ * CoverDownloadService makes to download it (a Cloudflare-level client
+ * fingerprint issue, unrelated to this class or to the URL itself — see
+ * CurlImageFetcher's docblock for the fix). A real cover-import bug
+ * report turned out to be that, not a wrong URL from here.
+ *
+ * `released` (the full release record's date field) is free-form and
+ * inconsistently populated — confirmed live across real releases: a full
+ * ISO date ("1997-07-01"), a bare year ("1974"), a year with an unknown
+ * month/day ("1980-01-00"), or absent entirely. Storing any of the
+ * non-ISO shapes directly into a `date`-cast column produced a wrong or
+ * silently-mangled date (a real bug report: "the release year wasn't
+ * imported correctly") — normalizeReleaseDate() normalizes all of these
+ * into a real date string or null instead of assuming the field is
+ * always already a clean ISO date.
  */
 class DiscogsProvider implements MetadataProviderInterface
 {
@@ -122,7 +140,7 @@ class DiscogsProvider implements MetadataProviderInterface
                 'description' => $release['notes'] ?? null,
                 'medium' => $format['name'] ?? null,
                 'disc_count' => isset($format['qty']) ? (int) $format['qty'] : null,
-                'release_date' => $release['released'] ?? null,
+                'release_date' => $this->normalizeReleaseDate($release['released'] ?? null),
                 'ean' => $code,
             ],
             coverUrls: collect($release['images'] ?? [])->pluck('uri')->filter()->values()->all(),
@@ -154,6 +172,25 @@ class DiscogsProvider implements MetadataProviderInterface
                 'ean' => $code,
             ],
         );
+    }
+
+    /**
+     * See this class's docblock: `released` is one of a full ISO date, a
+     * bare "YYYY" year, a "YYYY-MM-00"/"YYYY-00-00" partial date, or null
+     * — all confirmed with real live data. Substitutes "01" for a missing
+     * or "00" month/day component rather than passing the raw string
+     * through, since a `date`-cast column needs a genuine, complete date.
+     */
+    private function normalizeReleaseDate(?string $released): ?string
+    {
+        if (! $released || ! preg_match('/^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/', $released, $matches)) {
+            return null;
+        }
+
+        $month = ($matches[2] ?? '00') !== '00' ? $matches[2] : '01';
+        $day = ($matches[3] ?? '00') !== '00' ? $matches[3] : '01';
+
+        return "{$matches[1]}-{$month}-{$day}";
     }
 
     /** @return array{0: ?string, 1: ?string} [artist, title] */
