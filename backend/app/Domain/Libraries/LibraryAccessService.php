@@ -40,7 +40,20 @@ class LibraryAccessService
 
     public function canWrite(User $user, Library $library): bool
     {
-        return $user->isAdmin() || $library->owner_id === $user->id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // Ownership alone isn't enough (GitHub issue #35): a guest-level
+        // account never has write access, even to a library it still owns
+        // from before being demoted (UserController::update() allows
+        // changing a user's level at any time, and there's no ownership
+        // transfer forced on demotion). Without this check, this rule would
+        // depend entirely on every write route staying correctly registered
+        // under the `level:user,admin` middleware group in routes/api.php —
+        // this makes it hold regardless of routing (briefing 4.2: "Gast:
+        // ... Keine Anlage, keine Bearbeitung").
+        return ! $user->isGuest() && $library->owner_id === $user->id;
     }
 
     /** Query scoped to libraries visible to the given user (used for listing/search). */

@@ -153,6 +153,24 @@ class LibraryAccessServiceTest extends TestCase
         $this->assertFalse($access->canWrite($targetUser, $library));
     }
 
+    /**
+     * GitHub issue #35: canWrite() used to check only ownership/admin
+     * status, not the user's current level — so an owner demoted to
+     * "guest" after creating a library (UserController::update() allows
+     * changing level at any time, with no forced ownership transfer) would
+     * still pass canWrite() for their own libraries. This is meant to hold
+     * regardless of which routes/middleware groups happen to call it
+     * (briefing 4.2: "Gast: ... Keine Anlage, keine Bearbeitung").
+     */
+    public function test_a_guest_level_owner_cannot_write_their_own_library(): void
+    {
+        $owner = $this->user('user');
+        $library = $this->library($owner);
+        $owner->update(['level' => 'guest']);
+
+        $this->assertFalse(app(LibraryAccessService::class)->canWrite($owner->fresh(), $library));
+    }
+
     // --- visibleLibrariesQuery() ---
 
     public function test_admin_sees_every_library_regardless_of_ownership_or_shares(): void
