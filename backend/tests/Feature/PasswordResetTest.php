@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Domain\Mail\MailStatusService;
+use App\Mail\PasswordResetMail;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
@@ -17,7 +17,8 @@ use Tests\TestCase;
  * page), and even fixing that, the backend's reset-link generation crashed
  * with RouteNotFoundException because no `password.reset` Laravel route
  * exists — the frontend, not Laravel, owns that path. See
- * AppServiceProvider::applyPasswordResetUrl().
+ * PasswordResetMail's docblock. Content/branding of the mail itself is
+ * covered by PasswordResetMailTest.
  */
 class PasswordResetTest extends TestCase
 {
@@ -31,20 +32,17 @@ class PasswordResetTest extends TestCase
         });
     }
 
-    public function test_reset_link_notification_points_at_the_frontend_not_a_missing_laravel_route(): void
+    public function test_reset_link_mail_points_at_the_frontend_not_a_missing_laravel_route(): void
     {
-        Notification::fake();
+        Mail::fake();
         $this->mailHealthy();
         $user = User::factory()->create();
 
         $this->postJson('/api/password/email', ['email' => $user->email])->assertOk();
 
-        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
-            $mail = $notification->toMail($user);
-
-            return str_starts_with($mail->actionUrl, config('app.url').'/password/reset?token=')
-                && str_contains($mail->actionUrl, 'email='.urlencode($user->email));
-        });
+        Mail::assertSent(PasswordResetMail::class, fn (PasswordResetMail $mail) => $mail->hasTo($user->email)
+            && str_starts_with($mail->resetUrl, config('app.url').'/password/reset?token=')
+            && str_contains($mail->resetUrl, 'email='.urlencode($user->email)));
     }
 
     public function test_send_reset_link_fails_cleanly_when_mail_is_not_configured(): void

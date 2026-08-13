@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Mail\PasswordResetMail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -37,6 +39,18 @@ class User extends Authenticatable
             'is_active' => 'boolean',
             'is_protected' => 'boolean',
         ];
+    }
+
+    /**
+     * Overrides Illuminate\Auth\Passwords\CanResetPassword's default (send
+     * Laravel's built-in ResetPassword notification, which uses Laravel's
+     * own markdown mail theme) so a reset request instead sends our own
+     * branded, bilingual PasswordResetMail — see that class's docblock for
+     * why (briefing 12.3, the Laravel-branded reset email bug report).
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        Mail::to($this)->send(new PasswordResetMail($this, $token));
     }
 
     public function isAdmin(): bool

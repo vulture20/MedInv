@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\SystemSetting;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,10 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // No DB dependency, so registered unconditionally (outside the try/catch
-        // below) rather than only once system_settings is known to exist.
-        $this->applyPasswordResetUrl();
-
         try {
             if (! SystemSetting::query()->getConnection()->getSchemaBuilder()->hasTable((new SystemSetting)->getTable())) {
                 return;
@@ -34,28 +29,6 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Throwable) {
             // No DB connection yet (e.g. `artisan key:generate` before first migrate) — fall back to .env config.
         }
-    }
-
-    /**
-     * Points the password-reset link (briefing 12.3) at the frontend SPA
-     * instead of Laravel's own default. Without this,
-     * ResetPassword::toMail()'s fallback URL-builder calls
-     * route('password.reset', ..., false) — but no route by that name is
-     * registered (the SPA, not Laravel, owns /password/reset; see
-     * routes/web.php), so it throws RouteNotFoundException and
-     * PasswordResetController::sendResetLink() 500s outright rather than
-     * sending anything. config('app.url') is the same "public URL this
-     * instance is reachable at" value docker/entrypoint.sh derives from
-     * MEDINV_URL and UserInvitationMail already uses.
-     */
-    private function applyPasswordResetUrl(): void
-    {
-        ResetPassword::createUrlUsing(fn ($notifiable, string $token) => sprintf(
-            '%s/password/reset?token=%s&email=%s',
-            rtrim(config('app.url'), '/'),
-            $token,
-            urlencode($notifiable->getEmailForPasswordReset()),
-        ));
     }
 
     /**
