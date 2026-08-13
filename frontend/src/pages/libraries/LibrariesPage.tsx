@@ -27,6 +27,13 @@ export function LibrariesPage() {
   const [mediaType, setMediaType] = useState<'book' | 'cd' | 'dvd_bluray'>('book')
   const [loading, setLoading] = useState(true)
 
+  // Inline editing of name/description (briefing 5.), restricted to
+  // owner/admin like deletion below — same PUT /libraries/{id} endpoint
+  // LibraryDetailPage.tsx's edit form uses.
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+
   async function load() {
     const { data } = await apiClient.get<Library[]>('/libraries')
     setLibraries(data)
@@ -59,6 +66,20 @@ export function LibrariesPage() {
     await load()
   }
 
+  function startEdit(lib: Library) {
+    setEditingId(lib.id)
+    setEditName(lib.name)
+    setEditDescription(lib.description ?? '')
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (editingId === null) return
+    await apiClient.put(`/libraries/${editingId}`, { name: editName, description: editDescription === '' ? null : editDescription })
+    setEditingId(null)
+    await load()
+  }
+
   return (
     <div>
       <h1>{t('libraries.title')}</h1>
@@ -67,18 +88,43 @@ export function LibrariesPage() {
         <p>…</p>
       ) : (
         <ul className="library-list">
-          {libraries.map((lib) => (
-            <li key={lib.id}>
-              <strong>{lib.name}</strong> — {t(`libraries.mediaType.${lib.media_type}`)} ({lib.owner.name})
-              {lib.description && <p>{lib.description}</p>}
-              <Link to={`/libraries/${lib.id}`}>{t('libraries.view')}</Link>
-              {canDelete(lib) && (
-                <button type="button" onClick={() => void deleteLibrary(lib)}>
-                  {t('libraries.delete')}
-                </button>
-              )}
-            </li>
-          ))}
+          {libraries.map((lib) =>
+            editingId === lib.id ? (
+              <li key={lib.id}>
+                <form onSubmit={saveEdit}>
+                  <label>
+                    {t('common.name')}
+                    <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                  </label>
+                  <label>
+                    {t('libraries.descriptionLabel')}
+                    <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                  </label>
+                  <button type="submit">{t('admin.actions.save')}</button>{' '}
+                  <button type="button" onClick={() => setEditingId(null)}>
+                    {t('admin.actions.cancel')}
+                  </button>
+                </form>
+              </li>
+            ) : (
+              <li key={lib.id}>
+                <strong>{lib.name}</strong> — {t(`libraries.mediaType.${lib.media_type}`)} ({lib.owner.name})
+                {lib.description && <p>{lib.description}</p>}
+                <Link to={`/libraries/${lib.id}`}>{t('libraries.view')}</Link>
+                {canDelete(lib) && (
+                  <>
+                    {' '}
+                    <button type="button" onClick={() => startEdit(lib)}>
+                      {t('admin.actions.edit')}
+                    </button>{' '}
+                    <button type="button" onClick={() => void deleteLibrary(lib)}>
+                      {t('libraries.delete')}
+                    </button>
+                  </>
+                )}
+              </li>
+            ),
+          )}
         </ul>
       )}
 

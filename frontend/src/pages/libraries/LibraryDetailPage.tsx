@@ -83,6 +83,14 @@ export function LibraryDetailPage() {
   const [newOwnerId, setNewOwnerId] = useState<number | ''>('')
   const [ownerTransferError, setOwnerTransferError] = useState<string | null>(null)
 
+  // Editing name/description (briefing 5., restricted to owner/admin like
+  // sharing and ownership above) — PUT /libraries/{id} already existed
+  // server-side (LibraryController::update()) but had no UI until now.
+  const [editingInfo, setEditingInfo] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [infoError, setInfoError] = useState<string | null>(null)
+
   async function load() {
     setLoading(true)
     const [libraryRes, itemsRes, librariesRes, shareableUsersRes] = await Promise.all([
@@ -140,6 +148,30 @@ export function LibraryDetailPage() {
     setAddUserId('')
   }
 
+  function startEditInfo() {
+    if (!library) return
+    setEditName(library.name)
+    setEditDescription(library.description ?? '')
+    setInfoError(null)
+    setEditingInfo(true)
+  }
+
+  async function saveInfo(e: React.FormEvent) {
+    e.preventDefault()
+    if (!library) return
+    setInfoError(null)
+    try {
+      const { data } = await apiClient.put<Library>(`/libraries/${library.id}`, {
+        name: editName,
+        description: editDescription === '' ? null : editDescription,
+      })
+      setLibrary((prev) => (prev ? { ...prev, name: data.name, description: data.description } : prev))
+      setEditingInfo(false)
+    } catch (err) {
+      setInfoError(describeError(err, t))
+    }
+  }
+
   async function transferOwnership() {
     if (!library || newOwnerId === '') return
     const target = shareableUsers.find((u) => u.id === newOwnerId)
@@ -149,7 +181,7 @@ export function LibraryDetailPage() {
     try {
       await apiClient.put(`/libraries/${library.id}/owner`, { owner_id: newOwnerId })
       setNewOwnerId('')
-      // Re-fetches the library with its new owner — canManageShares below
+      // Re-fetches the library with its new owner — canManage below
       // depends on it, so the sharing/ownership sections (and the item
       // list, if the current user no longer has write access at all)
       // reflect the change immediately rather than only after a manual reload.
@@ -162,7 +194,8 @@ export function LibraryDetailPage() {
   if (loading || !library) return <p>…</p>
 
   // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
-  const canManageShares = user?.level === 'admin' || library.owner.id === user?.id
+  // Shared by the edit-info, sharing and ownership sections below — all three are owner/admin-only.
+  const canManage = user?.level === 'admin' || library.owner.id === user?.id
   const usersAvailableToAdd = shareableUsers.filter((u) => !userShares.some((s) => s.user_id === u.id))
 
   return (
@@ -170,13 +203,43 @@ export function LibraryDetailPage() {
       <p>
         <Link to="/libraries">{t('libraries.title')}</Link>
       </p>
-      <h1>{library.name}</h1>
-      <p>
-        {t(`libraries.mediaType.${library.media_type}`)} — {library.owner.name}
-      </p>
-      {library.description && <p>{library.description}</p>}
 
-      {canManageShares && (
+      {editingInfo ? (
+        <form onSubmit={(e) => void saveInfo(e)}>
+          <label>
+            {t('common.name')}
+            <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
+          </label>
+          <label>
+            {t('libraries.descriptionLabel')}
+            <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+          </label>
+          <div>
+            <button type="submit">{t('admin.actions.save')}</button>{' '}
+            <button type="button" onClick={() => setEditingInfo(false)}>
+              {t('admin.actions.cancel')}
+            </button>
+          </div>
+          {infoError && <p role="alert">{infoError}</p>}
+        </form>
+      ) : (
+        <>
+          <h1>{library.name}</h1>
+          <p>
+            {t(`libraries.mediaType.${library.media_type}`)} — {library.owner.name}
+          </p>
+          {library.description && <p>{library.description}</p>}
+          {canManage && (
+            <p>
+              <button type="button" onClick={startEditInfo}>
+                {t('admin.actions.edit')}
+              </button>
+            </p>
+          )}
+        </>
+      )}
+
+      {canManage && (
         <section>
           <h2>{t('libraries.sharing.title')}</h2>
           <p className="hint">{t('libraries.sharing.hint')}</p>
@@ -233,7 +296,7 @@ export function LibraryDetailPage() {
         </section>
       )}
 
-      {canManageShares && shareableUsers.length > 0 && (
+      {canManage && shareableUsers.length > 0 && (
         <section>
           <h2>{t('libraries.ownership.title')}</h2>
           <p className="hint">{t('libraries.ownership.hint')}</p>

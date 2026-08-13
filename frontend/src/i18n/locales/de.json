@@ -36,6 +36,7 @@
     "delete": "Löschen",
     "noItems": "Diese Bibliothek enthält noch keine Einträge.",
     "confirmDelete": "Bibliothek „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+    "descriptionLabel": "Beschreibung",
     "mediaTypeLabel": "Medienart",
     "mediaType": {
       "book": "Buch",

@@ -36,6 +36,7 @@
     "delete": "Delete",
     "noItems": "This library doesn't contain any items yet.",
     "confirmDelete": "Delete library “{{name}}”? This cannot be undone.",
+    "descriptionLabel": "Description",
     "mediaTypeLabel": "Media type",
     "mediaType": {
       "book": "Book",
