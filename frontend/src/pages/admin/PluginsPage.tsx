@@ -258,7 +258,18 @@ export function PluginsPage() {
               <tbody> without the same problem.
             */}
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => void handleDragEnd(mediaType, event)}>
-              <table>
+              <table className="plugin-table">
+                {/* table-layout: fixed (index.css) makes every group's table
+                    honor these same five widths, instead of each table
+                    sizing its columns from its own content independently —
+                    see .plugin-table's docblock. */}
+                <colgroup>
+                  <col className="plugin-table__col--handle" />
+                  <col className="plugin-table__col--name" />
+                  <col className="plugin-table__col--priority" />
+                  <col className="plugin-table__col--enabled" />
+                  <col className="plugin-table__col--settings" />
+                </colgroup>
                 <thead>
                   <tr>
                     <th aria-hidden="true" />

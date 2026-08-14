@@ -625,16 +625,54 @@ td {
   margin: 0 0 0.4rem;
 }
 
+/*
+ * Each group is a genuinely separate <table> (see .plugin-group's
+ * docblock above for why), and the default table-layout: auto sizes a
+ * table's columns purely from that table's own cell content — so even
+ * though every group has the same conceptual columns, one table's "Name"
+ * column ended up a different width than another's depending on how long
+ * its providers' names happened to be, reported as the tables looking
+ * visually misaligned when stacked. table-layout: fixed switches column
+ * sizing over to the widths declared on <colgroup>/<col> below (identical
+ * markup in every group), so corresponding columns line up across all of
+ * them regardless of that table's own content.
+ */
+.plugin-table {
+  table-layout: fixed;
+}
+
+.plugin-table__col--handle {
+  width: 2.5rem;
+}
+
+.plugin-table__col--name {
+  width: 34%;
+}
+
+.plugin-table__col--priority {
+  width: 14%;
+}
+
+.plugin-table__col--enabled {
+  width: 14%;
+}
+
+.plugin-table__col--settings {
+  width: 28%;
+}
+
 /* Drag handle cell (dnd-kit, PluginsPage.tsx) — dnd-kit's own `attributes`
  * already supplies role="button"/tabIndex for keyboard use, this only
  * needs to look draggable. touch-action: none stops the browser's own
- * touch scrolling from competing with a touch-drag gesture on this cell. */
+ * touch scrolling from competing with a touch-drag gesture on this cell.
+ * No `width` here (unlike before table-layout: fixed) — the column's
+ * width now comes from .plugin-table__col--handle above; a per-cell width
+ * would just be ignored once a <colgroup> is present anyway. */
 .plugin-drag-handle {
   cursor: grab;
   touch-action: none;
   color: var(--color-text-muted);
   text-align: center;
-  width: 1.5rem;
 }
 
 .plugin-drag-handle:active {
