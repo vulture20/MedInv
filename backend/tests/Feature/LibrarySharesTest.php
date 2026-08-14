@@ -157,4 +157,57 @@ class LibrarySharesTest extends TestCase
         $response->assertJsonPath('shares.0.user.name', 'Bob');
         $response->assertJsonPath('shares.0.user.email', 'bob@example.com');
     }
+
+    /**
+     * GitHub issue #39: LibraryController::show() used to eager-load
+     * `shares.user:id,name,email` unconditionally for every canRead()
+     * caller, leaking the name/email of individually-shared users to any
+     * reader who could merely see the library via an unrelated all_users
+     * share. Owner/admin (who can also manage shares) still get the full
+     * list, needed by LibraryDetailPage.tsx's sharing UI (issue #32).
+     */
+    public function test_show_includes_the_full_share_list_with_user_details_for_the_owner(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->library($owner->id);
+        $target = User::factory()->create(['level' => 'user', 'name' => 'Bob', 'email' => 'secret-target@example.com', 'is_active' => true]);
+        LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'user', 'user_id' => $target->id]);
+
+        $response = $this->getJson("/api/libraries/{$library->id}");
+
+        $response->assertOk();
+        $response->assertJsonPath('shares.0.user.name', 'Bob');
+        $response->assertJsonPath('shares.0.user.email', 'secret-target@example.com');
+    }
+
+    public function test_show_includes_the_full_share_list_with_user_details_for_an_admin(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $library = $this->library($owner->id);
+        $target = User::factory()->create(['level' => 'user', 'name' => 'Bob', 'email' => 'secret-target@example.com', 'is_active' => true]);
+        LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'user', 'user_id' => $target->id]);
+        $this->actingAsUser('admin');
+
+        $response = $this->getJson("/api/libraries/{$library->id}");
+
+        $response->assertOk();
+        $response->assertJsonPath('shares.0.user.email', 'secret-target@example.com');
+    }
+
+    public function test_show_omits_shares_and_target_user_details_for_a_mere_reader(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $library = $this->library($owner->id);
+        $target = User::factory()->create(['level' => 'user', 'name' => 'Bob', 'email' => 'secret-target@example.com', 'is_active' => true]);
+        LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'all_users']);
+        LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'user', 'user_id' => $target->id]);
+        $reader = $this->actingAsUser(); // neither owner nor admin, only reachable via the all_users share
+
+        $response = $this->getJson("/api/libraries/{$library->id}");
+
+        $response->assertOk();
+        $response->assertJsonMissingPath('shares');
+        $response->assertDontSee('secret-target@example.com');
+        $this->assertNotSame($owner->id, $reader->id);
+    }
 }

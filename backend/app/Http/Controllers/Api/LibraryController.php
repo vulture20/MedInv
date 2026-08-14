@@ -25,11 +25,26 @@ class LibraryController extends Controller
         return $this->access->visibleLibrariesQuery($request->user())->with('owner:id,name')->get();
     }
 
+    /**
+     * GitHub issue #39: the full share list — including the name/email of
+     * anyone individually targeted by a scope=user share — is only for
+     * whoever manages sharing (owner/admin, same gate as updateShares()
+     * below and canManage in LibraryDetailPage.tsx). A plain reader who can
+     * merely see the library via an all_users/guest/user share has no
+     * business learning who else it's shared with, so `shares` is omitted
+     * from the response entirely rather than redacted per-entry.
+     */
     public function show(Request $request, Library $library)
     {
         abort_unless($this->access->canRead($request->user(), $library), 403);
 
-        return $library->load('owner:id,name', 'shares.user:id,name,email');
+        $library->load('owner:id,name');
+
+        if ($this->access->canWrite($request->user(), $library)) {
+            $library->load('shares.user:id,name,email');
+        }
+
+        return $library;
     }
 
     /** Guests cannot create libraries (briefing 4.2) — enforced via ->middleware('level:user,admin'). */
