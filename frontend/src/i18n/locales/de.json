@@ -187,6 +187,10 @@
       "sendInvite": "Einladungsmail senden",
       "restore": "Wiederherstellen"
     },
+    "backupReason": {
+      "scheduled": "Zeitplan",
+      "pre_update": "Migration"
+    },
     "backupRestore": {
       "warning": "Vorhandene Bibliotheken mit gleichem Namen werden standardmäßig übersprungen (bleiben unverändert), es sei denn, Sie wählen unten \"Überschreiben\".",
       "overwriteExisting": "Vorhandene Bibliotheken mit gleichem Namen überschreiben statt überspringen",

@@ -187,6 +187,10 @@
       "sendInvite": "Send invitation email",
       "restore": "Restore"
     },
+    "backupReason": {
+      "scheduled": "Schedule",
+      "pre_update": "Migration"
+    },
     "backupRestore": {
       "warning": "Existing libraries with the same name are skipped (left untouched) by default unless you choose \"Overwrite\" below.",
       "overwriteExisting": "Overwrite existing libraries with the same name instead of skipping them",

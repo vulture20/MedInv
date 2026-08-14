@@ -34,7 +34,15 @@ class BackupService
 
     public function __construct(private readonly ExportImportService $exportImportService) {}
 
-    public function create(string $trigger = 'manual', ?string $intervalMode = null): Backup
+    /**
+     * `$reason` distinguishes which of the two independent automatic paths
+     * actually created this backup — 'scheduled' (the admin-configured
+     * interval, routes/console.php) or 'pre_update' (PreUpdateBackupCommand,
+     * ahead of a pending migration). Always null for trigger='manual' — an
+     * admin explicitly clicking "create backup now" already fully explains
+     * itself, it doesn't need a separate reason label.
+     */
+    public function create(string $trigger = 'manual', ?string $intervalMode = null, ?string $reason = null): Backup
     {
         // includeUsers: true — a backup is a full snapshot of this instance (briefing
         // 9.2), unlike an ordinary admin-initiated library export (9.1), which never
@@ -62,6 +70,7 @@ class BackupService
             'filename' => $filename,
             'size_bytes' => Storage::disk(self::DISK)->size($path),
             'trigger' => $trigger,
+            'reason' => $reason,
             'interval_mode' => $intervalMode,
             'status' => 'completed',
         ]);

@@ -47,7 +47,7 @@ Artisan::command('inspire', function () {
  */
 $backupService = app(BackupService::class);
 
-Schedule::call(fn () => $backupService->create('automatic', SystemSetting::get('backup.interval_mode', 'daily')))
+Schedule::call(fn () => $backupService->create('automatic', SystemSetting::get('backup.interval_mode', 'daily'), 'scheduled'))
     ->everyMinute()
     ->when(function () use ($backupService) {
         // Explicit Carbon::now(), not the (new CronExpression(...))->isDue() default of

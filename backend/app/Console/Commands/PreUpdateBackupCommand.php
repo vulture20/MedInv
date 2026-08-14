@@ -49,7 +49,7 @@ class PreUpdateBackupCommand extends Command
         }
 
         $this->info('Pending migrations detected on an existing database — creating a safety backup first.');
-        $backup = $backupService->create(trigger: 'automatic');
+        $backup = $backupService->create(trigger: 'automatic', reason: 'pre_update');
         $this->info("Created {$backup->filename} before running migrations.");
 
         return self::SUCCESS;

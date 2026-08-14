@@ -8,6 +8,8 @@ interface Backup {
   filename: string
   size_bytes: number
   trigger: string
+  /** Only ever set for trigger='automatic' — which of the two independent automatic paths created it (BackupService::create()'s docblock). */
+  reason: 'scheduled' | 'pre_update' | null
   status: string
   created_at: string
 }
@@ -127,7 +129,8 @@ export function BackupsPage() {
         <ul>
           {backups.map((b) => (
             <li key={b.id}>
-              {b.filename} — {(b.size_bytes / 1024).toFixed(1)} KB — {b.trigger} — {b.status}{' '}
+              {b.filename} — {(b.size_bytes / 1024).toFixed(1)} KB — {b.trigger}
+              {b.reason && ` (${t(`admin.backupReason.${b.reason}`)})`} — {b.status}{' '}
               <a href={`${apiClient.defaults.baseURL}/admin/backups/${b.id}/download`}>{t('admin.actions.download')}</a>{' '}
               <button onClick={() => void deleteBackup(b)}>{t('admin.actions.delete')}</button>{' '}
               {restoringId === b.id ? (

@@ -65,7 +65,7 @@ class ScheduledBackupTest extends TestCase
 
         Artisan::call('schedule:run');
 
-        $this->assertDatabaseHas((new Backup)->getTable(), ['trigger' => 'automatic', 'interval_mode' => 'daily']);
+        $this->assertDatabaseHas((new Backup)->getTable(), ['trigger' => 'automatic', 'reason' => 'scheduled', 'interval_mode' => 'daily']);
     }
 
     public function test_schedule_run_does_nothing_outside_the_due_minute(): void
@@ -88,7 +88,7 @@ class ScheduledBackupTest extends TestCase
 
         Artisan::call('schedule:run');
 
-        $this->assertDatabaseHas((new Backup)->getTable(), ['trigger' => 'automatic', 'interval_mode' => 'weekly']);
+        $this->assertDatabaseHas((new Backup)->getTable(), ['trigger' => 'automatic', 'reason' => 'scheduled', 'interval_mode' => 'weekly']);
     }
 
     /**
