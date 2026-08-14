@@ -71,6 +71,8 @@
     "uploadCover": "Upload cover",
     "removeCover": "Remove cover",
     "confirmRemoveCover": "Remove the cover? This cannot be undone.",
+    "addManually": "Add manually",
+    "createTitle": "Add media item",
     "fields": {
       "title": "Title",
       "ean": "EAN",

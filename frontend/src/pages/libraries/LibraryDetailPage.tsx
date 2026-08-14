@@ -5,6 +5,7 @@ import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
+import { CreateMediaItemDialog } from './CreateMediaItemDialog'
 
 /** One row of App\Models\LibraryShare, as returned by LibraryController::show()'s `shares.user:id,name,email` eager load (briefing 4.3). */
 interface Share {
@@ -62,6 +63,10 @@ export function LibraryDetailPage() {
   const [items, setItems] = useState<Paginated<MediaItem> | null>(null)
   const [libraries, setLibraries] = useState<Library[]>([])
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
+  // Manual creation (briefing 7.1, GitHub issue #17) — a standalone entry
+  // point independent of the capture/scan workflow, so an item can be added
+  // even without ever attempting a scan first.
+  const [creating, setCreating] = useState(false)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
@@ -341,6 +346,14 @@ export function LibraryDetailPage() {
         </section>
       )}
 
+      {canManage && (
+        <p>
+          <button type="button" onClick={() => setCreating(true)}>
+            {t('mediaItem.addManually')}
+          </button>
+        </p>
+      )}
+
       {items && items.data.length === 0 ? (
         <p>{t('libraries.noItems')}</p>
       ) : (
@@ -372,6 +385,20 @@ export function LibraryDetailPage() {
           ))}
         </ul>
       )}
+
+      <CreateMediaItemDialog
+        library={library}
+        open={creating}
+        onClose={() => setCreating(false)}
+        onCreated={() => {
+          setCreating(false)
+          // Re-fetches instead of splicing the new item into items.data
+          // directly — a fresh item can land on any page depending on the
+          // list's current sort/pagination, so reloading is the only way
+          // to reflect it (and the updated total) correctly.
+          void load()
+        }}
+      />
 
       <MediaItemDetailDialog
         library={library}

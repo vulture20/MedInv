@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
+import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
+import type { LibraryRef, MediaItem } from '../libraries/mediaItemFields'
 
 // The barcode decoder (@zxing/library) is a heavy dependency (~800KB) that
 // most captures never touch — hardware-scanner and manual entry cover the
@@ -8,11 +10,7 @@ import { apiClient } from '../../api/client'
 // instead of adding that weight to every visit of this page.
 const CameraScanner = lazy(() => import('./CameraScanner').then((m) => ({ default: m.CameraScanner })))
 
-interface Library {
-  id: number
-  name: string
-  media_type: 'book' | 'cd' | 'dvd_bluray'
-}
+type Library = LibraryRef
 
 interface MetadataCandidate {
   provider_key: string
@@ -42,6 +40,13 @@ export function CapturePage() {
   const [results, setResults] = useState<ScanResult[]>([])
   const [file, setFile] = useState<File | null>(null)
   const [cameraOpen, setCameraOpen] = useState(false)
+  // Manual creation dead-end fix (GitHub issue #17): a `no_match` result
+  // used to be a pure dead end — this reuses the same create dialog
+  // LibraryDetailPage's standalone "add manually" button opens, pre-filled
+  // with the scanned EAN so it doesn't have to be retyped (still editable,
+  // since a misread digit is exactly the kind of thing that causes a
+  // no_match in the first place).
+  const [creatingForEan, setCreatingForEan] = useState<string | null>(null)
 
   useEffect(() => {
     void apiClient.get<Library[]>('/libraries').then(({ data }) => {
@@ -139,7 +144,14 @@ export function CapturePage() {
           <li key={result.ean}>
             <strong>{result.ean}</strong>{' '}
             {result.status === 'duplicate' && <span className="warning">{t('capture.duplicate')}</span>}
-            {result.status === 'no_match' && <span>{t('capture.noMatch')}</span>}
+            {result.status === 'no_match' && (
+              <span>
+                {t('capture.noMatch')}{' '}
+                <button type="button" onClick={() => setCreatingForEan(result.ean)}>
+                  {t('mediaItem.addManually')}
+                </button>
+              </span>
+            )}
             {result.status === 'candidates' && (
               <div>
                 <p>{t('capture.chooseCandidate')}</p>
@@ -156,6 +168,23 @@ export function CapturePage() {
           </li>
         ))}
       </ul>
+
+      {(() => {
+        const activeLibrary = libraries.find((l) => l.id === libraryId)
+        if (!activeLibrary) return null
+        return (
+          <CreateMediaItemDialog
+            library={activeLibrary}
+            initialEan={creatingForEan ?? undefined}
+            open={creatingForEan !== null}
+            onClose={() => setCreatingForEan(null)}
+            onCreated={(item: MediaItem) => {
+              setCreatingForEan(null)
+              setResults((prev) => prev.filter((r) => r.ean !== item.ean))
+            }}
+          />
+        )
+      })()}
     </div>
   )
 }

@@ -71,6 +71,8 @@
     "uploadCover": "Cover hochladen",
     "removeCover": "Cover entfernen",
     "confirmRemoveCover": "Cover entfernen? Dies kann nicht rückgängig gemacht werden.",
+    "addManually": "Manuell hinzufügen",
+    "createTitle": "Medium hinzufügen",
     "fields": {
       "title": "Titel",
       "ean": "EAN",
