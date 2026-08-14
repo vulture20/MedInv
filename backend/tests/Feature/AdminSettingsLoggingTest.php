@@ -71,7 +71,7 @@ class AdminSettingsLoggingTest extends TestCase
                 && $context['changes']['interval_mode'] === 'weekly';
         }));
 
-        $this->putJson('/api/admin/settings/backup', ['interval_mode' => 'weekly'])->assertOk();
+        $this->putJson('/api/admin/settings/backup', ['interval_mode' => 'weekly', 'retention_mode' => 'count'])->assertOk();
     }
 
     public function test_updating_security_settings_is_logged(): void

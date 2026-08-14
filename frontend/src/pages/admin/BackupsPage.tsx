@@ -17,6 +17,15 @@ interface Backup {
 interface BackupSettings {
   interval_mode: 'daily' | 'weekly' | 'monthly' | 'cron'
   cron_expression: string | null
+  /**
+   * Exactly one of retention_count/retention_max_age_days is actually
+   * enforced (BackupService::prune()) — a deliberate deviation from
+   * briefing 9.2's literal wording (both applying at once, simultaneously
+   * editable), reported as confusing rather than useful. The inactive
+   * field's value is still stored/shown once you switch back, just not
+   * applied while the other mode is selected.
+   */
+  retention_mode: 'count' | 'age'
   retention_count: number | null
   retention_max_age_days: number | null
 }
@@ -196,31 +205,48 @@ export function BackupsPage() {
                 />
               </label>
             )}
-            <label>
-              {t('admin.backupSettings.retentionCount')}
-              <input
-                type="number"
-                min={1}
-                value={settings.retention_count ?? ''}
-                onChange={(e) =>
-                  setSettings({ ...settings, retention_count: e.target.value === '' ? null : Number(e.target.value) })
-                }
-              />
-            </label>
-            <label>
-              {t('admin.backupSettings.retentionMaxAgeDays')}
-              <input
-                type="number"
-                min={1}
-                value={settings.retention_max_age_days ?? ''}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    retention_max_age_days: e.target.value === '' ? null : Number(e.target.value),
-                  })
-                }
-              />
-            </label>
+            <fieldset>
+              <legend>{t('admin.backupSettings.retentionMode')}</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="retention_mode"
+                  checked={settings.retention_mode === 'count'}
+                  onChange={() => setSettings({ ...settings, retention_mode: 'count' })}
+                />
+                {t('admin.backupSettings.retentionCount')}
+                <input
+                  type="number"
+                  min={1}
+                  disabled={settings.retention_mode !== 'count'}
+                  value={settings.retention_count ?? ''}
+                  onChange={(e) =>
+                    setSettings({ ...settings, retention_count: e.target.value === '' ? null : Number(e.target.value) })
+                  }
+                />
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="retention_mode"
+                  checked={settings.retention_mode === 'age'}
+                  onChange={() => setSettings({ ...settings, retention_mode: 'age' })}
+                />
+                {t('admin.backupSettings.retentionMaxAgeDays')}
+                <input
+                  type="number"
+                  min={1}
+                  disabled={settings.retention_mode !== 'age'}
+                  value={settings.retention_max_age_days ?? ''}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      retention_max_age_days: e.target.value === '' ? null : Number(e.target.value),
+                    })
+                  }
+                />
+              </label>
+            </fieldset>
             <button type="submit">{t('admin.actions.save')}</button>
             {settingsSaved && <p role="status">{t('admin.backupSettings.saved')}</p>}
             {settingsError && <p role="alert">{settingsError}</p>}

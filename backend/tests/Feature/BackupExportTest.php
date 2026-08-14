@@ -34,6 +34,7 @@ class BackupExportTest extends TestCase
         $this->assertSame([
             'mail.encryption',
             'backup.interval_mode',
+            'backup.retention_mode',
             'security.throttle_max_attempts',
             'security.throttle_window_minutes',
             'security.throttle_lock_minutes',

@@ -243,7 +243,8 @@
         "cron": "Benutzerdefiniert (Cron-Ausdruck)"
       },
       "cronExpression": "Cron-Ausdruck",
-      "retentionHint": "Gilt nur für automatische Backups. Manuell erstellte Backups zählen nicht mit und werden nie automatisch gelöscht.",
+      "retentionHint": "Gilt nur für automatische Backups. Manuell erstellte Backups zählen nicht mit und werden nie automatisch gelöscht. Es ist immer nur eine der beiden Regeln unten aktiv — wählen Sie welche.",
+      "retentionMode": "Alte Backups löschen nach",
       "retentionCount": "Maximale Anzahl an Backups",
       "retentionMaxAgeDays": "Backups löschen nach (Tagen)",
       "saved": "Backup-Zeitplan gespeichert."

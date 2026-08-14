@@ -47,6 +47,12 @@ class SystemSetting extends Model
         return [
             'mail.encryption' => 'starttls',
             'backup.interval_mode' => 'daily',
+            // Deliberate deviation from briefing 9.2's literal "Alter überschreiten
+            // ODER Anzahl überschreiten" wording (both criteria applying at once,
+            // simultaneously editable) — an admin found that confusing rather than
+            // useful, so exactly one retention criterion is active at a time; see
+            // BackupService::prune()'s docblock.
+            'backup.retention_mode' => 'count',
             'security.throttle_max_attempts' => 6,
             'security.throttle_window_minutes' => 5,
             'security.throttle_lock_minutes' => 30,

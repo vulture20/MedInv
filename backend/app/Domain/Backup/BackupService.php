@@ -198,18 +198,30 @@ class BackupService
 
     /**
      * Applies the retention defaults from briefing 9.2 (overridable via
-     * system_settings): backups beyond the configured count or older than
-     * the configured max age are deleted automatically. Manual backups
-     * (trigger='manual', an admin explicitly clicking "Create backup now")
-     * are deliberately exempt from both rules and from the count itself —
+     * system_settings): backups beyond the configured count, *or* older
+     * than the configured max age, are deleted automatically — but only
+     * one of the two criteria is ever actually active at a time
+     * (`backup.retention_mode`, 'count' or 'age'), not both simultaneously.
+     * Briefing 9.2 itself literally says "das eingestellte Alter
+     * überschreiten ODER über die eingestellte Anzahl hinausgehen", i.e.
+     * both rules applying in parallel — this is a deliberate admin-driven
+     * deviation from that: having both editable and both silently in
+     * effect at once was reported as confusing rather than useful, since
+     * whichever rule is stricter always wins invisibly. The retention_count/
+     * retention_max_age_days values themselves are unchanged (still stored,
+     * still fall back to the interval-mode default below when unset) —
+     * only which *one* of them prune() actually consults changed.
+     *
+     * Manual backups (trigger='manual', an admin explicitly clicking
+     * "Create backup now") are deliberately exempt from this entirely —
      * an admin who takes a backup on purpose (e.g. right before a risky
      * change) shouldn't have it silently swept away by the automatic
-     * backup schedule's *own* unrelated retention policy, nor have it
-     * eat into the number of automatic backups that policy is meant to
-     * keep. Automatic backups (trigger='automatic' — both the scheduled
-     * ones from routes/console.php and PreUpdateBackupCommand's
-     * pre-update safety net, neither of which an admin asked for by name)
-     * are the only ones this ever deletes.
+     * backup schedule's *own* unrelated retention policy, nor have it eat
+     * into the count/age budget that policy is meant to apply to.
+     * Automatic backups (trigger='automatic' — both the scheduled ones
+     * from routes/console.php and PreUpdateBackupCommand's pre-update
+     * safety net, neither of which an admin asked for by name) are the
+     * only ones this ever deletes.
      */
     public function prune(): void
     {
@@ -223,14 +235,15 @@ class BackupService
             default => [7, 7],
         };
 
-        $maxCount = (int) SystemSetting::get('backup.retention_count', $defaultCount);
-        $maxAgeDays = (int) SystemSetting::get('backup.retention_max_age_days', $defaultMaxAgeDays);
-
         $automatic = Backup::query()->where('trigger', '!=', 'manual');
 
-        $expired = (clone $automatic)->where('created_at', '<', now()->subDays($maxAgeDays))->get();
-        $excess = (clone $automatic)->orderByDesc('created_at')->get()->slice($maxCount);
-        $toPrune = $expired->merge($excess)->unique('id');
+        $toPrune = match (SystemSetting::get('backup.retention_mode', 'count')) {
+            'age' => (clone $automatic)->where(
+                'created_at', '<', now()->subDays((int) SystemSetting::get('backup.retention_max_age_days', $defaultMaxAgeDays))
+            )->get(),
+            default => (clone $automatic)->orderByDesc('created_at')->get()
+                ->slice((int) SystemSetting::get('backup.retention_count', $defaultCount)),
+        };
 
         if ($toPrune->isEmpty()) {
             return;

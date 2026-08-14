@@ -37,6 +37,7 @@ class AdminSettingsController extends Controller
             'backup' => [
                 'interval_mode' => SystemSetting::get('backup.interval_mode', 'daily'),
                 'cron_expression' => SystemSetting::get('backup.cron_expression'),
+                'retention_mode' => SystemSetting::get('backup.retention_mode', 'count'),
                 'retention_count' => SystemSetting::get('backup.retention_count'),
                 'retention_max_age_days' => SystemSetting::get('backup.retention_max_age_days'),
             ],
@@ -135,6 +136,10 @@ class AdminSettingsController extends Controller
         $data = $request->validate([
             'interval_mode' => ['required', Rule::in(['daily', 'weekly', 'monthly', 'cron'])],
             'cron_expression' => ['required_if:interval_mode,cron', 'nullable', 'string'],
+            // 'count'/'age' picks which one of the two fields below BackupService::
+            // prune() actually applies — see that method's docblock for why only one
+            // is ever active, not both at once despite briefing 9.2's literal wording.
+            'retention_mode' => ['required', Rule::in(['count', 'age'])],
             'retention_count' => ['nullable', 'integer', 'min:1'],
             'retention_max_age_days' => ['nullable', 'integer', 'min:1'],
         ]);
