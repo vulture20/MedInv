@@ -189,7 +189,9 @@
       "cancel": "Cancel",
       "delete": "Delete",
       "sendInvite": "Send invitation email",
-      "restore": "Restore"
+      "restore": "Restore",
+      "view": "View",
+      "close": "Close"
     },
     "backupReason": {
       "scheduled": "Schedule",
@@ -225,6 +227,7 @@
       "bundledInstall": "Install",
       "bundledReinstall": "Reinstall",
       "confirmReinstall": "Reinstall language pack \"{{name}}\"? Any custom edits to it will be lost and replaced with the bundled version.",
+      "builtInHint": "German and English are built into the application itself, so they only appear in the list to view and download — they cannot be edited or deleted.",
       "errors": {
         "invalidJson": "That is not valid JSON.",
         "codeInvalid": "This code is already taken or reserved (de/en are reserved)."

@@ -192,7 +192,9 @@
         "cancel": "İptal",
         "delete": "Sil",
         "sendInvite": "Davet e-postası gönder",
-        "restore": "Geri yükle"
+        "restore": "Geri yükle",
+        "view": "Görüntüle",
+        "close": "Kapat"
       },
       "backupReason": {
         "scheduled": "Zamanlama",
@@ -231,7 +233,8 @@
         "errors": {
           "invalidJson": "Bu geçerli bir JSON değil.",
           "codeInvalid": "Bu kod zaten kullanılıyor veya ayrılmış (de/en ayrılmıştır)."
-        }
+        },
+        "builtInHint": "Almanca ve İngilizce doğrudan uygulamaya gömülüdür, bu nedenle listede yalnızca görüntüleme ve indirme amacıyla görünürler — düzenlenemez veya silinemezler."
       },
       "userInvite": {
         "hint": "Posta sunucusu yapılandırılmamış — şu anda davet e-postası gönderilemiyor.",

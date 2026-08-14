@@ -192,7 +192,9 @@
         "cancel": "Annuleren",
         "delete": "Verwijderen",
         "sendInvite": "Uitnodigingsmail verzenden",
-        "restore": "Herstellen"
+        "restore": "Herstellen",
+        "view": "Bekijken",
+        "close": "Sluiten"
       },
       "backupReason": {
         "scheduled": "Planning",
@@ -231,7 +233,8 @@
         "errors": {
           "invalidJson": "Dit is geen geldige JSON.",
           "codeInvalid": "Deze code is al in gebruik of gereserveerd (de/en zijn gereserveerd)."
-        }
+        },
+        "builtInHint": "Duits en Engels zijn ingebouwd in de toepassing zelf en verschijnen daarom alleen ter inzage en download in de lijst — ze kunnen niet worden bewerkt of verwijderd."
       },
       "userInvite": {
         "hint": "De mailserver is niet geconfigureerd — er kan momenteel geen uitnodigingsmail worden verzonden.",

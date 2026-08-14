@@ -192,7 +192,9 @@
         "cancel": "Anuluj",
         "delete": "Usuń",
         "sendInvite": "Wyślij e-mail z zaproszeniem",
-        "restore": "Przywróć"
+        "restore": "Przywróć",
+        "view": "Wyświetl",
+        "close": "Zamknij"
       },
       "backupReason": {
         "scheduled": "Harmonogram",
@@ -231,7 +233,8 @@
         "errors": {
           "invalidJson": "To nie jest prawidłowy JSON.",
           "codeInvalid": "Ten kod jest już zajęty lub zarezerwowany (de/en są zarezerwowane)."
-        }
+        },
+        "builtInHint": "Niemiecki i angielski są wbudowane w samą aplikację, dlatego na liście pojawiają się tylko do przeglądania i pobierania — nie można ich edytować ani usuwać."
       },
       "userInvite": {
         "hint": "Serwer poczty nie jest skonfigurowany — obecnie nie można wysłać e-maila z zaproszeniem.",

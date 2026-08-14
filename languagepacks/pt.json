@@ -192,7 +192,9 @@
         "cancel": "Cancelar",
         "delete": "Excluir",
         "sendInvite": "Enviar e-mail de convite",
-        "restore": "Restaurar"
+        "restore": "Restaurar",
+        "view": "Ver",
+        "close": "Fechar"
       },
       "backupReason": {
         "scheduled": "Agendamento",
@@ -231,7 +233,8 @@
         "errors": {
           "invalidJson": "Isso não é um JSON válido.",
           "codeInvalid": "Este código já está em uso ou é reservado (de/en são reservados)."
-        }
+        },
+        "builtInHint": "O alemão e o inglês estão integrados à própria aplicação, por isso aparecem na lista apenas para visualização e download — não podem ser editados nem excluídos."
       },
       "userInvite": {
         "hint": "O servidor de e-mail não está configurado — não é possível enviar um e-mail de convite no momento.",

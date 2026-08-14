@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { describeError } from './adminErrors'
-import { registerLanguagePack, unregisterLanguagePack } from '../../i18n'
+import { AVAILABLE_LANGUAGES, BUNDLED_TRANSLATIONS, registerLanguagePack, unregisterLanguagePack } from '../../i18n'
 import { setRuntimeLanguagePacks, type LanguagePackSummary } from '../../i18n/languagePackEvents'
 
 interface FullLanguagePack extends LanguagePackSummary {
@@ -34,6 +34,12 @@ const emptyNewPack = { code: '', name: '', translationsText: '' }
  * pre-installed on a fresh instance (DatabaseSeeder), so this section is
  * mainly for reinstalling one an admin deleted, or picking up a new bundled
  * pack a later image update ships without needing a restart.
+ *
+ * The table itself also lists the two build-compiled languages (de/en,
+ * AVAILABLE_LANGUAGES) alongside the real language_packs rows, view- and
+ * download-only — they're compiled into the frontend build
+ * (i18n/index.ts's BUNDLED_TRANSLATIONS), not database rows, so there's
+ * nothing to send a PUT/DELETE for in the first place.
  */
 export function LanguagesPage() {
   const { t } = useTranslation()
@@ -51,6 +57,8 @@ export function LanguagesPage() {
   const [editName, setEditName] = useState('')
   const [editTranslationsText, setEditTranslationsText] = useState('')
   const [editError, setEditError] = useState<string | null>(null)
+
+  const [viewingBuiltIn, setViewingBuiltIn] = useState<(typeof AVAILABLE_LANGUAGES)[number] | null>(null)
 
   async function load() {
     const { data } = await apiClient.get<LanguagePackSummary[]>('/languages')
@@ -181,6 +189,23 @@ export function LanguagesPage() {
     }
   }
 
+  /**
+   * de/en never leave the browser via the API (they're already fully
+   * present client-side, see BUNDLED_TRANSLATIONS) — no server round trip
+   * needed, unlike the real export flow (ExportImportPage.tsx), which has
+   * to ask the backend for data it doesn't have on its own.
+   */
+  function downloadBuiltIn(code: (typeof AVAILABLE_LANGUAGES)[number]) {
+    const payload = { code, name: t(`settings.language.${code}`), translations: BUNDLED_TRANSLATIONS[code] }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `medinv-language-${code}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <section>
       <h2>{t('admin.languages')}</h2>
@@ -199,6 +224,8 @@ export function LanguagesPage() {
       </ul>
       {installError && <p role="alert">{installError}</p>}
 
+      <p className="hint">{t('admin.languagesPage.builtInHint')}</p>
+
       {loading ? (
         <p>…</p>
       ) : (
@@ -211,6 +238,28 @@ export function LanguagesPage() {
             </tr>
           </thead>
           <tbody>
+            {AVAILABLE_LANGUAGES.map((code) =>
+              viewingBuiltIn === code ? (
+                <tr key={code}>
+                  <td>{code}</td>
+                  <td>
+                    <textarea rows={10} readOnly value={JSON.stringify(BUNDLED_TRANSLATIONS[code], null, 2)} />
+                  </td>
+                  <td>
+                    <button onClick={() => setViewingBuiltIn(null)}>{t('admin.actions.close')}</button>
+                  </td>
+                </tr>
+              ) : (
+                <tr key={code}>
+                  <td>{code}</td>
+                  <td>{t(`settings.language.${code}`)}</td>
+                  <td>
+                    <button onClick={() => setViewingBuiltIn(code)}>{t('admin.actions.view')}</button>
+                    <button onClick={() => downloadBuiltIn(code)}>{t('admin.actions.download')}</button>
+                  </td>
+                </tr>
+              ),
+            )}
             {packs.length === 0 && (
               <tr>
                 <td colSpan={3}>{t('admin.languagesPage.none')}</td>

@@ -14,6 +14,15 @@ import en from './locales/en.json'
  */
 export const AVAILABLE_LANGUAGES = ['de', 'en'] as const
 
+/**
+ * The two bundled languages' full translation objects, exported so
+ * LanguagesPage.tsx can list them alongside admin-managed packs — view and
+ * download only, never edit or delete: de/en are compiled into the build
+ * (imported below), not `language_packs` rows, so there is nothing in the
+ * database to update or remove in the first place.
+ */
+export const BUNDLED_TRANSLATIONS: Record<(typeof AVAILABLE_LANGUAGES)[number], object> = { de, en }
+
 // Captured *before* i18next-browser-languagedetector's init() below runs its
 // own detection — needed by applyBrowserOrDefaultLanguage() to tell "this
 // visitor already has an explicit cached language" (real prior match or

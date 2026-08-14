@@ -192,7 +192,9 @@
         "cancel": "Annulla",
         "delete": "Elimina",
         "sendInvite": "Invia email di invito",
-        "restore": "Ripristina"
+        "restore": "Ripristina",
+        "view": "Visualizza",
+        "close": "Chiudi"
       },
       "backupReason": {
         "scheduled": "Pianificazione",
@@ -231,7 +233,8 @@
         "errors": {
           "invalidJson": "Non è un JSON valido.",
           "codeInvalid": "Questo codice è già in uso o riservato (de/en sono riservati)."
-        }
+        },
+        "builtInHint": "Il tedesco e l'inglese sono integrati nell'applicazione stessa, quindi compaiono nell'elenco solo per la visualizzazione e il download — non possono essere modificati né eliminati."
       },
       "userInvite": {
         "hint": "Il server di posta non è configurato — al momento non è possibile inviare un'email di invito.",
