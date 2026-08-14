@@ -32,13 +32,81 @@ class TimezoneSettingTest extends TestCase
     protected function tearDown(): void
     {
         Carbon::setTestNow();
+        $this->clearTz();
         parent::tearDown();
+    }
+
+    /**
+     * env() (Illuminate\Support\Env) reads $_SERVER before ever falling back to
+     * a live getenv()/putenv() read (see BruteForceProtectionTrustedIpTest's
+     * docblock for the same nuance with MEDINV_TRUSTEDIP) — all three have to
+     * be set for a runtime override to actually take effect in a test.
+     */
+    private function setTz(string $value): void
+    {
+        putenv("TZ={$value}");
+        $_ENV['TZ'] = $value;
+        $_SERVER['TZ'] = $value;
+    }
+
+    private function clearTz(): void
+    {
+        putenv('TZ');
+        unset($_ENV['TZ'], $_SERVER['TZ']);
     }
 
     public function test_defaults_to_utc(): void
     {
         $this->assertSame('UTC', SystemSetting::get('timezone', 'UTC'));
         $this->assertSame('UTC', SystemSetting::defaults()['timezone']);
+    }
+
+    /**
+     * GitHub topic: falling back to a deployer-configured OS/container
+     * timezone when no admin has explicitly saved one yet — see
+     * SystemSetting::defaultTimezone()'s docblock for why this has to be
+     * an explicit env('TZ') read rather than something PHP or the OS
+     * already provides automatically.
+     */
+    public function test_default_timezone_falls_back_to_the_tz_env_var_when_set(): void
+    {
+        $this->setTz('Europe/Berlin');
+
+        $this->assertSame('Europe/Berlin', SystemSetting::defaultTimezone());
+        $this->assertSame('Europe/Berlin', SystemSetting::defaults()['timezone']);
+    }
+
+    public function test_default_timezone_falls_back_to_utc_when_tz_is_unset(): void
+    {
+        $this->clearTz();
+
+        $this->assertSame('UTC', SystemSetting::defaultTimezone());
+    }
+
+    /** An invalid TZ value must never reach localNow()'s setTimezone() call, which throws on an unrecognized identifier. */
+    public function test_default_timezone_ignores_an_unrecognized_tz_value(): void
+    {
+        $this->setTz('Not/A_Real_Zone');
+
+        $this->assertSame('UTC', SystemSetting::defaultTimezone());
+    }
+
+    public function test_local_now_uses_the_tz_env_var_when_no_setting_is_saved(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-08-13 15:30:00', 'UTC'));
+        $this->setTz('Europe/Berlin');
+
+        $this->assertSame('2026-08-13 17:30:00', SystemSetting::localNow()->format('Y-m-d H:i:s'));
+    }
+
+    /** An explicitly saved setting always wins over the TZ env var, whether it was set before or after the save. */
+    public function test_an_explicitly_saved_timezone_overrides_the_tz_env_var(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-08-13 15:30:00', 'UTC'));
+        $this->setTz('Europe/Berlin');
+        SystemSetting::set('timezone', 'America/New_York');
+
+        $this->assertSame('2026-08-13 11:30:00', SystemSetting::localNow()->format('Y-m-d H:i:s'));
     }
 
     public function test_local_now_uses_the_configured_timezone(): void
@@ -72,6 +140,16 @@ class TimezoneSettingTest extends TestCase
     {
         $this->actingAsAdmin();
         SystemSetting::set('timezone', 'Europe/Berlin');
+
+        $response = $this->getJson('/api/admin/settings');
+
+        $response->assertOk()->assertJsonPath('timezone', 'Europe/Berlin');
+    }
+
+    public function test_the_admin_settings_index_reflects_the_tz_env_var_before_anything_is_saved(): void
+    {
+        $this->actingAsAdmin();
+        $this->setTz('Europe/Berlin');
 
         $response = $this->getJson('/api/admin/settings');
 

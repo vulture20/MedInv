@@ -51,7 +51,7 @@ class AdminSettingsController extends Controller
             'locale' => [
                 'default_language' => SystemSetting::get('locale.default_language', 'en'),
             ],
-            'timezone' => SystemSetting::get('timezone', 'UTC'),
+            'timezone' => SystemSetting::get('timezone', SystemSetting::defaultTimezone()),
         ];
     }
 

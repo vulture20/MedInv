@@ -51,10 +51,38 @@ class SystemSetting extends Model
             'security.throttle_window_minutes' => 5,
             'security.throttle_lock_minutes' => 30,
             'covers.cleanup_enabled' => true,
-            'timezone' => 'UTC',
+            'timezone' => static::defaultTimezone(),
             'loglevel' => env('MEDINV_LOGLEVEL', 'WARNING'),
             'locale.default_language' => 'en',
         ];
+    }
+
+    /**
+     * Falls back to the deployer-provided `TZ` environment variable — the
+     * near-universal Docker convention for timezone-aware containers (e.g.
+     * Sonarr/Radarr/Immich) — for as long as no admin has explicitly saved
+     * a `timezone` setting via AdminSettingsController::updateTimezone().
+     * Deliberately unprefixed, unlike every other env var this app reads
+     * (see CLAUDE.md's "All environment variables are MEDINV_-prefixed"):
+     * `TZ` is a cross-application OS-level standard, not something
+     * specific to MedInv, and deployers already widely expect it to work
+     * this way. PHP itself does *not* read `TZ` automatically for
+     * date_default_timezone_get() (confirmed live — that legacy fallback
+     * no longer exists), and the shipped Alpine image has no `tzdata`
+     * package at all (no /etc/localtime or /etc/timezone to fall back to
+     * either), so without this, "TZ" set by a deployer was silently
+     * ignored. Validated against \DateTimeZone::listIdentifiers() — the
+     * same set AdminSettingsController::updateTimezone() itself validates
+     * against — so a typo'd or region-less TZ value (e.g. Docker's own
+     * "Etc/UTC" is valid, but something malformed isn't) can never reach
+     * localNow()'s setTimezone() call, which throws on an unrecognized
+     * identifier.
+     */
+    public static function defaultTimezone(): string
+    {
+        $tz = env('TZ');
+
+        return $tz && in_array($tz, \DateTimeZone::listIdentifiers(), true) ? $tz : 'UTC';
     }
 
     /**
@@ -93,6 +121,6 @@ class SystemSetting extends Model
      */
     public static function localNow(): Carbon
     {
-        return now()->setTimezone(static::get('timezone', 'UTC'));
+        return now()->setTimezone(static::get('timezone', static::defaultTimezone()));
     }
 }
