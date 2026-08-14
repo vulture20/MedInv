@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Rules\MedInvPasswordPolicy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
@@ -69,6 +70,12 @@ class UserController extends Controller
         $user = User::query()->create($data);
         $response = $user->toArray();
 
+        // Admin account management audit trail — who created which account,
+        // at what level, previously not logged at all (only the failure
+        // paths below — a protected-account edit, an invite that failed to
+        // send — were).
+        Log::info('User created', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'email' => $user->email, 'level' => $user->level]);
+
         if ($sendInvite) {
             [$response['invite_sent'], $response['invite_error']] = $this->sendInvite($request, $user);
         }
@@ -118,6 +125,11 @@ class UserController extends Controller
 
         $user->update($data);
 
+        // $data only ever contains fields the request actually sent
+        // ('sometimes' rules) — logging it shows exactly what an admin
+        // changed, `level` above all: a level change is a privilege change.
+        Log::info('User updated', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'changes' => $data]);
+
         return $user;
     }
 
@@ -129,13 +141,15 @@ class UserController extends Controller
         }
 
         $user->update(['is_active' => false]);
+        Log::info('User deactivated', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'email' => $user->email]);
 
         return $user;
     }
 
-    public function reactivate(User $user)
+    public function reactivate(Request $request, User $user)
     {
         $user->update(['is_active' => true]);
+        Log::info('User reactivated', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'email' => $user->email]);
 
         return $user;
     }
@@ -174,6 +188,7 @@ class UserController extends Controller
             ], 422);
         }
 
+        Log::info('User deleted', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'email' => $user->email]);
         $user->delete();
 
         return response()->noContent();

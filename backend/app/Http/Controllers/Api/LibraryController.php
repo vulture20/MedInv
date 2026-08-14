@@ -8,6 +8,7 @@ use App\Models\Library;
 use App\Models\LibraryShare;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -80,6 +81,17 @@ class LibraryController extends Controller
     {
         abort_unless($this->access->canWrite($request->user(), $library), 403);
 
+        // Destructive-admin-action audit trail, previously not logged at all
+        // — item_count captured before the cascade delete removes them, so
+        // the log entry still says how much was actually lost.
+        Log::info('Library deleted', [
+            'actor_id' => $request->user()->id,
+            'library_id' => $library->id,
+            'name' => $library->name,
+            'owner_id' => $library->owner_id,
+            'item_count' => $library->mediaItems()->count(),
+        ]);
+
         $library->delete();
 
         return response()->noContent();
@@ -109,6 +121,14 @@ class LibraryController extends Controller
         if ($newOwner->isGuest()) {
             throw ValidationException::withMessages(['owner_id' => 'The new owner cannot be a guest-level account.']);
         }
+
+        Log::info('Library ownership transferred', [
+            'actor_id' => $request->user()->id,
+            'library_id' => $library->id,
+            'name' => $library->name,
+            'previous_owner_id' => $library->owner_id,
+            'new_owner_id' => $newOwner->id,
+        ]);
 
         $library->update(['owner_id' => $newOwner->id]);
 
