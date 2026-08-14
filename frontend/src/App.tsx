@@ -19,6 +19,7 @@ import { PluginsPage } from './pages/admin/PluginsPage'
 import { BackupsPage } from './pages/admin/BackupsPage'
 import { ExportImportPage } from './pages/admin/ExportImportPage'
 import { MailPage } from './pages/admin/MailPage'
+import { LanguagesPage } from './pages/admin/LanguagesPage'
 import { SystemSettingsPage } from './pages/admin/SystemSettingsPage'
 
 /**
@@ -55,6 +56,7 @@ function App() {
                     <Route path="backups" element={<BackupsPage />} />
                     <Route path="export-import" element={<ExportImportPage />} />
                     <Route path="mail" element={<MailPage />} />
+                    <Route path="languages" element={<LanguagesPage />} />
                     <Route path="settings" element={<SystemSettingsPage />} />
                   </Route>
                 </Route>

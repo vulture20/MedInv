@@ -162,6 +162,7 @@
     "backups": "Backups",
     "exportImport": "Export/Import",
     "mail": "Mail",
+    "languages": "Sprachpakete",
     "settings": "Systemeinstellungen",
     "confirmDeleteUser": "Benutzer „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
     "confirmDeleteBackup": "Backup „{{filename}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
@@ -211,6 +212,18 @@
       "importFile": "Export-Datei",
       "importSubmit": "Importieren",
       "importSuccess": "Import abgeschlossen: {{created}} neu angelegt, {{overwritten}} überschrieben, {{merged}} zusammengeführt, {{skipped}} übersprungen."
+    },
+    "languagesPage": {
+      "code": "Code",
+      "none": "Keine zusätzlichen Sprachpakete vorhanden.",
+      "create": "Sprachpaket anlegen",
+      "translations": "Übersetzungen (JSON)",
+      "translationsHint": "Gleiche Schlüssel-Wert-Struktur wie die mitgelieferten Sprachdateien (briefing 11.4) — mit einem Texteditor erstellt und hier eingefügt.",
+      "confirmDelete": "Sprachpaket „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+      "errors": {
+        "invalidJson": "Das ist kein gültiges JSON.",
+        "codeInvalid": "Dieser Code ist bereits vergeben oder reserviert (de/en sind reserviert)."
+      }
     },
     "userInvite": {
       "hint": "Der Mailserver ist nicht konfiguriert — eine Einladungsmail kann derzeit nicht verschickt werden.",

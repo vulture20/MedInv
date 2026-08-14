@@ -20,6 +20,7 @@ export function AdminLayout() {
         <NavLink to="backups">{t('admin.backups')}</NavLink>
         <NavLink to="export-import">{t('admin.exportImport')}</NavLink>
         <NavLink to="mail">{t('admin.mail')}</NavLink>
+        <NavLink to="languages">{t('admin.languages')}</NavLink>
         <NavLink to="settings">{t('admin.settings')}</NavLink>
       </nav>
       <Outlet />
