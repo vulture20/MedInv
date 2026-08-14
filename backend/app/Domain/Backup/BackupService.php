@@ -6,6 +6,7 @@ use App\Domain\ExportImport\ExportImportService;
 use App\Models\Backup;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
@@ -94,6 +95,18 @@ class BackupService
         }
 
         $backup = Backup::query()->create($attributes);
+
+        // Every backup previously went entirely unlogged — for an automatic
+        // one (the scheduled interval, or PreUpdateBackupCommand's pre-update
+        // safety net) this is often the only record it ever happened at all,
+        // since nothing else surfaces it to anyone actively watching.
+        Log::info('Backup created', [
+            'filename' => $filename,
+            'size_bytes' => $attributes['size_bytes'],
+            'trigger' => $trigger,
+            'reason' => $reason,
+            'interval_mode' => $intervalMode,
+        ]);
 
         $this->prune();
 
@@ -217,8 +230,20 @@ class BackupService
 
         $expired = (clone $automatic)->where('created_at', '<', now()->subDays($maxAgeDays))->get();
         $excess = (clone $automatic)->orderByDesc('created_at')->get()->slice($maxCount);
+        $toPrune = $expired->merge($excess)->unique('id');
 
-        $expired->merge($excess)->unique('id')->each(fn (Backup $b) => $this->delete($b));
+        if ($toPrune->isEmpty()) {
+            return;
+        }
+
+        // Only logged when something was actually pruned — same "don't log a
+        // no-op" reasoning as the scheduler noise fix (routes/console.php's
+        // ->when() filters): prune() runs after every single backup, so an
+        // unconditional log line here would fire just as often as backup
+        // creation itself, almost always to say nothing happened.
+        Log::info('Backups pruned', ['count' => $toPrune->count(), 'filenames' => $toPrune->pluck('filename')->all()]);
+
+        $toPrune->each(fn (Backup $b) => $this->delete($b));
     }
 
     /**
@@ -262,6 +287,27 @@ class BackupService
         $this->restoreCoverFiles($zip);
         $zip->close();
 
-        return $this->exportImportService->importLibraries($data, $importingAs, $conflictResolutions, $restoreSettings);
+        $result = $this->exportImportService->importLibraries($data, $importingAs, $conflictResolutions, $restoreSettings);
+
+        // Restoring overwrites/merges existing data — worth a clear record of
+        // who triggered it (importingAs — note this is *not* necessarily an
+        // HTTP-request actor: RestoreBackupOnBoot passes the seeded admin
+        // account since MEDINV_RESTOREBACKUP runs unattended at container
+        // start) and what it actually did, not just that some restore
+        // happened.
+        Log::info('Backup restored', [
+            'filename' => $backup->filename,
+            'actor_id' => $importingAs->id,
+            'restore_settings' => $restoreSettings,
+            'created' => count($result['created'] ?? []),
+            'merged' => count($result['merged'] ?? []),
+            'overwritten' => count($result['overwritten'] ?? []),
+            'skipped' => count($result['skipped'] ?? []),
+            'settings_restored' => $result['settings_restored'] ?? false,
+            'users_restored' => count($result['users_restored'] ?? []),
+            'plugins_restored' => count($result['plugins_restored'] ?? []),
+        ]);
+
+        return $result;
     }
 }

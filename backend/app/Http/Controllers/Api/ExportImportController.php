@@ -6,6 +6,7 @@ use App\Domain\ExportImport\ExportImportService;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 
 /**
@@ -25,6 +26,12 @@ class ExportImportController extends Controller
         $libraryIds = empty($data['library_ids']) ? null : $data['library_ids'];
 
         $export = $this->service->exportLibraries($libraryIds);
+
+        Log::info('Libraries exported', [
+            'actor_id' => $request->user()->id,
+            'library_ids' => $libraryIds ?? 'all',
+            'library_count' => count($export['libraries'] ?? []),
+        ]);
 
         // SystemSetting::localNow(), not now() — GitHub issue #31: this filename
         // is what the admin actually sees in their downloads, so it should
@@ -58,6 +65,18 @@ class ExportImportController extends Controller
             $data['conflict_resolutions'] ?? [],
             $data['restore_settings'] ?? false,
         );
+
+        // Import can overwrite/merge existing libraries — same audit-trail
+        // motivation as BackupService::restore()'s logging, which this
+        // deliberately mirrors (same importLibraries() result shape).
+        Log::info('Libraries imported', [
+            'actor_id' => $request->user()->id,
+            'restore_settings' => $data['restore_settings'] ?? false,
+            'created' => count($result['created'] ?? []),
+            'merged' => count($result['merged'] ?? []),
+            'overwritten' => count($result['overwritten'] ?? []),
+            'skipped' => count($result['skipped'] ?? []),
+        ]);
 
         return response()->json($result);
     }

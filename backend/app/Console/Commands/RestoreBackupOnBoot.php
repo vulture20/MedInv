@@ -6,6 +6,7 @@ use App\Domain\Backup\BackupService;
 use App\Models\Backup;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 /**
  * MEDINV_RESTOREBACKUP (briefing 9.3/16.): the unattended restore trigger,
@@ -38,7 +39,11 @@ class RestoreBackupOnBoot extends Command
         $backup = Backup::query()->where('filename', $filename)->first();
 
         if (! $backup) {
-            $this->error("MEDINV_RESTOREBACKUP={$name}: no backup with that filename exists (see the admin backups list for valid filenames). Skipping restore.");
+            $message = "MEDINV_RESTOREBACKUP={$name}: no backup with that filename exists (see the admin backups list for valid filenames). Skipping restore.";
+            $this->error($message);
+            // Also Log::, not just console output — this is an unattended boot-time
+            // config error nobody is necessarily watching supervisord's stdout for.
+            Log::warning($message);
 
             return self::FAILURE;
         }
@@ -47,7 +52,9 @@ class RestoreBackupOnBoot extends Command
             ?? User::query()->where('level', 'admin')->orderBy('id')->first();
 
         if (! $actingAs) {
-            $this->error('MEDINV_RESTOREBACKUP: no admin account exists yet to perform the restore as. Skipping restore.');
+            $message = 'MEDINV_RESTOREBACKUP: no admin account exists yet to perform the restore as. Skipping restore.';
+            $this->error($message);
+            Log::warning($message);
 
             return self::FAILURE;
         }
