@@ -223,6 +223,11 @@
                 "translations": "翻译内容（JSON）",
                 "translationsHint": "结构与内置语言文件相同（键值对，见简报 11.4 章）——请在文本编辑器中编写后粘贴到此处。",
                 "confirmDelete": "删除语言包“{{name}}”？此操作无法撤销。",
+                "bundledTitle": "内置语言包",
+                "bundledInstalled": "已安装",
+                "bundledInstall": "安装",
+                "bundledReinstall": "重新安装",
+                "confirmReinstall": "重新安装语言包“{{name}}”？对该语言包的自定义修改将丢失，并被内置版本替换。",
                 "errors": {
                     "invalidJson": "这不是有效的 JSON。",
                     "codeInvalid": "该代码已被占用或为保留代码（de/en 为保留代码）。"

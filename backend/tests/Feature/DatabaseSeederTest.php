@@ -64,7 +64,7 @@ class DatabaseSeederTest extends TestCase
     {
         $this->seed();
 
-        foreach (['fr', 'es', 'ja', 'zh'] as $code) {
+        foreach (['fr', 'es', 'ja', 'zh', 'it', 'pt'] as $code) {
             $this->assertDatabaseHas((new LanguagePack)->getTable(), ['code' => $code]);
         }
     }

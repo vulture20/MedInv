@@ -223,6 +223,11 @@
                 "translations": "Traducciones (JSON)",
                 "translationsHint": "Misma estructura clave-valor que los archivos de idioma integrados (briefing 11.4) — escríbela en un editor de texto y pégala aquí.",
                 "confirmDelete": "¿Eliminar el paquete de idioma «{{name}}»? Esta acción no se puede deshacer.",
+                "bundledTitle": "Paquetes de idioma incluidos",
+                "bundledInstalled": "instalado",
+                "bundledInstall": "Instalar",
+                "bundledReinstall": "Reinstalar",
+                "confirmReinstall": "¿Reinstalar el paquete de idioma «{{name}}»? Las modificaciones personalizadas de este paquete se perderán y se sustituirán por la versión incluida.",
                 "errors": {
                     "invalidJson": "Esto no es un JSON válido.",
                     "codeInvalid": "Este código ya está en uso o reservado (de/en están reservados)."

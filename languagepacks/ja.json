@@ -223,6 +223,11 @@
                 "translations": "翻訳データ（JSON）",
                 "translationsHint": "同梱の言語ファイルと同じキー・バリュー構造です（仕様書11.4項）。テキストエディタで作成し、ここに貼り付けてください。",
                 "confirmDelete": "言語パック「{{name}}」を削除しますか? この操作は元に戻せません。",
+                "bundledTitle": "同梱の言語パック",
+                "bundledInstalled": "インストール済み",
+                "bundledInstall": "インストール",
+                "bundledReinstall": "再インストール",
+                "confirmReinstall": "言語パック「{{name}}」を再インストールしますか? このパックへの独自の変更は失われ、同梱バージョンに置き換えられます。",
                 "errors": {
                     "invalidJson": "有効なJSONではありません。",
                     "codeInvalid": "このコードはすでに使用されているか予約済みです（de/enは予約済みです）。"

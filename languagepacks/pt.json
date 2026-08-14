@@ -1,0 +1,357 @@
+{
+  "code": "pt",
+  "name": "Português",
+  "translations": {
+    "common": {
+      "name": "Nome",
+      "email": "E-mail",
+      "loading": "Carregando…"
+    },
+    "nav": {
+      "home": "Início",
+      "capture": "Captura",
+      "libraries": "Bibliotecas",
+      "statistics": "Estatísticas",
+      "administration": "Administração",
+      "toggleMenu": "Alternar menu"
+    },
+    "dashboard": {
+      "noLibraries": "Você ainda não tem nenhuma biblioteca visível.",
+      "allLibraries": "Mostrar todas as {{count}} bibliotecas"
+    },
+    "login": {
+      "title": "Entrar",
+      "email": "Endereço de e-mail",
+      "password": "Senha",
+      "submit": "Entrar",
+      "mailServerWarning": "O servidor de e-mail está inacessível ou mal configurado. A redefinição de senha está desativada.",
+      "forgotPassword": "Esqueceu sua senha?",
+      "sessionExpired": "Sua sessão expirou. Faça login novamente."
+    },
+    "userMenu": {
+      "settings": "Configurações personalizadas",
+      "logout": "Sair"
+    },
+    "libraries": {
+      "title": "Bibliotecas",
+      "create": "Criar biblioteca",
+      "view": "Ver",
+      "delete": "Excluir",
+      "noItems": "Esta biblioteca ainda não contém nenhum item.",
+      "confirmDelete": "Excluir a biblioteca \"{{name}}\"? Esta ação não pode ser desfeita.",
+      "descriptionLabel": "Descrição",
+      "mediaTypeLabel": "Tipo de mídia",
+      "mediaType": {
+        "book": "Livro",
+        "cd": "CD",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Compartilhamento",
+        "hint": "Controla quem mais pode ver esta biblioteca, além de você. Aqui só é possível conceder acesso de leitura.",
+        "guests": "Compartilhar com convidados",
+        "allUsers": "Compartilhar com todos os usuários",
+        "specificUsers": "Usuários específicos",
+        "noSpecificUsers": "Não compartilhada com nenhum usuário específico.",
+        "selectUser": "Selecionar um usuário…",
+        "add": "Adicionar",
+        "remove": "Remover",
+        "saved": "Configurações de compartilhamento salvas."
+      },
+      "ownership": {
+        "title": "Propriedade",
+        "hint": "Transfere esta biblioteca, incluindo todos os seus compartilhamentos, para outro usuário.",
+        "selectUser": "Selecionar um novo proprietário…",
+        "transfer": "Transferir",
+        "confirm": "Transferir a propriedade desta biblioteca para \"{{name}}\"? Você poderá perder o acesso a ela depois."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "Excluir \"{{title}}\"? Esta ação não pode ser desfeita.",
+      "moveToLibrary": "Mover para uma biblioteca",
+      "selectLibrary": "Selecionar uma biblioteca…",
+      "move": "Mover",
+      "uploadCover": "Enviar capa",
+      "removeCover": "Remover capa",
+      "confirmRemoveCover": "Remover a capa? Esta ação não pode ser desfeita.",
+      "addManually": "Adicionar manualmente",
+      "createTitle": "Adicionar item de mídia",
+      "fields": {
+        "title": "Título",
+        "ean": "EAN",
+        "description": "Descrição",
+        "release_date": "Data de lançamento",
+        "price": "Preço",
+        "authors": "Autor(es)",
+        "format": "Formato",
+        "genre": "Gênero",
+        "page_count": "Número de páginas",
+        "language": "Idioma",
+        "publisher": "Editora",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Artista",
+        "medium": "Suporte",
+        "asin": "ASIN",
+        "disc_count": "Número de discos",
+        "languages": "Idioma(s)",
+        "cast": "Elenco",
+        "director": "Diretor",
+        "production_year": "Ano de produção",
+        "runtime_minutes": "Duração (minutos)"
+      }
+    },
+    "capture": {
+      "title": "Captura",
+      "single": "Entrada única",
+      "scan": "Digitalizar",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Importação de arquivo de texto",
+      "duplicate": "Este item já existe nesta biblioteca.",
+      "noMatch": "Nenhuma correspondência de metadados encontrada — adicione manualmente.",
+      "chooseCandidate": "Escolha uma correspondência ou rejeite todas.",
+      "rejectAll": "Rejeitar todas as correspondências",
+      "cameraScan": "Digitalizar com a câmera",
+      "cameraClose": "Fechar câmera",
+      "cameraHint": "Segure um código de barras na frente da câmera.",
+      "cameraAccessError": "Não foi possível acessar a câmera. Conceda a permissão ou insira um EAN/ISBN manualmente."
+    },
+    "search": {
+      "placeholder": "Pesquisar…",
+      "resultsFor": "Pesquisa: \"{{query}}\"",
+      "submit": "Pesquisar",
+      "fuzzy": "Pesquisa aproximada",
+      "error": "A pesquisa falhou. Tente novamente."
+    },
+    "statistics": {
+      "title": "Estatísticas",
+      "itemCount": "Número de itens",
+      "totalValue": "Valor total",
+      "dimension": {
+        "genre": "Gênero",
+        "language": "Idioma",
+        "publisher": "Editora",
+        "artist": "Artista",
+        "director": "Diretor",
+        "year": "Ano de publicação"
+      },
+      "moreCount": "+{{count}} mais",
+      "noDistributions": "Nenhum dado de distribuição disponível.",
+      "valueHistory": {
+        "title": "Valor ao longo do tempo",
+        "accumulatedTitle": "Valor total ao longo do tempo (todas as suas bibliotecas)",
+        "current": "Valor atual: {{value}} (em {{date}})",
+        "noData": "Ainda não há dados suficientes para um histórico de valor.",
+        "estimatedNoteUntil": "O histórico anterior a {{date}} é estimado a partir das datas de captura dos itens e pode não refletir exclusões ou alterações de preço posteriores.",
+        "estimatedNoteAll": "Todo este histórico é estimado a partir das datas de captura dos itens — ainda não foi executado nenhum snapshot diário."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Modelo",
+        "light": "Claro",
+        "dark": "Escuro"
+      },
+      "language": {
+        "label": "Idioma",
+        "de": "Alemão",
+        "en": "Inglês"
+      }
+    },
+    "admin": {
+      "title": "Administração",
+      "users": "Usuários",
+      "plugins": "Plugins de metadados",
+      "backups": "Backups",
+      "exportImport": "Exportar/Importar",
+      "mail": "E-mail",
+      "languages": "Pacotes de idioma",
+      "settings": "Configurações do sistema",
+      "confirmDeleteUser": "Excluir o usuário \"{{name}}\"? Esta ação não pode ser desfeita.",
+      "confirmDeleteBackup": "Excluir o backup \"{{filename}}\"? Esta ação não pode ser desfeita.",
+      "passwordHint": "Pelo menos 10 caracteres, com pelo menos uma letra maiúscula, uma minúscula, um dígito e um caractere especial.",
+      "table": {
+        "level": "Nível",
+        "status": "Status",
+        "enabled": "Ativado",
+        "priority": "Prioridade",
+        "mediaType": "Tipo de mídia"
+      },
+      "status": {
+        "active": "Ativo",
+        "deactivated": "Desativado"
+      },
+      "actions": {
+        "deactivate": "Desativar",
+        "reactivate": "Reativar",
+        "createBackupNow": "Criar backup agora",
+        "download": "Baixar",
+        "createUser": "Criar usuário",
+        "edit": "Editar",
+        "save": "Salvar",
+        "cancel": "Cancelar",
+        "delete": "Excluir",
+        "sendInvite": "Enviar e-mail de convite",
+        "restore": "Restaurar"
+      },
+      "backupReason": {
+        "scheduled": "Agendamento",
+        "pre_update": "Migração"
+      },
+      "backupRestore": {
+        "warning": "Por padrão, bibliotecas existentes com o mesmo nome são ignoradas (deixadas inalteradas), a menos que você escolha \"Sobrescrever\" abaixo.",
+        "overwriteExisting": "Sobrescrever bibliotecas existentes com o mesmo nome em vez de ignorá-las",
+        "restoreSettings": "Restaurar também as configurações do sistema e as contas de usuário",
+        "submit": "Confirmar restauração",
+        "confirm": "Restaurar o backup \"{{filename}}\"? Esta ação não pode ser desfeita.",
+        "success": "Restauração concluída: {{created}} criada(s), {{overwritten}} sobrescrita(s), {{merged}} mesclada(s), {{skipped}} ignorada(s)."
+      },
+      "exportImportPage": {
+        "exportTitle": "Exportar",
+        "exportHint": "Não selecionar nada exporta todas as bibliotecas.",
+        "exportSubmit": "Exportar",
+        "exportError": "Falha na exportação.",
+        "importTitle": "Importar",
+        "importFile": "Arquivo de exportação",
+        "importSubmit": "Importar",
+        "importSuccess": "Importação concluída: {{created}} criada(s), {{overwritten}} sobrescrita(s), {{merged}} mesclada(s), {{skipped}} ignorada(s)."
+      },
+      "languagesPage": {
+        "code": "Código",
+        "none": "Ainda não há pacotes de idioma adicionais.",
+        "create": "Adicionar pacote de idioma",
+        "translations": "Traduções (JSON)",
+        "translationsHint": "Mesma estrutura de chave-valor dos arquivos de idioma incluídos (briefing 11.4) — escreva em um editor de texto e cole aqui.",
+        "confirmDelete": "Excluir o pacote de idioma \"{{name}}\"? Esta ação não pode ser desfeita.",
+        "bundledTitle": "Pacotes de idioma incluídos",
+        "bundledInstalled": "instalado",
+        "bundledInstall": "Instalar",
+        "bundledReinstall": "Reinstalar",
+        "confirmReinstall": "Reinstalar o pacote de idioma \"{{name}}\"? Quaisquer edições personalizadas serão perdidas e substituídas pela versão incluída.",
+        "errors": {
+          "invalidJson": "Isso não é um JSON válido.",
+          "codeInvalid": "Este código já está em uso ou é reservado (de/en são reservados)."
+        }
+      },
+      "userInvite": {
+        "hint": "O servidor de e-mail não está configurado — não é possível enviar um e-mail de convite no momento.",
+        "sent": "E-mail de convite enviado com sucesso.",
+        "failed": "O usuário foi criado, mas não foi possível enviar o e-mail de convite."
+      },
+      "errors": {
+        "import_invalid_json": "Este arquivo não está em um formato de exportação MedInv válido (JSON ilegível).",
+        "import_missing_libraries": "Este arquivo não contém nenhuma biblioteca — provavelmente não é um arquivo de exportação MedInv válido.",
+        "import_invalid_library": "A biblioteca nº {{number}} no arquivo não tem um campo \"{{field}}\" válido.",
+        "import_invalid_item": "Um item (entrada nº {{number}}) na biblioteca \"{{library}}\" não tem título ou EAN válido.",
+        "protected_account": "Esta é a conta de administrador predefinida e não pode ser editada, desativada ou excluída.",
+        "passwordPolicy": "A senha deve ter pelo menos 10 caracteres e conter uma letra maiúscula, uma minúscula, um dígito e um caractere especial.",
+        "ownsLibraries": "Esta conta ainda é proprietária das seguintes bibliotecas e não pode ser excluída até que sejam transferidas para outro proprietário ou excluídas: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "Host SMTP",
+        "port": "Porta",
+        "username": "Nome de usuário",
+        "password": "Senha",
+        "passwordHint": "Deixe em branco para manter a senha atual.",
+        "encryption": "Criptografia",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Sem criptografia"
+        },
+        "fromAddress": "Endereço de remetente",
+        "fromName": "Nome do remetente",
+        "healthy": "O servidor de e-mail está acessível e configurado corretamente.",
+        "unhealthy": "O servidor de e-mail está inacessível ou não está totalmente configurado. A redefinição de senha está desativada.",
+        "saved": "Configurações de e-mail salvas.",
+        "testMail": "Enviar e-mail de teste",
+        "testMailTo": "Endereço do destinatário",
+        "testMailSend": "Enviar e-mail de teste",
+        "testMailSent": "E-mail de teste enviado com sucesso.",
+        "testMailNotConfigured": "O servidor de e-mail ainda não está configurado.",
+        "testMailFailed": "Não foi possível enviar o e-mail de teste: {{message}}"
+      },
+      "backupSettings": {
+        "title": "Agendamento de backup",
+        "intervalMode": "Intervalo",
+        "interval": {
+          "daily": "Diário",
+          "weekly": "Semanal",
+          "monthly": "Mensal",
+          "cron": "Personalizado (expressão cron)"
+        },
+        "cronExpression": "Expressão cron",
+        "retentionHint": "Aplica-se apenas a backups automáticos. Backups criados manualmente não contam para isso e nunca são excluídos automaticamente. Apenas uma das duas regras abaixo está ativa por vez — escolha qual.",
+        "retentionMode": "Excluir backups antigos por",
+        "retentionCount": "Manter no máximo esta quantidade de backups",
+        "retentionMaxAgeDays": "Excluir backups com mais de (dias)",
+        "saved": "Agendamento de backup salvo."
+      },
+      "securitySettings": {
+        "title": "Proteção contra força bruta",
+        "maxAttempts": "Máx. de tentativas falhas",
+        "windowMinutes": "Janela de tempo (minutos)",
+        "lockMinutes": "Duração do bloqueio (minutos)",
+        "saved": "Configurações de segurança salvas."
+      },
+      "coverCleanup": {
+        "title": "Limpeza de capas",
+        "hint": "Uma vez por dia, exclui do disco os arquivos de capa/miniatura que não são mais referenciados por nenhum item de mídia.",
+        "enabled": "Limpar automaticamente arquivos de capa órfãos",
+        "saved": "Configuração de limpeza de capas salva."
+      },
+      "timezoneSettings": {
+        "title": "Fuso horário",
+        "hint": "Usado para os nomes de arquivos de backup e exportação, para que correspondam ao seu horário local em vez de sempre mostrar UTC.",
+        "timezone": "Fuso horário",
+        "saved": "Fuso horário salvo."
+      },
+      "logLevel": {
+        "title": "Nível de log",
+        "saved": "Nível de log salvo."
+      },
+      "localeSettings": {
+        "title": "Idioma padrão",
+        "hint": "Usado quando o idioma de um visitante não é alemão nem inglês.",
+        "defaultLanguage": "Idioma padrão",
+        "saved": "Idioma padrão salvo."
+      },
+      "pluginConfig": {
+        "settings": "Configurações",
+        "noConfig": "Nenhuma configuração necessária.",
+        "fields": {
+          "api_key": "Chave de API"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Arraste para reordenar {{name}} (ou pressione Espaço e depois use as setas)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Esqueci a senha",
+      "forgotIntro": "Digite seu endereço de e-mail. Se existir uma conta para ele, você receberá um link para redefinir sua senha.",
+      "sendLink": "Solicitar link",
+      "linkSent": "Se esse endereço existir, um e-mail com um link de redefinição foi enviado.",
+      "resetTitle": "Definir uma nova senha",
+      "newPassword": "Nova senha",
+      "confirmPassword": "Confirmar senha",
+      "resetSubmit": "Redefinir senha",
+      "resetSuccess": "Sua senha foi redefinida. Agora você pode entrar.",
+      "backToLogin": "Voltar para o login",
+      "errors": {
+        "invalid_token": "Este link é inválido ou expirou. Solicite um novo.",
+        "invalid_user": "Não existe conta para este endereço de e-mail.",
+        "throttled": "Aguarde um momento antes de tentar novamente.",
+        "reset_failed": "Não foi possível redefinir a senha.",
+        "mail_unavailable": "O servidor de e-mail não está configurado ou está inacessível. Entre em contato com um administrador.",
+        "generic": "Isso não funcionou. Tente novamente mais tarde."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Credenciais inválidas.",
+      "account_locked": "Muitas tentativas falhas. Esta conta está temporariamente bloqueada.",
+      "account_deactivated": "Esta conta foi desativada.",
+      "generic": "Falha no login. Tente novamente mais tarde ou entre em contato com um administrador."
+    }
+  }
+}

@@ -1,0 +1,357 @@
+{
+  "code": "it",
+  "name": "Italiano",
+  "translations": {
+    "common": {
+      "name": "Nome",
+      "email": "Email",
+      "loading": "Caricamento…"
+    },
+    "nav": {
+      "home": "Home",
+      "capture": "Acquisizione",
+      "libraries": "Biblioteche",
+      "statistics": "Statistiche",
+      "administration": "Amministrazione",
+      "toggleMenu": "Attiva/disattiva menu"
+    },
+    "dashboard": {
+      "noLibraries": "Non hai ancora nessuna biblioteca visibile.",
+      "allLibraries": "Mostra tutte le {{count}} biblioteche"
+    },
+    "login": {
+      "title": "Accedi",
+      "email": "Indirizzo email",
+      "password": "Password",
+      "submit": "Accedi",
+      "mailServerWarning": "Il server di posta non è raggiungibile o è configurato in modo errato. Il ripristino della password è disabilitato.",
+      "forgotPassword": "Password dimenticata?",
+      "sessionExpired": "La sessione è scaduta. Effettua nuovamente l'accesso."
+    },
+    "userMenu": {
+      "settings": "Impostazioni personali",
+      "logout": "Disconnetti"
+    },
+    "libraries": {
+      "title": "Biblioteche",
+      "create": "Crea biblioteca",
+      "view": "Visualizza",
+      "delete": "Elimina",
+      "noItems": "Questa biblioteca non contiene ancora alcun elemento.",
+      "confirmDelete": "Eliminare la biblioteca «{{name}}»? Questa azione non può essere annullata.",
+      "descriptionLabel": "Descrizione",
+      "mediaTypeLabel": "Tipo di media",
+      "mediaType": {
+        "book": "Libro",
+        "cd": "CD",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Condivisione",
+        "hint": "Determina chi altro può vedere questa biblioteca, oltre a te. Qui è possibile concedere solo l'accesso in lettura.",
+        "guests": "Condividi con gli ospiti",
+        "allUsers": "Condividi con tutti gli utenti",
+        "specificUsers": "Utenti specifici",
+        "noSpecificUsers": "Non condivisa con nessun utente specifico.",
+        "selectUser": "Seleziona un utente…",
+        "add": "Aggiungi",
+        "remove": "Rimuovi",
+        "saved": "Impostazioni di condivisione salvate."
+      },
+      "ownership": {
+        "title": "Proprietà",
+        "hint": "Trasferisce questa biblioteca, incluse tutte le sue condivisioni, a un altro utente.",
+        "selectUser": "Seleziona un nuovo proprietario…",
+        "transfer": "Trasferisci",
+        "confirm": "Trasferire la proprietà di questa biblioteca a «{{name}}»? In seguito potresti perdere l'accesso ad essa."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "Eliminare «{{title}}»? Questa azione non può essere annullata.",
+      "moveToLibrary": "Sposta in una biblioteca",
+      "selectLibrary": "Seleziona una biblioteca…",
+      "move": "Sposta",
+      "uploadCover": "Carica copertina",
+      "removeCover": "Rimuovi copertina",
+      "confirmRemoveCover": "Rimuovere la copertina? Questa azione non può essere annullata.",
+      "addManually": "Aggiungi manualmente",
+      "createTitle": "Aggiungi media",
+      "fields": {
+        "title": "Titolo",
+        "ean": "EAN",
+        "description": "Descrizione",
+        "release_date": "Data di uscita",
+        "price": "Prezzo",
+        "authors": "Autore/i",
+        "format": "Formato",
+        "genre": "Genere",
+        "page_count": "Numero di pagine",
+        "language": "Lingua",
+        "publisher": "Editore",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Artista",
+        "medium": "Supporto",
+        "asin": "ASIN",
+        "disc_count": "Numero di dischi",
+        "languages": "Lingua/e",
+        "cast": "Cast",
+        "director": "Regista",
+        "production_year": "Anno di produzione",
+        "runtime_minutes": "Durata (minuti)"
+      }
+    },
+    "capture": {
+      "title": "Acquisizione",
+      "single": "Voce singola",
+      "scan": "Scansiona",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Importazione file di testo",
+      "duplicate": "Questo elemento esiste già in questa biblioteca.",
+      "noMatch": "Nessuna corrispondenza di metadati trovata — aggiungi manualmente.",
+      "chooseCandidate": "Scegli una corrispondenza o rifiutale tutte.",
+      "rejectAll": "Rifiuta tutte le corrispondenze",
+      "cameraScan": "Scansiona con la fotocamera",
+      "cameraClose": "Chiudi fotocamera",
+      "cameraHint": "Tieni un codice a barre davanti alla fotocamera.",
+      "cameraAccessError": "Impossibile accedere alla fotocamera. Concedi l'autorizzazione oppure inserisci manualmente un EAN/ISBN."
+    },
+    "search": {
+      "placeholder": "Cerca…",
+      "resultsFor": "Ricerca: «{{query}}»",
+      "submit": "Cerca",
+      "fuzzy": "Ricerca approssimata",
+      "error": "Ricerca non riuscita. Riprova."
+    },
+    "statistics": {
+      "title": "Statistiche",
+      "itemCount": "Numero di elementi",
+      "totalValue": "Valore totale",
+      "dimension": {
+        "genre": "Genere",
+        "language": "Lingua",
+        "publisher": "Editore",
+        "artist": "Artista",
+        "director": "Regista",
+        "year": "Anno di pubblicazione"
+      },
+      "moreCount": "+{{count}} altri",
+      "noDistributions": "Nessun dato di distribuzione disponibile.",
+      "valueHistory": {
+        "title": "Andamento del valore",
+        "accumulatedTitle": "Valore totale nel tempo (tutte le tue biblioteche)",
+        "current": "Valore attuale: {{value}} (al {{date}})",
+        "noData": "Non ci sono ancora abbastanza dati per uno storico del valore.",
+        "estimatedNoteUntil": "Lo storico precedente al {{date}} è stimato dalle date di acquisizione degli elementi e potrebbe non riflettere eliminazioni o variazioni di prezzo successive.",
+        "estimatedNoteAll": "Tutto questo storico è stimato dalle date di acquisizione degli elementi — non è ancora stato eseguito alcuno snapshot giornaliero."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Tema",
+        "light": "Chiaro",
+        "dark": "Scuro"
+      },
+      "language": {
+        "label": "Lingua",
+        "de": "Tedesco",
+        "en": "Inglese"
+      }
+    },
+    "admin": {
+      "title": "Amministrazione",
+      "users": "Utenti",
+      "plugins": "Plugin metadati",
+      "backups": "Backup",
+      "exportImport": "Esporta/Importa",
+      "mail": "Posta",
+      "languages": "Pacchetti lingua",
+      "settings": "Impostazioni di sistema",
+      "confirmDeleteUser": "Eliminare l'utente «{{name}}»? Questa azione non può essere annullata.",
+      "confirmDeleteBackup": "Eliminare il backup «{{filename}}»? Questa azione non può essere annullata.",
+      "passwordHint": "Almeno 10 caratteri, con almeno una lettera maiuscola, una minuscola, una cifra e un carattere speciale.",
+      "table": {
+        "level": "Livello",
+        "status": "Stato",
+        "enabled": "Attivato",
+        "priority": "Priorità",
+        "mediaType": "Tipo di media"
+      },
+      "status": {
+        "active": "Attivo",
+        "deactivated": "Disattivato"
+      },
+      "actions": {
+        "deactivate": "Disattiva",
+        "reactivate": "Riattiva",
+        "createBackupNow": "Crea backup ora",
+        "download": "Scarica",
+        "createUser": "Crea utente",
+        "edit": "Modifica",
+        "save": "Salva",
+        "cancel": "Annulla",
+        "delete": "Elimina",
+        "sendInvite": "Invia email di invito",
+        "restore": "Ripristina"
+      },
+      "backupReason": {
+        "scheduled": "Pianificazione",
+        "pre_update": "Migrazione"
+      },
+      "backupRestore": {
+        "warning": "Le biblioteche esistenti con lo stesso nome vengono ignorate (lasciate invariate) per impostazione predefinita, a meno che tu non scelga «Sovrascrivi» qui sotto.",
+        "overwriteExisting": "Sovrascrivi le biblioteche esistenti con lo stesso nome invece di ignorarle",
+        "restoreSettings": "Ripristina anche le impostazioni di sistema e gli account utente",
+        "submit": "Conferma ripristino",
+        "confirm": "Ripristinare il backup «{{filename}}»? Questa azione non può essere annullata.",
+        "success": "Ripristino completato: {{created}} create, {{overwritten}} sovrascritte, {{merged}} unite, {{skipped}} ignorate."
+      },
+      "exportImportPage": {
+        "exportTitle": "Esporta",
+        "exportHint": "Se non selezioni nulla, verranno esportate tutte le biblioteche.",
+        "exportSubmit": "Esporta",
+        "exportError": "Esportazione non riuscita.",
+        "importTitle": "Importa",
+        "importFile": "File di esportazione",
+        "importSubmit": "Importa",
+        "importSuccess": "Importazione completata: {{created}} create, {{overwritten}} sovrascritte, {{merged}} unite, {{skipped}} ignorate."
+      },
+      "languagesPage": {
+        "code": "Codice",
+        "none": "Nessun pacchetto lingua aggiuntivo per ora.",
+        "create": "Aggiungi pacchetto lingua",
+        "translations": "Traduzioni (JSON)",
+        "translationsHint": "Stessa struttura chiave-valore dei file di lingua inclusi (briefing 11.4) — scrivila in un editor di testo e incollala qui.",
+        "confirmDelete": "Eliminare il pacchetto lingua «{{name}}»? Questa azione non può essere annullata.",
+        "bundledTitle": "Pacchetti lingua inclusi",
+        "bundledInstalled": "installato",
+        "bundledInstall": "Installa",
+        "bundledReinstall": "Reinstalla",
+        "confirmReinstall": "Reinstallare il pacchetto lingua «{{name}}»? Le modifiche personalizzate a questo pacchetto andranno perse e verranno sostituite dalla versione inclusa.",
+        "errors": {
+          "invalidJson": "Non è un JSON valido.",
+          "codeInvalid": "Questo codice è già in uso o riservato (de/en sono riservati)."
+        }
+      },
+      "userInvite": {
+        "hint": "Il server di posta non è configurato — al momento non è possibile inviare un'email di invito.",
+        "sent": "Email di invito inviata correttamente.",
+        "failed": "L'utente è stato creato, ma non è stato possibile inviare l'email di invito."
+      },
+      "errors": {
+        "import_invalid_json": "Questo file non è in un formato di esportazione MedInv valido (JSON non leggibile).",
+        "import_missing_libraries": "Questo file non contiene alcuna biblioteca — probabilmente non è un file di esportazione MedInv valido.",
+        "import_invalid_library": "La biblioteca n. {{number}} nel file non ha un campo «{{field}}» valido.",
+        "import_invalid_item": "Un elemento (voce n. {{number}}) nella biblioteca «{{library}}» non ha un titolo o un EAN validi.",
+        "protected_account": "Questo è l'account amministratore predefinito e non può essere modificato, disattivato o eliminato.",
+        "passwordPolicy": "La password deve contenere almeno 10 caratteri, con una lettera maiuscola, una minuscola, una cifra e un carattere speciale.",
+        "ownsLibraries": "Questo account possiede ancora le seguenti biblioteche e non può essere eliminato finché non vengono trasferite a un altro proprietario o eliminate: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "Host SMTP",
+        "port": "Porta",
+        "username": "Nome utente",
+        "password": "Password",
+        "passwordHint": "Lascia vuoto per mantenere la password attuale.",
+        "encryption": "Crittografia",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Nessuna crittografia"
+        },
+        "fromAddress": "Indirizzo mittente",
+        "fromName": "Nome mittente",
+        "healthy": "Il server di posta è raggiungibile e configurato correttamente.",
+        "unhealthy": "Il server di posta non è raggiungibile o non è completamente configurato. Il ripristino della password è disabilitato.",
+        "saved": "Impostazioni email salvate.",
+        "testMail": "Invia email di prova",
+        "testMailTo": "Indirizzo destinatario",
+        "testMailSend": "Invia email di prova",
+        "testMailSent": "Email di prova inviata correttamente.",
+        "testMailNotConfigured": "Il server di posta non è ancora configurato.",
+        "testMailFailed": "Impossibile inviare l'email di prova: {{message}}"
+      },
+      "backupSettings": {
+        "title": "Pianificazione backup",
+        "intervalMode": "Intervallo",
+        "interval": {
+          "daily": "Giornaliero",
+          "weekly": "Settimanale",
+          "monthly": "Mensile",
+          "cron": "Personalizzato (espressione cron)"
+        },
+        "cronExpression": "Espressione cron",
+        "retentionHint": "Si applica solo ai backup automatici. I backup creati manualmente non vengono conteggiati e non vengono mai eliminati automaticamente. È attiva solo una delle due regole seguenti alla volta — scegli quale.",
+        "retentionMode": "Elimina i vecchi backup in base a",
+        "retentionCount": "Mantieni al massimo questo numero di backup",
+        "retentionMaxAgeDays": "Elimina i backup più vecchi di (giorni)",
+        "saved": "Pianificazione backup salvata."
+      },
+      "securitySettings": {
+        "title": "Protezione da attacchi di forza bruta",
+        "maxAttempts": "N. massimo di tentativi falliti",
+        "windowMinutes": "Finestra temporale (minuti)",
+        "lockMinutes": "Durata del blocco (minuti)",
+        "saved": "Impostazioni di sicurezza salvate."
+      },
+      "coverCleanup": {
+        "title": "Pulizia copertine",
+        "hint": "Una volta al giorno, elimina dal disco i file di copertina/miniatura non più referenziati da alcun elemento multimediale.",
+        "enabled": "Pulisci automaticamente i file di copertina orfani",
+        "saved": "Impostazione di pulizia copertine salvata."
+      },
+      "timezoneSettings": {
+        "title": "Fuso orario",
+        "hint": "Utilizzato per i nomi dei file di backup ed esportazione, così da corrispondere al tuo orario locale invece di mostrare sempre l'UTC.",
+        "timezone": "Fuso orario",
+        "saved": "Fuso orario salvato."
+      },
+      "logLevel": {
+        "title": "Livello di log",
+        "saved": "Livello di log salvato."
+      },
+      "localeSettings": {
+        "title": "Lingua predefinita",
+        "hint": "Utilizzata quando la lingua di un visitatore non è né tedesco né inglese.",
+        "defaultLanguage": "Lingua predefinita",
+        "saved": "Lingua predefinita salvata."
+      },
+      "pluginConfig": {
+        "settings": "Impostazioni",
+        "noConfig": "Nessuna impostazione richiesta.",
+        "fields": {
+          "api_key": "Chiave API"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Trascina per riordinare {{name}} (oppure premi Spazio e poi usa le frecce)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Password dimenticata",
+      "forgotIntro": "Inserisci il tuo indirizzo email. Se esiste un account associato, riceverai un link per reimpostare la password.",
+      "sendLink": "Richiedi link",
+      "linkSent": "Se questo indirizzo esiste, è stata inviata un'email con un link di reimpostazione.",
+      "resetTitle": "Imposta una nuova password",
+      "newPassword": "Nuova password",
+      "confirmPassword": "Conferma password",
+      "resetSubmit": "Reimposta password",
+      "resetSuccess": "La tua password è stata reimpostata. Ora puoi accedere.",
+      "backToLogin": "Torna all'accesso",
+      "errors": {
+        "invalid_token": "Questo link non è valido o è scaduto. Richiedine uno nuovo.",
+        "invalid_user": "Non esiste alcun account per questo indirizzo email.",
+        "throttled": "Attendi un momento prima di riprovare.",
+        "reset_failed": "Non è stato possibile reimpostare la password.",
+        "mail_unavailable": "Il server di posta non è configurato o non è raggiungibile. Contatta un amministratore.",
+        "generic": "Non ha funzionato. Riprova più tardi."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Credenziali non valide.",
+      "account_locked": "Troppi tentativi falliti. Questo account è temporaneamente bloccato.",
+      "account_deactivated": "Questo account è stato disattivato.",
+      "generic": "Accesso non riuscito. Riprova più tardi o contatta un amministratore."
+    }
+  }
+}

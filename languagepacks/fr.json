@@ -223,6 +223,11 @@
                 "translations": "Traductions (JSON)",
                 "translationsHint": "Même structure clé-valeur que les fichiers de langue fournis (cahier des charges 11.4) — rédigez-la dans un éditeur de texte puis collez-la ici.",
                 "confirmDelete": "Supprimer le pack de langue « {{name}} » ? Cette action est irréversible.",
+                "bundledTitle": "Packs de langue fournis",
+                "bundledInstalled": "installé",
+                "bundledInstall": "Installer",
+                "bundledReinstall": "Réinstaller",
+                "confirmReinstall": "Réinstaller le pack de langue « {{name}} » ? Les modifications personnalisées apportées à ce pack seront perdues et remplacées par la version fournie.",
                 "errors": {
                     "invalidJson": "Ceci n'est pas un JSON valide.",
                     "codeInvalid": "Ce code est déjà utilisé ou réservé (de/en sont réservés)."
