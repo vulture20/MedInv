@@ -54,6 +54,21 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // binding + in-controller check is what actually enforces it.
     Route::get('/libraries', [LibraryController::class, 'index']);
     Route::get('/libraries/{library}', [LibraryController::class, 'show']);
+
+    // Pure reads of a library's contents — like the library routes just
+    // above, gated only by MediaItemController's own canRead() check, not
+    // by level middleware (GitHub issue #38). A guest's whole usable
+    // scenario is reading a library explicitly shared with them
+    // (briefing 4.2: "Kann ausschließlich Bibliotheken lesen, die explizit
+    // für Gäste freigegeben wurden."); putting these behind
+    // level:user,admin blocked every guest here with a blanket 403 before
+    // the request ever reached that check, making a guest-shared library
+    // visible in the list but never actually readable.
+    Route::get('/libraries/{library}/items', [MediaItemController::class, 'index']);
+    Route::get('/libraries/{library}/items/{item}', [MediaItemController::class, 'show']);
+    Route::get('/libraries/{library}/items/{item}/cover', [MediaItemController::class, 'cover']);
+    Route::get('/libraries/{library}/items/{item}/cover/thumbnail', [MediaItemController::class, 'coverThumbnail']);
+
     Route::middleware('level:user,admin')->group(function () {
         Route::post('/libraries', [LibraryController::class, 'store']);
         Route::put('/libraries/{library}', [LibraryController::class, 'update']);
@@ -65,10 +80,6 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
         // Capture / media items — write access re-checked per-library inside
         // the controllers (owner or admin), see 7. and 6.
-        Route::get('/libraries/{library}/items', [MediaItemController::class, 'index']);
-        Route::get('/libraries/{library}/items/{item}', [MediaItemController::class, 'show']);
-        Route::get('/libraries/{library}/items/{item}/cover', [MediaItemController::class, 'cover']);
-        Route::get('/libraries/{library}/items/{item}/cover/thumbnail', [MediaItemController::class, 'coverThumbnail']);
         Route::post('/libraries/{library}/items/{item}/cover', [MediaItemController::class, 'uploadCover']);
         Route::delete('/libraries/{library}/items/{item}/cover', [MediaItemController::class, 'deleteCover']);
         Route::post('/libraries/{library}/items', [MediaItemController::class, 'store']);
