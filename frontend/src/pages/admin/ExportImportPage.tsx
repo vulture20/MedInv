@@ -9,9 +9,6 @@ interface ImportResult {
   merged: string[]
   overwritten: string[]
   skipped: string[]
-  settings_restored: boolean
-  users_restored: string[]
-  plugins_restored: string[]
 }
 
 /**
@@ -28,6 +25,11 @@ interface ImportResult {
  * `__default__` all-conflicts sentinel, since neither this page nor
  * BackupsPage has a way to know ahead of time which library names inside an
  * arbitrary export/backup file will actually collide with this instance's.
+ * Deliberately missing here, unlike BackupsPage: a "restore system settings
+ * and user accounts" checkbox — a plain library export never contains user
+ * accounts at all (ExportImportService::exportLibraries() only embeds those
+ * when called with $includeUsers, and export() never sets it), so offering
+ * that option here would promise something it can't do.
  */
 export function ExportImportPage() {
   const { t } = useTranslation()
@@ -38,7 +40,6 @@ export function ExportImportPage() {
 
   const [file, setFile] = useState<File | null>(null)
   const [overwriteExisting, setOverwriteExisting] = useState(false)
-  const [restoreSettings, setRestoreSettings] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<string | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
@@ -94,7 +95,6 @@ export function ExportImportPage() {
     try {
       const form = new FormData()
       form.append('file', file)
-      form.append('restore_settings', restoreSettings ? '1' : '0')
       if (overwriteExisting) form.append('conflict_resolutions[__default__]', 'overwrite')
       const { data } = await apiClient.post<ImportResult>('/admin/import', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -155,10 +155,6 @@ export function ExportImportPage() {
               onChange={(e) => setOverwriteExisting(e.target.checked)}
             />
             {t('admin.backupRestore.overwriteExisting')}
-          </label>
-          <label>
-            <input type="checkbox" checked={restoreSettings} onChange={(e) => setRestoreSettings(e.target.checked)} />
-            {t('admin.backupRestore.restoreSettings')}
           </label>
           <button type="submit" disabled={importing || !file}>
             {t('admin.exportImportPage.importSubmit')}

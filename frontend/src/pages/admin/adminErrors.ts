@@ -19,12 +19,35 @@ export function describeError(err: unknown, t: TFunction): string {
   if (!isAxiosError(err)) return t('errors.generic')
 
   const data = err.response?.data as
-    | { error_code?: string; errors?: Record<string, string[]>; libraries?: { id: number; name: string }[] }
+    | {
+        error_code?: string
+        errors?: Record<string, string[]>
+        libraries?: { id: number; name: string }[]
+        context?: { index?: number; field?: string; library?: string }
+      }
     | undefined
   if (data?.error_code === 'protected_account') return t('admin.errors.protected_account')
   if (data?.error_code === 'owns_libraries') {
     const names = (data.libraries ?? []).map((l) => l.name).join(', ')
     return t('admin.errors.ownsLibraries', { libraries: names })
+  }
+  // ExportImportController::import() rejecting a malformed/unrelated file
+  // (InvalidImportFileException) — see that exception's docblock. `index` is
+  // 0-based on the wire; +1 here so the admin sees a 1-based position
+  // matching how they'd count entries by eye.
+  if (data?.error_code === 'import_invalid_json') return t('admin.errors.import_invalid_json')
+  if (data?.error_code === 'import_missing_libraries') return t('admin.errors.import_missing_libraries')
+  if (data?.error_code === 'import_invalid_library') {
+    return t('admin.errors.import_invalid_library', {
+      number: (data.context?.index ?? 0) + 1,
+      field: data.context?.field ?? '?',
+    })
+  }
+  if (data?.error_code === 'import_invalid_item') {
+    return t('admin.errors.import_invalid_item', {
+      number: (data.context?.index ?? 0) + 1,
+      library: data.context?.library ?? '?',
+    })
   }
   if (data?.errors) {
     if (data.errors.password) return t('admin.errors.passwordPolicy')

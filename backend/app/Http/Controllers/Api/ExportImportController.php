@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domain\ExportImport\ExportImportService;
+use App\Domain\ExportImport\InvalidImportFileException;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
@@ -46,7 +47,13 @@ class ExportImportController extends Controller
      * `restore_settings` opts into also applying the file's system_settings
      * (see ExportImportService::exportLibraries()) onto this instance —
      * off by default so an ordinary library import can't silently change
-     * mail/backup/security configuration.
+     * mail/backup/security configuration. Still accepted here for API
+     * completeness/future use, but ExportImportPage.tsx deliberately never
+     * sends it: export() never sets $includeUsers, so a plain export's
+     * `restore_settings` could only ever have restored system_settings
+     * (never the user accounts the option's label — copied from
+     * BackupsPage's restore form, where a real backup does include them —
+     * would otherwise promise on this page).
      */
     public function import(Request $request)
     {
@@ -57,14 +64,20 @@ class ExportImportController extends Controller
         ]);
 
         $payload = json_decode($data['file']->get(), true);
-        abort_if(json_last_error() !== JSON_ERROR_NONE, 422, 'Invalid export file.');
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($payload)) {
+            return $this->invalidImportResponse($request, 'import_invalid_json');
+        }
 
-        $result = $this->service->importLibraries(
-            $payload,
-            $request->user(),
-            $data['conflict_resolutions'] ?? [],
-            $data['restore_settings'] ?? false,
-        );
+        try {
+            $result = $this->service->importLibraries(
+                $payload,
+                $request->user(),
+                $data['conflict_resolutions'] ?? [],
+                $data['restore_settings'] ?? false,
+            );
+        } catch (InvalidImportFileException $e) {
+            return $this->invalidImportResponse($request, $e->errorCode, $e->context);
+        }
 
         // Import can overwrite/merge existing libraries — same audit-trail
         // motivation as BackupService::restore()'s logging, which this
@@ -79,5 +92,20 @@ class ExportImportController extends Controller
         ]);
 
         return response()->json($result);
+    }
+
+    /**
+     * See InvalidImportFileException's docblock for what this replaces (a
+     * silent all-zero "success" or a raw 500 with no usable message).
+     * $context is handed to the frontend as-is (an index and/or field name)
+     * so ExportImportPage.tsx can build a specific message via its
+     * `admin.errors.<code>` i18n key instead of falling back to the generic
+     * translation every other unrecognized error shape gets.
+     */
+    private function invalidImportResponse(Request $request, string $code, array $context = [])
+    {
+        $this->logApiError($request, $code, "Rejected import file ({$code}).", context: $context);
+
+        return response()->json(['error_code' => $code, 'context' => $context], 422);
     }
 }

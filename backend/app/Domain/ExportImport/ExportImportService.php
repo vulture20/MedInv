@@ -126,9 +126,21 @@ class ExportImportService
      *                                 a restore is meant to reinstate the backed-up instance's
      *                                 state.
      * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[], plugins_restored: string[]}
+     *
+     * @throws InvalidImportFileException
      */
     public function importLibraries(array $data, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
     {
+        // Validated up front, before anything (including the settings/users/
+        // plugins restore below) is written — an admin-uploaded file could be
+        // anything, and a malformed `libraries` entry discovered mid-way
+        // through would otherwise leave settings/users partially restored
+        // even though the libraries import itself then fails. A backup
+        // produced by BackupService::create() is always well-formed by
+        // construction, so this never rejects a genuine backup/export — only
+        // a hand-edited or unrelated file.
+        $this->assertValidPayload($data);
+
         $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [], 'settings_restored' => false, 'users_restored' => [], 'plugins_restored' => []];
 
         if (($conflictResolutions['__all__'] ?? null) === 'cancel') {
@@ -196,6 +208,44 @@ class ExportImportService
         });
 
         return $result;
+    }
+
+    /**
+     * Walks the same shape importLibraries() below actually consumes and
+     * throws on the first concrete problem found — see
+     * InvalidImportFileException's docblock for why this exists at all. Only
+     * checks the columns that are NOT NULL without a default in the
+     * `libraries`/media_* migrations (name, media_type, title, ean); every
+     * other field is nullable, so a missing one there is legitimately just
+     * "this export had no value for it", not a structural problem.
+     */
+    private function assertValidPayload(array $data): void
+    {
+        if (! array_key_exists('libraries', $data) || ! is_array($data['libraries'])) {
+            throw new InvalidImportFileException('import_missing_libraries');
+        }
+
+        foreach ($data['libraries'] as $index => $libraryData) {
+            if (! is_array($libraryData) || ! is_string($libraryData['name'] ?? null) || $libraryData['name'] === '') {
+                throw new InvalidImportFileException('import_invalid_library', ['index' => $index, 'field' => 'name']);
+            }
+
+            if (! in_array($libraryData['media_type'] ?? null, ['book', 'cd', 'dvd_bluray'], true)) {
+                throw new InvalidImportFileException('import_invalid_library', ['index' => $index, 'field' => 'media_type']);
+            }
+
+            if (isset($libraryData['items']) && ! is_array($libraryData['items'])) {
+                throw new InvalidImportFileException('import_invalid_item', ['library' => $libraryData['name'], 'index' => 0]);
+            }
+
+            foreach ($libraryData['items'] ?? [] as $itemIndex => $item) {
+                $title = $item['title'] ?? null;
+                $ean = $item['ean'] ?? null;
+                if (! is_array($item) || ! is_string($title) || $title === '' || ! is_string($ean) || $ean === '') {
+                    throw new InvalidImportFileException('import_invalid_item', ['library' => $libraryData['name'], 'index' => $itemIndex]);
+                }
+            }
+        }
     }
 
     private function createLibraryFromExport(array $libraryData, User $owner): true
