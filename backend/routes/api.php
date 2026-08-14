@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\CaptureController;
 use App\Http\Controllers\Api\ExportImportController;
+use App\Http\Controllers\Api\LanguagePackController;
 use App\Http\Controllers\Api\LibraryController;
 use App\Http\Controllers\Api\MediaItemController;
 use App\Http\Controllers\Api\MetadataController;
@@ -36,6 +37,17 @@ Route::get('/version', fn () => response()->json([
 Route::get('/locale', fn () => response()->json([
     'default_language' => SystemSetting::get('locale.default_language', 'en'),
 ]));
+
+// Admin-added language packs beyond bundled German/English (briefing
+// 11.4/17., GitHub issue #12) — deliberately fully public like /version
+// and /locale above, not merely outside the inner level:admin group the
+// way GET /metadata/plugins used to sit before issue #37: a visitor's
+// translations must be loadable on the login screen itself, before
+// anyone is authenticated. The actual "only admins may add a language
+// pack" enforcement this issue asks for is create()/update()/destroy()
+// below, in the level:admin group.
+Route::get('/languages', [LanguagePackController::class, 'index']);
+Route::get('/languages/{languagePack}', [LanguagePackController::class, 'show']);
 
 // Sanctum SPA session auth (bootstrap/app.php: ->statefulApi()).
 Route::middleware(['auth:sanctum', 'active'])->group(function () {
@@ -132,5 +144,12 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::put('/settings/loglevel', [AdminSettingsController::class, 'updateLoglevel']);
         Route::put('/settings/locale', [AdminSettingsController::class, 'updateLocale']);
         Route::put('/settings/timezone', [AdminSettingsController::class, 'updateTimezone']);
+
+        // Actual "only admins may add a language pack" enforcement (briefing
+        // 11.4/17., GitHub issue #12) — reading a pack is public, see
+        // GET /languages(/{languagePack}) near the top of this file.
+        Route::post('/languages', [LanguagePackController::class, 'store']);
+        Route::put('/languages/{languagePack}', [LanguagePackController::class, 'update']);
+        Route::delete('/languages/{languagePack}', [LanguagePackController::class, 'destroy']);
     });
 });
