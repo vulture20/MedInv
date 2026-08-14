@@ -97,4 +97,32 @@ class CleanupOrphanedCoversCommandTest extends TestCase
 
         Storage::disk('local')->assertMissing('covers/book/orphan.jpg');
     }
+
+    /**
+     * The enabled check moved from inside the Schedule::call() closure into
+     * a ->when() filter (routes/console.php), same fix as the backup
+     * schedule's — a disabled setting should make schedule:run silently
+     * skip the event (never even invoking the nested
+     * `medinv:cleanup-covers` command), not run-and-announce a closure
+     * that then immediately no-ops.
+     */
+    public function test_schedule_run_never_invokes_the_command_when_disabled(): void
+    {
+        SystemSetting::set('covers.cleanup_enabled', false);
+        Carbon::setTestNow(Carbon::parse('2026-08-14 03:45:00'));
+
+        Artisan::call('schedule:run');
+
+        $this->assertStringNotContainsString('Cover cleanup complete', Artisan::output());
+    }
+
+    public function test_schedule_run_does_invoke_the_command_when_enabled_and_due(): void
+    {
+        SystemSetting::set('covers.cleanup_enabled', true);
+        Carbon::setTestNow(Carbon::parse('2026-08-14 03:45:00'));
+
+        Artisan::call('schedule:run');
+
+        $this->assertStringContainsString('Cover cleanup complete', Artisan::output());
+    }
 }

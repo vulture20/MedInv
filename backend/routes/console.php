@@ -25,31 +25,37 @@ Artisan::command('inspire', function () {
  * runs before `RefreshDatabase`/a fresh install's migrations exist. An
  * earlier version called SystemSetting::get() directly in ->cron(...) and
  * broke `php artisan migrate --force` itself on a brand new database (no
- * system_settings table yet) — the actual due-check is deferred into the
- * closure instead, using the same CronExpression class the scheduler
- * itself is built on, so nothing here touches the database until the
- * closure actually runs (and `schedule:run` only invokes due closures, so
- * this doesn't create a backup attempt every single minute — it just
- * *checks* every minute, same resolution the scheduler offers regardless).
- * See docker/supervisord.conf's scheduler loop for what actually invokes
- * `schedule:run` periodically (no cron daemon in this image).
+ * system_settings table yet) — the actual due-check is deferred into a
+ * ->when() filter instead, using the same CronExpression class the
+ * scheduler itself is built on, so nothing here touches the database until
+ * `schedule:run` actually evaluates it (same deferred-closure property the
+ * old in-body check had, see docker/supervisord.conf's scheduler loop for
+ * what actually invokes `schedule:run` periodically — no cron daemon in
+ * this image).
+ *
+ * The check lives in ->when() rather than inside the Schedule::call()
+ * closure specifically so a non-due minute never "runs" the event at all:
+ * Laravel's own scheduler only announces/logs a task
+ * (`Running [medinv-scheduled-backup] .. DONE`) for events that pass their
+ * filters, so with the check inside the closure body every single minute
+ * printed that line even on the 1439 minutes/day nothing actually
+ * happened. Moving the check into ->when() means schedule:run silently
+ * skips the event instead, and only logs when a backup is genuinely
+ * created — the other two schedules below don't need this same treatment
+ * since ->dailyAt() already makes them due only once a day at the
+ * Laravel-scheduler level, not once a minute.
  */
 $backupService = app(BackupService::class);
 
-Schedule::call(function () use ($backupService) {
-    $cron = $backupService->scheduledBackupCronExpression();
-
-    // Explicit Carbon::now(), not the (new CronExpression(...))->isDue() default of
-    // 'now' — the latter constructs a plain DateTime internally, which does not
-    // respect Carbon::setTestNow() and made this untestable/silently always
-    // real-time otherwise.
-    if (! (new CronExpression($cron))->isDue(Carbon::now())) {
-        return;
-    }
-
-    $backupService->create('automatic', SystemSetting::get('backup.interval_mode', 'daily'));
-})
+Schedule::call(fn () => $backupService->create('automatic', SystemSetting::get('backup.interval_mode', 'daily')))
     ->everyMinute()
+    ->when(function () use ($backupService) {
+        // Explicit Carbon::now(), not the (new CronExpression(...))->isDue() default of
+        // 'now' — the latter constructs a plain DateTime internally, which does not
+        // respect Carbon::setTestNow() and made this untestable/silently always
+        // real-time otherwise.
+        return (new CronExpression($backupService->scheduledBackupCronExpression()))->isDue(Carbon::now());
+    })
     ->name('medinv-scheduled-backup')
     ->withoutOverlapping()
     ->onFailure(fn () => Log::error('Scheduled backup failed — see the exception logged above.'));
@@ -83,15 +89,15 @@ Schedule::call(function () use ($backupService) {
  * disk, making the schedule itself untestable via `schedule:run`. Calling
  * Artisan::call() from a closure runs in-process instead, same reasoning
  * the backup schedule above already followed for its own Schedule::call().
+ *
+ * The enabled check lives in ->when() rather than inside the closure, same
+ * reasoning as the backup schedule above: a disabled setting should make
+ * `schedule:run` silently skip the event, not run-and-announce a closure
+ * that then immediately does nothing.
  */
-Schedule::call(function () {
-    if (! SystemSetting::get('covers.cleanup_enabled', true)) {
-        return;
-    }
-
-    Artisan::call('medinv:cleanup-covers');
-})
+Schedule::call(fn () => Artisan::call('medinv:cleanup-covers'))
     ->dailyAt('03:45')
+    ->when(fn () => SystemSetting::get('covers.cleanup_enabled', true))
     ->name('medinv-cover-cleanup')
     ->withoutOverlapping()
     ->onFailure(fn () => Log::error('Cover cleanup failed — see the exception logged above.'));

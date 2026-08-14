@@ -90,4 +90,36 @@ class ScheduledBackupTest extends TestCase
 
         $this->assertDatabaseHas((new Backup)->getTable(), ['trigger' => 'automatic', 'interval_mode' => 'weekly']);
     }
+
+    /**
+     * The due-check moved from inside the Schedule::call() closure into a
+     * ->when() filter (routes/console.php) so a non-due minute never
+     * "runs" the event at all — Laravel's scheduler only prints
+     * `Running [medinv-scheduled-backup] .. DONE` for events that pass
+     * their filters. Before this, that line (and the docker container's
+     * log, since docker/supervisord.conf pipes schedule:run's output into
+     * it) got one every single minute, whether or not a backup was
+     * actually created.
+     */
+    public function test_schedule_run_does_not_announce_the_backup_task_when_not_due(): void
+    {
+        Storage::fake('local');
+        SystemSetting::set('backup.interval_mode', 'daily');
+        Carbon::setTestNow(Carbon::parse('2026-08-14 14:00:00'));
+
+        Artisan::call('schedule:run');
+
+        $this->assertStringNotContainsString('medinv-scheduled-backup', Artisan::output());
+    }
+
+    public function test_schedule_run_does_announce_the_backup_task_when_due(): void
+    {
+        Storage::fake('local');
+        SystemSetting::set('backup.interval_mode', 'daily');
+        Carbon::setTestNow(Carbon::parse('2026-08-14 03:00:00'));
+
+        Artisan::call('schedule:run');
+
+        $this->assertStringContainsString('medinv-scheduled-backup', Artisan::output());
+    }
 }
