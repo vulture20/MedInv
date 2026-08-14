@@ -24,7 +24,22 @@ class LibraryAccessService
 {
     public function canRead(User $user, Library $library): bool
     {
-        if ($user->isAdmin() || $library->owner_id === $user->id) {
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // Ownership alone isn't enough for a guest-level account (GitHub
+        // issue #40) — the same reasoning as canWrite() below (issue #35):
+        // UserController::update() allows demoting a user to guest at any
+        // time without forcing an ownership transfer, so an account can
+        // still technically own a library it's no longer allowed to see at
+        // all per briefing 4.2 ("Gast: Kann ausschließlich Bibliotheken
+        // lesen, die explizit für Gäste freigegeben wurden.") — a library
+        // merely still owned by a demoted account was never "explizit für
+        // Gäste freigegeben". A guest owner falls through to the share
+        // check below like anyone else, so an explicit scope=guest share on
+        // their own former library still works.
+        if (! $user->isGuest() && $library->owner_id === $user->id) {
             return true;
         }
 
@@ -66,13 +81,20 @@ class LibraryAccessService
         }
 
         return $query->where(function (Builder $q) use ($user) {
-            $q->where('owner_id', $user->id)
-                ->orWhereHas('shares', function (Builder $shareQuery) use ($user) {
-                    $shareQuery->where('scope', $user->isGuest() ? 'guest' : 'all_users')
-                        ->orWhere(function (Builder $sq) use ($user) {
-                            $sq->where('scope', 'user')->where('user_id', $user->id);
-                        });
-                });
+            // Same isGuest() exclusion as canRead() above (GitHub issue #40) —
+            // ownership doesn't grant visibility to a demoted guest account,
+            // only an explicit share does. orWhere() as the first call here
+            // still works as a plain condition when isGuest() skips it.
+            if (! $user->isGuest()) {
+                $q->orWhere('owner_id', $user->id);
+            }
+
+            $q->orWhereHas('shares', function (Builder $shareQuery) use ($user) {
+                $shareQuery->where('scope', $user->isGuest() ? 'guest' : 'all_users')
+                    ->orWhere(function (Builder $sq) use ($user) {
+                        $sq->where('scope', 'user')->where('user_id', $user->id);
+                    });
+            });
         });
     }
 }

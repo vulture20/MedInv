@@ -115,6 +115,35 @@ class LibraryAccessServiceTest extends TestCase
         $this->assertFalse(app(LibraryAccessService::class)->canRead($this->user('user'), $library));
     }
 
+    /**
+     * GitHub issue #40: canRead() used to grant access via ownership alone,
+     * with no check of the user's current level — the same gap canWrite()
+     * had before issue #35, just for reading instead of writing. An owner
+     * demoted to "guest" (UserController::update() allows a level change at
+     * any time, with no forced ownership transfer) would still pass
+     * canRead() for their former library, even though it was never
+     * "explizit für Gäste freigegeben" (briefing 4.2).
+     */
+    public function test_a_guest_level_owner_cannot_read_their_former_library_without_an_explicit_share(): void
+    {
+        $owner = $this->user('user');
+        $library = $this->library($owner);
+        $owner->update(['level' => 'guest']);
+
+        $this->assertFalse(app(LibraryAccessService::class)->canRead($owner->fresh(), $library));
+    }
+
+    /** A guest owner still benefits from an explicit scope=guest share on their former library, same as any other guest. */
+    public function test_a_guest_level_owner_can_read_their_former_library_if_it_is_also_guest_shared(): void
+    {
+        $owner = $this->user('user');
+        $library = $this->library($owner);
+        $this->share($library, 'guest');
+        $owner->update(['level' => 'guest']);
+
+        $this->assertTrue(app(LibraryAccessService::class)->canRead($owner->fresh(), $library));
+    }
+
     // --- canWrite() ---
 
     public function test_admin_can_write_any_library(): void
@@ -219,5 +248,17 @@ class LibraryAccessServiceTest extends TestCase
         $this->assertTrue($visibleIds->contains($guestShared->id));
         $this->assertFalse($visibleIds->contains($allUsersShared->id));
         $this->assertFalse($visibleIds->contains($unshared->id));
+    }
+
+    /** GitHub issue #40: same isGuest() gap as canRead(), for the query used by GET /libraries and search/statistics. */
+    public function test_a_guest_level_owner_does_not_see_their_former_library_without_an_explicit_share(): void
+    {
+        $owner = $this->user('user');
+        $library = $this->library($owner);
+        $owner->update(['level' => 'guest']);
+
+        $visibleIds = app(LibraryAccessService::class)->visibleLibrariesQuery($owner->fresh())->pluck('id');
+
+        $this->assertFalse($visibleIds->contains($library->id));
     }
 }
