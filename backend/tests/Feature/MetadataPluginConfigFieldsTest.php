@@ -9,10 +9,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * GitHub issue #29: GET /metadata/plugins now attaches a `config_fields`
- * descriptor (declared by the matching provider class, not stored in the
- * database) to every plugin row, so PluginsPage.tsx can render a real
- * settings form per plugin instead of a raw JSON textarea.
+ * GitHub issue #29: GET /admin/metadata/plugins now attaches a
+ * `config_fields` descriptor (declared by the matching provider class, not
+ * stored in the database) to every plugin row, so PluginsPage.tsx can
+ * render a real settings form per plugin instead of a raw JSON textarea.
+ * Uses an admin-level actor throughout — the endpoint moved into the
+ * level:admin route group as part of GitHub issue #37 (it used to be
+ * reachable by any logged-in account, guest included, leaking stored
+ * provider API keys via `config`).
  */
 class MetadataPluginConfigFieldsTest extends TestCase
 {
@@ -34,10 +38,10 @@ class MetadataPluginConfigFieldsTest extends TestCase
 
     public function test_plugins_endpoint_attaches_config_fields_to_each_row(): void
     {
-        $user = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $admin = User::factory()->create(['level' => 'admin', 'is_active' => true]);
         app(MetadataProviderRegistry::class)->syncToDatabase();
 
-        $response = $this->actingAs($user)->getJson('/api/metadata/plugins');
+        $response = $this->actingAs($admin)->getJson('/api/admin/metadata/plugins');
 
         $response->assertOk();
         $upcmdb = collect($response->json())->firstWhere('provider_key', 'dvd_bluray.upcmdb');
@@ -51,7 +55,7 @@ class MetadataPluginConfigFieldsTest extends TestCase
 
     public function test_a_provider_with_no_matching_metadata_plugins_row_still_gets_empty_config_fields(): void
     {
-        $user = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $admin = User::factory()->create(['level' => 'admin', 'is_active' => true]);
         MetadataPlugin::query()->create([
             'provider_key' => 'book.some_future_provider',
             'name' => 'Future Provider',
@@ -59,7 +63,7 @@ class MetadataPluginConfigFieldsTest extends TestCase
             'enabled' => true,
         ]);
 
-        $response = $this->actingAs($user)->getJson('/api/metadata/plugins');
+        $response = $this->actingAs($admin)->getJson('/api/admin/metadata/plugins');
 
         $response->assertOk();
         $unknown = collect($response->json())->firstWhere('provider_key', 'book.some_future_provider');

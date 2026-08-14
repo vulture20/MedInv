@@ -58,7 +58,7 @@ export function PluginsPage() {
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   async function load() {
-    const { data } = await apiClient.get<Plugin[]>('/metadata/plugins')
+    const { data } = await apiClient.get<Plugin[]>('/admin/metadata/plugins')
     setPlugins(data)
   }
 

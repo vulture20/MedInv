@@ -93,7 +93,6 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::get('/libraries/{library}/metadata/search', [MetadataController::class, 'search']);
         Route::post('/libraries/{library}/metadata/import', [MetadataController::class, 'import']);
     });
-    Route::get('/metadata/plugins', [MetadataController::class, 'plugins']);
 
     // Administration (briefing 15.) — admin only.
     Route::middleware('level:admin')->prefix('admin')->group(function () {
@@ -101,6 +100,14 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('/users/{user}/deactivate', [UserController::class, 'deactivate']);
         Route::post('/users/{user}/reactivate', [UserController::class, 'reactivate']);
 
+        // GitHub issue #37: plugins() serializes MetadataPlugin.config as-is,
+        // which is where a provider's admin-configured API key lives
+        // (e.g. UpcMdbProvider) — "exactly as sensitive as a password hash"
+        // per this file's own docs on metadata_plugins. This used to sit
+        // outside the admin group (auth:sanctum/active only), so any
+        // logged-in account, guest included, could read every stored key.
+        // Only PluginsPage.tsx (admin-only) ever calls this.
+        Route::get('/metadata/plugins', [MetadataController::class, 'plugins']);
         Route::put('/metadata/plugins/{plugin}', [MetadataController::class, 'updatePlugin']);
 
         Route::post('/export', [ExportImportController::class, 'export']);
