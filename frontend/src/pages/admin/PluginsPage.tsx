@@ -187,7 +187,15 @@ export function PluginsPage() {
       <h2>{t('admin.plugins')}</h2>
       {error && <p role="alert">{error}</p>}
       {MEDIA_TYPES.map((mediaType) => {
-        const groupPlugins = plugins.filter((p) => p.media_type === mediaType)
+        // GitHub issue #41: sorted by priority, not left in whatever order
+        // `plugins` happens to already be in — handleDragEnd() below only
+        // ever updates each plugin's `priority` field, it never reorders
+        // the `plugins` array itself. Without this sort, a completed drag
+        // visibly snapped back to its old position: SortableContext's
+        // `items` (derived from this list) came out in the exact same
+        // order as before the drop, since only the priority *values* had
+        // changed, not this array's element order.
+        const groupPlugins = plugins.filter((p) => p.media_type === mediaType).sort((a, b) => a.priority - b.priority)
         if (groupPlugins.length === 0) return null
 
         return (
