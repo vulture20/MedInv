@@ -641,24 +641,45 @@ td {
   table-layout: fixed;
 }
 
+/*
+ * All five columns are percentages that sum to exactly 100%, deliberately
+ * — mixing a rem/px width on one <col> with percentages on its siblings
+ * was tried first (a tight rem width for the handle column, ⠿'s own
+ * natural content size) and looked right in isolation, but Chromium's
+ * fixed-table-layout algorithm resolves each percentage column literally
+ * against the table's total width and then hands the *entire* leftover
+ * space to the one column that isn't a percentage — silently ignoring its
+ * declared rem value rather than actually giving it that fixed width.
+ * Confirmed live: the handle column measured wider (203px) after being
+ * given a smaller rem value than before (was 75px at 2.5rem), because
+ * shrinking "Name" left more leftover space for it to absorb. Percentages
+ * on every column sidesteps that entirely — each one gets exactly its
+ * literal share, full stop.
+ *
+ * handle is sized to ~ the drag icon's own natural content width (⠿ plus
+ * the cell's 0.5rem padding either side, measured via table-layout: auto
+ * before this column had any explicit width). name is half of its
+ * previous 34%. priority/enabled/settings keep their previous ~1:1:2
+ * ratio, scaled up to absorb the space handle+name gave up.
+ */
 .plugin-table__col--handle {
-  width: 2.5rem;
+  width: 4%;
 }
 
 .plugin-table__col--name {
-  width: 34%;
+  width: 17%;
 }
 
 .plugin-table__col--priority {
-  width: 14%;
+  width: 20%;
 }
 
 .plugin-table__col--enabled {
-  width: 14%;
+  width: 20%;
 }
 
 .plugin-table__col--settings {
-  width: 28%;
+  width: 39%;
 }
 
 /* Drag handle cell (dnd-kit, PluginsPage.tsx) — dnd-kit's own `attributes`
