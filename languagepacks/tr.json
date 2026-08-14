@@ -1,0 +1,357 @@
+{
+  "code": "tr",
+  "name": "Türkçe",
+  "translations": {
+    "common": {
+      "name": "Ad",
+      "email": "E-posta",
+      "loading": "Yükleniyor…"
+    },
+    "nav": {
+      "home": "Ana sayfa",
+      "capture": "Kayıt",
+      "libraries": "Kitaplıklar",
+      "statistics": "İstatistikler",
+      "administration": "Yönetim",
+      "toggleMenu": "Menüyü aç/kapat"
+    },
+    "dashboard": {
+      "noLibraries": "Henüz görünür bir kitaplığınız yok.",
+      "allLibraries": "Tüm {{count}} kitaplığı göster"
+    },
+    "login": {
+      "title": "Oturum aç",
+      "email": "E-posta adresi",
+      "password": "Parola",
+      "submit": "Oturum aç",
+      "mailServerWarning": "Posta sunucusuna ulaşılamıyor veya yanlış yapılandırılmış. Parola sıfırlama devre dışı.",
+      "forgotPassword": "Parolanızı mı unuttunuz?",
+      "sessionExpired": "Oturumunuzun süresi doldu. Lütfen tekrar oturum açın."
+    },
+    "userMenu": {
+      "settings": "Kişisel ayarlar",
+      "logout": "Oturumu kapat"
+    },
+    "libraries": {
+      "title": "Kitaplıklar",
+      "create": "Kitaplık oluştur",
+      "view": "Görüntüle",
+      "delete": "Sil",
+      "noItems": "Bu kitaplıkta henüz öğe yok.",
+      "confirmDelete": "\"{{name}}\" kitaplığı silinsin mi? Bu işlem geri alınamaz.",
+      "descriptionLabel": "Açıklama",
+      "mediaTypeLabel": "Medya türü",
+      "mediaType": {
+        "book": "Kitap",
+        "cd": "CD",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Paylaşım",
+        "hint": "Sizin dışınızda bu kitaplığı kimlerin görebileceğini belirler. Burada yalnızca okuma erişimi verilebilir.",
+        "guests": "Misafirlerle paylaş",
+        "allUsers": "Tüm kullanıcılarla paylaş",
+        "specificUsers": "Belirli kullanıcılar",
+        "noSpecificUsers": "Belirli bir kullanıcıyla paylaşılmadı.",
+        "selectUser": "Bir kullanıcı seçin…",
+        "add": "Ekle",
+        "remove": "Kaldır",
+        "saved": "Paylaşım ayarları kaydedildi."
+      },
+      "ownership": {
+        "title": "Sahiplik",
+        "hint": "Bu kitaplığı, tüm paylaşımlarıyla birlikte başka bir kullanıcıya devreder.",
+        "selectUser": "Yeni bir sahip seçin…",
+        "transfer": "Devret",
+        "confirm": "Bu kitaplığın sahipliği \"{{name}}\" kullanıcısına devredilsin mi? Sonrasında bu kitaplığa erişiminizi kaybedebilirsiniz."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "\"{{title}}\" silinsin mi? Bu işlem geri alınamaz.",
+      "moveToLibrary": "Kitaplığa taşı",
+      "selectLibrary": "Bir kitaplık seçin…",
+      "move": "Taşı",
+      "uploadCover": "Kapak yükle",
+      "removeCover": "Kapağı kaldır",
+      "confirmRemoveCover": "Kapak kaldırılsın mı? Bu işlem geri alınamaz.",
+      "addManually": "Elle ekle",
+      "createTitle": "Medya ekle",
+      "fields": {
+        "title": "Başlık",
+        "ean": "EAN",
+        "description": "Açıklama",
+        "release_date": "Yayın tarihi",
+        "price": "Fiyat",
+        "authors": "Yazar(lar)",
+        "format": "Format",
+        "genre": "Tür",
+        "page_count": "Sayfa sayısı",
+        "language": "Dil",
+        "publisher": "Yayıncı",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Sanatçı",
+        "medium": "Ortam",
+        "asin": "ASIN",
+        "disc_count": "Disk sayısı",
+        "languages": "Dil(ler)",
+        "cast": "Oyuncular",
+        "director": "Yönetmen",
+        "production_year": "Yapım yılı",
+        "runtime_minutes": "Süre (dakika)"
+      }
+    },
+    "capture": {
+      "title": "Kayıt",
+      "single": "Tekli giriş",
+      "scan": "Tara",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Metin dosyası içe aktarma",
+      "duplicate": "Bu öğe bu kitaplıkta zaten mevcut.",
+      "noMatch": "Meta veri eşleşmesi bulunamadı — elle ekleyin.",
+      "chooseCandidate": "Bir eşleşme seçin veya tümünü reddedin.",
+      "rejectAll": "Tüm eşleşmeleri reddet",
+      "cameraScan": "Kamerayla tara",
+      "cameraClose": "Kamerayı kapat",
+      "cameraHint": "Barkodu kameranın önünde tutun.",
+      "cameraAccessError": "Kameraya erişilemedi. İzin verin veya EAN/ISBN'i elle girin."
+    },
+    "search": {
+      "placeholder": "Ara…",
+      "resultsFor": "Arama: \"{{query}}\"",
+      "submit": "Ara",
+      "fuzzy": "Bulanık arama",
+      "error": "Arama başarısız oldu. Lütfen tekrar deneyin."
+    },
+    "statistics": {
+      "title": "İstatistikler",
+      "itemCount": "Öğe sayısı",
+      "totalValue": "Toplam değer",
+      "dimension": {
+        "genre": "Tür",
+        "language": "Dil",
+        "publisher": "Yayıncı",
+        "artist": "Sanatçı",
+        "director": "Yönetmen",
+        "year": "Yayın yılı"
+      },
+      "moreCount": "+{{count}} tane daha",
+      "noDistributions": "Kullanılabilir dağılım verisi yok.",
+      "valueHistory": {
+        "title": "Zaman içinde değer",
+        "accumulatedTitle": "Zaman içinde toplam değer (tüm kitaplıklarınız)",
+        "current": "Güncel değer: {{value}} ({{date}} itibarıyla)",
+        "noData": "Değer geçmişi için henüz yeterli veri yok.",
+        "estimatedNoteUntil": "{{date}} öncesindeki geçmiş, öğelerin kayıt tarihlerinden tahmin edilmiştir ve sonraki silmeleri veya fiyat değişikliklerini yansıtmayabilir.",
+        "estimatedNoteAll": "Bu geçmişin tamamı öğelerin kayıt tarihlerinden tahmin edilmiştir — henüz günlük bir anlık görüntü çalıştırılmadı."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Tema",
+        "light": "Açık",
+        "dark": "Koyu"
+      },
+      "language": {
+        "label": "Dil",
+        "de": "Almanca",
+        "en": "İngilizce"
+      }
+    },
+    "admin": {
+      "title": "Yönetim",
+      "users": "Kullanıcılar",
+      "plugins": "Meta veri eklentileri",
+      "backups": "Yedeklemeler",
+      "exportImport": "Dışa Aktar/İçe Aktar",
+      "mail": "Posta",
+      "languages": "Dil paketleri",
+      "settings": "Sistem ayarları",
+      "confirmDeleteUser": "\"{{name}}\" kullanıcısı silinsin mi? Bu işlem geri alınamaz.",
+      "confirmDeleteBackup": "\"{{filename}}\" yedeği silinsin mi? Bu işlem geri alınamaz.",
+      "passwordHint": "En az 10 karakter, en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermeli.",
+      "table": {
+        "level": "Seviye",
+        "status": "Durum",
+        "enabled": "Etkin",
+        "priority": "Öncelik",
+        "mediaType": "Medya türü"
+      },
+      "status": {
+        "active": "Etkin",
+        "deactivated": "Devre dışı"
+      },
+      "actions": {
+        "deactivate": "Devre dışı bırak",
+        "reactivate": "Yeniden etkinleştir",
+        "createBackupNow": "Şimdi yedekle",
+        "download": "İndir",
+        "createUser": "Kullanıcı oluştur",
+        "edit": "Düzenle",
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "delete": "Sil",
+        "sendInvite": "Davet e-postası gönder",
+        "restore": "Geri yükle"
+      },
+      "backupReason": {
+        "scheduled": "Zamanlama",
+        "pre_update": "Geçiş"
+      },
+      "backupRestore": {
+        "warning": "Aynı ada sahip mevcut kitaplıklar, aşağıda \"Üzerine yaz\" seçilmedikçe varsayılan olarak atlanır (değiştirilmeden bırakılır).",
+        "overwriteExisting": "Aynı ada sahip mevcut kitaplıkları atlamak yerine üzerine yaz",
+        "restoreSettings": "Sistem ayarlarını ve kullanıcı hesaplarını da geri yükle",
+        "submit": "Geri yüklemeyi onayla",
+        "confirm": "\"{{filename}}\" yedeği geri yüklensin mi? Bu işlem geri alınamaz.",
+        "success": "Geri yükleme tamamlandı: {{created}} oluşturuldu, {{overwritten}} üzerine yazıldı, {{merged}} birleştirildi, {{skipped}} atlandı."
+      },
+      "exportImportPage": {
+        "exportTitle": "Dışa aktar",
+        "exportHint": "Hiçbir şey seçmemek tüm kitaplıkları dışa aktarır.",
+        "exportSubmit": "Dışa aktar",
+        "exportError": "Dışa aktarma başarısız oldu.",
+        "importTitle": "İçe aktar",
+        "importFile": "Dışa aktarma dosyası",
+        "importSubmit": "İçe aktar",
+        "importSuccess": "İçe aktarma tamamlandı: {{created}} oluşturuldu, {{overwritten}} üzerine yazıldı, {{merged}} birleştirildi, {{skipped}} atlandı."
+      },
+      "languagesPage": {
+        "code": "Kod",
+        "none": "Henüz ek dil paketi yok.",
+        "create": "Dil paketi ekle",
+        "translations": "Çeviriler (JSON)",
+        "translationsHint": "Birlikte gelen dil dosyalarıyla aynı anahtar-değer yapısı (briefing 11.4) — bir metin düzenleyicide yazıp buraya yapıştırın.",
+        "confirmDelete": "\"{{name}}\" dil paketi silinsin mi? Bu işlem geri alınamaz.",
+        "bundledTitle": "Birlikte gelen dil paketleri",
+        "bundledInstalled": "kurulu",
+        "bundledInstall": "Kur",
+        "bundledReinstall": "Yeniden kur",
+        "confirmReinstall": "\"{{name}}\" dil paketi yeniden kurulsun mu? Bu pakette yapılan özel değişiklikler kaybolacak ve birlikte gelen sürümle değiştirilecek.",
+        "errors": {
+          "invalidJson": "Bu geçerli bir JSON değil.",
+          "codeInvalid": "Bu kod zaten kullanılıyor veya ayrılmış (de/en ayrılmıştır)."
+        }
+      },
+      "userInvite": {
+        "hint": "Posta sunucusu yapılandırılmamış — şu anda davet e-postası gönderilemiyor.",
+        "sent": "Davet e-postası başarıyla gönderildi.",
+        "failed": "Kullanıcı oluşturuldu, ancak davet e-postası gönderilemedi."
+      },
+      "errors": {
+        "import_invalid_json": "Bu dosya geçerli bir MedInv dışa aktarma biçiminde değil (JSON okunamıyor).",
+        "import_missing_libraries": "Bu dosya hiçbir kitaplık içermiyor — muhtemelen geçerli bir MedInv dışa aktarma dosyası değil.",
+        "import_invalid_library": "Dosyadaki {{number}} numaralı kitaplığın geçerli bir \"{{field}}\" alanı yok.",
+        "import_invalid_item": "\"{{library}}\" kitaplığındaki bir öğenin ({{number}} numaralı kayıt) geçerli bir başlığı veya EAN'ı yok.",
+        "protected_account": "Bu, önceden tanımlanmış yönetici hesabıdır ve düzenlenemez, devre dışı bırakılamaz veya silinemez.",
+        "passwordPolicy": "Parola en az 10 karakter uzunluğunda olmalı ve bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.",
+        "ownsLibraries": "Bu hesap hâlâ şu kitaplıklara sahip ve başka bir sahibe devredilene veya silinene kadar silinemez: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "SMTP sunucusu",
+        "port": "Port",
+        "username": "Kullanıcı adı",
+        "password": "Parola",
+        "passwordHint": "Mevcut parolayı korumak için boş bırakın.",
+        "encryption": "Şifreleme",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Şifreleme yok"
+        },
+        "fromAddress": "Gönderen adresi",
+        "fromName": "Gönderen adı",
+        "healthy": "Posta sunucusuna ulaşılabiliyor ve doğru yapılandırılmış.",
+        "unhealthy": "Posta sunucusuna ulaşılamıyor veya tam olarak yapılandırılmamış. Parola sıfırlama devre dışı.",
+        "saved": "Posta ayarları kaydedildi.",
+        "testMail": "Test e-postası gönder",
+        "testMailTo": "Alıcı adresi",
+        "testMailSend": "Test e-postası gönder",
+        "testMailSent": "Test e-postası başarıyla gönderildi.",
+        "testMailNotConfigured": "Posta sunucusu henüz yapılandırılmamış.",
+        "testMailFailed": "Test e-postası gönderilemedi: {{message}}"
+      },
+      "backupSettings": {
+        "title": "Yedekleme zamanlaması",
+        "intervalMode": "Aralık",
+        "interval": {
+          "daily": "Günlük",
+          "weekly": "Haftalık",
+          "monthly": "Aylık",
+          "cron": "Özel (cron ifadesi)"
+        },
+        "cronExpression": "Cron ifadesi",
+        "retentionHint": "Yalnızca otomatik yedeklemeler için geçerlidir. Elle oluşturulan yedeklemeler buna dahil edilmez ve hiçbir zaman otomatik olarak silinmez. Aşağıdaki iki kuraldan yalnızca biri aynı anda etkindir — hangisini seçin.",
+        "retentionMode": "Eski yedeklemeleri şuna göre sil",
+        "retentionCount": "En fazla bu kadar yedekleme sakla",
+        "retentionMaxAgeDays": "Şundan eski yedeklemeleri sil (gün)",
+        "saved": "Yedekleme zamanlaması kaydedildi."
+      },
+      "securitySettings": {
+        "title": "Kaba kuvvet saldırısı koruması",
+        "maxAttempts": "Maks. başarısız deneme sayısı",
+        "windowMinutes": "Zaman aralığı (dakika)",
+        "lockMinutes": "Kilitleme süresi (dakika)",
+        "saved": "Güvenlik ayarları kaydedildi."
+      },
+      "coverCleanup": {
+        "title": "Kapak temizliği",
+        "hint": "Günde bir kez, artık hiçbir medya öğesi tarafından referans verilmeyen kapak/küçük resim dosyalarını diskten siler.",
+        "enabled": "Sahipsiz kapak dosyalarını otomatik olarak temizle",
+        "saved": "Kapak temizliği ayarı kaydedildi."
+      },
+      "timezoneSettings": {
+        "title": "Saat dilimi",
+        "hint": "Her zaman UTC göstermek yerine yerel saatinizle eşleşmesi için yedekleme ve dışa aktarma dosya adlarında kullanılır.",
+        "timezone": "Saat dilimi",
+        "saved": "Saat dilimi kaydedildi."
+      },
+      "logLevel": {
+        "title": "Günlük seviyesi",
+        "saved": "Günlük seviyesi kaydedildi."
+      },
+      "localeSettings": {
+        "title": "Varsayılan dil",
+        "hint": "Ziyaretçinin dili Almanca veya İngilizce değilse kullanılır.",
+        "defaultLanguage": "Varsayılan dil",
+        "saved": "Varsayılan dil kaydedildi."
+      },
+      "pluginConfig": {
+        "settings": "Ayarlar",
+        "noConfig": "Ayar gerekmiyor.",
+        "fields": {
+          "api_key": "API Anahtarı"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "{{name}} öğesini yeniden sıralamak için sürükleyin (veya Boşluk tuşuna basıp ardından ok tuşlarını kullanın)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Parolamı unuttum",
+      "forgotIntro": "E-posta adresinizi girin. Bu adres için bir hesap varsa, parolanızı sıfırlamak için bir bağlantı alacaksınız.",
+      "sendLink": "Bağlantı iste",
+      "linkSent": "Bu adres varsa, sıfırlama bağlantısı içeren bir e-posta gönderildi.",
+      "resetTitle": "Yeni bir parola belirle",
+      "newPassword": "Yeni parola",
+      "confirmPassword": "Parolayı onayla",
+      "resetSubmit": "Parolayı sıfırla",
+      "resetSuccess": "Parolanız sıfırlandı. Artık oturum açabilirsiniz.",
+      "backToLogin": "Oturum açmaya dön",
+      "errors": {
+        "invalid_token": "Bu bağlantı geçersiz veya süresi dolmuş. Lütfen yeni bir tane isteyin.",
+        "invalid_user": "Bu e-posta adresi için bir hesap yok.",
+        "throttled": "Tekrar denemeden önce lütfen biraz bekleyin.",
+        "reset_failed": "Parola sıfırlanamadı.",
+        "mail_unavailable": "Posta sunucusu yapılandırılmamış veya erişilemiyor. Lütfen bir yöneticiyle iletişime geçin.",
+        "generic": "Bu işe yaramadı. Lütfen daha sonra tekrar deneyin."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Geçersiz kimlik bilgileri.",
+      "account_locked": "Çok fazla başarısız deneme. Bu hesap geçici olarak kilitlendi.",
+      "account_deactivated": "Bu hesap devre dışı bırakıldı.",
+      "generic": "Oturum açma başarısız. Lütfen daha sonra tekrar deneyin veya bir yöneticiyle iletişime geçin."
+    }
+  }
+}
