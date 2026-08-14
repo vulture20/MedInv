@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Login/logout (briefing 11.1) via Sanctum SPA session auth. Applies the
@@ -52,6 +53,11 @@ class AuthController extends Controller
         $this->bruteForce->clearFailures($credentials['email']);
         $request->session()->regenerate();
 
+        // No error_code here (this isn't an error) — just enough to answer "who
+        // logged in, from where, when" for an audit trail, same motivation as
+        // loginError() below already logging every failed attempt.
+        Log::info('User logged in', ['user_id' => $user->id, 'email' => $user->email, 'ip' => $request->ip()]);
+
         return response()->json([
             'user' => $user,
             'mail_server_healthy' => $this->mailStatus->isHealthy(),
@@ -65,12 +71,14 @@ class AuthController extends Controller
      * string via i18n (errors.* keys) rather than pattern-matching on
      * `message`, which would break the moment this text changes or a
      * non-English API consumer is added. Also logged with the client's IP
-     * (see Controller::logApiError()) so a failed-login report can be
-     * cross-checked against storage/logs/laravel.log.
+     * and the attempted email (see Controller::logApiError()) so a
+     * failed-login or account-locked report can be cross-checked against
+     * storage/logs/laravel.log and says *who* was targeted, not just that
+     * some attempt from a given IP failed.
      */
     private function loginError(Request $request, string $code, string $message): JsonResponse
     {
-        $this->logApiError($request, $code, $message);
+        $this->logApiError($request, $code, $message, context: ['email' => $request->input('email')]);
 
         return response()->json(['error_code' => $code, 'message' => $message], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
