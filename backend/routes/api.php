@@ -29,11 +29,12 @@ Route::get('/version', fn () => response()->json([
     'version' => config('medinv.version'),
 ]));
 
-// Also needed before login: a visitor whose browser language is neither German nor
-// English falls back to this admin-configured default (briefing 11.4) instead of a
-// hardcoded 'en' — see frontend/src/i18n/index.ts's applyAdminDefaultLanguage().
-// Deliberately its own tiny route rather than folded into /version above, which is
-// documented as sourced solely from config/medinv.php, not the system_settings table.
+// Also needed before login: a visitor whose browser language matches none of the
+// installed languages (bundled or runtime pack) falls back to this admin-configured
+// default (briefing 11.4) instead of a hardcoded 'en' — see frontend/src/i18n/
+// index.ts's applyBrowserOrDefaultLanguage(). Deliberately its own tiny route rather
+// than folded into /version above, which is documented as sourced solely from
+// config/medinv.php, not the system_settings table.
 Route::get('/locale', fn () => response()->json([
     'default_language' => SystemSetting::get('locale.default_language', 'en'),
 ]));

@@ -10,10 +10,10 @@ use Tests\TestCase;
 
 /**
  * Covers the admin-configurable default language (briefing 11.4): the
- * language a visitor's browser falls back to when it declares neither
- * German nor English, read publicly via GET /locale (frontend/src/i18n/
- * index.ts's applyAdminDefaultLanguage()) and set by an admin via
- * AdminSettingsController::updateLocale().
+ * language a visitor's browser falls back to when it matches none of the
+ * installed languages (bundled or runtime pack), read publicly via
+ * GET /locale (frontend/src/i18n/index.ts's applyBrowserOrDefaultLanguage())
+ * and set by an admin via AdminSettingsController::updateLocale().
  */
 class LocaleSettingsTest extends TestCase
 {

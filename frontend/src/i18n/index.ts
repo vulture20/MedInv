@@ -2,7 +2,7 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { apiClient } from '../api/client'
-import { setRuntimeLanguagePacks, type LanguagePackSummary } from './languagePackEvents'
+import { getRuntimeLanguagePacks, setRuntimeLanguagePacks, type LanguagePackSummary } from './languagePackEvents'
 import de from './locales/de.json'
 import en from './locales/en.json'
 
@@ -15,7 +15,7 @@ import en from './locales/en.json'
 export const AVAILABLE_LANGUAGES = ['de', 'en'] as const
 
 // Captured *before* i18next-browser-languagedetector's init() below runs its
-// own detection — needed by applyAdminDefaultLanguage() to tell "this
+// own detection — needed by applyBrowserOrDefaultLanguage() to tell "this
 // visitor already has an explicit cached language" (real prior match or
 // manual choice) apart from "init() is about to write today's *first*
 // resolution into the same key", which happens either way and would
@@ -36,40 +36,76 @@ i18n
   })
 
 /**
- * Applies the admin-configured default language (briefing 11.4: "eine
- * Standardsprache, falls 'de' und 'en' beide nicht zutreffen") for a
- * visitor whose browser declares neither — i18next's own `fallbackLng`
- * above is hardcoded to 'en' and can't be made to read a runtime setting
- * before its synchronous init() (the app must render immediately, not wait
- * on a network round trip). Called once from main.tsx; failures are
- * swallowed since the hardcoded 'en' fallback already in effect from
- * init() is a fully functional default on its own.
+ * Resolves a first-time visitor's language against every *installed*
+ * language — the two bundled ones plus every currently installed runtime
+ * pack (GitHub issues #12/#15) — falling back to the admin-configured
+ * default language (briefing 11.4: "eine Standardsprache, falls 'de' und
+ * 'en' beide nicht zutreffen", generalized here to "falls keine
+ * installierte Sprache zutrifft" now that admin-managed packs exist) only
+ * when the browser doesn't match any of them at all.
+ *
+ * i18next's own synchronous init() above only ever knows about the two
+ * bundled languages — it can't wait on a network round trip for runtime
+ * packs before the very first render — so this re-evaluates once
+ * loadRuntimeLanguagePacks() has registered everything else. main.tsx MUST
+ * await that first, or this could switch to a pack whose resources aren't
+ * registered yet, leaving the visitor stuck on English-fallback text under
+ * the "wrong" active language.
  *
  * Must never override an explicit prior choice — a returning visitor whose
- * browser previously matched 'de'/'en', or who manually picked a language
- * in Settings, always keeps it, even if that no longer matches the current
- * admin default or their current browser language.
- *
- * `default_language` can itself be a runtime language pack's code
- * (AdminSettingsController::updateLocale() accepts any code with a
- * language_packs row, GitHub issues #12/#15), not just 'de'/'en' — main.tsx
- * MUST await loadRuntimeLanguagePacks() before calling this, or
- * i18n.changeLanguage() below could switch to a pack whose resources
- * aren't registered yet, leaving the visitor stuck on English-fallback
- * text under the "wrong" active language.
+ * browser previously matched an installed language, or who manually picked
+ * one in Settings, always keeps it, even if that no longer matches their
+ * current browser language or the current admin default.
  */
-export async function applyAdminDefaultLanguage(): Promise<void> {
+export async function applyBrowserOrDefaultLanguage(): Promise<void> {
   if (cachedLanguageBeforeInit) return
 
+  const installedCodes = [...AVAILABLE_LANGUAGES, ...getRuntimeLanguagePacks().map((pack) => pack.code)]
   const browserLanguages = navigator.languages ?? [navigator.language]
-  if (browserLanguages.some((lng) => /^(de|en)\b/i.test(lng))) return
+  const matched = matchBrowserLanguage(browserLanguages, installedCodes)
+  if (matched) {
+    if (i18n.language !== matched) await i18n.changeLanguage(matched)
+    return
+  }
 
+  // `default_language` can itself be a runtime language pack's code
+  // (AdminSettingsController::updateLocale() accepts any code with a
+  // language_packs row), not just 'de'/'en' — already registered above by
+  // the time this runs, same reasoning as the matching pass.
   try {
     const { data } = await apiClient.get<{ default_language: string }>('/locale')
     await i18n.changeLanguage(data.default_language)
   } catch {
     // Offline backend — the hardcoded 'en' fallback from init() remains in effect.
   }
+}
+
+/**
+ * Matches an ordered list of browser-preferred locales (navigator.languages,
+ * most-preferred first) against the given installed codes. Exact matches
+ * are checked across every browser preference before any language-part
+ * (region-stripped) match is tried — so a browser preferring "fr-CA" over
+ * plain "de" still resolves to the exact "de" match rather than a looser
+ * "fr" one, on the assumption that an exact match anywhere is always
+ * better than a partial match higher up the preference list. Comparison is
+ * case-insensitive (BCP 47 is conventionally lowercase-language/uppercase-
+ * region, e.g. "de-DE", but browsers/servers aren't perfectly consistent
+ * about it). Returns null if nothing matches at all.
+ */
+function matchBrowserLanguage(browserLanguages: readonly string[], installedCodes: string[]): string | null {
+  const installedLower = installedCodes.map((code) => code.toLowerCase())
+
+  for (const lng of browserLanguages) {
+    const i = installedLower.indexOf(lng.toLowerCase())
+    if (i !== -1) return installedCodes[i]
+  }
+  for (const lng of browserLanguages) {
+    const languagePart = lng.split('-')[0].toLowerCase()
+    const i = installedLower.indexOf(languagePart)
+    if (i !== -1) return installedCodes[i]
+  }
+
+  return null
 }
 
 /**
