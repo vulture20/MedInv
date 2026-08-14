@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
@@ -55,6 +56,23 @@ class AdminSettingsController extends Controller
         ];
     }
 
+    /**
+     * System-settings-change audit trail (briefing 15.), previously not
+     * logged at all — an admin changing mail/security/backup-schedule/etc.
+     * configuration left no record beyond whatever the value happens to be
+     * *now*, with no way to tell who changed it or when. $changes is logged
+     * as-is except for a `password` key (updateMail()'s SMTP password),
+     * which must never reach the log in the clear.
+     */
+    private function logSettingsChange(Request $request, string $category, array $changes): void
+    {
+        if (array_key_exists('password', $changes) && $changes['password'] !== null) {
+            $changes['password'] = '[REDACTED]';
+        }
+
+        Log::info('Settings updated', ['actor_id' => $request->user()->id, 'category' => $category, 'changes' => $changes]);
+    }
+
     public function updateMail(Request $request)
     {
         $data = $request->validate([
@@ -70,6 +88,8 @@ class AdminSettingsController extends Controller
         foreach ($data as $key => $value) {
             SystemSetting::set("mail.{$key}", $value);
         }
+
+        $this->logSettingsChange($request, 'mail', $data);
 
         return response()->json(['healthy' => $this->mailStatus->isHealthy()]);
     }
@@ -123,6 +143,8 @@ class AdminSettingsController extends Controller
             SystemSetting::set("backup.{$key}", $value);
         }
 
+        $this->logSettingsChange($request, 'backup', $data);
+
         return $this->index()['backup'];
     }
 
@@ -138,6 +160,8 @@ class AdminSettingsController extends Controller
             SystemSetting::set("security.{$key}", $value);
         }
 
+        $this->logSettingsChange($request, 'security', $data);
+
         return $this->index()['security'];
     }
 
@@ -147,6 +171,7 @@ class AdminSettingsController extends Controller
         $data = $request->validate(['cleanup_enabled' => ['required', 'boolean']]);
 
         SystemSetting::set('covers.cleanup_enabled', $data['cleanup_enabled']);
+        $this->logSettingsChange($request, 'covers', $data);
 
         return $this->index()['covers'];
     }
@@ -156,6 +181,7 @@ class AdminSettingsController extends Controller
         $data = $request->validate(['loglevel' => ['required', Rule::in(['DEBUG', 'INFO', 'WARNING', 'ERROR'])]]);
 
         SystemSetting::set('loglevel', $data['loglevel']);
+        $this->logSettingsChange($request, 'loglevel', $data);
 
         return response()->json(['loglevel' => $data['loglevel']]);
     }
@@ -174,6 +200,7 @@ class AdminSettingsController extends Controller
         $data = $request->validate(['timezone' => ['required', 'string', Rule::in(\DateTimeZone::listIdentifiers())]]);
 
         SystemSetting::set('timezone', $data['timezone']);
+        $this->logSettingsChange($request, 'timezone', $data);
 
         return response()->json(['timezone' => $data['timezone']]);
     }
@@ -192,6 +219,7 @@ class AdminSettingsController extends Controller
         $data = $request->validate(['default_language' => ['required', Rule::in(['de', 'en'])]]);
 
         SystemSetting::set('locale.default_language', $data['default_language']);
+        $this->logSettingsChange($request, 'locale', $data);
 
         return response()->json(['default_language' => $data['default_language']]);
     }
