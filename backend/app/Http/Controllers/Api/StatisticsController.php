@@ -15,4 +15,10 @@ class StatisticsController extends Controller
     {
         return $this->statisticsService->overviewFor($request->user());
     }
+
+    /** Value-over-time (briefing 14., GitHub issue #30) — see StatisticsService::valueHistoryFor(). */
+    public function valueHistory(Request $request)
+    {
+        return $this->statisticsService->valueHistoryFor($request->user());
+    }
 }

@@ -12,6 +12,27 @@ interface LibraryStats {
   distributions: Record<string, Record<string, number>>
 }
 
+/** One point of GET /statistics/value-history's per-library or accumulated series (StatisticsService::valueHistoryFor()). */
+interface ValueHistoryPoint {
+  date: string
+  item_count: number
+  total_value: number
+}
+
+interface LibraryValueHistory {
+  library_id: number
+  library_name: string
+  /** 'estimated' points are derived from item created_at (no real snapshot existed yet); 'snapshot' points are the daily job's real numbers. */
+  series: (ValueHistoryPoint & { source: 'estimated' | 'snapshot' })[]
+}
+
+interface ValueHistoryResponse {
+  libraries: LibraryValueHistory[]
+  accumulated: { series: ValueHistoryPoint[] }
+  /** The earliest real snapshot date anywhere in the system, or null if the daily job hasn't run yet at all. */
+  cutover_date: string | null
+}
+
 /** Bars beyond this many are folded into a "+N more" note rather than rendered (briefing 14., ">7 classes" per dataviz guidance). */
 const MAX_BARS = 8
 
@@ -52,26 +73,145 @@ function DistributionList({ title, data }: { title: string; data: Record<string,
   )
 }
 
+const CHART_WIDTH = 480
+const CHART_HEIGHT = 110
+const CHART_PAD = 8
+
+/** date -> x/y position within the chart's viewBox, given the series' own date/value range. */
+function makeProjection(points: ValueHistoryPoint[]) {
+  const dateMs = (d: string) => new Date(d).getTime()
+  const minDate = dateMs(points[0].date)
+  const maxDate = dateMs(points[points.length - 1].date)
+  const dateSpan = maxDate - minDate || 1
+  const maxValue = Math.max(...points.map((p) => p.total_value), 0)
+
+  return (p: ValueHistoryPoint): [number, number] => {
+    const x = CHART_PAD + ((dateMs(p.date) - minDate) / dateSpan) * (CHART_WIDTH - 2 * CHART_PAD)
+    const y = maxValue === 0 ? CHART_HEIGHT - CHART_PAD : CHART_HEIGHT - CHART_PAD - (p.total_value / maxValue) * (CHART_HEIGHT - 2 * CHART_PAD)
+    return [x, y]
+  }
+}
+
+function pathFor(points: ValueHistoryPoint[], project: ReturnType<typeof makeProjection>): string {
+  return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${project(p)[0].toFixed(1)} ${project(p)[1].toFixed(1)}`).join(' ')
+}
+
 /**
- * Statistics overview (briefing 14.): per-library item count/value plus the
+ * "Zeitlicher Zuwachs des Bestands" (briefing 14., GitHub issue #30) as a
+ * line/area chart. Unlike the distributions above — a "compare magnitude"
+ * job, suited to a bar list — value-over-time is fundamentally a trend,
+ * which calls for a line chart instead. Split into two visually distinct
+ * segments at cutoverDate: a dashed, muted line for the created_at-derived
+ * estimate (no real daily snapshot existed yet for that period), solid for
+ * the real snapshot data from cutoverDate onward — see
+ * StatisticsService::valueHistoryFor()'s docblock for the full rationale.
+ * Every plotted point also carries an exact-value tooltip, so nothing here
+ * is line-position-only.
+ */
+function ValueHistoryChart({ title, points, cutoverDate }: { title: string; points: ValueHistoryPoint[]; cutoverDate: string | null }) {
+  const { t } = useTranslation()
+
+  if (points.length === 0) {
+    return (
+      <div className="value-history">
+        <h4>{title}</h4>
+        <p>{t('statistics.valueHistory.noData')}</p>
+      </div>
+    )
+  }
+
+  let estimatedPoints: ValueHistoryPoint[] = []
+  let realPoints: ValueHistoryPoint[] = points
+
+  if (cutoverDate !== null) {
+    const splitIndex = points.findIndex((p) => p.date >= cutoverDate)
+    if (splitIndex === -1) {
+      estimatedPoints = points
+      realPoints = []
+    } else if (splitIndex > 0) {
+      // The boundary point is included in both halves so the dashed and
+      // solid segments visually connect without a gap.
+      estimatedPoints = points.slice(0, splitIndex + 1)
+      realPoints = points.slice(splitIndex)
+    }
+  } else {
+    estimatedPoints = points
+    realPoints = []
+  }
+
+  const strictlyEstimatedCount = estimatedPoints.length - (realPoints.length > 0 ? 1 : 0)
+  const hasEstimated = strictlyEstimatedCount > 0
+  const project = makeProjection(points)
+  const last = points[points.length - 1]
+
+  return (
+    <div className="value-history">
+      <h4>{title}</h4>
+      <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="value-history__chart" role="img" aria-label={title}>
+        {estimatedPoints.length > 1 && (
+          <path d={pathFor(estimatedPoints, project)} className="value-history__line value-history__line--estimated" fill="none" />
+        )}
+        {realPoints.length > 1 && <path d={pathFor(realPoints, project)} className="value-history__line value-history__line--real" fill="none" />}
+        {points.map((p) => {
+          const [x, y] = project(p)
+          const isEstimated = cutoverDate !== null ? p.date < cutoverDate : true
+
+          return (
+            <circle key={p.date} cx={x} cy={y} r={2.5} className={isEstimated ? 'value-history__dot--estimated' : 'value-history__dot--real'}>
+              <title>
+                {p.date}: {p.total_value}
+              </title>
+            </circle>
+          )
+        })}
+      </svg>
+      <p className="value-history__summary">{t('statistics.valueHistory.current', { value: last.total_value, date: last.date })}</p>
+      {hasEstimated &&
+        (cutoverDate === null ? (
+          <p className="value-history__note">{t('statistics.valueHistory.estimatedNoteAll')}</p>
+        ) : (
+          <p className="value-history__note">{t('statistics.valueHistory.estimatedNoteUntil', { date: cutoverDate })}</p>
+        ))}
+    </div>
+  )
+}
+
+/**
+ * Statistics overview (briefing 14.): per-library item count/value, the
  * genre/language/year/publisher-artist-director distributions
- * StatisticsService computes (GitHub issue #7). "Zeitlicher Zuwachs des
- * Bestands" (growth over time) is out of scope here — see the service's
- * docblock.
+ * (GitHub issue #7), and the value-over-time chart (GitHub issue #30) —
+ * one line per library plus an accumulated curve across every library
+ * visible to the requesting user, both scoped through
+ * LibraryAccessService like the rest of this page.
  */
 export function StatisticsPage() {
   const { t } = useTranslation()
   const [stats, setStats] = useState<LibraryStats[]>([])
+  const [history, setHistory] = useState<ValueHistoryResponse | null>(null)
 
   useEffect(() => {
     void apiClient.get<LibraryStats[]>('/statistics').then(({ data }) => setStats(data))
+    void apiClient.get<ValueHistoryResponse>('/statistics/value-history').then(({ data }) => setHistory(data))
   }, [])
 
   return (
     <div>
       <h1>{t('statistics.title')}</h1>
+
+      {history && history.accumulated.series.length > 0 && (
+        <section className="statistics-library">
+          <h2>{t('statistics.valueHistory.accumulatedTitle')}</h2>
+          <ValueHistoryChart
+            title={t('statistics.valueHistory.title')}
+            points={history.accumulated.series}
+            cutoverDate={history.cutover_date}
+          />
+        </section>
+      )}
+
       {stats.map((s) => {
         const dimensions = Object.entries(s.distributions).filter(([, data]) => Object.keys(data).length > 0)
+        const libraryHistory = history?.libraries.find((h) => h.library_id === s.library_id)
 
         return (
           <section key={s.library_id} className="statistics-library">
@@ -79,6 +219,9 @@ export function StatisticsPage() {
             <p>
               {t('statistics.itemCount')}: {s.item_count} — {t('statistics.totalValue')}: {s.total_value}
             </p>
+            {libraryHistory && (
+              <ValueHistoryChart title={t('statistics.valueHistory.title')} points={libraryHistory.series} cutoverDate={history?.cutover_date ?? null} />
+            )}
             {dimensions.length === 0 ? (
               <p>{t('statistics.noDistributions')}</p>
             ) : (

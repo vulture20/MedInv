@@ -131,7 +131,15 @@
       "year": "Publication year"
     },
     "moreCount": "+{{count}} more",
-    "noDistributions": "No distribution data available."
+    "noDistributions": "No distribution data available.",
+    "valueHistory": {
+      "title": "Value over time",
+      "accumulatedTitle": "Total value over time (all your libraries)",
+      "current": "Current value: {{value}} (as of {{date}})",
+      "noData": "Not enough data yet for a value history.",
+      "estimatedNoteUntil": "History before {{date}} is estimated from item capture dates and may not reflect later deletions or price changes.",
+      "estimatedNoteAll": "This entire history is estimated from item capture dates — no daily snapshot has run yet."
+    }
   },
   "settings": {
     "template": {

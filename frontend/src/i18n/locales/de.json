@@ -131,7 +131,15 @@
       "year": "Erscheinungsjahr"
     },
     "moreCount": "+{{count}} weitere",
-    "noDistributions": "Keine Verteilungsdaten vorhanden."
+    "noDistributions": "Keine Verteilungsdaten vorhanden.",
+    "valueHistory": {
+      "title": "Wertverlauf",
+      "accumulatedTitle": "Gesamtwertverlauf (alle Ihre Bibliotheken)",
+      "current": "Aktueller Wert: {{value}} (Stand {{date}})",
+      "noData": "Noch nicht genügend Daten für einen Wertverlauf.",
+      "estimatedNoteUntil": "Der Verlauf vor dem {{date}} ist aus den Erfassungsdaten der Medien geschätzt und kann spätere Löschungen oder Preisänderungen nicht abbilden.",
+      "estimatedNoteAll": "Dieser gesamte Verlauf ist aus den Erfassungsdaten geschätzt — es liegt noch kein echter täglicher Schnappschuss vor."
+    }
   },
   "settings": {
     "template": {

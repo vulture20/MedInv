@@ -47,6 +47,10 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // to what LibraryAccessService says they can read (4.3, 13., 14.).
     Route::get('/search', SearchController::class);
     Route::get('/statistics', StatisticsController::class);
+    // Value-over-time (briefing 14. "Zeitlicher Zuwachs des Bestands", GitHub
+    // issue #30) — separate endpoint rather than folded into /statistics
+    // above, keeping that response shape unchanged for existing consumers.
+    Route::get('/statistics/value-history', [StatisticsController::class, 'valueHistory']);
 
     // Libraries — readable per LibraryAccessService; write endpoints re-check
     // ownership/admin inside the controller (5., 4.3). Guests never reach

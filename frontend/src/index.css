@@ -558,6 +558,61 @@ td {
   color: var(--color-text-muted);
 }
 
+/* Value-over-time chart (briefing 14. "Zeitlicher Zuwachs des Bestands",
+ * GitHub issue #30, StatisticsPage.tsx's ValueHistoryChart) — a trend, so a
+ * line chart rather than the bar lists above. The dashed/muted segment is
+ * the created_at-derived estimate; the solid accent segment is real daily
+ * snapshot data. */
+.value-history {
+  margin: 0.75rem 0 1.25rem;
+  max-width: 32rem;
+}
+
+.value-history h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.value-history__chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.value-history__line {
+  stroke-width: 2;
+}
+
+.value-history__line--real {
+  stroke: var(--color-accent);
+}
+
+.value-history__line--estimated {
+  stroke: var(--color-text-muted);
+  stroke-dasharray: 4 3;
+}
+
+.value-history__dot--real {
+  fill: var(--color-accent);
+}
+
+.value-history__dot--estimated {
+  fill: var(--color-text-muted);
+}
+
+.value-history__summary {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.value-history__note {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
 /* Per-plugin settings dialog (briefing 8.1/15., PluginsPage.tsx, GitHub
  * issue #29) — a native <dialog>, themed explicitly since its UA default
  * (white background, no border-radius) ignores --color-* entirely and

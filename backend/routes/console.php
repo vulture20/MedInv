@@ -95,3 +95,22 @@ Schedule::call(function () {
     ->name('medinv-cover-cleanup')
     ->withoutOverlapping()
     ->onFailure(fn () => Log::error('Cover cleanup failed — see the exception logged above.'));
+
+/**
+ * Daily library value snapshot (briefing 14. "Zeitlicher Zuwachs des
+ * Bestands", GitHub issue #30) — feeds StatisticsService::valueHistoryFor()
+ * the "real" half of its combined history (see that method's docblock for
+ * how it's merged with the created_at-derived approximation used for
+ * everything before this feature existed). Not admin-toggleable like the
+ * cover cleanup job above — there's no setting to gate it against, it's
+ * meant to always run. 03:15, ahead of both the backup schedule's fixed
+ * 03:00 hour (BackupService::scheduledBackupCronExpression()) and the cover
+ * cleanup's 03:45, so this job's own database reads aren't racing either of
+ * them, though none of the three would actually conflict if they did land
+ * in the same minute.
+ */
+Schedule::call(fn () => Artisan::call('medinv:snapshot-library-values'))
+    ->dailyAt('03:15')
+    ->name('medinv-library-value-snapshot')
+    ->withoutOverlapping()
+    ->onFailure(fn () => Log::error('Library value snapshot failed — see the exception logged above.'));
