@@ -283,6 +283,9 @@
       "fields": {
         "api_key": "API Key"
       }
+    },
+    "pluginOrdering": {
+      "dragHandle": "Drag to reorder {{name}} (or press Space, then use arrow keys)"
     }
   },
   "passwordReset": {

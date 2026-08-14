@@ -613,6 +613,34 @@ td {
   color: var(--color-text-muted);
 }
 
+/* One table per media type (PluginsPage.tsx) — priority only ever ranks
+ * providers within the same media type, so grouping the tables this way
+ * mirrors what the ranking actually means instead of implying a single
+ * flat, cross-media-type order. */
+.plugin-group {
+  margin-bottom: 1.5rem;
+}
+
+.plugin-group h3 {
+  margin: 0 0 0.4rem;
+}
+
+/* Drag handle cell (dnd-kit, PluginsPage.tsx) — dnd-kit's own `attributes`
+ * already supplies role="button"/tabIndex for keyboard use, this only
+ * needs to look draggable. touch-action: none stops the browser's own
+ * touch scrolling from competing with a touch-drag gesture on this cell. */
+.plugin-drag-handle {
+  cursor: grab;
+  touch-action: none;
+  color: var(--color-text-muted);
+  text-align: center;
+  width: 1.5rem;
+}
+
+.plugin-drag-handle:active {
+  cursor: grabbing;
+}
+
 /* Per-plugin settings dialog (briefing 8.1/15., PluginsPage.tsx, GitHub
  * issue #29) — a native <dialog>, themed explicitly since its UA default
  * (white background, no border-radius) ignores --color-* entirely and

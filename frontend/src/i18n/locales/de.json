@@ -283,6 +283,9 @@
       "fields": {
         "api_key": "API-Key"
       }
+    },
+    "pluginOrdering": {
+      "dragHandle": "{{name}} durch Ziehen neu anordnen (oder Leertaste, dann Pfeiltasten)"
     }
   },
   "passwordReset": {

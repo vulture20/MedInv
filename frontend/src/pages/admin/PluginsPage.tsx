@@ -1,3 +1,6 @@
+import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
@@ -36,12 +39,51 @@ function fieldLabel(t: (key: string, opts?: Record<string, unknown>) => string, 
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+/** Every media type a plugin can belong to (Library.media_type's own union) — fixed order the grouped tables render in below. */
+const MEDIA_TYPES: Plugin['media_type'][] = ['book', 'cd', 'dvd_bluray']
+
+/**
+ * One draggable row (dnd-kit's useSortable) — only the handle cell carries
+ * the drag listeners, not the whole row, so clicking the checkbox/settings
+ * button never gets mistaken for the start of a drag.
+ */
+function SortableRow({ id, children }: { id: number; children: (handle: { attributes: object; listeners: object | undefined }) => React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+  }
+
+  return (
+    <tr ref={setNodeRef} style={style}>
+      {children({ attributes, listeners })}
+    </tr>
+  )
+}
+
 /**
  * Metadata source plugins (briefing 8.2/15.): enable/disable and reorder
  * (lower priority is tried first, see MetadataImportService). New
  * providers are registered backend-side in MetadataProviderRegistry —
  * this page only toggles/reorders/configures what's already registered, it
  * can't add new provider classes.
+ *
+ * Grouped by media type into one table each, rather than a single flat
+ * table with a media-type column: `priority` only ever ranks providers
+ * *within* one media type — MetadataProviderRegistry::enabledProvidersFor()
+ * filters by media_type before ordering by priority, so two providers for
+ * different media types never actually compete with each other. A flat,
+ * mixed-media-type table made that ranking look global when it never was.
+ *
+ * Priority is set by dragging rows into the desired order (dnd-kit) rather
+ * than typing a raw number — each group has its own independent
+ * DndContext, so a drag can never cross into a different media type's
+ * table to begin with; dropping renumbers just that group densely as
+ * 0..N-1 and PUTs only the rows whose priority actually changed. dnd-kit's
+ * keyboard sensor (Space to pick up, arrow keys to move, Space to drop)
+ * covers the reordering a plain HTML5 drag-and-drop implementation
+ * wouldn't have gotten for free.
  *
  * Provider-specific settings (e.g. UpcMdbProvider's `api_key`, GitHub issue
  * #29) are edited in a real per-plugin settings dialog, one input per field
@@ -57,6 +99,13 @@ export function PluginsPage() {
   const [formValues, setFormValues] = useState<Record<string, string>>({})
   const dialogRef = useRef<HTMLDialogElement>(null)
 
+  // A small activation distance so a plain click on the handle (or a
+  // slightly imprecise click near it) doesn't get mistaken for a drag.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
   async function load() {
     const { data } = await apiClient.get<Plugin[]>('/admin/metadata/plugins')
     setPlugins(data)
@@ -68,10 +117,41 @@ export function PluginsPage() {
 
   async function update(plugin: Plugin, patch: Partial<Pick<Plugin, 'enabled' | 'priority' | 'config'>>) {
     setError(null)
-    // Optimistic update so a checkbox click / number edit feels immediate.
+    // Optimistic update so a checkbox click feels immediate.
     setPlugins((prev) => prev.map((p) => (p.id === plugin.id ? { ...p, ...patch } : p)))
     try {
       await apiClient.put(`/admin/metadata/plugins/${plugin.id}`, patch)
+    } catch (err) {
+      setError(describeError(err, t))
+      await load()
+    }
+  }
+
+  /**
+   * Renumbers the dropped-into group densely (0..N-1) from the new row
+   * order and persists only the rows whose priority actually moved — for
+   * a group of 2-3 providers that's at most 2-3 PUTs, the same endpoint
+   * the old priority number input already used
+   * (PUT /admin/metadata/plugins/{id}, unchanged on the backend).
+   */
+  async function handleDragEnd(mediaType: Plugin['media_type'], event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const groupIds = plugins.filter((p) => p.media_type === mediaType).map((p) => p.id)
+    const oldIndex = groupIds.indexOf(Number(active.id))
+    const newIndex = groupIds.indexOf(Number(over.id))
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reorderedIds = arrayMove(groupIds, oldIndex, newIndex)
+    const newPriorityById = new Map(reorderedIds.map((id, index) => [id, index]))
+    const changed = plugins.filter((p) => newPriorityById.get(p.id) !== undefined && newPriorityById.get(p.id) !== p.priority)
+
+    setPlugins((prev) => prev.map((p) => (newPriorityById.has(p.id) ? { ...p, priority: newPriorityById.get(p.id)! } : p)))
+
+    setError(null)
+    try {
+      await Promise.all(changed.map((p) => apiClient.put(`/admin/metadata/plugins/${p.id}`, { priority: newPriorityById.get(p.id) })))
     } catch (err) {
       setError(describeError(err, t))
       await load()
@@ -106,45 +186,63 @@ export function PluginsPage() {
     <section>
       <h2>{t('admin.plugins')}</h2>
       {error && <p role="alert">{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>{t('common.name')}</th>
-            <th>{t('admin.table.mediaType')}</th>
-            <th>{t('admin.table.priority')}</th>
-            <th>{t('admin.table.enabled')}</th>
-            <th>{t('admin.pluginConfig.settings')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {plugins.map((p) => (
-            <tr key={p.id}>
-              <td>{p.name}</td>
-              <td>{t(`libraries.mediaType.${p.media_type}`)}</td>
-              <td>
-                <input
-                  type="number"
-                  value={p.priority}
-                  onChange={(e) => setPlugins((prev) => prev.map((x) => (x.id === p.id ? { ...x, priority: Number(e.target.value) } : x)))}
-                  onBlur={(e) => void update(p, { priority: Number(e.target.value) })}
-                />
-              </td>
-              <td>
-                <input type="checkbox" checked={p.enabled} onChange={(e) => void update(p, { enabled: e.target.checked })} />
-              </td>
-              <td>
-                {p.config_fields.length === 0 ? (
-                  <span className="plugin-config__none">{t('admin.pluginConfig.noConfig')}</span>
-                ) : (
-                  <button type="button" onClick={() => openSettings(p)}>
-                    {t('admin.pluginConfig.settings')}
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {MEDIA_TYPES.map((mediaType) => {
+        const groupPlugins = plugins.filter((p) => p.media_type === mediaType)
+        if (groupPlugins.length === 0) return null
+
+        return (
+          <div key={mediaType} className="plugin-group">
+            <h3>{t(`libraries.mediaType.${mediaType}`)}</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th aria-hidden="true" />
+                  <th>{t('common.name')}</th>
+                  <th>{t('admin.table.priority')}</th>
+                  <th>{t('admin.table.enabled')}</th>
+                  <th>{t('admin.pluginConfig.settings')}</th>
+                </tr>
+              </thead>
+              <DndContext sensors={sensors} onDragEnd={(event) => void handleDragEnd(mediaType, event)}>
+                <SortableContext items={groupPlugins.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+                  <tbody>
+                    {groupPlugins.map((p, index) => (
+                      <SortableRow key={p.id} id={p.id}>
+                        {({ attributes, listeners }) => (
+                          <>
+                            <td
+                              className="plugin-drag-handle"
+                              aria-label={t('admin.pluginOrdering.dragHandle', { name: p.name })}
+                              {...attributes}
+                              {...listeners}
+                            >
+                              ⠿
+                            </td>
+                            <td>{p.name}</td>
+                            <td>{index + 1}</td>
+                            <td>
+                              <input type="checkbox" checked={p.enabled} onChange={(e) => void update(p, { enabled: e.target.checked })} />
+                            </td>
+                            <td>
+                              {p.config_fields.length === 0 ? (
+                                <span className="plugin-config__none">{t('admin.pluginConfig.noConfig')}</span>
+                              ) : (
+                                <button type="button" onClick={() => openSettings(p)}>
+                                  {t('admin.pluginConfig.settings')}
+                                </button>
+                              )}
+                            </td>
+                          </>
+                        )}
+                      </SortableRow>
+                    ))}
+                  </tbody>
+                </SortableContext>
+              </DndContext>
+            </table>
+          </div>
+        )
+      })}
 
       <dialog ref={dialogRef} onClose={() => setEditingPluginId(null)} className="plugin-config-dialog">
         {editingPlugin && (

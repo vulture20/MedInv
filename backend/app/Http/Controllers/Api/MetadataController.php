@@ -36,6 +36,17 @@ class MetadataController extends Controller
      * issue #29) — declared by the matching provider class, not stored in
      * the database — so PluginsPage.tsx can render a settings form per
      * plugin instead of a raw JSON textarea.
+     *
+     * `orderBy('id')` as a tie-breaker after `priority` matters more than it
+     * looks: MetadataProviderRegistry::syncToDatabase() never sets an
+     * explicit priority on first insert, so every provider starts at the
+     * column default (0) — a full tie across an entire media type until an
+     * admin actually reorders something. Without a deterministic secondary
+     * key, that tie's row order would be whatever the database happens to
+     * return it in, which could visibly reshuffle between requests and made
+     * PluginsPage.tsx's drag-to-reorder list (which needs *some* stable
+     * initial order to render at all) unreliable before an admin ever
+     * touched it.
      */
     public function plugins(Request $request)
     {
@@ -47,7 +58,7 @@ class MetadataController extends Controller
 
         $configFields = $this->registry->configFieldsByProviderKey();
 
-        return $query->orderBy('priority')->get()->map(function (MetadataPlugin $plugin) use ($configFields) {
+        return $query->orderBy('priority')->orderBy('id')->get()->map(function (MetadataPlugin $plugin) use ($configFields) {
             $plugin->setAttribute('config_fields', $configFields->get($plugin->provider_key, []));
 
             return $plugin;

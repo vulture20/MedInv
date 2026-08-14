@@ -68,13 +68,22 @@ class MetadataProviderRegistry
             ]);
     }
 
-    /** Enabled provider instances for the given media type, ordered by admin-configured priority. */
+    /**
+     * Enabled provider instances for the given media type, ordered by
+     * admin-configured priority. `orderBy('id')` after `priority` is the
+     * same deterministic-tie-breaker fix as MetadataController::plugins()'s
+     * — every provider starts at the same default priority (0) until an
+     * admin reorders something, so without a secondary key which provider
+     * actually gets tried first on a fresh install would be undefined
+     * rather than merely a display-order quirk.
+     */
     public function enabledProvidersFor(string $mediaType): Collection
     {
         $enabledKeys = MetadataPlugin::query()
             ->where('media_type', $mediaType)
             ->where('enabled', true)
             ->orderBy('priority')
+            ->orderBy('id')
             ->pluck('provider_key');
 
         return collect(static::defaultProviders())
