@@ -6,6 +6,7 @@ use App\Domain\Backup\BackupService;
 use App\Http\Controllers\Controller;
 use App\Models\Backup;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Backup listing, manual creation, download and deletion (briefing 9.2/9.3).
@@ -31,8 +32,19 @@ class BackupController extends Controller
         return response()->download($this->backupService->download($backup), $backup->filename);
     }
 
-    public function destroy(Backup $backup)
+    /**
+     * Manual admin-initiated deletion is logged here, not inside
+     * BackupService::delete() — that method is shared with prune()'s
+     * automatic retention cleanup, which already logs its own bulk
+     * "Backups pruned" entry (with every pruned filename) right before
+     * calling delete() per backup; logging again inside delete() itself
+     * would double-log every automatically pruned backup. A manually
+     * deleted backup previously went completely unlogged — no entry at
+     * all, unlike every other backup action (created/restored/pruned).
+     */
+    public function destroy(Request $request, Backup $backup)
     {
+        Log::info('Backup deleted', ['actor_id' => $request->user()->id, 'filename' => $backup->filename]);
         $this->backupService->delete($backup);
 
         return response()->noContent();

@@ -84,6 +84,31 @@ class BackupRestoreLoggingTest extends TestCase
         app(BackupService::class)->create(trigger: 'automatic', intervalMode: 'daily');
     }
 
+    /**
+     * BackupController::destroy() logs this itself, deliberately not inside
+     * BackupService::delete() — that method is shared with prune()'s
+     * automatic retention cleanup, which already logs its own bulk
+     * "Backups pruned" entry (see test_pruning_backups_is_logged_with_count_
+     * and_filenames above); logging again inside delete() itself would
+     * double-log every automatically pruned backup. A manually deleted
+     * backup previously had no log entry at all.
+     */
+    public function test_deleting_a_backup_is_logged_with_the_filename(): void
+    {
+        $admin = $this->actingAsAdmin();
+        $backup = app(BackupService::class)->create(trigger: 'manual');
+
+        // Log isn't mocked yet during the create() call above (same ordering as
+        // test_restoring_a_backup_is_logged_with_result_counts) — only the
+        // delete() call below is actually under observation here.
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
+        Log::shouldReceive('info')->once()->with('Backup deleted', Mockery::on(function ($context) use ($admin, $backup) {
+            return $context['actor_id'] === $admin->id && $context['filename'] === $backup->filename;
+        }));
+
+        $this->deleteJson("/api/admin/backups/{$backup->id}")->assertNoContent();
+    }
+
     public function test_restoring_a_backup_is_logged_with_result_counts(): void
     {
         $admin = $this->actingAsAdmin();
