@@ -59,4 +59,30 @@ class PreUpdateBackupCommandTest extends TestCase
         $this->assertSame(0, Backup::query()->count());
         $this->assertStringContainsString('Fresh install', Artisan::output());
     }
+
+    /**
+     * Real-world bug, reported after deploying the `reason` column
+     * (BackupService::create()'s docblock): this command runs *before*
+     * `migrate --force` (docker/entrypoint.sh) by design — a safety-net
+     * backup ahead of whatever the pending migrations are about to
+     * change. On the one-time upgrade across the boundary that adds a new
+     * `backups` column and also *writes* to that same column, the column
+     * genuinely doesn't exist yet at the exact moment this command runs,
+     * and the INSERT crashed with "no such column: reason" instead of the
+     * safety-net backup succeeding. Simulated here by dropping the column
+     * that RefreshDatabase's full migration run already created, then
+     * running the command exactly as if that migration were still
+     * pending.
+     */
+    public function test_still_creates_a_backup_when_the_reason_column_itself_does_not_exist_yet(): void
+    {
+        Storage::fake('local');
+        $this->markOneMigrationAsPending();
+        Schema::table('backups', fn ($table) => $table->dropColumn('reason'));
+
+        $exitCode = Artisan::call('medinv:pre-update-backup');
+
+        $this->assertSame(0, $exitCode);
+        $this->assertDatabaseHas((new Backup)->getTable(), ['trigger' => 'automatic']);
+    }
 }

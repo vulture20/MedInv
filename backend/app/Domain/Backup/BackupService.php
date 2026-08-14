@@ -6,6 +6,7 @@ use App\Domain\ExportImport\ExportImportService;
 use App\Models\Backup;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
@@ -66,14 +67,33 @@ class BackupService
         $zip->close();
         unlink($tmpJson);
 
-        $backup = Backup::query()->create([
+        $attributes = [
             'filename' => $filename,
             'size_bytes' => Storage::disk(self::DISK)->size($path),
             'trigger' => $trigger,
-            'reason' => $reason,
             'interval_mode' => $intervalMode,
             'status' => 'completed',
-        ]);
+        ];
+
+        // PreUpdateBackupCommand deliberately calls create() *before*
+        // `php artisan migrate --force` runs (docker/entrypoint.sh) — the
+        // whole point is a safety-net backup ahead of whatever the pending
+        // migrations are about to change. That includes the migration that
+        // added this very `reason` column: on the one-time upgrade across
+        // that boundary, the column genuinely doesn't exist yet at the
+        // exact moment this runs, and an unconditional 'reason' => $reason
+        // here made the safety-net backup itself fail with "no such
+        // column" — confirmed live by reproducing the exact scenario an
+        // existing install upgrades through. Same defensive shape
+        // PreUpdateBackupCommand::handle() already uses via
+        // Schema::hasTable('migrations') for the analogous "are we
+        // mid-update" concern. Any future column added here needs the same
+        // guard for the same reason.
+        if (Schema::hasColumn('backups', 'reason')) {
+            $attributes['reason'] = $reason;
+        }
+
+        $backup = Backup::query()->create($attributes);
 
         $this->prune();
 
