@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\LanguagePack;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 /**
@@ -55,7 +56,14 @@ class LanguagePackController extends Controller
             'translations' => ['required', 'array', 'min:1'],
         ]);
 
-        return response()->json(LanguagePack::query()->create($data), 201);
+        $pack = LanguagePack::query()->create($data);
+
+        // No full `translations` blob in the log — it's the bulk of the
+        // payload and not something worth keeping a copy of here, just
+        // enough to say what changed (name/key count) and by whom.
+        Log::info('Language pack created', ['actor_id' => $request->user()->id, 'code' => $pack->code, 'name' => $pack->name]);
+
+        return response()->json($pack, 201);
     }
 
     /** `code` is immutable once created (like MetadataPlugin's `provider_key`) — not accepted here. */
@@ -68,11 +76,21 @@ class LanguagePackController extends Controller
 
         $languagePack->update($data);
 
+        // No full `translations` blob in the log, same reasoning as store()
+        // above — just whether it changed, not its contents.
+        Log::info('Language pack updated', [
+            'actor_id' => $request->user()->id,
+            'code' => $languagePack->code,
+            'name' => $data['name'] ?? null,
+            'translations_changed' => array_key_exists('translations', $data),
+        ]);
+
         return $languagePack;
     }
 
-    public function destroy(LanguagePack $languagePack)
+    public function destroy(Request $request, LanguagePack $languagePack)
     {
+        Log::info('Language pack deleted', ['actor_id' => $request->user()->id, 'code' => $languagePack->code, 'name' => $languagePack->name]);
         $languagePack->delete();
 
         return response()->noContent();

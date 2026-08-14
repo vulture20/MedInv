@@ -161,6 +161,19 @@ class LibraryController extends Controller
             ]);
         }
 
+        // Who can see a library changing is an access-control change, same
+        // audit-trail category as the ownership transfer above — this
+        // replaces the *entire* share list every time (not an incremental
+        // add/remove), so the log reflects the new state in full rather
+        // than a diff.
+        Log::info('Library shares updated', [
+            'actor_id' => $request->user()->id,
+            'library_id' => $library->id,
+            'guest' => collect($data['shares'] ?? [])->contains('scope', 'guest'),
+            'all_users' => collect($data['shares'] ?? [])->contains('scope', 'all_users'),
+            'user_ids' => collect($data['shares'] ?? [])->where('scope', 'user')->pluck('user_id')->all(),
+        ]);
+
         return $library->load('shares.user:id,name,email');
     }
 }

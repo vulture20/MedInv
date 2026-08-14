@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Rules\MedInvPasswordPolicy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 
 /**
@@ -43,8 +44,10 @@ class PasswordResetController extends Controller
             'password' => ['required', 'confirmed', new MedInvPasswordPolicy],
         ]);
 
-        $status = Password::reset($data, function ($user, $password) {
+        $resetUser = null;
+        $status = Password::reset($data, function ($user, $password) use (&$resetUser) {
             $user->forceFill(['password' => $password])->save();
+            $resetUser = $user;
         });
 
         if ($status !== Password::PASSWORD_RESET) {
@@ -62,6 +65,11 @@ class PasswordResetController extends Controller
 
             return $this->resetError($request, $errorCode, "Password reset failed: {$status}");
         }
+
+        // Credential change via self-service reset — a genuinely security-relevant
+        // event previously only logged on *failure* (invalid token, throttled, ...),
+        // never when it actually succeeded.
+        Log::info('Password reset completed', ['user_id' => $resetUser?->id, 'email' => $data['email'], 'ip' => $request->ip()]);
 
         return response()->json(['message' => 'Password has been reset.']);
     }

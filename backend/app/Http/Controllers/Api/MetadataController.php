@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Library;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -128,6 +129,35 @@ class MetadataController extends Controller
 
         $plugin->update($data);
 
+        Log::info('Metadata plugin updated', ['actor_id' => $request->user()->id, 'provider_key' => $plugin->provider_key, 'changes' => $this->redactedChanges($plugin, $data)]);
+
         return $plugin;
+    }
+
+    /**
+     * $data['config'] as-is except any field the provider itself declares
+     * `type: 'password'` (MetadataProviderConfigField, GitHub issue #29) —
+     * the same authoritative "this is a secret" marker PluginsPage.tsx
+     * already uses to render a masked input, reused here instead of a
+     * hardcoded key-name list so any current or future provider's secret
+     * field is covered automatically, not just today's `api_key`.
+     */
+    private function redactedChanges(MetadataPlugin $plugin, array $data): array
+    {
+        if (! isset($data['config']) || ! is_array($data['config'])) {
+            return $data;
+        }
+
+        $secretKeys = collect($this->registry->configFieldsByProviderKey()->get($plugin->provider_key, []))
+            ->filter(fn (array $field) => $field['type'] === 'password')
+            ->pluck('key');
+
+        foreach ($secretKeys as $key) {
+            if (array_key_exists($key, $data['config']) && $data['config'][$key] !== null) {
+                $data['config'][$key] = '[REDACTED]';
+            }
+        }
+
+        return $data;
     }
 }
