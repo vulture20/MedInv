@@ -34,3 +34,25 @@ export function describeError(err: unknown, t: TFunction): string {
 
   return t('errors.generic')
 }
+
+/**
+ * Same as describeError(), but for a request made with `responseType:
+ * 'blob'` (ExportImportPage.tsx's export download) — on a failed request,
+ * axios still hands back whatever body the server sent as a Blob rather
+ * than parsed JSON, since it doesn't know the response was actually an
+ * error until after the blob type was already committed to. describeError()
+ * expects `err.response.data` to already be the parsed error object, so an
+ * error blob needs to be read back to text and JSON-parsed first.
+ */
+export async function describeBlobError(err: unknown, t: TFunction): Promise<string> {
+  if (isAxiosError(err) && err.response?.data instanceof Blob) {
+    try {
+      const parsed: unknown = JSON.parse(await err.response.data.text())
+      return describeError({ ...err, response: { ...err.response, data: parsed } }, t)
+    } catch {
+      return t('errors.generic')
+    }
+  }
+
+  return describeError(err, t)
+}

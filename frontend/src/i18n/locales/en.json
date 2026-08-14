@@ -160,6 +160,7 @@
     "users": "Users",
     "plugins": "Metadata plugins",
     "backups": "Backups",
+    "exportImport": "Export/Import",
     "mail": "Mail",
     "settings": "System settings",
     "confirmDeleteUser": "Delete user “{{name}}”? This cannot be undone.",
@@ -200,6 +201,16 @@
       "submit": "Confirm restore",
       "confirm": "Restore backup \"{{filename}}\"? This cannot be undone.",
       "success": "Restore complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped."
+    },
+    "exportImportPage": {
+      "exportTitle": "Export",
+      "exportHint": "Selecting nothing exports every library.",
+      "exportSubmit": "Export",
+      "exportError": "Export failed.",
+      "importTitle": "Import",
+      "importFile": "Export file",
+      "importSubmit": "Import",
+      "importSuccess": "Import complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped."
     },
     "userInvite": {
       "hint": "The mail server is not configured — an invitation email cannot be sent right now.",

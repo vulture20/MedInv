@@ -17,6 +17,7 @@ import { AdminLayout } from './pages/admin/AdminLayout'
 import { UsersPage } from './pages/admin/UsersPage'
 import { PluginsPage } from './pages/admin/PluginsPage'
 import { BackupsPage } from './pages/admin/BackupsPage'
+import { ExportImportPage } from './pages/admin/ExportImportPage'
 import { MailPage } from './pages/admin/MailPage'
 import { SystemSettingsPage } from './pages/admin/SystemSettingsPage'
 
@@ -52,6 +53,7 @@ function App() {
                     <Route path="users" element={<UsersPage />} />
                     <Route path="plugins" element={<PluginsPage />} />
                     <Route path="backups" element={<BackupsPage />} />
+                    <Route path="export-import" element={<ExportImportPage />} />
                     <Route path="mail" element={<MailPage />} />
                     <Route path="settings" element={<SystemSettingsPage />} />
                   </Route>

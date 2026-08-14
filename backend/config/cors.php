@@ -29,7 +29,15 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    // Content-Disposition needs to be readable by JS for the export download
+    // (ExportImportPage.tsx POSTs a library selection and reads the
+    // server-computed filename off the blob response — unlike backup
+    // download, which is a plain GET <a href> the browser handles natively
+    // without any JS needing the header at all). Same-origin production
+    // deployments don't need this (no CORS involved), but cross-origin local
+    // dev (5173 -> 8000) does, since browsers hide response headers from JS
+    // on a cross-origin request unless the server explicitly exposes them.
+    'exposed_headers' => ['Content-Disposition'],
 
     'max_age' => 0,
 

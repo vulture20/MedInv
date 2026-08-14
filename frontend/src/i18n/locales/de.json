@@ -160,6 +160,7 @@
     "users": "Benutzer",
     "plugins": "Metadaten-Plugins",
     "backups": "Backups",
+    "exportImport": "Export/Import",
     "mail": "Mail",
     "settings": "Systemeinstellungen",
     "confirmDeleteUser": "Benutzer „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
@@ -200,6 +201,16 @@
       "submit": "Wiederherstellung bestätigen",
       "confirm": "Backup „{{filename}}“ wiederherstellen? Dies kann nicht rückgängig gemacht werden.",
       "success": "Wiederherstellung abgeschlossen: {{created}} neu angelegt, {{overwritten}} überschrieben, {{merged}} zusammengeführt, {{skipped}} übersprungen."
+    },
+    "exportImportPage": {
+      "exportTitle": "Export",
+      "exportHint": "Keine Auswahl exportiert alle Bibliotheken.",
+      "exportSubmit": "Exportieren",
+      "exportError": "Export fehlgeschlagen.",
+      "importTitle": "Import",
+      "importFile": "Export-Datei",
+      "importSubmit": "Importieren",
+      "importSuccess": "Import abgeschlossen: {{created}} neu angelegt, {{overwritten}} überschrieben, {{merged}} zusammengeführt, {{skipped}} übersprungen."
     },
     "userInvite": {
       "hint": "Der Mailserver ist nicht konfiguriert — eine Einladungsmail kann derzeit nicht verschickt werden.",
