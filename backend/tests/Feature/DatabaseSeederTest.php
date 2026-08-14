@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Domain\Metadata\MetadataProviderRegistry;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
+use App\Models\LanguagePack;
 use App\Models\MetadataPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -49,5 +50,22 @@ class DatabaseSeederTest extends TestCase
         $providers = app(MetadataProviderRegistry::class)->enabledProvidersFor('dvd_bluray');
 
         $this->assertTrue($providers->contains(fn ($p) => $p instanceof UpcMdbProvider));
+    }
+
+    /**
+     * Uses the real languagepacks/ directory (unlike BundledLanguagePackTest's
+     * fixture-based coverage of BundledLanguagePackRegistry itself) — this is
+     * specifically an integration check that DatabaseSeeder's wiring and
+     * config('medinv.languagepacks_path')'s default actually reach the real,
+     * repo-shipped files, so a fresh install really does have them
+     * pre-installed from the start as intended.
+     */
+    public function test_a_freshly_seeded_install_has_the_bundled_language_packs(): void
+    {
+        $this->seed();
+
+        foreach (['fr', 'es', 'ja', 'zh'] as $code) {
+            $this->assertDatabaseHas((new LanguagePack)->getTable(), ['code' => $code]);
+        }
     }
 }

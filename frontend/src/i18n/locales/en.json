@@ -220,6 +220,11 @@
       "translations": "Translations (JSON)",
       "translationsHint": "Same key-value structure as the bundled language files (briefing 11.4) — write it in a text editor and paste it here.",
       "confirmDelete": "Delete language pack \"{{name}}\"? This cannot be undone.",
+      "bundledTitle": "Bundled language packs",
+      "bundledInstalled": "installed",
+      "bundledInstall": "Install",
+      "bundledReinstall": "Reinstall",
+      "confirmReinstall": "Reinstall language pack \"{{name}}\"? Any custom edits to it will be lost and replaced with the bundled version.",
       "errors": {
         "invalidJson": "That is not valid JSON.",
         "codeInvalid": "This code is already taken or reserved (de/en are reserved)."

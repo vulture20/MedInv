@@ -1,0 +1,352 @@
+{
+    "code": "zh",
+    "name": "中文",
+    "translations": {
+        "common": {
+            "name": "名称",
+            "email": "电子邮箱",
+            "loading": "加载中…"
+        },
+        "nav": {
+            "home": "首页",
+            "capture": "采集",
+            "libraries": "媒体库",
+            "statistics": "统计",
+            "administration": "管理",
+            "toggleMenu": "切换菜单"
+        },
+        "dashboard": {
+            "noLibraries": "您目前还看不到任何媒体库。",
+            "allLibraries": "显示全部 {{count}} 个媒体库"
+        },
+        "login": {
+            "title": "登录",
+            "email": "电子邮箱地址",
+            "password": "密码",
+            "submit": "登录",
+            "mailServerWarning": "邮件服务器无法访问或配置有误。密码重置功能已禁用。",
+            "forgotPassword": "忘记密码？",
+            "sessionExpired": "您的会话已过期，请重新登录。"
+        },
+        "userMenu": {
+            "settings": "个人设置",
+            "logout": "退出登录"
+        },
+        "libraries": {
+            "title": "媒体库",
+            "create": "创建媒体库",
+            "view": "查看",
+            "delete": "删除",
+            "noItems": "此媒体库中还没有任何项目。",
+            "confirmDelete": "删除媒体库“{{name}}”？此操作无法撤销。",
+            "descriptionLabel": "描述",
+            "mediaTypeLabel": "媒体类型",
+            "mediaType": {
+                "book": "图书",
+                "cd": "CD",
+                "dvd_bluray": "DVD/蓝光"
+            },
+            "sharing": {
+                "title": "共享",
+                "hint": "控制除您之外还有谁可以查看此媒体库。此处只能授予只读权限。",
+                "guests": "与访客共享",
+                "allUsers": "与所有用户共享",
+                "specificUsers": "特定用户",
+                "noSpecificUsers": "未与任何特定用户共享。",
+                "selectUser": "选择用户…",
+                "add": "添加",
+                "remove": "移除",
+                "saved": "共享设置已保存。"
+            },
+            "ownership": {
+                "title": "所有权",
+                "hint": "将此媒体库（包括其所有共享设置）转让给其他用户。",
+                "selectUser": "选择新所有者…",
+                "transfer": "转让",
+                "confirm": "将此媒体库的所有权转让给“{{name}}”？转让后您可能会失去对它的访问权限。"
+            }
+        },
+        "mediaItem": {
+            "confirmDelete": "删除“{{title}}”？此操作无法撤销。",
+            "moveToLibrary": "移动到媒体库",
+            "selectLibrary": "选择媒体库…",
+            "move": "移动",
+            "uploadCover": "上传封面",
+            "removeCover": "移除封面",
+            "confirmRemoveCover": "移除封面？此操作无法撤销。",
+            "addManually": "手动添加",
+            "createTitle": "添加媒体项目",
+            "fields": {
+                "title": "标题",
+                "ean": "EAN",
+                "description": "描述",
+                "release_date": "发行日期",
+                "price": "价格",
+                "authors": "作者",
+                "format": "版本",
+                "genre": "类型",
+                "page_count": "页数",
+                "language": "语言",
+                "publisher": "出版社",
+                "isbn10": "ISBN-10",
+                "isbn13": "ISBN-13",
+                "artist": "艺术家",
+                "medium": "介质",
+                "asin": "ASIN",
+                "disc_count": "光盘数量",
+                "languages": "语言",
+                "cast": "演员表",
+                "director": "导演",
+                "production_year": "制作年份",
+                "runtime_minutes": "时长（分钟）"
+            }
+        },
+        "capture": {
+            "title": "采集",
+            "single": "单条录入",
+            "scan": "扫描",
+            "eanIsbnPlaceholder": "EAN / ISBN",
+            "textFileImport": "文本文件导入",
+            "duplicate": "此项目已存在于该媒体库中。",
+            "noMatch": "未找到匹配的元数据 — 请手动添加。",
+            "chooseCandidate": "请选择一个匹配项，或全部拒绝。",
+            "rejectAll": "拒绝所有匹配项",
+            "cameraScan": "使用摄像头扫描",
+            "cameraClose": "关闭摄像头",
+            "cameraHint": "将条形码对准摄像头。",
+            "cameraAccessError": "无法访问摄像头。请授予权限，或手动输入 EAN/ISBN。"
+        },
+        "search": {
+            "placeholder": "搜索…",
+            "resultsFor": "搜索：“{{query}}”",
+            "submit": "搜索",
+            "fuzzy": "模糊搜索",
+            "error": "搜索失败，请重试。"
+        },
+        "statistics": {
+            "title": "统计",
+            "itemCount": "项目数量",
+            "totalValue": "总价值",
+            "dimension": {
+                "genre": "类型",
+                "language": "语言",
+                "publisher": "出版社",
+                "artist": "艺术家",
+                "director": "导演",
+                "year": "出版年份"
+            },
+            "moreCount": "另有 {{count}} 项",
+            "noDistributions": "暂无分布数据。",
+            "valueHistory": {
+                "title": "价值变化趋势",
+                "accumulatedTitle": "总价值随时间变化（您的所有媒体库）",
+                "current": "当前价值：{{value}}（截至 {{date}}）",
+                "noData": "数据尚不足以生成价值历史记录。",
+                "estimatedNoteUntil": "{{date}} 之前的历史记录是根据项目录入日期估算的，可能未反映之后的删除或价格变动。",
+                "estimatedNoteAll": "此历史记录完全基于项目录入日期估算 — 尚未运行过每日快照。"
+            }
+        },
+        "settings": {
+            "template": {
+                "label": "模板",
+                "light": "浅色",
+                "dark": "深色"
+            },
+            "language": {
+                "label": "语言",
+                "de": "德语",
+                "en": "英语"
+            }
+        },
+        "admin": {
+            "title": "管理",
+            "users": "用户",
+            "plugins": "元数据插件",
+            "backups": "备份",
+            "exportImport": "导出/导入",
+            "mail": "邮件",
+            "languages": "语言包",
+            "settings": "系统设置",
+            "confirmDeleteUser": "删除用户“{{name}}”？此操作无法撤销。",
+            "confirmDeleteBackup": "删除备份“{{filename}}”？此操作无法撤销。",
+            "passwordHint": "至少 10 个字符，且至少包含一个大写字母、一个小写字母、一个数字和一个特殊字符。",
+            "table": {
+                "level": "级别",
+                "status": "状态",
+                "enabled": "已启用",
+                "priority": "优先级",
+                "mediaType": "媒体类型"
+            },
+            "status": {
+                "active": "活跃",
+                "deactivated": "已停用"
+            },
+            "actions": {
+                "deactivate": "停用",
+                "reactivate": "重新启用",
+                "createBackupNow": "立即创建备份",
+                "download": "下载",
+                "createUser": "创建用户",
+                "edit": "编辑",
+                "save": "保存",
+                "cancel": "取消",
+                "delete": "删除",
+                "sendInvite": "发送邀请邮件",
+                "restore": "恢复"
+            },
+            "backupReason": {
+                "scheduled": "计划任务",
+                "pre_update": "迁移"
+            },
+            "backupRestore": {
+                "warning": "默认情况下，同名的现有媒体库将被跳过（保持不变），除非您在下方选择“覆盖”。",
+                "overwriteExisting": "覆盖同名的现有媒体库，而不是跳过它们",
+                "restoreSettings": "同时恢复系统设置和用户账户",
+                "submit": "确认恢复",
+                "confirm": "恢复备份“{{filename}}”？此操作无法撤销。",
+                "success": "恢复完成：新建 {{created}} 个，覆盖 {{overwritten}} 个，合并 {{merged}} 个，跳过 {{skipped}} 个。"
+            },
+            "exportImportPage": {
+                "exportTitle": "导出",
+                "exportHint": "不选择任何项目将导出所有媒体库。",
+                "exportSubmit": "导出",
+                "exportError": "导出失败。",
+                "importTitle": "导入",
+                "importFile": "导出文件",
+                "importSubmit": "导入",
+                "importSuccess": "导入完成：新建 {{created}} 个，覆盖 {{overwritten}} 个，合并 {{merged}} 个，跳过 {{skipped}} 个。"
+            },
+            "languagesPage": {
+                "code": "代码",
+                "none": "暂无额外的语言包。",
+                "create": "添加语言包",
+                "translations": "翻译内容（JSON）",
+                "translationsHint": "结构与内置语言文件相同（键值对，见简报 11.4 章）——请在文本编辑器中编写后粘贴到此处。",
+                "confirmDelete": "删除语言包“{{name}}”？此操作无法撤销。",
+                "errors": {
+                    "invalidJson": "这不是有效的 JSON。",
+                    "codeInvalid": "该代码已被占用或为保留代码（de/en 为保留代码）。"
+                }
+            },
+            "userInvite": {
+                "hint": "邮件服务器尚未配置 — 目前无法发送邀请邮件。",
+                "sent": "邀请邮件已成功发送。",
+                "failed": "用户已创建，但邀请邮件发送失败。"
+            },
+            "errors": {
+                "import_invalid_json": "此文件不是有效的 MedInv 导出格式（JSON 无法读取）。",
+                "import_missing_libraries": "此文件不包含任何媒体库 — 可能不是有效的 MedInv 导出文件。",
+                "import_invalid_library": "文件中第 {{number}} 个媒体库没有有效的“{{field}}”字段。",
+                "import_invalid_item": "媒体库“{{library}}”中的一个项目（第 {{number}} 条）没有有效的标题或 EAN。",
+                "protected_account": "这是预定义的管理员账户，无法编辑、停用或删除。",
+                "passwordPolicy": "密码长度必须至少为 10 个字符，且必须包含大写字母、小写字母、数字和特殊字符各一个。",
+                "ownsLibraries": "此账户仍拥有以下媒体库，必须先将其转让给其他所有者或删除，才能删除此账户：{{libraries}}"
+            },
+            "mailSettings": {
+                "host": "SMTP 主机",
+                "port": "端口",
+                "username": "用户名",
+                "password": "密码",
+                "passwordHint": "留空以保留当前密码。",
+                "encryption": "加密方式",
+                "encryptionOptions": {
+                    "ssl_tls": "SSL/TLS",
+                    "starttls": "STARTTLS",
+                    "none": "不加密"
+                },
+                "fromAddress": "发件地址",
+                "fromName": "发件人名称",
+                "healthy": "邮件服务器可访问且配置正确。",
+                "unhealthy": "邮件服务器无法访问或配置不完整。密码重置功能已禁用。",
+                "saved": "邮件设置已保存。",
+                "testMail": "发送测试邮件",
+                "testMailTo": "收件人地址",
+                "testMailSend": "发送测试邮件",
+                "testMailSent": "测试邮件已成功发送。",
+                "testMailNotConfigured": "邮件服务器尚未配置。",
+                "testMailFailed": "测试邮件发送失败：{{message}}"
+            },
+            "backupSettings": {
+                "title": "备份计划",
+                "intervalMode": "间隔",
+                "interval": {
+                    "daily": "每日",
+                    "weekly": "每周",
+                    "monthly": "每月",
+                    "cron": "自定义（cron 表达式）"
+                },
+                "cronExpression": "cron 表达式",
+                "retentionHint": "仅适用于自动备份。手动创建的备份不计入其中，且永远不会自动删除。以下两条规则同一时间只能有一条生效 — 请选择其一。",
+                "retentionMode": "旧备份删除方式",
+                "retentionCount": "最多保留的备份数量",
+                "retentionMaxAgeDays": "删除超过（天数）的备份",
+                "saved": "备份计划已保存。"
+            },
+            "securitySettings": {
+                "title": "暴力破解防护",
+                "maxAttempts": "最大失败尝试次数",
+                "windowMinutes": "时间窗口（分钟）",
+                "lockMinutes": "锁定时长（分钟）",
+                "saved": "安全设置已保存。"
+            },
+            "coverCleanup": {
+                "title": "封面清理",
+                "hint": "每天一次，删除磁盘上不再被任何媒体项目引用的封面/缩略图文件。",
+                "enabled": "自动清理孤立的封面文件",
+                "saved": "封面清理设置已保存。"
+            },
+            "timezoneSettings": {
+                "title": "时区",
+                "hint": "用于备份和导出文件名，使其与您的本地时间一致，而不是始终显示 UTC。",
+                "timezone": "时区",
+                "saved": "时区已保存。"
+            },
+            "logLevel": {
+                "title": "日志级别",
+                "saved": "日志级别已保存。"
+            },
+            "localeSettings": {
+                "title": "默认语言",
+                "hint": "当访问者的语言既非德语也非英语时使用。",
+                "defaultLanguage": "默认语言",
+                "saved": "默认语言已保存。"
+            },
+            "pluginConfig": {
+                "settings": "设置",
+                "noConfig": "无需设置。",
+                "fields": {
+                    "api_key": "API 密钥"
+                }
+            },
+            "pluginOrdering": {
+                "dragHandle": "拖动以重新排序 {{name}}（或按空格键后使用方向键）"
+            }
+        },
+        "passwordReset": {
+            "forgotTitle": "忘记密码",
+            "forgotIntro": "请输入您的电子邮箱地址。如果存在对应账户，您将收到一封包含密码重置链接的邮件。",
+            "sendLink": "请求链接",
+            "linkSent": "如果该地址存在，包含重置链接的邮件已发送。",
+            "resetTitle": "设置新密码",
+            "newPassword": "新密码",
+            "confirmPassword": "确认密码",
+            "resetSubmit": "重置密码",
+            "resetSuccess": "您的密码已重置，现在可以登录了。",
+            "backToLogin": "返回登录",
+            "errors": {
+                "invalid_token": "此链接无效或已过期，请重新申请。",
+                "invalid_user": "不存在使用此电子邮箱地址的账户。",
+                "throttled": "请稍候片刻后再试。",
+                "reset_failed": "密码重置失败。",
+                "mail_unavailable": "邮件服务器未配置或无法访问，请联系管理员。",
+                "generic": "操作未成功，请稍后重试。"
+            }
+        },
+        "errors": {
+            "invalid_credentials": "凭据无效。",
+            "account_locked": "失败尝试次数过多，此账户已被暂时锁定。",
+            "account_deactivated": "此账户已被停用。",
+            "generic": "登录失败，请稍后重试或联系管理员。"
+        }
+    }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Languages\BundledLanguagePackRegistry;
 use App\Http\Controllers\Controller;
 use App\Models\LanguagePack;
 use Illuminate\Http\Request;
@@ -11,20 +12,24 @@ use Illuminate\Validation\Rule;
 /**
  * Admin-managed additional UI language packs beyond the bundled German/
  * English (briefing 11.4/17., GitHub issue #12 — #15 is the frontend admin
- * UI + runtime loading). Plain CRUD with no business rules beyond the
- * reserved-code check in store(), so — like
- * MetadataController::updatePlugin() — this skips a dedicated Domain
- * service.
+ * UI + runtime loading). index()/store()/update()/destroy() are plain CRUD
+ * with no business rules beyond the reserved-code check in store(); the
+ * one exception is bundled()/installBundled(), which delegate to
+ * BundledLanguagePackRegistry (repo-shipped languagepacks/*.json files,
+ * pre-installed on fresh boot via DatabaseSeeder — this pair is what lets
+ * an admin (re)install one on demand afterwards instead).
  *
  * index()/show() are registered fully outside the auth:sanctum group in
  * routes/api.php (not just outside level:admin, the way GET
  * /metadata/plugins used to sit before GitHub issue #37) — translations
  * must be loadable on the login screen itself, before anyone is
- * authenticated. create()/update()/destroy() are the actual enforcement
+ * authenticated. Every other method here is the actual admin enforcement
  * this issue asks for, registered under the existing level:admin group.
  */
 class LanguagePackController extends Controller
 {
+    public function __construct(private readonly BundledLanguagePackRegistry $bundledRegistry) {}
+
     public function index()
     {
         return LanguagePack::query()->orderBy('name')->get(['code', 'name']);
@@ -94,5 +99,37 @@ class LanguagePackController extends Controller
         $languagePack->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Lists every languagepacks/*.json file the repo/image ships, each
+     * flagged with whether it already has a database row — lets
+     * LanguagesPage.tsx show "already installed" instead of offering a
+     * pointless reinstall-with-no-visible-effect button.
+     */
+    public function bundled()
+    {
+        $installedCodes = LanguagePack::query()->pluck('code');
+
+        return collect($this->bundledRegistry->available())
+            ->map(fn (array $pack) => [...$pack, 'installed' => $installedCodes->contains($pack['code'])])
+            ->values();
+    }
+
+    /**
+     * Installs (or reinstalls) one bundled pack. Unlike DatabaseSeeder's
+     * boot-time installMissing() (which never touches a pack an admin has
+     * since edited), this is a deliberate admin action — see
+     * BundledLanguagePackRegistry::install()'s docblock — so it always
+     * overwrites name/translations from the shipped file.
+     */
+    public function installBundled(Request $request, string $code)
+    {
+        $pack = $this->bundledRegistry->install($code);
+        abort_if($pack === null, 404);
+
+        Log::info('Bundled language pack installed', ['actor_id' => $request->user()->id, 'code' => $pack->code, 'name' => $pack->name]);
+
+        return response()->json($pack, 201);
     }
 }

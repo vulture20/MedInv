@@ -1,0 +1,352 @@
+{
+    "code": "ja",
+    "name": "日本語",
+    "translations": {
+        "common": {
+            "name": "名前",
+            "email": "メールアドレス",
+            "loading": "読み込み中…"
+        },
+        "nav": {
+            "home": "ホーム",
+            "capture": "登録",
+            "libraries": "ライブラリ",
+            "statistics": "統計",
+            "administration": "管理",
+            "toggleMenu": "メニューの切り替え"
+        },
+        "dashboard": {
+            "noLibraries": "まだ表示できるライブラリがありません。",
+            "allLibraries": "{{count}} 件のライブラリをすべて表示"
+        },
+        "login": {
+            "title": "サインイン",
+            "email": "メールアドレス",
+            "password": "パスワード",
+            "submit": "サインイン",
+            "mailServerWarning": "メールサーバーに接続できないか、設定に誤りがあります。パスワードのリセットは無効になっています。",
+            "forgotPassword": "パスワードをお忘れですか?",
+            "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください。"
+        },
+        "userMenu": {
+            "settings": "個人設定",
+            "logout": "ログアウト"
+        },
+        "libraries": {
+            "title": "ライブラリ",
+            "create": "ライブラリを作成",
+            "view": "表示",
+            "delete": "削除",
+            "noItems": "このライブラリにはまだアイテムがありません。",
+            "confirmDelete": "ライブラリ「{{name}}」を削除しますか? この操作は元に戻せません。",
+            "descriptionLabel": "説明",
+            "mediaTypeLabel": "メディア種別",
+            "mediaType": {
+                "book": "本",
+                "cd": "CD",
+                "dvd_bluray": "DVD/ブルーレイ"
+            },
+            "sharing": {
+                "title": "共有",
+                "hint": "あなた以外に誰がこのライブラリを閲覧できるかを設定します。ここで付与できるのは閲覧権限のみです。",
+                "guests": "ゲストと共有",
+                "allUsers": "すべてのユーザーと共有",
+                "specificUsers": "特定のユーザー",
+                "noSpecificUsers": "特定のユーザーとは共有されていません。",
+                "selectUser": "ユーザーを選択…",
+                "add": "追加",
+                "remove": "削除",
+                "saved": "共有設定を保存しました。"
+            },
+            "ownership": {
+                "title": "所有者",
+                "hint": "このライブラリを、共有設定も含めて別のユーザーに譲渡します。",
+                "selectUser": "新しい所有者を選択…",
+                "transfer": "譲渡",
+                "confirm": "このライブラリの所有権を「{{name}}」に譲渡しますか? 譲渡後はアクセスできなくなる場合があります。"
+            }
+        },
+        "mediaItem": {
+            "confirmDelete": "「{{title}}」を削除しますか? この操作は元に戻せません。",
+            "moveToLibrary": "ライブラリへ移動",
+            "selectLibrary": "ライブラリを選択…",
+            "move": "移動",
+            "uploadCover": "カバー画像をアップロード",
+            "removeCover": "カバー画像を削除",
+            "confirmRemoveCover": "カバー画像を削除しますか? この操作は元に戻せません。",
+            "addManually": "手動で追加",
+            "createTitle": "メディアを追加",
+            "fields": {
+                "title": "タイトル",
+                "ean": "EAN",
+                "description": "説明",
+                "release_date": "発売日",
+                "price": "価格",
+                "authors": "著者",
+                "format": "形式",
+                "genre": "ジャンル",
+                "page_count": "ページ数",
+                "language": "言語",
+                "publisher": "出版社",
+                "isbn10": "ISBN-10",
+                "isbn13": "ISBN-13",
+                "artist": "アーティスト",
+                "medium": "メディア",
+                "asin": "ASIN",
+                "disc_count": "ディスク枚数",
+                "languages": "言語",
+                "cast": "出演者",
+                "director": "監督",
+                "production_year": "制作年",
+                "runtime_minutes": "上映時間（分）"
+            }
+        },
+        "capture": {
+            "title": "登録",
+            "single": "個別登録",
+            "scan": "スキャン",
+            "eanIsbnPlaceholder": "EAN / ISBN",
+            "textFileImport": "テキストファイルのインポート",
+            "duplicate": "このアイテムはすでにこのライブラリに存在します。",
+            "noMatch": "一致するメタデータが見つかりません — 手動で追加してください。",
+            "chooseCandidate": "一致する項目を選択するか、すべて却下してください。",
+            "rejectAll": "すべての候補を却下",
+            "cameraScan": "カメラでスキャン",
+            "cameraClose": "カメラを閉じる",
+            "cameraHint": "バーコードをカメラの前にかざしてください。",
+            "cameraAccessError": "カメラにアクセスできませんでした。アクセスを許可するか、EAN/ISBNを手動で入力してください。"
+        },
+        "search": {
+            "placeholder": "検索…",
+            "resultsFor": "検索:「{{query}}」",
+            "submit": "検索",
+            "fuzzy": "あいまい検索",
+            "error": "検索に失敗しました。もう一度お試しください。"
+        },
+        "statistics": {
+            "title": "統計",
+            "itemCount": "アイテム数",
+            "totalValue": "合計金額",
+            "dimension": {
+                "genre": "ジャンル",
+                "language": "言語",
+                "publisher": "出版社",
+                "artist": "アーティスト",
+                "director": "監督",
+                "year": "発行年"
+            },
+            "moreCount": "他 {{count}} 件",
+            "noDistributions": "分布データがありません。",
+            "valueHistory": {
+                "title": "価値の推移",
+                "accumulatedTitle": "合計金額の推移（すべてのライブラリ）",
+                "current": "現在の価値: {{value}}（{{date}} 時点）",
+                "noData": "価値の推移を表示するにはデータが不足しています。",
+                "estimatedNoteUntil": "{{date}} より前の履歴はアイテムの登録日から推定したものであり、その後の削除や価格変更が反映されていない場合があります。",
+                "estimatedNoteAll": "この履歴はすべてアイテムの登録日から推定されたものです — 日次スナップショットはまだ実行されていません。"
+            }
+        },
+        "settings": {
+            "template": {
+                "label": "テンプレート",
+                "light": "ライト",
+                "dark": "ダーク"
+            },
+            "language": {
+                "label": "言語",
+                "de": "ドイツ語",
+                "en": "英語"
+            }
+        },
+        "admin": {
+            "title": "管理",
+            "users": "ユーザー",
+            "plugins": "メタデータプラグイン",
+            "backups": "バックアップ",
+            "exportImport": "エクスポート/インポート",
+            "mail": "メール",
+            "languages": "言語パック",
+            "settings": "システム設定",
+            "confirmDeleteUser": "ユーザー「{{name}}」を削除しますか? この操作は元に戻せません。",
+            "confirmDeleteBackup": "バックアップ「{{filename}}」を削除しますか? この操作は元に戻せません。",
+            "passwordHint": "10文字以上で、大文字・小文字・数字・記号をそれぞれ1文字以上含めてください。",
+            "table": {
+                "level": "レベル",
+                "status": "ステータス",
+                "enabled": "有効",
+                "priority": "優先度",
+                "mediaType": "メディア種別"
+            },
+            "status": {
+                "active": "有効",
+                "deactivated": "無効化済み"
+            },
+            "actions": {
+                "deactivate": "無効化",
+                "reactivate": "再有効化",
+                "createBackupNow": "今すぐバックアップを作成",
+                "download": "ダウンロード",
+                "createUser": "ユーザーを作成",
+                "edit": "編集",
+                "save": "保存",
+                "cancel": "キャンセル",
+                "delete": "削除",
+                "sendInvite": "招待メールを送信",
+                "restore": "復元"
+            },
+            "backupReason": {
+                "scheduled": "スケジュール",
+                "pre_update": "マイグレーション"
+            },
+            "backupRestore": {
+                "warning": "既定では、同名の既存ライブラリはスキップされます（変更されません）。下の「上書き」を選択した場合を除きます。",
+                "overwriteExisting": "同名の既存ライブラリをスキップせずに上書きする",
+                "restoreSettings": "システム設定とユーザーアカウントも復元する",
+                "submit": "復元を確認",
+                "confirm": "バックアップ「{{filename}}」を復元しますか? この操作は元に戻せません。",
+                "success": "復元が完了しました: 新規作成 {{created}} 件、上書き {{overwritten}} 件、統合 {{merged}} 件、スキップ {{skipped}} 件。"
+            },
+            "exportImportPage": {
+                "exportTitle": "エクスポート",
+                "exportHint": "何も選択しない場合、すべてのライブラリがエクスポートされます。",
+                "exportSubmit": "エクスポート",
+                "exportError": "エクスポートに失敗しました。",
+                "importTitle": "インポート",
+                "importFile": "エクスポートファイル",
+                "importSubmit": "インポート",
+                "importSuccess": "インポートが完了しました: 新規作成 {{created}} 件、上書き {{overwritten}} 件、統合 {{merged}} 件、スキップ {{skipped}} 件。"
+            },
+            "languagesPage": {
+                "code": "コード",
+                "none": "追加の言語パックはまだありません。",
+                "create": "言語パックを追加",
+                "translations": "翻訳データ（JSON）",
+                "translationsHint": "同梱の言語ファイルと同じキー・バリュー構造です（仕様書11.4項）。テキストエディタで作成し、ここに貼り付けてください。",
+                "confirmDelete": "言語パック「{{name}}」を削除しますか? この操作は元に戻せません。",
+                "errors": {
+                    "invalidJson": "有効なJSONではありません。",
+                    "codeInvalid": "このコードはすでに使用されているか予約済みです（de/enは予約済みです）。"
+                }
+            },
+            "userInvite": {
+                "hint": "メールサーバーが設定されていないため、現在招待メールを送信できません。",
+                "sent": "招待メールを送信しました。",
+                "failed": "ユーザーは作成されましたが、招待メールを送信できませんでした。"
+            },
+            "errors": {
+                "import_invalid_json": "このファイルは有効なMedInvエクスポート形式ではありません（JSONとして読み取れません）。",
+                "import_missing_libraries": "このファイルにはライブラリが含まれていません — 有効なMedInvエクスポートファイルではない可能性があります。",
+                "import_invalid_library": "ファイル内のライブラリ #{{number}} に有効な「{{field}}」フィールドがありません。",
+                "import_invalid_item": "ライブラリ「{{library}}」内のアイテム（項目 #{{number}}）に有効なタイトルまたはEANがありません。",
+                "protected_account": "これは既定の管理者アカウントであり、編集・無効化・削除はできません。",
+                "passwordPolicy": "パスワードは10文字以上で、大文字・小文字・数字・記号をそれぞれ1文字以上含める必要があります。",
+                "ownsLibraries": "このアカウントは以下のライブラリをまだ所有しているため、他の所有者に譲渡するか削除するまで、このアカウントを削除できません: {{libraries}}"
+            },
+            "mailSettings": {
+                "host": "SMTPホスト",
+                "port": "ポート",
+                "username": "ユーザー名",
+                "password": "パスワード",
+                "passwordHint": "現在のパスワードを維持する場合は空欄のままにしてください。",
+                "encryption": "暗号化",
+                "encryptionOptions": {
+                    "ssl_tls": "SSL/TLS",
+                    "starttls": "STARTTLS",
+                    "none": "暗号化なし"
+                },
+                "fromAddress": "送信元アドレス",
+                "fromName": "送信者名",
+                "healthy": "メールサーバーに接続でき、正しく設定されています。",
+                "unhealthy": "メールサーバーに接続できないか、設定が不完全です。パスワードのリセットは無効になっています。",
+                "saved": "メール設定を保存しました。",
+                "testMail": "テストメールを送信",
+                "testMailTo": "宛先アドレス",
+                "testMailSend": "テストメールを送信",
+                "testMailSent": "テストメールを送信しました。",
+                "testMailNotConfigured": "メールサーバーはまだ設定されていません。",
+                "testMailFailed": "テストメールを送信できませんでした: {{message}}"
+            },
+            "backupSettings": {
+                "title": "バックアップスケジュール",
+                "intervalMode": "間隔",
+                "interval": {
+                    "daily": "毎日",
+                    "weekly": "毎週",
+                    "monthly": "毎月",
+                    "cron": "カスタム（cron式）"
+                },
+                "cronExpression": "cron式",
+                "retentionHint": "自動バックアップにのみ適用されます。手動作成したバックアップはカウントされず、自動削除されることもありません。以下の2つのルールのうち、一度に有効になるのは1つだけです — どちらか選択してください。",
+                "retentionMode": "古いバックアップの削除基準",
+                "retentionCount": "保持する最大バックアップ数",
+                "retentionMaxAgeDays": "この日数より古いバックアップを削除（日）",
+                "saved": "バックアップスケジュールを保存しました。"
+            },
+            "securitySettings": {
+                "title": "ブルートフォース攻撃対策",
+                "maxAttempts": "最大失敗試行回数",
+                "windowMinutes": "時間枠（分）",
+                "lockMinutes": "ロック時間（分）",
+                "saved": "セキュリティ設定を保存しました。"
+            },
+            "coverCleanup": {
+                "title": "カバー画像のクリーンアップ",
+                "hint": "1日1回、どのメディアアイテムからも参照されなくなったカバー/サムネイル画像ファイルをディスクから削除します。",
+                "enabled": "孤立したカバー画像ファイルを自動的にクリーンアップする",
+                "saved": "カバー画像クリーンアップ設定を保存しました。"
+            },
+            "timezoneSettings": {
+                "title": "タイムゾーン",
+                "hint": "バックアップおよびエクスポートのファイル名に使用され、常にUTCで表示されるのではなく、ローカル時刻に合わせられます。",
+                "timezone": "タイムゾーン",
+                "saved": "タイムゾーンを保存しました。"
+            },
+            "logLevel": {
+                "title": "ログレベル",
+                "saved": "ログレベルを保存しました。"
+            },
+            "localeSettings": {
+                "title": "デフォルト言語",
+                "hint": "訪問者の言語がドイツ語でも英語でもない場合に使用されます。",
+                "defaultLanguage": "デフォルト言語",
+                "saved": "デフォルト言語を保存しました。"
+            },
+            "pluginConfig": {
+                "settings": "設定",
+                "noConfig": "設定は不要です。",
+                "fields": {
+                    "api_key": "APIキー"
+                }
+            },
+            "pluginOrdering": {
+                "dragHandle": "{{name}} をドラッグして並べ替え（またはスペースキーを押してから矢印キーを使用）"
+            }
+        },
+        "passwordReset": {
+            "forgotTitle": "パスワードをお忘れですか",
+            "forgotIntro": "メールアドレスを入力してください。該当するアカウントが存在する場合、パスワードをリセットするためのリンクが送信されます。",
+            "sendLink": "リンクをリクエスト",
+            "linkSent": "そのアドレスが存在する場合、リセットリンクを含むメールが送信されました。",
+            "resetTitle": "新しいパスワードを設定",
+            "newPassword": "新しいパスワード",
+            "confirmPassword": "パスワードの確認",
+            "resetSubmit": "パスワードをリセット",
+            "resetSuccess": "パスワードがリセットされました。サインインできます。",
+            "backToLogin": "サインインに戻る",
+            "errors": {
+                "invalid_token": "このリンクは無効か、有効期限が切れています。新しいリンクをリクエストしてください。",
+                "invalid_user": "このメールアドレスに該当するアカウントは存在しません。",
+                "throttled": "しばらく待ってから再度お試しください。",
+                "reset_failed": "パスワードをリセットできませんでした。",
+                "mail_unavailable": "メールサーバーが設定されていないか、接続できません。管理者にお問い合わせください。",
+                "generic": "うまくいきませんでした。しばらくしてから再度お試しください。"
+            }
+        },
+        "errors": {
+            "invalid_credentials": "認証情報が正しくありません。",
+            "account_locked": "失敗回数が多すぎます。このアカウントは一時的にロックされています。",
+            "account_deactivated": "このアカウントは無効化されています。",
+            "generic": "サインインに失敗しました。しばらくしてから再度お試しいただくか、管理者にお問い合わせください。"
+        }
+    }
+}

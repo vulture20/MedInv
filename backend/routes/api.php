@@ -151,5 +151,14 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::post('/languages', [LanguagePackController::class, 'store']);
         Route::put('/languages/{languagePack}', [LanguagePackController::class, 'update']);
         Route::delete('/languages/{languagePack}', [LanguagePackController::class, 'destroy']);
+
+        // Repo-shipped languagepacks/*.json packs (pre-installed on fresh
+        // boot, DatabaseSeeder) — lets an admin (re)install one on demand,
+        // e.g. after deleting it, or once a later image update ships a new
+        // one, without a restart. /bundled doesn't collide with the
+        // {languagePack} route-model-bound routes above (different HTTP
+        // methods, and no GET/DELETE on /languages/bundled exists here).
+        Route::get('/languages/bundled', [LanguagePackController::class, 'bundled']);
+        Route::post('/languages/bundled/{code}', [LanguagePackController::class, 'installBundled']);
     });
 });

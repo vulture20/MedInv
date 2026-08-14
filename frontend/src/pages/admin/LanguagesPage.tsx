@@ -10,6 +10,10 @@ interface FullLanguagePack extends LanguagePackSummary {
   translations: object
 }
 
+interface BundledPack extends LanguagePackSummary {
+  installed: boolean
+}
+
 const emptyNewPack = { code: '', name: '', translationsText: '' }
 
 /**
@@ -24,11 +28,21 @@ const emptyNewPack = { code: '', name: '', translationsText: '' }
  * the runtime-pack list (setRuntimeLanguagePacks()) so a pack an admin just
  * touched is immediately reflected in this same tab — e.g. SettingsPage.tsx's
  * language <select> — without a full reload.
+ *
+ * Also offers the repo-shipped languagepacks/*.json packs for one-click
+ * (re)install (BundledLanguagePackRegistry) — these are already
+ * pre-installed on a fresh instance (DatabaseSeeder), so this section is
+ * mainly for reinstalling one an admin deleted, or picking up a new bundled
+ * pack a later image update ships without needing a restart.
  */
 export function LanguagesPage() {
   const { t } = useTranslation()
   const [packs, setPacks] = useState<LanguagePackSummary[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [bundled, setBundled] = useState<BundledPack[]>([])
+  const [installingCode, setInstallingCode] = useState<string | null>(null)
+  const [installError, setInstallError] = useState<string | null>(null)
 
   const [newPack, setNewPack] = useState(emptyNewPack)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -45,8 +59,14 @@ export function LanguagesPage() {
     setLoading(false)
   }
 
+  async function loadBundled() {
+    const { data } = await apiClient.get<BundledPack[]>('/admin/languages/bundled')
+    setBundled(data)
+  }
+
   useEffect(() => {
     void load()
+    void loadBundled()
   }, [])
 
   /**
@@ -135,14 +155,49 @@ export function LanguagesPage() {
       await apiClient.delete(`/admin/languages/${pack.code}`)
       unregisterLanguagePack(pack.code)
       await load()
+      await loadBundled()
     } catch (err) {
       window.alert(describePackError(err))
+    }
+  }
+
+  async function installBundled(pack: BundledPack) {
+    // install() always overwrites (BundledLanguagePackRegistry::install()'s
+    // docblock) — confirm before clobbering an admin's own edits to an
+    // already-installed pack. A not-yet-installed pack needs no confirmation.
+    if (pack.installed && !window.confirm(t('admin.languagesPage.confirmReinstall', { name: pack.name }))) return
+
+    setInstallError(null)
+    setInstallingCode(pack.code)
+    try {
+      const { data } = await apiClient.post<FullLanguagePack>(`/admin/languages/bundled/${pack.code}`)
+      registerLanguagePack(data.code, data.translations)
+      await load()
+      await loadBundled()
+    } catch (err) {
+      setInstallError(describePackError(err))
+    } finally {
+      setInstallingCode(null)
     }
   }
 
   return (
     <section>
       <h2>{t('admin.languages')}</h2>
+
+      <h3>{t('admin.languagesPage.bundledTitle')}</h3>
+      <ul className="bundled-language-list">
+        {bundled.map((pack) => (
+          <li key={pack.code}>
+            {pack.name} ({pack.code})
+            {pack.installed && ` — ${t('admin.languagesPage.bundledInstalled')}`}{' '}
+            <button onClick={() => void installBundled(pack)} disabled={installingCode === pack.code}>
+              {pack.installed ? t('admin.languagesPage.bundledReinstall') : t('admin.languagesPage.bundledInstall')}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {installError && <p role="alert">{installError}</p>}
 
       {loading ? (
         <p>…</p>

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Domain\Languages\BundledLanguagePackRegistry;
 use App\Domain\Metadata\MetadataProviderRegistry;
 use App\Models\Library;
 use App\Models\User;
@@ -30,6 +31,15 @@ class DatabaseSeeder extends Seeder
         // admin account below — this also self-heals an existing deployment on
         // its next restart (db:seed --force runs on every container start).
         app(MetadataProviderRegistry::class)->syncToDatabase();
+
+        // Bundled language packs (briefing 11.4/17., GitHub issue #12/#15
+        // follow-up) — same firstOrCreate-based self-healing reasoning as
+        // MetadataProviderRegistry::syncToDatabase() just above: a fresh
+        // install gets every languagepacks/*.json pack pre-installed from
+        // the start, and an existing deployment picks up any new bundled
+        // pack shipped in a later image on its next restart, without ever
+        // overwriting a pack an admin has since edited.
+        app(BundledLanguagePackRegistry::class)->installMissing();
 
         $adminEmail = env('MEDINV_ADMINUSER');
         $adminPassword = env('MEDINV_ADMINPASS');

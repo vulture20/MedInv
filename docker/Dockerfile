@@ -31,6 +31,13 @@ WORKDIR /var/www/backend
 COPY --from=backend-deps /usr/bin/composer /usr/local/bin/composer
 COPY backend/ ./
 COPY --from=backend-deps /app/vendor ./vendor
+
+# Bundled language packs (BundledLanguagePackRegistry, config('medinv.
+# languagepacks_path')) — copied to the same relative position as in the
+# repo (a sibling of backend/, i.e. WORKDIR/../languagepacks =
+# /var/www/languagepacks) so base_path('../languagepacks') resolves
+# identically here and in local dev, with no environment-specific path logic.
+COPY languagepacks/ /var/www/languagepacks/
 RUN composer dump-autoload --optimize --no-dev \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs storage/app/private/backups storage/database bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache

@@ -1,0 +1,352 @@
+{
+    "code": "fr",
+    "name": "Français",
+    "translations": {
+        "common": {
+            "name": "Nom",
+            "email": "E-mail",
+            "loading": "Chargement…"
+        },
+        "nav": {
+            "home": "Accueil",
+            "capture": "Saisie",
+            "libraries": "Bibliothèques",
+            "statistics": "Statistiques",
+            "administration": "Administration",
+            "toggleMenu": "Basculer le menu"
+        },
+        "dashboard": {
+            "noLibraries": "Aucune bibliothèque ne vous est encore visible.",
+            "allLibraries": "Afficher les {{count}} bibliothèques"
+        },
+        "login": {
+            "title": "Connexion",
+            "email": "Adresse e-mail",
+            "password": "Mot de passe",
+            "submit": "Se connecter",
+            "mailServerWarning": "Le serveur de messagerie est inaccessible ou mal configuré. La réinitialisation du mot de passe est désactivée.",
+            "forgotPassword": "Mot de passe oublié ?",
+            "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
+        },
+        "userMenu": {
+            "settings": "Paramètres personnalisés",
+            "logout": "Déconnexion"
+        },
+        "libraries": {
+            "title": "Bibliothèques",
+            "create": "Créer une bibliothèque",
+            "view": "Afficher",
+            "delete": "Supprimer",
+            "noItems": "Cette bibliothèque ne contient encore aucun élément.",
+            "confirmDelete": "Supprimer la bibliothèque « {{name}} » ? Cette action est irréversible.",
+            "descriptionLabel": "Description",
+            "mediaTypeLabel": "Type de média",
+            "mediaType": {
+                "book": "Livre",
+                "cd": "CD",
+                "dvd_bluray": "DVD/Blu-ray"
+            },
+            "sharing": {
+                "title": "Partage",
+                "hint": "Détermine qui d'autre peut voir cette bibliothèque, en plus de vous. Seul un accès en lecture peut être accordé ici.",
+                "guests": "Partager avec les invités",
+                "allUsers": "Partager avec tous les utilisateurs",
+                "specificUsers": "Utilisateurs spécifiques",
+                "noSpecificUsers": "Non partagée avec un utilisateur spécifique.",
+                "selectUser": "Sélectionner un utilisateur…",
+                "add": "Ajouter",
+                "remove": "Retirer",
+                "saved": "Paramètres de partage enregistrés."
+            },
+            "ownership": {
+                "title": "Propriété",
+                "hint": "Transfère cette bibliothèque, y compris tous ses partages, à un autre utilisateur.",
+                "selectUser": "Sélectionner un nouveau propriétaire…",
+                "transfer": "Transférer",
+                "confirm": "Transférer la propriété de cette bibliothèque à « {{name}} » ? Vous pourriez ensuite perdre l'accès à celle-ci."
+            }
+        },
+        "mediaItem": {
+            "confirmDelete": "Supprimer « {{title}} » ? Cette action est irréversible.",
+            "moveToLibrary": "Déplacer vers une bibliothèque",
+            "selectLibrary": "Sélectionner une bibliothèque…",
+            "move": "Déplacer",
+            "uploadCover": "Importer une couverture",
+            "removeCover": "Supprimer la couverture",
+            "confirmRemoveCover": "Supprimer la couverture ? Cette action est irréversible.",
+            "addManually": "Ajouter manuellement",
+            "createTitle": "Ajouter un média",
+            "fields": {
+                "title": "Titre",
+                "ean": "EAN",
+                "description": "Description",
+                "release_date": "Date de sortie",
+                "price": "Prix",
+                "authors": "Auteur(s)",
+                "format": "Format",
+                "genre": "Genre",
+                "page_count": "Nombre de pages",
+                "language": "Langue",
+                "publisher": "Éditeur",
+                "isbn10": "ISBN-10",
+                "isbn13": "ISBN-13",
+                "artist": "Artiste",
+                "medium": "Support",
+                "asin": "ASIN",
+                "disc_count": "Nombre de disques",
+                "languages": "Langue(s)",
+                "cast": "Distribution",
+                "director": "Réalisateur",
+                "production_year": "Année de production",
+                "runtime_minutes": "Durée (minutes)"
+            }
+        },
+        "capture": {
+            "title": "Saisie",
+            "single": "Saisie unique",
+            "scan": "Scanner",
+            "eanIsbnPlaceholder": "EAN / ISBN",
+            "textFileImport": "Import de fichier texte",
+            "duplicate": "Cet élément existe déjà dans cette bibliothèque.",
+            "noMatch": "Aucune correspondance de métadonnées trouvée — ajoutez manuellement.",
+            "chooseCandidate": "Veuillez choisir une correspondance ou toutes les rejeter.",
+            "rejectAll": "Rejeter toutes les correspondances",
+            "cameraScan": "Scanner avec la caméra",
+            "cameraClose": "Fermer la caméra",
+            "cameraHint": "Présentez un code-barres devant la caméra.",
+            "cameraAccessError": "Impossible d'accéder à la caméra. Veuillez autoriser l'accès ou saisir un EAN/ISBN manuellement."
+        },
+        "search": {
+            "placeholder": "Rechercher…",
+            "resultsFor": "Recherche : « {{query}} »",
+            "submit": "Rechercher",
+            "fuzzy": "Recherche approximative",
+            "error": "La recherche a échoué. Veuillez réessayer."
+        },
+        "statistics": {
+            "title": "Statistiques",
+            "itemCount": "Nombre d'éléments",
+            "totalValue": "Valeur totale",
+            "dimension": {
+                "genre": "Genre",
+                "language": "Langue",
+                "publisher": "Éditeur",
+                "artist": "Artiste",
+                "director": "Réalisateur",
+                "year": "Année de publication"
+            },
+            "moreCount": "+{{count}} de plus",
+            "noDistributions": "Aucune donnée de répartition disponible.",
+            "valueHistory": {
+                "title": "Évolution de la valeur",
+                "accumulatedTitle": "Valeur totale dans le temps (toutes vos bibliothèques)",
+                "current": "Valeur actuelle : {{value}} (au {{date}})",
+                "noData": "Pas encore assez de données pour un historique de valeur.",
+                "estimatedNoteUntil": "L'historique antérieur au {{date}} est estimé à partir des dates de saisie des éléments et peut ne pas refléter les suppressions ou changements de prix ultérieurs.",
+                "estimatedNoteAll": "Tout cet historique est estimé à partir des dates de saisie des éléments — aucun instantané quotidien n'a encore été effectué."
+            }
+        },
+        "settings": {
+            "template": {
+                "label": "Thème",
+                "light": "Clair",
+                "dark": "Sombre"
+            },
+            "language": {
+                "label": "Langue",
+                "de": "Allemand",
+                "en": "Anglais"
+            }
+        },
+        "admin": {
+            "title": "Administration",
+            "users": "Utilisateurs",
+            "plugins": "Extensions de métadonnées",
+            "backups": "Sauvegardes",
+            "exportImport": "Export/Import",
+            "mail": "Messagerie",
+            "languages": "Packs de langue",
+            "settings": "Paramètres système",
+            "confirmDeleteUser": "Supprimer l'utilisateur « {{name}} » ? Cette action est irréversible.",
+            "confirmDeleteBackup": "Supprimer la sauvegarde « {{filename}} » ? Cette action est irréversible.",
+            "passwordHint": "Au moins 10 caractères, avec au moins une majuscule, une minuscule, un chiffre et un caractère spécial.",
+            "table": {
+                "level": "Niveau",
+                "status": "Statut",
+                "enabled": "Activé",
+                "priority": "Priorité",
+                "mediaType": "Type de média"
+            },
+            "status": {
+                "active": "Actif",
+                "deactivated": "Désactivé"
+            },
+            "actions": {
+                "deactivate": "Désactiver",
+                "reactivate": "Réactiver",
+                "createBackupNow": "Créer une sauvegarde maintenant",
+                "download": "Télécharger",
+                "createUser": "Créer un utilisateur",
+                "edit": "Modifier",
+                "save": "Enregistrer",
+                "cancel": "Annuler",
+                "delete": "Supprimer",
+                "sendInvite": "Envoyer un e-mail d'invitation",
+                "restore": "Restaurer"
+            },
+            "backupReason": {
+                "scheduled": "Planification",
+                "pre_update": "Migration"
+            },
+            "backupRestore": {
+                "warning": "Par défaut, les bibliothèques existantes portant le même nom sont ignorées (laissées inchangées), sauf si vous choisissez « Écraser » ci-dessous.",
+                "overwriteExisting": "Écraser les bibliothèques existantes portant le même nom au lieu de les ignorer",
+                "restoreSettings": "Restaurer également les paramètres système et les comptes utilisateurs",
+                "submit": "Confirmer la restauration",
+                "confirm": "Restaurer la sauvegarde « {{filename}} » ? Cette action est irréversible.",
+                "success": "Restauration terminée : {{created}} créée(s), {{overwritten}} écrasée(s), {{merged}} fusionnée(s), {{skipped}} ignorée(s)."
+            },
+            "exportImportPage": {
+                "exportTitle": "Export",
+                "exportHint": "Ne rien sélectionner exporte toutes les bibliothèques.",
+                "exportSubmit": "Exporter",
+                "exportError": "Échec de l'export.",
+                "importTitle": "Import",
+                "importFile": "Fichier d'export",
+                "importSubmit": "Importer",
+                "importSuccess": "Import terminé : {{created}} créée(s), {{overwritten}} écrasée(s), {{merged}} fusionnée(s), {{skipped}} ignorée(s)."
+            },
+            "languagesPage": {
+                "code": "Code",
+                "none": "Aucun pack de langue supplémentaire pour le moment.",
+                "create": "Ajouter un pack de langue",
+                "translations": "Traductions (JSON)",
+                "translationsHint": "Même structure clé-valeur que les fichiers de langue fournis (cahier des charges 11.4) — rédigez-la dans un éditeur de texte puis collez-la ici.",
+                "confirmDelete": "Supprimer le pack de langue « {{name}} » ? Cette action est irréversible.",
+                "errors": {
+                    "invalidJson": "Ceci n'est pas un JSON valide.",
+                    "codeInvalid": "Ce code est déjà utilisé ou réservé (de/en sont réservés)."
+                }
+            },
+            "userInvite": {
+                "hint": "Le serveur de messagerie n'est pas configuré — impossible d'envoyer un e-mail d'invitation pour le moment.",
+                "sent": "E-mail d'invitation envoyé avec succès.",
+                "failed": "L'utilisateur a été créé, mais l'e-mail d'invitation n'a pas pu être envoyé."
+            },
+            "errors": {
+                "import_invalid_json": "Ce fichier n'est pas un format d'export MedInv valide (JSON illisible).",
+                "import_missing_libraries": "Ce fichier ne contient aucune bibliothèque — il ne s'agit probablement pas d'un fichier d'export MedInv valide.",
+                "import_invalid_library": "La bibliothèque n° {{number}} du fichier n'a pas de champ « {{field}} » valide.",
+                "import_invalid_item": "Un élément (entrée n° {{number}}) de la bibliothèque « {{library}} » n'a pas de titre ou d'EAN valide.",
+                "protected_account": "Il s'agit du compte administrateur prédéfini ; il ne peut être ni modifié, ni désactivé, ni supprimé.",
+                "passwordPolicy": "Le mot de passe doit comporter au moins 10 caractères et contenir une majuscule, une minuscule, un chiffre et un caractère spécial.",
+                "ownsLibraries": "Ce compte possède encore les bibliothèques suivantes et ne peut être supprimé tant qu'elles n'ont pas été transférées à un autre propriétaire ou supprimées : {{libraries}}"
+            },
+            "mailSettings": {
+                "host": "Hôte SMTP",
+                "port": "Port",
+                "username": "Nom d'utilisateur",
+                "password": "Mot de passe",
+                "passwordHint": "Laissez vide pour conserver le mot de passe actuel.",
+                "encryption": "Chiffrement",
+                "encryptionOptions": {
+                    "ssl_tls": "SSL/TLS",
+                    "starttls": "STARTTLS",
+                    "none": "Aucun chiffrement"
+                },
+                "fromAddress": "Adresse d'expédition",
+                "fromName": "Nom d'expéditeur",
+                "healthy": "Le serveur de messagerie est accessible et correctement configuré.",
+                "unhealthy": "Le serveur de messagerie est inaccessible ou n'est pas entièrement configuré. La réinitialisation du mot de passe est désactivée.",
+                "saved": "Paramètres de messagerie enregistrés.",
+                "testMail": "Envoyer un e-mail de test",
+                "testMailTo": "Adresse du destinataire",
+                "testMailSend": "Envoyer un e-mail de test",
+                "testMailSent": "E-mail de test envoyé avec succès.",
+                "testMailNotConfigured": "Le serveur de messagerie n'est pas encore configuré.",
+                "testMailFailed": "L'e-mail de test n'a pas pu être envoyé : {{message}}"
+            },
+            "backupSettings": {
+                "title": "Planification des sauvegardes",
+                "intervalMode": "Intervalle",
+                "interval": {
+                    "daily": "Quotidien",
+                    "weekly": "Hebdomadaire",
+                    "monthly": "Mensuel",
+                    "cron": "Personnalisé (expression cron)"
+                },
+                "cronExpression": "Expression cron",
+                "retentionHint": "S'applique uniquement aux sauvegardes automatiques. Les sauvegardes créées manuellement n'en font pas partie et ne sont jamais supprimées automatiquement. Une seule des deux règles ci-dessous est active à la fois — choisissez laquelle.",
+                "retentionMode": "Supprimer les anciennes sauvegardes selon",
+                "retentionCount": "Conserver au maximum ce nombre de sauvegardes",
+                "retentionMaxAgeDays": "Supprimer les sauvegardes plus anciennes que (jours)",
+                "saved": "Planification des sauvegardes enregistrée."
+            },
+            "securitySettings": {
+                "title": "Protection contre les attaques par force brute",
+                "maxAttempts": "Nombre max. de tentatives échouées",
+                "windowMinutes": "Fenêtre de temps (minutes)",
+                "lockMinutes": "Durée de verrouillage (minutes)",
+                "saved": "Paramètres de sécurité enregistrés."
+            },
+            "coverCleanup": {
+                "title": "Nettoyage des couvertures",
+                "hint": "Une fois par jour, supprime du disque les fichiers de couverture/miniature qu'aucun élément multimédia ne référence plus.",
+                "enabled": "Nettoyer automatiquement les fichiers de couverture orphelins",
+                "saved": "Paramètre de nettoyage des couvertures enregistré."
+            },
+            "timezoneSettings": {
+                "title": "Fuseau horaire",
+                "hint": "Utilisé pour les noms de fichiers de sauvegarde et d'export, afin qu'ils correspondent à votre heure locale plutôt que d'afficher systématiquement l'UTC.",
+                "timezone": "Fuseau horaire",
+                "saved": "Fuseau horaire enregistré."
+            },
+            "logLevel": {
+                "title": "Niveau de journalisation",
+                "saved": "Niveau de journalisation enregistré."
+            },
+            "localeSettings": {
+                "title": "Langue par défaut",
+                "hint": "Utilisée lorsque la langue du visiteur n'est ni l'allemand ni l'anglais.",
+                "defaultLanguage": "Langue par défaut",
+                "saved": "Langue par défaut enregistrée."
+            },
+            "pluginConfig": {
+                "settings": "Paramètres",
+                "noConfig": "Aucun paramètre requis.",
+                "fields": {
+                    "api_key": "Clé API"
+                }
+            },
+            "pluginOrdering": {
+                "dragHandle": "Faites glisser pour réorganiser {{name}} (ou appuyez sur Espace, puis utilisez les flèches)"
+            }
+        },
+        "passwordReset": {
+            "forgotTitle": "Mot de passe oublié",
+            "forgotIntro": "Saisissez votre adresse e-mail. Si un compte existe pour celle-ci, vous recevrez un lien pour réinitialiser votre mot de passe.",
+            "sendLink": "Demander le lien",
+            "linkSent": "Si cette adresse existe, un e-mail contenant un lien de réinitialisation a été envoyé.",
+            "resetTitle": "Définir un nouveau mot de passe",
+            "newPassword": "Nouveau mot de passe",
+            "confirmPassword": "Confirmer le mot de passe",
+            "resetSubmit": "Réinitialiser le mot de passe",
+            "resetSuccess": "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.",
+            "backToLogin": "Retour à la connexion",
+            "errors": {
+                "invalid_token": "Ce lien est invalide ou a expiré. Veuillez en demander un nouveau.",
+                "invalid_user": "Aucun compte n'existe pour cette adresse e-mail.",
+                "throttled": "Veuillez patienter un instant avant de réessayer.",
+                "reset_failed": "Le mot de passe n'a pas pu être réinitialisé.",
+                "mail_unavailable": "Le serveur de messagerie n'est pas configuré ou est inaccessible. Veuillez contacter un administrateur.",
+                "generic": "Cela n'a pas fonctionné. Veuillez réessayer plus tard."
+            }
+        },
+        "errors": {
+            "invalid_credentials": "Identifiants invalides.",
+            "account_locked": "Trop de tentatives échouées. Ce compte est temporairement verrouillé.",
+            "account_deactivated": "Ce compte a été désactivé.",
+            "generic": "Échec de la connexion. Veuillez réessayer plus tard ou contacter un administrateur."
+        }
+    }
+}

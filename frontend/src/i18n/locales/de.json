@@ -220,6 +220,11 @@
       "translations": "Übersetzungen (JSON)",
       "translationsHint": "Gleiche Schlüssel-Wert-Struktur wie die mitgelieferten Sprachdateien (briefing 11.4) — mit einem Texteditor erstellt und hier eingefügt.",
       "confirmDelete": "Sprachpaket „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+      "bundledTitle": "Mitgelieferte Sprachpakete",
+      "bundledInstalled": "installiert",
+      "bundledInstall": "Installieren",
+      "bundledReinstall": "Erneut installieren",
+      "confirmReinstall": "Sprachpaket „{{name}}“ neu installieren? Eigene Änderungen an diesem Paket gehen dabei verloren und werden durch die mitgelieferte Version ersetzt.",
       "errors": {
         "invalidJson": "Das ist kein gültiges JSON.",
         "codeInvalid": "Dieser Code ist bereits vergeben oder reserviert (de/en sind reserviert)."
