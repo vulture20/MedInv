@@ -163,6 +163,7 @@
     "exportImport": "Export/Import",
     "mail": "Mail",
     "languages": "Sprachpakete",
+    "templates": "Templates",
     "settings": "Systemeinstellungen",
     "confirmDeleteUser": "Benutzer „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
     "confirmDeleteBackup": "Backup „{{filename}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
@@ -231,6 +232,32 @@
       "errors": {
         "invalidJson": "Das ist kein gültiges JSON.",
         "codeInvalid": "Dieser Code ist bereits vergeben oder reserviert (de/en sind reserviert)."
+      }
+    },
+    "templatesPage": {
+      "none": "Keine zusätzlichen Templates vorhanden.",
+      "create": "Template anlegen",
+      "confirmDelete": "Template „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+      "bundledTitle": "Mitgelieferte Templates",
+      "bundledNone": "Derzeit werden keine zusätzlichen Templates mitgeliefert.",
+      "bundledInstalled": "installiert",
+      "bundledInstall": "Installieren",
+      "bundledReinstall": "Erneut installieren",
+      "confirmReinstall": "Template „{{name}}“ neu installieren? Eigene Änderungen an diesem Template gehen dabei verloren und werden durch die mitgelieferte Version ersetzt.",
+      "builtInHint": "Hell und Dunkel sind fest in die Anwendung eingebaut und erscheinen daher nur zum Ansehen und Herunterladen in der Liste — bearbeiten oder löschen lassen sie sich nicht.",
+      "colorFields": {
+        "color-bg": "Hintergrund",
+        "color-surface": "Fläche (Karten, Kopfleiste)",
+        "color-text": "Text",
+        "color-text-muted": "Text, gedämpft",
+        "color-border": "Rahmen",
+        "color-accent": "Akzent (Links, Hervorhebungen)",
+        "color-danger": "Warnfarbe",
+        "color-danger-bg": "Warnfarbe, Hintergrund",
+        "color-scheme": "Farbschema (für native Browser-Elemente)"
+      },
+      "errors": {
+        "codeInvalid": "Dieser Code ist bereits vergeben oder reserviert (light/dark sind reserviert)."
       }
     },
     "userInvite": {

@@ -22,4 +22,11 @@ return [
     // level up) and the container (WORKDIR /var/www/backend, project root
     // equivalent at /var/www) without needing an environment-specific branch.
     'languagepacks_path' => base_path('../languagepacks'),
+
+    // Bundled UI templates (briefing 10./11.4, GitHub issue #11),
+    // App\Domain\Templates\BundledTemplateRegistry — same reasoning and the
+    // same relative-position trick as languagepacks_path above: a sibling
+    // of backend/ at the project root, both locally and inside the Docker
+    // image (docker/Dockerfile's dedicated COPY).
+    'templates_path' => base_path('../templates'),
 ];

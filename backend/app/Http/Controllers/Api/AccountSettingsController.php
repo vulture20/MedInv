@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Template;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -16,12 +17,21 @@ class AccountSettingsController extends Controller
 {
     public function update(Request $request)
     {
-        // TODO: 'light'/'dark' are the two ship-with templates (briefing 10./11.4);
-        // once installable templates exist, validate against the registered set
-        // instead of this hardcoded list.
+        // GitHub issue #11: 'light'/'dark' (the two bundled templates,
+        // frontend/src/index.css) plus any code with a `templates` row —
+        // admin-added or one of the repo-shipped templates/*.json files
+        // (BundledTemplateRegistry), it makes no difference here, since
+        // both end up as the same kind of row. Computed fresh on every
+        // request rather than cached, same reasoning as
+        // AdminSettingsController::updateLocale()'s identical fix: this
+        // setting is small and rarely changed, so the extra query per save
+        // isn't worth optimizing away, and a since-deleted template can't
+        // still be picked.
+        $allowedTemplates = [...['light', 'dark'], ...Template::query()->pluck('code')->all()];
+
         $data = $request->validate([
             'preferred_language' => ['sometimes', 'string', 'max:10'],
-            'preferred_template' => ['sometimes', Rule::in(['light', 'dark'])],
+            'preferred_template' => ['sometimes', Rule::in($allowedTemplates)],
         ]);
 
         $user = $request->user();

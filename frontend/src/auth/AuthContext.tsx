@@ -10,7 +10,10 @@ export interface User {
   level: 'guest' | 'user' | 'admin'
   is_active: boolean
   preferred_language: string
-  preferred_template: 'light' | 'dark'
+  // Not just 'light' | 'dark' — GitHub issue #11 lets this be any
+  // registered runtime template's code too, same reasoning as
+  // preferred_language above.
+  preferred_template: string
 }
 
 interface AuthContextValue {

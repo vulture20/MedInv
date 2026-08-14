@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "Przeciągnij, aby zmienić kolejność {{name}} (lub naciśnij spację, a następnie użyj strzałek)"
+      },
+      "templates": "Szablony",
+      "templatesPage": {
+        "none": "Brak dodatkowych szablonów.",
+        "create": "Dodaj szablon",
+        "confirmDelete": "Usunąć szablon „{{name}}”? Tej czynności nie można cofnąć.",
+        "bundledTitle": "Dołączone szablony",
+        "bundledNone": "Obecnie nie dołączono żadnych dodatkowych szablonów.",
+        "bundledInstalled": "zainstalowany",
+        "bundledInstall": "Zainstaluj",
+        "bundledReinstall": "Zainstaluj ponownie",
+        "confirmReinstall": "Zainstalować ponownie szablon „{{name}}”? Własne zmiany w tym szablonie zostaną utracone i zastąpione dołączoną wersją.",
+        "builtInHint": "Jasny i ciemny są wbudowane w samą aplikację, dlatego na liście pojawiają się tylko do przeglądania i pobierania — nie można ich edytować ani usuwać.",
+        "colorFields": {
+          "color-bg": "Tło",
+          "color-surface": "Powierzchnia (karty, pasek nagłówka)",
+          "color-text": "Tekst",
+          "color-text-muted": "Tekst przygaszony",
+          "color-border": "Obramowanie",
+          "color-accent": "Akcent (linki, wyróżnienia)",
+          "color-danger": "Kolor ostrzegawczy",
+          "color-danger-bg": "Kolor ostrzegawczy, tło",
+          "color-scheme": "Schemat kolorów (dla natywnych elementów przeglądarki)"
+        },
+        "errors": {
+          "codeInvalid": "Ten kod jest już zajęty lub zarezerwowany (light/dark są zarezerwowane)."
+        }
       }
     },
     "passwordReset": {

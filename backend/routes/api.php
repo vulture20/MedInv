@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\MetadataController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatisticsController;
+use App\Http\Controllers\Api\TemplateController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,14 @@ Route::get('/locale', fn () => response()->json([
 // below, in the level:admin group.
 Route::get('/languages', [LanguagePackController::class, 'index']);
 Route::get('/languages/{languagePack}', [LanguagePackController::class, 'show']);
+
+// Admin-added UI templates beyond the bundled light/dark (briefing 10./
+// 11.4, GitHub issue #11) — same public reasoning as GET /languages above:
+// a visitor's chosen template must be renderable on the login screen
+// itself. The actual "only admins may add a template" enforcement is
+// create()/update()/destroy() below, in the level:admin group.
+Route::get('/templates', [TemplateController::class, 'index']);
+Route::get('/templates/{template}', [TemplateController::class, 'show']);
 
 // Sanctum SPA session auth (bootstrap/app.php: ->statefulApi()).
 Route::middleware(['auth:sanctum', 'active'])->group(function () {
@@ -161,5 +170,18 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         // methods, and no GET/DELETE on /languages/bundled exists here).
         Route::get('/languages/bundled', [LanguagePackController::class, 'bundled']);
         Route::post('/languages/bundled/{code}', [LanguagePackController::class, 'installBundled']);
+
+        // Actual "only admins may add a template" enforcement (briefing
+        // 10./11.4, GitHub issue #11) — reading a template is public, see
+        // GET /templates(/{template}) near the top of this file.
+        Route::post('/templates', [TemplateController::class, 'store']);
+        Route::put('/templates/{template}', [TemplateController::class, 'update']);
+        Route::delete('/templates/{template}', [TemplateController::class, 'destroy']);
+
+        // Repo-shipped templates/*.json files (pre-installed on fresh boot,
+        // DatabaseSeeder) — lets an admin (re)install one on demand, same
+        // reasoning as /languages/bundled above.
+        Route::get('/templates/bundled', [TemplateController::class, 'bundled']);
+        Route::post('/templates/bundled/{code}', [TemplateController::class, 'installBundled']);
     });
 });

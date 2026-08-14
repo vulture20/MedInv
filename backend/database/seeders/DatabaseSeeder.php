@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Domain\Languages\BundledLanguagePackRegistry;
 use App\Domain\Metadata\MetadataProviderRegistry;
+use App\Domain\Templates\BundledTemplateRegistry;
 use App\Models\Library;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -40,6 +41,12 @@ class DatabaseSeeder extends Seeder
         // pack shipped in a later image on its next restart, without ever
         // overwriting a pack an admin has since edited.
         app(BundledLanguagePackRegistry::class)->installMissing();
+
+        // Bundled UI templates (briefing 10./11.4, GitHub issue #11) — same
+        // reasoning as the language packs just above. templates/ is empty by
+        // default (see its README.md), so this is a no-op today, but keeps
+        // a fresh install self-healing the moment a template lands there.
+        app(BundledTemplateRegistry::class)->installMissing();
 
         $adminEmail = env('MEDINV_ADMINUSER');
         $adminPassword = env('MEDINV_ADMINPASS');

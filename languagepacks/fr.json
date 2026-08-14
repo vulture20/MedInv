@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "Faites glisser pour réorganiser {{name}} (ou appuyez sur Espace, puis utilisez les flèches)"
+      },
+      "templates": "Templates",
+      "templatesPage": {
+        "none": "Aucun template supplémentaire pour le moment.",
+        "create": "Ajouter un template",
+        "confirmDelete": "Supprimer le template « {{name}} » ? Cette action est irréversible.",
+        "bundledTitle": "Templates fournis",
+        "bundledNone": "Aucun template supplémentaire n'est actuellement fourni.",
+        "bundledInstalled": "installé",
+        "bundledInstall": "Installer",
+        "bundledReinstall": "Réinstaller",
+        "confirmReinstall": "Réinstaller le template « {{name}} » ? Les modifications personnalisées apportées à ce template seront perdues et remplacées par la version fournie.",
+        "builtInHint": "Clair et sombre sont intégrés à l'application elle-même ; ils n'apparaissent donc dans la liste que pour être consultés et téléchargés — ils ne peuvent être ni modifiés ni supprimés.",
+        "colorFields": {
+          "color-bg": "Arrière-plan",
+          "color-surface": "Surface (cartes, barre d'en-tête)",
+          "color-text": "Texte",
+          "color-text-muted": "Texte atténué",
+          "color-border": "Bordure",
+          "color-accent": "Accent (liens, mise en évidence)",
+          "color-danger": "Couleur d'alerte",
+          "color-danger-bg": "Couleur d'alerte, arrière-plan",
+          "color-scheme": "Palette (pour les éléments natifs du navigateur)"
+        },
+        "errors": {
+          "codeInvalid": "Ce code est déjà utilisé ou réservé (light/dark sont réservés)."
+        }
       }
     },
     "passwordReset": {

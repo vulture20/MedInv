@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "Arrastra para reordenar {{name}} (o pulsa la barra espaciadora y luego usa las flechas)"
+      },
+      "templates": "Plantillas",
+      "templatesPage": {
+        "none": "Todavía no hay plantillas adicionales.",
+        "create": "Añadir plantilla",
+        "confirmDelete": "¿Eliminar la plantilla «{{name}}»? Esta acción no se puede deshacer.",
+        "bundledTitle": "Plantillas incluidas",
+        "bundledNone": "Actualmente no se incluye ninguna plantilla adicional.",
+        "bundledInstalled": "instalada",
+        "bundledInstall": "Instalar",
+        "bundledReinstall": "Reinstalar",
+        "confirmReinstall": "¿Reinstalar la plantilla «{{name}}»? Las modificaciones personalizadas de esta plantilla se perderán y se sustituirán por la versión incluida.",
+        "builtInHint": "Claro y oscuro están integrados en la propia aplicación, por lo que solo aparecen en la lista para verlos y descargarlos — no se pueden editar ni eliminar.",
+        "colorFields": {
+          "color-bg": "Fondo",
+          "color-surface": "Superficie (tarjetas, barra de cabecera)",
+          "color-text": "Texto",
+          "color-text-muted": "Texto atenuado",
+          "color-border": "Borde",
+          "color-accent": "Acento (enlaces, resaltados)",
+          "color-danger": "Color de peligro",
+          "color-danger-bg": "Color de peligro, fondo",
+          "color-scheme": "Esquema de color (para widgets nativos del navegador)"
+        },
+        "errors": {
+          "codeInvalid": "Este código ya está en uso o reservado (light/dark están reservados)."
+        }
       }
     },
     "passwordReset": {

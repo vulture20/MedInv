@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "Trascina per riordinare {{name}} (oppure premi Spazio e poi usa le frecce)"
+      },
+      "templates": "Template",
+      "templatesPage": {
+        "none": "Nessun template aggiuntivo per ora.",
+        "create": "Aggiungi template",
+        "confirmDelete": "Eliminare il template «{{name}}»? Questa azione non può essere annullata.",
+        "bundledTitle": "Template inclusi",
+        "bundledNone": "Al momento non è incluso alcun template aggiuntivo.",
+        "bundledInstalled": "installato",
+        "bundledInstall": "Installa",
+        "bundledReinstall": "Reinstalla",
+        "confirmReinstall": "Reinstallare il template «{{name}}»? Le modifiche personalizzate a questo template andranno perse e verranno sostituite dalla versione inclusa.",
+        "builtInHint": "Chiaro e scuro sono integrati nell'applicazione stessa, quindi compaiono nell'elenco solo per la visualizzazione e il download — non possono essere modificati né eliminati.",
+        "colorFields": {
+          "color-bg": "Sfondo",
+          "color-surface": "Superficie (schede, barra superiore)",
+          "color-text": "Testo",
+          "color-text-muted": "Testo attenuato",
+          "color-border": "Bordo",
+          "color-accent": "Accento (link, evidenziazioni)",
+          "color-danger": "Colore di pericolo",
+          "color-danger-bg": "Colore di pericolo, sfondo",
+          "color-scheme": "Schema colore (per i controlli nativi del browser)"
+        },
+        "errors": {
+          "codeInvalid": "Questo codice è già utilizzato o riservato (light/dark sono riservati)."
+        }
       }
     },
     "passwordReset": {

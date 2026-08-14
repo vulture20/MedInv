@@ -18,7 +18,7 @@ import { getRuntimeLanguagePacks, onRuntimeLanguagePacksChanged, type LanguagePa
  */
 export function SettingsPage() {
   const { t } = useTranslation()
-  const { template, setTemplate } = useTheme()
+  const { template, setTemplate, runtimeTemplates } = useTheme()
   const [language, setLanguage] = useState(i18n.language)
   // Admin-added packs beyond the bundled de/en (GitHub issues #12/#15) —
   // loaded asynchronously by main.tsx's loadRuntimeLanguagePacks(), which
@@ -56,6 +56,15 @@ export function SettingsPage() {
         >
           <option value="light">{t('settings.template.light')}</option>
           <option value="dark">{t('settings.template.dark')}</option>
+          {/* Runtime templates have no settings.template.<code> translation
+              key (the code is admin-chosen, not known ahead of time) — the
+              template's own `name` (e.g. "Solarized") is the label instead,
+              same pattern as the language <select> below. */}
+          {runtimeTemplates.map((tpl) => (
+            <option key={tpl.code} value={tpl.code}>
+              {tpl.name}
+            </option>
+          ))}
         </select>
       </label>
 

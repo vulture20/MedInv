@@ -20,6 +20,7 @@ import { BackupsPage } from './pages/admin/BackupsPage'
 import { ExportImportPage } from './pages/admin/ExportImportPage'
 import { MailPage } from './pages/admin/MailPage'
 import { LanguagesPage } from './pages/admin/LanguagesPage'
+import { TemplatesPage } from './pages/admin/TemplatesPage'
 import { SystemSettingsPage } from './pages/admin/SystemSettingsPage'
 
 /**
@@ -57,6 +58,7 @@ function App() {
                     <Route path="export-import" element={<ExportImportPage />} />
                     <Route path="mail" element={<MailPage />} />
                     <Route path="languages" element={<LanguagesPage />} />
+                    <Route path="templates" element={<TemplatesPage />} />
                     <Route path="settings" element={<SystemSettingsPage />} />
                   </Route>
                 </Route>

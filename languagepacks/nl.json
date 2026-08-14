@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "Sleep om {{name}} opnieuw te ordenen (of druk op spatie en gebruik daarna de pijltjestoetsen)"
+      },
+      "templates": "Templates",
+      "templatesPage": {
+        "none": "Nog geen extra templates.",
+        "create": "Template toevoegen",
+        "confirmDelete": "Template \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+        "bundledTitle": "Meegeleverde templates",
+        "bundledNone": "Er worden momenteel geen extra templates meegeleverd.",
+        "bundledInstalled": "geïnstalleerd",
+        "bundledInstall": "Installeren",
+        "bundledReinstall": "Opnieuw installeren",
+        "confirmReinstall": "Template \"{{name}}\" opnieuw installeren? Eigen wijzigingen aan dit template gaan verloren en worden vervangen door de meegeleverde versie.",
+        "builtInHint": "Licht en donker zijn ingebouwd in de toepassing zelf en verschijnen daarom alleen ter inzage en download in de lijst — ze kunnen niet worden bewerkt of verwijderd.",
+        "colorFields": {
+          "color-bg": "Achtergrond",
+          "color-surface": "Oppervlak (kaarten, kopbalk)",
+          "color-text": "Tekst",
+          "color-text-muted": "Gedempte tekst",
+          "color-border": "Rand",
+          "color-accent": "Accent (links, markeringen)",
+          "color-danger": "Waarschuwingskleur",
+          "color-danger-bg": "Waarschuwingskleur, achtergrond",
+          "color-scheme": "Kleurschema (voor systeemeigen browserelementen)"
+        },
+        "errors": {
+          "codeInvalid": "Deze code is al in gebruik of gereserveerd (light/dark zijn gereserveerd)."
+        }
       }
     },
     "passwordReset": {

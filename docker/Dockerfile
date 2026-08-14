@@ -38,6 +38,11 @@ COPY --from=backend-deps /app/vendor ./vendor
 # /var/www/languagepacks) so base_path('../languagepacks') resolves
 # identically here and in local dev, with no environment-specific path logic.
 COPY languagepacks/ /var/www/languagepacks/
+
+# Bundled UI templates (BundledTemplateRegistry, config('medinv.
+# templates_path')) — same relative-position reasoning as languagepacks/
+# just above.
+COPY templates/ /var/www/templates/
 RUN composer dump-autoload --optimize --no-dev \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs storage/app/private/backups storage/database bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache

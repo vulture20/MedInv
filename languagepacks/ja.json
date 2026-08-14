@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "{{name}} をドラッグして並べ替え（またはスペースキーを押してから矢印キーを使用）"
+      },
+      "templates": "テンプレート",
+      "templatesPage": {
+        "none": "追加のテンプレートはまだありません。",
+        "create": "テンプレートを追加",
+        "confirmDelete": "テンプレート「{{name}}」を削除しますか? この操作は元に戻せません。",
+        "bundledTitle": "同梱のテンプレート",
+        "bundledNone": "現在、追加のテンプレートは同梱されていません。",
+        "bundledInstalled": "インストール済み",
+        "bundledInstall": "インストール",
+        "bundledReinstall": "再インストール",
+        "confirmReinstall": "テンプレート「{{name}}」を再インストールしますか? このテンプレートへの独自の変更は失われ、同梱バージョンに置き換えられます。",
+        "builtInHint": "ライトとダークはアプリケーション自体に組み込まれているため、一覧には閲覧とダウンロードのためだけに表示されます — 編集や削除はできません。",
+        "colorFields": {
+          "color-bg": "背景",
+          "color-surface": "サーフェス（カード、ヘッダーバー）",
+          "color-text": "テキスト",
+          "color-text-muted": "控えめなテキスト",
+          "color-border": "枠線",
+          "color-accent": "アクセント（リンク、強調表示）",
+          "color-danger": "警告色",
+          "color-danger-bg": "警告色（背景）",
+          "color-scheme": "カラースキーム（ネイティブブラウザー要素用）"
+        },
+        "errors": {
+          "codeInvalid": "このコードはすでに使用されているか予約済みです（light/darkは予約済みです）。"
+        }
       }
     },
     "passwordReset": {

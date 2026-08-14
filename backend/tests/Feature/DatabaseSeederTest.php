@@ -6,6 +6,7 @@ use App\Domain\Metadata\MetadataProviderRegistry;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\LanguagePack;
 use App\Models\MetadataPlugin;
+use App\Models\Template;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -67,5 +68,19 @@ class DatabaseSeederTest extends TestCase
         foreach (['fr', 'es', 'ja', 'zh', 'it', 'pt', 'nl', 'pl', 'ru', 'uk', 'tr'] as $code) {
             $this->assertDatabaseHas((new LanguagePack)->getTable(), ['code' => $code]);
         }
+    }
+
+    /**
+     * templates/ is empty by default (see its README.md) — GitHub issue #11
+     * only asked for the plugin infrastructure itself, not example bundled
+     * templates. This just confirms BundledTemplateRegistry::installMissing()
+     * is actually wired into DatabaseSeeder and doesn't error on an empty
+     * directory, mirroring the language-pack integration check above.
+     */
+    public function test_a_freshly_seeded_install_does_not_error_with_no_bundled_templates(): void
+    {
+        $this->seed();
+
+        $this->assertSame(0, Template::query()->count());
     }
 }

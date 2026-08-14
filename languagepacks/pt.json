@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "Arraste para reordenar {{name}} (ou pressione Espaço e depois use as setas)"
+      },
+      "templates": "Modelos",
+      "templatesPage": {
+        "none": "Ainda não há modelos adicionais.",
+        "create": "Adicionar modelo",
+        "confirmDelete": "Excluir o modelo \"{{name}}\"? Esta ação não pode ser desfeita.",
+        "bundledTitle": "Modelos incluídos",
+        "bundledNone": "Atualmente nenhum modelo adicional está incluído.",
+        "bundledInstalled": "instalado",
+        "bundledInstall": "Instalar",
+        "bundledReinstall": "Reinstalar",
+        "confirmReinstall": "Reinstalar o modelo \"{{name}}\"? Quaisquer edições personalizadas serão perdidas e substituídas pela versão incluída.",
+        "builtInHint": "Claro e escuro estão integrados à própria aplicação, por isso aparecem na lista apenas para visualização e download — não podem ser editados nem excluídos.",
+        "colorFields": {
+          "color-bg": "Fundo",
+          "color-surface": "Superfície (cartões, barra de cabeçalho)",
+          "color-text": "Texto",
+          "color-text-muted": "Texto atenuado",
+          "color-border": "Borda",
+          "color-accent": "Destaque (links, realces)",
+          "color-danger": "Cor de perigo",
+          "color-danger-bg": "Cor de perigo, fundo",
+          "color-scheme": "Esquema de cores (para widgets nativos do navegador)"
+        },
+        "errors": {
+          "codeInvalid": "Este código já está em uso ou é reservado (light/dark são reservados)."
+        }
       }
     },
     "passwordReset": {

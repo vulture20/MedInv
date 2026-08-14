@@ -328,6 +328,33 @@
       },
       "pluginOrdering": {
         "dragHandle": "{{name}} öğesini yeniden sıralamak için sürükleyin (veya Boşluk tuşuna basıp ardından ok tuşlarını kullanın)"
+      },
+      "templates": "Şablonlar",
+      "templatesPage": {
+        "none": "Henüz ek şablon yok.",
+        "create": "Şablon ekle",
+        "confirmDelete": "\"{{name}}\" şablonu silinsin mi? Bu işlem geri alınamaz.",
+        "bundledTitle": "Birlikte gelen şablonlar",
+        "bundledNone": "Şu anda birlikte gelen ek şablon yok.",
+        "bundledInstalled": "kurulu",
+        "bundledInstall": "Kur",
+        "bundledReinstall": "Yeniden kur",
+        "confirmReinstall": "\"{{name}}\" şablonu yeniden kurulsun mu? Bu şablonda yapılan özel değişiklikler kaybolacak ve birlikte gelen sürümle değiştirilecek.",
+        "builtInHint": "Açık ve koyu tema doğrudan uygulamaya gömülüdür, bu nedenle listede yalnızca görüntüleme ve indirme amacıyla görünürler — düzenlenemez veya silinemezler.",
+        "colorFields": {
+          "color-bg": "Arka plan",
+          "color-surface": "Yüzey (kartlar, üst bilgi çubuğu)",
+          "color-text": "Metin",
+          "color-text-muted": "Soluk metin",
+          "color-border": "Kenarlık",
+          "color-accent": "Vurgu (bağlantılar, öne çıkarmalar)",
+          "color-danger": "Tehlike rengi",
+          "color-danger-bg": "Tehlike rengi, arka plan",
+          "color-scheme": "Renk şeması (yerel tarayıcı bileşenleri için)"
+        },
+        "errors": {
+          "codeInvalid": "Bu kod zaten kullanılıyor veya ayrılmış (light/dark ayrılmıştır)."
+        }
       }
     },
     "passwordReset": {
