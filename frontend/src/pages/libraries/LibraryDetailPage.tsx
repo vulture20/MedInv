@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 import { describeError } from '../admin/adminErrors'
@@ -57,6 +57,7 @@ export function LibraryDetailPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const { id } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [library, setLibrary] = useState<Library | null>(null)
   const [items, setItems] = useState<Paginated<MediaItem> | null>(null)
   const [libraries, setLibraries] = useState<Library[]>([])
@@ -121,6 +122,29 @@ export function LibraryDetailPage() {
     void load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, page])
+
+  // Deep-links an item straight into MediaItemDetailDialog via ?item=<id>
+  // (SearchPage.tsx's results link here) — fetched on its own via
+  // GET .../items/{item} rather than requiring it to already be on the
+  // currently loaded page of items.data, since a search hit's page within
+  // this library's full item list isn't known ahead of time.
+  useEffect(() => {
+    const itemParam = searchParams.get('item')
+    if (!itemParam || !id) return
+    apiClient
+      .get<MediaItem>(`/libraries/${id}/items/${itemParam}`)
+      .then(({ data }) => setSelectedItem(data))
+      .catch(() => {
+        // Stale/invalid link (deleted item, no access, ...) — drop the
+        // param rather than leaving the page stuck retrying it forever.
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev)
+          next.delete('item')
+          return next
+        })
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, searchParams.get('item')])
 
   async function saveShares(e: React.FormEvent) {
     e.preventDefault()
@@ -353,7 +377,19 @@ export function LibraryDetailPage() {
         library={library}
         item={selectedItem}
         libraries={libraries}
-        onClose={() => setSelectedItem(null)}
+        onClose={() => {
+          setSelectedItem(null)
+          // Drops ?item=<id> (if present, e.g. arrived here from a search
+          // result) so closing the dialog doesn't leave a stale deep link
+          // in the address bar that would just reopen it on a refresh.
+          if (searchParams.has('item')) {
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev)
+              next.delete('item')
+              return next
+            })
+          }
+        }}
         onUpdated={(updated) => {
           setItems((prev) => (prev ? { ...prev, data: prev.data.map((i) => (i.id === updated.id ? updated : i)) } : prev))
           setSelectedItem(updated)

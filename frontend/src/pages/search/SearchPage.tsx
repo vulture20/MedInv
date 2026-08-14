@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 
@@ -83,7 +83,15 @@ export function SearchPage() {
       <ul>
         {results.map((hit) => (
           <li key={`${hit.library.id}-${hit.id}`}>
-            {hit.title} — {hit.ean} — <em>{hit.library.name}</em>
+            {/*
+              Opens the item straight in its owning library's detail view
+              (LibraryDetailPage reads this `item` param and shows the same
+              MediaItemDetailDialog its own item list uses) — previously a
+              search hit was a dead end, with no way to actually get to the
+              matched item beyond noting which library it's in and going
+              to find it by hand.
+            */}
+            <Link to={`/libraries/${hit.library.id}?item=${hit.id}`}>{hit.title}</Link> — {hit.ean} — <em>{hit.library.name}</em>
           </li>
         ))}
       </ul>
