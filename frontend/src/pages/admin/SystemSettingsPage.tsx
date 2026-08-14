@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { describeError } from './adminErrors'
+import { AVAILABLE_LANGUAGES } from '../../i18n'
+import { getRuntimeLanguagePacks, onRuntimeLanguagePacksChanged, type LanguagePackSummary } from '../../i18n/languagePackEvents'
 
 interface SecuritySettings {
   throttle_max_attempts: number
@@ -10,7 +12,11 @@ interface SecuritySettings {
 }
 
 type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR'
-type DefaultLanguage = 'de' | 'en'
+// Not just 'de' | 'en' — AdminSettingsController::updateLocale() also
+// accepts any code with a language_packs row (admin-added or one of the
+// repo-shipped languagepacks/*.json packs), same reasoning as
+// SettingsPage.tsx's own per-user language <select>.
+type DefaultLanguage = string
 
 interface CoverCleanupSettings {
   cleanup_enabled: boolean
@@ -57,6 +63,10 @@ export function SystemSettingsPage() {
   const [timezone, setTimezone] = useState<string | null>(null)
   const [timezoneSaved, setTimezoneSaved] = useState(false)
   const [timezoneError, setTimezoneError] = useState<string | null>(null)
+  // Same reasoning as SettingsPage.tsx's runtimePacks: main.tsx's
+  // loadRuntimeLanguagePacks() may still be in flight when this page
+  // mounts, hence the snapshot-plus-subscription pair rather than a single read.
+  const [runtimePacks, setRuntimePacks] = useState<LanguagePackSummary[]>(getRuntimeLanguagePacks)
 
   async function load() {
     const { data } = await apiClient.get<{
@@ -76,6 +86,8 @@ export function SystemSettingsPage() {
   useEffect(() => {
     void load()
   }, [])
+
+  useEffect(() => onRuntimeLanguagePacksChanged(setRuntimePacks), [])
 
   async function saveSecurity(e: React.FormEvent) {
     e.preventDefault()
@@ -220,9 +232,21 @@ export function SystemSettingsPage() {
           <form onSubmit={saveLocale}>
             <label>
               {t('admin.localeSettings.defaultLanguage')}
-              <select value={defaultLanguage} onChange={(e) => setDefaultLanguage(e.target.value as DefaultLanguage)}>
-                <option value="de">{t('settings.language.de')}</option>
-                <option value="en">{t('settings.language.en')}</option>
+              <select value={defaultLanguage} onChange={(e) => setDefaultLanguage(e.target.value)}>
+                {AVAILABLE_LANGUAGES.map((lng) => (
+                  <option key={lng} value={lng}>
+                    {t(`settings.language.${lng}`)}
+                  </option>
+                ))}
+                {/* Runtime packs have no settings.language.<code> translation
+                    key (the code is admin-chosen) — the pack's own `name`
+                    (e.g. "Français") is the label instead, same as
+                    SettingsPage.tsx's per-user language <select>. */}
+                {runtimePacks.map((pack) => (
+                  <option key={pack.code} value={pack.code}>
+                    {pack.name}
+                  </option>
+                ))}
               </select>
             </label>
             <button type="submit">{t('admin.actions.save')}</button>

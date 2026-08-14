@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\LanguagePack;
 use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,9 +56,37 @@ class LocaleSettingsTest extends TestCase
         $this->assertSame('de', SystemSetting::get('locale.default_language'));
     }
 
-    public function test_setting_a_language_other_than_de_or_en_is_rejected(): void
+    public function test_setting_a_language_with_no_matching_language_pack_is_rejected(): void
     {
         $this->actingAsAdmin();
+
+        $response = $this->putJson('/api/admin/settings/locale', ['default_language' => 'fr']);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * GitHub issues #12/#15 follow-up: the default-language selector was
+     * originally hardcoded to de/en only — an admin-added or bundled
+     * (BundledLanguagePackRegistry) language pack is just as valid a
+     * default, as long as it currently has a language_packs row.
+     */
+    public function test_an_admin_can_set_the_default_language_to_an_installed_language_pack(): void
+    {
+        $this->actingAsAdmin();
+        LanguagePack::query()->create(['code' => 'fr', 'name' => 'Français', 'translations' => ['a' => 'b']]);
+
+        $response = $this->putJson('/api/admin/settings/locale', ['default_language' => 'fr']);
+
+        $response->assertOk()->assertJson(['default_language' => 'fr']);
+        $this->assertSame('fr', SystemSetting::get('locale.default_language'));
+    }
+
+    public function test_setting_the_default_language_to_a_since_deleted_language_pack_is_rejected(): void
+    {
+        $this->actingAsAdmin();
+        $pack = LanguagePack::query()->create(['code' => 'fr', 'name' => 'Français', 'translations' => ['a' => 'b']]);
+        $pack->delete();
 
         $response = $this->putJson('/api/admin/settings/locale', ['default_language' => 'fr']);
 

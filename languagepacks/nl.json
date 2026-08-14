@@ -1,0 +1,357 @@
+{
+  "code": "nl",
+  "name": "Nederlands",
+  "translations": {
+    "common": {
+      "name": "Naam",
+      "email": "E-mail",
+      "loading": "Laden…"
+    },
+    "nav": {
+      "home": "Start",
+      "capture": "Registratie",
+      "libraries": "Bibliotheken",
+      "statistics": "Statistieken",
+      "administration": "Beheer",
+      "toggleMenu": "Menu in-/uitschakelen"
+    },
+    "dashboard": {
+      "noLibraries": "Er zijn nog geen bibliotheken voor u zichtbaar.",
+      "allLibraries": "Alle {{count}} bibliotheken tonen"
+    },
+    "login": {
+      "title": "Inloggen",
+      "email": "E-mailadres",
+      "password": "Wachtwoord",
+      "submit": "Inloggen",
+      "mailServerWarning": "De mailserver is niet bereikbaar of onjuist geconfigureerd. Wachtwoord herstellen is uitgeschakeld.",
+      "forgotPassword": "Wachtwoord vergeten?",
+      "sessionExpired": "Uw sessie is verlopen. Log opnieuw in."
+    },
+    "userMenu": {
+      "settings": "Persoonlijke instellingen",
+      "logout": "Uitloggen"
+    },
+    "libraries": {
+      "title": "Bibliotheken",
+      "create": "Bibliotheek aanmaken",
+      "view": "Bekijken",
+      "delete": "Verwijderen",
+      "noItems": "Deze bibliotheek bevat nog geen items.",
+      "confirmDelete": "Bibliotheek \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "descriptionLabel": "Beschrijving",
+      "mediaTypeLabel": "Mediatype",
+      "mediaType": {
+        "book": "Boek",
+        "cd": "Cd",
+        "dvd_bluray": "Dvd/Blu-ray"
+      },
+      "sharing": {
+        "title": "Delen",
+        "hint": "Bepaalt wie deze bibliotheek nog meer kan zien, naast uzelf. Hier kan alleen leestoegang worden verleend.",
+        "guests": "Delen met gasten",
+        "allUsers": "Delen met alle gebruikers",
+        "specificUsers": "Specifieke gebruikers",
+        "noSpecificUsers": "Niet gedeeld met een specifieke gebruiker.",
+        "selectUser": "Selecteer een gebruiker…",
+        "add": "Toevoegen",
+        "remove": "Verwijderen",
+        "saved": "Deelinstellingen opgeslagen."
+      },
+      "ownership": {
+        "title": "Eigendom",
+        "hint": "Draagt deze bibliotheek, inclusief alle bijbehorende deelinstellingen, over aan een andere gebruiker.",
+        "selectUser": "Selecteer een nieuwe eigenaar…",
+        "transfer": "Overdragen",
+        "confirm": "Eigendom van deze bibliotheek overdragen aan \"{{name}}\"? U kunt hierna de toegang ertoe verliezen."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "\"{{title}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "moveToLibrary": "Verplaatsen naar bibliotheek",
+      "selectLibrary": "Selecteer een bibliotheek…",
+      "move": "Verplaatsen",
+      "uploadCover": "Cover uploaden",
+      "removeCover": "Cover verwijderen",
+      "confirmRemoveCover": "Cover verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "addManually": "Handmatig toevoegen",
+      "createTitle": "Media toevoegen",
+      "fields": {
+        "title": "Titel",
+        "ean": "EAN",
+        "description": "Beschrijving",
+        "release_date": "Releasedatum",
+        "price": "Prijs",
+        "authors": "Auteur(s)",
+        "format": "Formaat",
+        "genre": "Genre",
+        "page_count": "Aantal pagina's",
+        "language": "Taal",
+        "publisher": "Uitgever",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Artiest",
+        "medium": "Medium",
+        "asin": "ASIN",
+        "disc_count": "Aantal schijven",
+        "languages": "Taal/talen",
+        "cast": "Cast",
+        "director": "Regisseur",
+        "production_year": "Productiejaar",
+        "runtime_minutes": "Speelduur (minuten)"
+      }
+    },
+    "capture": {
+      "title": "Registratie",
+      "single": "Enkele invoer",
+      "scan": "Scannen",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Tekstbestand importeren",
+      "duplicate": "Dit item bestaat al in deze bibliotheek.",
+      "noMatch": "Geen metadata gevonden — handmatig toevoegen.",
+      "chooseCandidate": "Kies een overeenkomst of wijs ze allemaal af.",
+      "rejectAll": "Alle overeenkomsten afwijzen",
+      "cameraScan": "Scannen met camera",
+      "cameraClose": "Camera sluiten",
+      "cameraHint": "Houd een streepjescode voor de camera.",
+      "cameraAccessError": "Geen toegang tot de camera. Verleen toestemming of voer handmatig een EAN/ISBN in."
+    },
+    "search": {
+      "placeholder": "Zoeken…",
+      "resultsFor": "Zoeken: \"{{query}}\"",
+      "submit": "Zoeken",
+      "fuzzy": "Fuzzy-zoeken",
+      "error": "Zoeken mislukt. Probeer het opnieuw."
+    },
+    "statistics": {
+      "title": "Statistieken",
+      "itemCount": "Aantal items",
+      "totalValue": "Totale waarde",
+      "dimension": {
+        "genre": "Genre",
+        "language": "Taal",
+        "publisher": "Uitgever",
+        "artist": "Artiest",
+        "director": "Regisseur",
+        "year": "Publicatiejaar"
+      },
+      "moreCount": "+{{count}} meer",
+      "noDistributions": "Geen verdelingsgegevens beschikbaar.",
+      "valueHistory": {
+        "title": "Waardeverloop",
+        "accumulatedTitle": "Totale waarde in de tijd (al uw bibliotheken)",
+        "current": "Huidige waarde: {{value}} (op {{date}})",
+        "noData": "Nog niet genoeg gegevens voor een waardeverloop.",
+        "estimatedNoteUntil": "De geschiedenis vóór {{date}} is geschat op basis van de registratiedata van items en kan latere verwijderingen of prijswijzigingen niet weergeven.",
+        "estimatedNoteAll": "Dit hele verloop is geschat op basis van de registratiedata van items — er is nog geen dagelijkse momentopname uitgevoerd."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Thema",
+        "light": "Licht",
+        "dark": "Donker"
+      },
+      "language": {
+        "label": "Taal",
+        "de": "Duits",
+        "en": "Engels"
+      }
+    },
+    "admin": {
+      "title": "Beheer",
+      "users": "Gebruikers",
+      "plugins": "Metadata-plug-ins",
+      "backups": "Back-ups",
+      "exportImport": "Exporteren/Importeren",
+      "mail": "E-mail",
+      "languages": "Taalpakketten",
+      "settings": "Systeeminstellingen",
+      "confirmDeleteUser": "Gebruiker \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "confirmDeleteBackup": "Back-up \"{{filename}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "passwordHint": "Minimaal 10 tekens, met minstens een hoofdletter, een kleine letter, een cijfer en een speciaal teken.",
+      "table": {
+        "level": "Niveau",
+        "status": "Status",
+        "enabled": "Ingeschakeld",
+        "priority": "Prioriteit",
+        "mediaType": "Mediatype"
+      },
+      "status": {
+        "active": "Actief",
+        "deactivated": "Gedeactiveerd"
+      },
+      "actions": {
+        "deactivate": "Deactiveren",
+        "reactivate": "Reactiveren",
+        "createBackupNow": "Nu back-up maken",
+        "download": "Downloaden",
+        "createUser": "Gebruiker aanmaken",
+        "edit": "Bewerken",
+        "save": "Opslaan",
+        "cancel": "Annuleren",
+        "delete": "Verwijderen",
+        "sendInvite": "Uitnodigingsmail verzenden",
+        "restore": "Herstellen"
+      },
+      "backupReason": {
+        "scheduled": "Planning",
+        "pre_update": "Migratie"
+      },
+      "backupRestore": {
+        "warning": "Bestaande bibliotheken met dezelfde naam worden standaard overgeslagen (ongewijzigd gelaten), tenzij u hieronder \"Overschrijven\" kiest.",
+        "overwriteExisting": "Bestaande bibliotheken met dezelfde naam overschrijven in plaats van overslaan",
+        "restoreSettings": "Ook systeeminstellingen en gebruikersaccounts herstellen",
+        "submit": "Herstel bevestigen",
+        "confirm": "Back-up \"{{filename}}\" herstellen? Dit kan niet ongedaan worden gemaakt.",
+        "success": "Herstel voltooid: {{created}} aangemaakt, {{overwritten}} overschreven, {{merged}} samengevoegd, {{skipped}} overgeslagen."
+      },
+      "exportImportPage": {
+        "exportTitle": "Exporteren",
+        "exportHint": "Niets selecteren exporteert alle bibliotheken.",
+        "exportSubmit": "Exporteren",
+        "exportError": "Exporteren mislukt.",
+        "importTitle": "Importeren",
+        "importFile": "Exportbestand",
+        "importSubmit": "Importeren",
+        "importSuccess": "Import voltooid: {{created}} aangemaakt, {{overwritten}} overschreven, {{merged}} samengevoegd, {{skipped}} overgeslagen."
+      },
+      "languagesPage": {
+        "code": "Code",
+        "none": "Nog geen extra taalpakketten.",
+        "create": "Taalpakket toevoegen",
+        "translations": "Vertalingen (JSON)",
+        "translationsHint": "Dezelfde sleutel-waardestructuur als de meegeleverde taalbestanden (briefing 11.4) — schrijf dit in een teksteditor en plak het hier.",
+        "confirmDelete": "Taalpakket \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+        "bundledTitle": "Meegeleverde taalpakketten",
+        "bundledInstalled": "geïnstalleerd",
+        "bundledInstall": "Installeren",
+        "bundledReinstall": "Opnieuw installeren",
+        "confirmReinstall": "Taalpakket \"{{name}}\" opnieuw installeren? Eigen wijzigingen aan dit pakket gaan verloren en worden vervangen door de meegeleverde versie.",
+        "errors": {
+          "invalidJson": "Dit is geen geldige JSON.",
+          "codeInvalid": "Deze code is al in gebruik of gereserveerd (de/en zijn gereserveerd)."
+        }
+      },
+      "userInvite": {
+        "hint": "De mailserver is niet geconfigureerd — er kan momenteel geen uitnodigingsmail worden verzonden.",
+        "sent": "Uitnodigingsmail succesvol verzonden.",
+        "failed": "De gebruiker is aangemaakt, maar de uitnodigingsmail kon niet worden verzonden."
+      },
+      "errors": {
+        "import_invalid_json": "Dit bestand heeft geen geldig MedInv-exportformaat (JSON niet leesbaar).",
+        "import_missing_libraries": "Dit bestand bevat geen bibliotheken — waarschijnlijk geen geldig MedInv-exportbestand.",
+        "import_invalid_library": "Bibliotheek nr. {{number}} in het bestand heeft geen geldig veld \"{{field}}\".",
+        "import_invalid_item": "Een item (nr. {{number}}) in bibliotheek \"{{library}}\" heeft geen geldige titel of EAN.",
+        "protected_account": "Dit is het vooraf gedefinieerde beheerdersaccount en kan niet worden bewerkt, gedeactiveerd of verwijderd.",
+        "passwordPolicy": "Het wachtwoord moet minimaal 10 tekens lang zijn en een hoofdletter, een kleine letter, een cijfer en een speciaal teken bevatten.",
+        "ownsLibraries": "Dit account bezit nog de volgende bibliotheken en kan pas worden verwijderd nadat deze zijn overgedragen aan een andere eigenaar of verwijderd: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "SMTP-host",
+        "port": "Poort",
+        "username": "Gebruikersnaam",
+        "password": "Wachtwoord",
+        "passwordHint": "Laat leeg om het huidige wachtwoord te behouden.",
+        "encryption": "Versleuteling",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Geen versleuteling"
+        },
+        "fromAddress": "Afzenderadres",
+        "fromName": "Afzendernaam",
+        "healthy": "De mailserver is bereikbaar en correct geconfigureerd.",
+        "unhealthy": "De mailserver is niet bereikbaar of niet volledig geconfigureerd. Wachtwoord herstellen is uitgeschakeld.",
+        "saved": "E-mailinstellingen opgeslagen.",
+        "testMail": "Testmail verzenden",
+        "testMailTo": "Ontvangeradres",
+        "testMailSend": "Testmail verzenden",
+        "testMailSent": "Testmail succesvol verzonden.",
+        "testMailNotConfigured": "De mailserver is nog niet geconfigureerd.",
+        "testMailFailed": "De testmail kon niet worden verzonden: {{message}}"
+      },
+      "backupSettings": {
+        "title": "Back-upschema",
+        "intervalMode": "Interval",
+        "interval": {
+          "daily": "Dagelijks",
+          "weekly": "Wekelijks",
+          "monthly": "Maandelijks",
+          "cron": "Aangepast (cron-expressie)"
+        },
+        "cronExpression": "Cron-expressie",
+        "retentionHint": "Geldt alleen voor automatische back-ups. Handmatig aangemaakte back-ups tellen hier niet in mee en worden nooit automatisch verwijderd. Slechts een van de onderstaande regels is tegelijk actief — kies welke.",
+        "retentionMode": "Oude back-ups verwijderen op basis van",
+        "retentionCount": "Bewaar maximaal dit aantal back-ups",
+        "retentionMaxAgeDays": "Back-ups verwijderen die ouder zijn dan (dagen)",
+        "saved": "Back-upschema opgeslagen."
+      },
+      "securitySettings": {
+        "title": "Bescherming tegen brute-force-aanvallen",
+        "maxAttempts": "Max. aantal mislukte pogingen",
+        "windowMinutes": "Tijdvenster (minuten)",
+        "lockMinutes": "Vergrendelingsduur (minuten)",
+        "saved": "Beveiligingsinstellingen opgeslagen."
+      },
+      "coverCleanup": {
+        "title": "Cover-opschoning",
+        "hint": "Verwijdert eenmaal per dag cover-/miniatuurbestanden van de schijf die niet meer door een mediaitem worden gebruikt.",
+        "enabled": "Verweesde coverbestanden automatisch opschonen",
+        "saved": "Instelling voor cover-opschoning opgeslagen."
+      },
+      "timezoneSettings": {
+        "title": "Tijdzone",
+        "hint": "Wordt gebruikt voor bestandsnamen van back-ups en exports, zodat deze overeenkomen met uw lokale tijd in plaats van altijd UTC te tonen.",
+        "timezone": "Tijdzone",
+        "saved": "Tijdzone opgeslagen."
+      },
+      "logLevel": {
+        "title": "Logniveau",
+        "saved": "Logniveau opgeslagen."
+      },
+      "localeSettings": {
+        "title": "Standaardtaal",
+        "hint": "Wordt gebruikt wanneer de taal van een bezoeker noch Duits noch Engels is.",
+        "defaultLanguage": "Standaardtaal",
+        "saved": "Standaardtaal opgeslagen."
+      },
+      "pluginConfig": {
+        "settings": "Instellingen",
+        "noConfig": "Geen instellingen vereist.",
+        "fields": {
+          "api_key": "API-sleutel"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Sleep om {{name}} opnieuw te ordenen (of druk op spatie en gebruik daarna de pijltjestoetsen)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Wachtwoord vergeten",
+      "forgotIntro": "Voer uw e-mailadres in. Als hiervoor een account bestaat, ontvangt u een link om uw wachtwoord opnieuw in te stellen.",
+      "sendLink": "Link aanvragen",
+      "linkSent": "Als dit adres bestaat, is er een e-mail met een resetlink verzonden.",
+      "resetTitle": "Nieuw wachtwoord instellen",
+      "newPassword": "Nieuw wachtwoord",
+      "confirmPassword": "Wachtwoord bevestigen",
+      "resetSubmit": "Wachtwoord resetten",
+      "resetSuccess": "Uw wachtwoord is opnieuw ingesteld. U kunt nu inloggen.",
+      "backToLogin": "Terug naar inloggen",
+      "errors": {
+        "invalid_token": "Deze link is ongeldig of verlopen. Vraag een nieuwe aan.",
+        "invalid_user": "Er bestaat geen account voor dit e-mailadres.",
+        "throttled": "Wacht even voordat u het opnieuw probeert.",
+        "reset_failed": "Het wachtwoord kon niet opnieuw worden ingesteld.",
+        "mail_unavailable": "De mailserver is niet geconfigureerd of niet bereikbaar. Neem contact op met een beheerder.",
+        "generic": "Dat is niet gelukt. Probeer het later opnieuw."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Ongeldige inloggegevens.",
+      "account_locked": "Te veel mislukte pogingen. Dit account is tijdelijk vergrendeld.",
+      "account_deactivated": "Dit account is gedeactiveerd.",
+      "generic": "Inloggen mislukt. Probeer het later opnieuw of neem contact op met een beheerder."
+    }
+  }
+}

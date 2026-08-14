@@ -1,0 +1,357 @@
+{
+  "code": "pl",
+  "name": "Polski",
+  "translations": {
+    "common": {
+      "name": "Nazwa",
+      "email": "E-mail",
+      "loading": "Ładowanie…"
+    },
+    "nav": {
+      "home": "Strona główna",
+      "capture": "Rejestracja",
+      "libraries": "Biblioteki",
+      "statistics": "Statystyki",
+      "administration": "Administracja",
+      "toggleMenu": "Przełącz menu"
+    },
+    "dashboard": {
+      "noLibraries": "Nie masz jeszcze żadnych widocznych bibliotek.",
+      "allLibraries": "Pokaż wszystkie {{count}} biblioteki"
+    },
+    "login": {
+      "title": "Zaloguj się",
+      "email": "Adres e-mail",
+      "password": "Hasło",
+      "submit": "Zaloguj się",
+      "mailServerWarning": "Serwer poczty jest niedostępny lub błędnie skonfigurowany. Resetowanie hasła jest wyłączone.",
+      "forgotPassword": "Nie pamiętasz hasła?",
+      "sessionExpired": "Twoja sesja wygasła. Zaloguj się ponownie."
+    },
+    "userMenu": {
+      "settings": "Ustawienia użytkownika",
+      "logout": "Wyloguj się"
+    },
+    "libraries": {
+      "title": "Biblioteki",
+      "create": "Utwórz bibliotekę",
+      "view": "Wyświetl",
+      "delete": "Usuń",
+      "noItems": "Ta biblioteka nie zawiera jeszcze żadnych pozycji.",
+      "confirmDelete": "Usunąć bibliotekę „{{name}}”? Tej czynności nie można cofnąć.",
+      "descriptionLabel": "Opis",
+      "mediaTypeLabel": "Typ multimediów",
+      "mediaType": {
+        "book": "Książka",
+        "cd": "CD",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Udostępnianie",
+        "hint": "Określa, kto oprócz Ciebie może widzieć tę bibliotekę. Tutaj można przyznać wyłącznie dostęp do odczytu.",
+        "guests": "Udostępnij gościom",
+        "allUsers": "Udostępnij wszystkim użytkownikom",
+        "specificUsers": "Wybrani użytkownicy",
+        "noSpecificUsers": "Nieudostępniona żadnemu konkretnemu użytkownikowi.",
+        "selectUser": "Wybierz użytkownika…",
+        "add": "Dodaj",
+        "remove": "Usuń",
+        "saved": "Ustawienia udostępniania zapisane."
+      },
+      "ownership": {
+        "title": "Własność",
+        "hint": "Przenosi tę bibliotekę, wraz ze wszystkimi jej udostępnieniami, na innego użytkownika.",
+        "selectUser": "Wybierz nowego właściciela…",
+        "transfer": "Przenieś",
+        "confirm": "Przenieść własność tej biblioteki na „{{name}}”? Możesz później stracić do niej dostęp."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "Usunąć „{{title}}”? Tej czynności nie można cofnąć.",
+      "moveToLibrary": "Przenieś do biblioteki",
+      "selectLibrary": "Wybierz bibliotekę…",
+      "move": "Przenieś",
+      "uploadCover": "Prześlij okładkę",
+      "removeCover": "Usuń okładkę",
+      "confirmRemoveCover": "Usunąć okładkę? Tej czynności nie można cofnąć.",
+      "addManually": "Dodaj ręcznie",
+      "createTitle": "Dodaj multimedia",
+      "fields": {
+        "title": "Tytuł",
+        "ean": "EAN",
+        "description": "Opis",
+        "release_date": "Data wydania",
+        "price": "Cena",
+        "authors": "Autor(zy)",
+        "format": "Format",
+        "genre": "Gatunek",
+        "page_count": "Liczba stron",
+        "language": "Język",
+        "publisher": "Wydawca",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Artysta",
+        "medium": "Nośnik",
+        "asin": "ASIN",
+        "disc_count": "Liczba płyt",
+        "languages": "Język(i)",
+        "cast": "Obsada",
+        "director": "Reżyser",
+        "production_year": "Rok produkcji",
+        "runtime_minutes": "Czas trwania (minuty)"
+      }
+    },
+    "capture": {
+      "title": "Rejestracja",
+      "single": "Pojedynczy wpis",
+      "scan": "Skanuj",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Import pliku tekstowego",
+      "duplicate": "Ta pozycja już istnieje w tej bibliotece.",
+      "noMatch": "Nie znaleziono metadanych — dodaj ręcznie.",
+      "chooseCandidate": "Wybierz dopasowanie lub odrzuć wszystkie.",
+      "rejectAll": "Odrzuć wszystkie dopasowania",
+      "cameraScan": "Skanuj aparatem",
+      "cameraClose": "Zamknij aparat",
+      "cameraHint": "Umieść kod kreskowy przed aparatem.",
+      "cameraAccessError": "Nie można uzyskać dostępu do aparatu. Przyznaj uprawnienia lub wprowadź EAN/ISBN ręcznie."
+    },
+    "search": {
+      "placeholder": "Szukaj…",
+      "resultsFor": "Wyszukiwanie: „{{query}}”",
+      "submit": "Szukaj",
+      "fuzzy": "Wyszukiwanie rozmyte",
+      "error": "Wyszukiwanie nie powiodło się. Spróbuj ponownie."
+    },
+    "statistics": {
+      "title": "Statystyki",
+      "itemCount": "Liczba pozycji",
+      "totalValue": "Wartość całkowita",
+      "dimension": {
+        "genre": "Gatunek",
+        "language": "Język",
+        "publisher": "Wydawca",
+        "artist": "Artysta",
+        "director": "Reżyser",
+        "year": "Rok wydania"
+      },
+      "moreCount": "+{{count}} więcej",
+      "noDistributions": "Brak dostępnych danych dotyczących rozkładu.",
+      "valueHistory": {
+        "title": "Wartość w czasie",
+        "accumulatedTitle": "Wartość całkowita w czasie (wszystkie Twoje biblioteki)",
+        "current": "Aktualna wartość: {{value}} (na dzień {{date}})",
+        "noData": "Wciąż za mało danych do wyświetlenia historii wartości.",
+        "estimatedNoteUntil": "Historia sprzed {{date}} jest szacowana na podstawie dat rejestracji pozycji i może nie odzwierciedlać późniejszych usunięć lub zmian cen.",
+        "estimatedNoteAll": "Cała ta historia jest szacowana na podstawie dat rejestracji pozycji — nie wykonano jeszcze żadnej dziennej migawki."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Motyw",
+        "light": "Jasny",
+        "dark": "Ciemny"
+      },
+      "language": {
+        "label": "Język",
+        "de": "Niemiecki",
+        "en": "Angielski"
+      }
+    },
+    "admin": {
+      "title": "Administracja",
+      "users": "Użytkownicy",
+      "plugins": "Wtyczki metadanych",
+      "backups": "Kopie zapasowe",
+      "exportImport": "Eksport/Import",
+      "mail": "Poczta",
+      "languages": "Pakiety językowe",
+      "settings": "Ustawienia systemowe",
+      "confirmDeleteUser": "Usunąć użytkownika „{{name}}”? Tej czynności nie można cofnąć.",
+      "confirmDeleteBackup": "Usunąć kopię zapasową „{{filename}}”? Tej czynności nie można cofnąć.",
+      "passwordHint": "Co najmniej 10 znaków, w tym co najmniej jedna wielka litera, jedna mała litera, jedna cyfra i jeden znak specjalny.",
+      "table": {
+        "level": "Poziom",
+        "status": "Status",
+        "enabled": "Włączone",
+        "priority": "Priorytet",
+        "mediaType": "Typ multimediów"
+      },
+      "status": {
+        "active": "Aktywne",
+        "deactivated": "Dezaktywowane"
+      },
+      "actions": {
+        "deactivate": "Dezaktywuj",
+        "reactivate": "Reaktywuj",
+        "createBackupNow": "Utwórz kopię zapasową teraz",
+        "download": "Pobierz",
+        "createUser": "Utwórz użytkownika",
+        "edit": "Edytuj",
+        "save": "Zapisz",
+        "cancel": "Anuluj",
+        "delete": "Usuń",
+        "sendInvite": "Wyślij e-mail z zaproszeniem",
+        "restore": "Przywróć"
+      },
+      "backupReason": {
+        "scheduled": "Harmonogram",
+        "pre_update": "Migracja"
+      },
+      "backupRestore": {
+        "warning": "Istniejące biblioteki o tej samej nazwie są domyślnie pomijane (pozostają bez zmian), chyba że wybierzesz poniżej opcję „Nadpisz”.",
+        "overwriteExisting": "Nadpisz istniejące biblioteki o tej samej nazwie zamiast je pomijać",
+        "restoreSettings": "Przywróć również ustawienia systemowe i konta użytkowników",
+        "submit": "Potwierdź przywracanie",
+        "confirm": "Przywrócić kopię zapasową „{{filename}}”? Tej czynności nie można cofnąć.",
+        "success": "Przywracanie zakończone: utworzono {{created}}, nadpisano {{overwritten}}, scalono {{merged}}, pominięto {{skipped}}."
+      },
+      "exportImportPage": {
+        "exportTitle": "Eksport",
+        "exportHint": "Brak zaznaczenia eksportuje wszystkie biblioteki.",
+        "exportSubmit": "Eksportuj",
+        "exportError": "Eksport nie powiódł się.",
+        "importTitle": "Import",
+        "importFile": "Plik eksportu",
+        "importSubmit": "Importuj",
+        "importSuccess": "Import zakończony: utworzono {{created}}, nadpisano {{overwritten}}, scalono {{merged}}, pominięto {{skipped}}."
+      },
+      "languagesPage": {
+        "code": "Kod",
+        "none": "Brak dodatkowych pakietów językowych.",
+        "create": "Dodaj pakiet językowy",
+        "translations": "Tłumaczenia (JSON)",
+        "translationsHint": "Ta sama struktura klucz-wartość co dołączone pliki językowe (briefing 11.4) — napisz w edytorze tekstu i wklej tutaj.",
+        "confirmDelete": "Usunąć pakiet językowy „{{name}}”? Tej czynności nie można cofnąć.",
+        "bundledTitle": "Dołączone pakiety językowe",
+        "bundledInstalled": "zainstalowany",
+        "bundledInstall": "Zainstaluj",
+        "bundledReinstall": "Zainstaluj ponownie",
+        "confirmReinstall": "Zainstalować ponownie pakiet językowy „{{name}}”? Własne zmiany w tym pakiecie zostaną utracone i zastąpione dołączoną wersją.",
+        "errors": {
+          "invalidJson": "To nie jest prawidłowy JSON.",
+          "codeInvalid": "Ten kod jest już zajęty lub zarezerwowany (de/en są zarezerwowane)."
+        }
+      },
+      "userInvite": {
+        "hint": "Serwer poczty nie jest skonfigurowany — obecnie nie można wysłać e-maila z zaproszeniem.",
+        "sent": "E-mail z zaproszeniem wysłany pomyślnie.",
+        "failed": "Użytkownik został utworzony, ale nie udało się wysłać e-maila z zaproszeniem."
+      },
+      "errors": {
+        "import_invalid_json": "Ten plik nie jest w prawidłowym formacie eksportu MedInv (nieczytelny JSON).",
+        "import_missing_libraries": "Ten plik nie zawiera żadnych bibliotek — prawdopodobnie nie jest prawidłowym plikiem eksportu MedInv.",
+        "import_invalid_library": "Biblioteka nr {{number}} w pliku nie ma prawidłowego pola „{{field}}”.",
+        "import_invalid_item": "Pozycja (wpis nr {{number}}) w bibliotece „{{library}}” nie ma prawidłowego tytułu ani EAN.",
+        "protected_account": "To jest wstępnie zdefiniowane konto administratora i nie można go edytować, dezaktywować ani usunąć.",
+        "passwordPolicy": "Hasło musi mieć co najmniej 10 znaków i zawierać wielką literę, małą literę, cyfrę i znak specjalny.",
+        "ownsLibraries": "To konto nadal posiada następujące biblioteki i nie można go usunąć, dopóki nie zostaną przeniesione na innego właściciela lub usunięte: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "Host SMTP",
+        "port": "Port",
+        "username": "Nazwa użytkownika",
+        "password": "Hasło",
+        "passwordHint": "Pozostaw puste, aby zachować obecne hasło.",
+        "encryption": "Szyfrowanie",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Brak szyfrowania"
+        },
+        "fromAddress": "Adres nadawcy",
+        "fromName": "Nazwa nadawcy",
+        "healthy": "Serwer poczty jest dostępny i poprawnie skonfigurowany.",
+        "unhealthy": "Serwer poczty jest niedostępny lub nie jest w pełni skonfigurowany. Resetowanie hasła jest wyłączone.",
+        "saved": "Ustawienia poczty zapisane.",
+        "testMail": "Wyślij e-mail testowy",
+        "testMailTo": "Adres odbiorcy",
+        "testMailSend": "Wyślij e-mail testowy",
+        "testMailSent": "E-mail testowy wysłany pomyślnie.",
+        "testMailNotConfigured": "Serwer poczty nie jest jeszcze skonfigurowany.",
+        "testMailFailed": "Nie udało się wysłać e-maila testowego: {{message}}"
+      },
+      "backupSettings": {
+        "title": "Harmonogram kopii zapasowych",
+        "intervalMode": "Interwał",
+        "interval": {
+          "daily": "Codziennie",
+          "weekly": "Co tydzień",
+          "monthly": "Co miesiąc",
+          "cron": "Niestandardowy (wyrażenie cron)"
+        },
+        "cronExpression": "Wyrażenie cron",
+        "retentionHint": "Dotyczy tylko automatycznych kopii zapasowych. Kopie utworzone ręcznie nie są uwzględniane i nigdy nie są usuwane automatycznie. W danym momencie aktywna jest tylko jedna z poniższych reguł — wybierz którą.",
+        "retentionMode": "Usuwaj stare kopie zapasowe na podstawie",
+        "retentionCount": "Zachowaj maksymalnie tyle kopii zapasowych",
+        "retentionMaxAgeDays": "Usuń kopie zapasowe starsze niż (dni)",
+        "saved": "Harmonogram kopii zapasowych zapisany."
+      },
+      "securitySettings": {
+        "title": "Ochrona przed atakami brute-force",
+        "maxAttempts": "Maks. liczba nieudanych prób",
+        "windowMinutes": "Okno czasowe (minuty)",
+        "lockMinutes": "Czas blokady (minuty)",
+        "saved": "Ustawienia zabezpieczeń zapisane."
+      },
+      "coverCleanup": {
+        "title": "Czyszczenie okładek",
+        "hint": "Raz dziennie usuwa z dysku pliki okładek/miniatur, do których nie odnosi się już żadna pozycja multimedialna.",
+        "enabled": "Automatycznie czyść osierocone pliki okładek",
+        "saved": "Ustawienie czyszczenia okładek zapisane."
+      },
+      "timezoneSettings": {
+        "title": "Strefa czasowa",
+        "hint": "Używana w nazwach plików kopii zapasowych i eksportu, aby odpowiadały Twojemu czasowi lokalnemu zamiast zawsze pokazywać UTC.",
+        "timezone": "Strefa czasowa",
+        "saved": "Strefa czasowa zapisana."
+      },
+      "logLevel": {
+        "title": "Poziom logowania",
+        "saved": "Poziom logowania zapisany."
+      },
+      "localeSettings": {
+        "title": "Język domyślny",
+        "hint": "Używany, gdy język odwiedzającego nie jest ani niemiecki, ani angielski.",
+        "defaultLanguage": "Język domyślny",
+        "saved": "Język domyślny zapisany."
+      },
+      "pluginConfig": {
+        "settings": "Ustawienia",
+        "noConfig": "Konfiguracja nie jest wymagana.",
+        "fields": {
+          "api_key": "Klucz API"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Przeciągnij, aby zmienić kolejność {{name}} (lub naciśnij spację, a następnie użyj strzałek)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Nie pamiętam hasła",
+      "forgotIntro": "Wprowadź swój adres e-mail. Jeśli istnieje dla niego konto, otrzymasz link do zresetowania hasła.",
+      "sendLink": "Wyślij link",
+      "linkSent": "Jeśli ten adres istnieje, wysłano e-mail z linkiem do resetowania.",
+      "resetTitle": "Ustaw nowe hasło",
+      "newPassword": "Nowe hasło",
+      "confirmPassword": "Potwierdź hasło",
+      "resetSubmit": "Zresetuj hasło",
+      "resetSuccess": "Twoje hasło zostało zresetowane. Możesz teraz się zalogować.",
+      "backToLogin": "Powrót do logowania",
+      "errors": {
+        "invalid_token": "Ten link jest nieprawidłowy lub wygasł. Poproś o nowy.",
+        "invalid_user": "Nie istnieje konto dla tego adresu e-mail.",
+        "throttled": "Poczekaj chwilę przed ponowną próbą.",
+        "reset_failed": "Nie udało się zresetować hasła.",
+        "mail_unavailable": "Serwer poczty nie jest skonfigurowany lub jest niedostępny. Skontaktuj się z administratorem.",
+        "generic": "To nie zadziałało. Spróbuj ponownie później."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Nieprawidłowe dane uwierzytelniające.",
+      "account_locked": "Zbyt wiele nieudanych prób. To konto jest tymczasowo zablokowane.",
+      "account_deactivated": "To konto zostało dezaktywowane.",
+      "generic": "Logowanie nie powiodło się. Spróbuj ponownie później lub skontaktuj się z administratorem."
+    }
+  }
+}

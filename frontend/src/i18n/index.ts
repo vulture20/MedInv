@@ -49,6 +49,14 @@ i18n
  * browser previously matched 'de'/'en', or who manually picked a language
  * in Settings, always keeps it, even if that no longer matches the current
  * admin default or their current browser language.
+ *
+ * `default_language` can itself be a runtime language pack's code
+ * (AdminSettingsController::updateLocale() accepts any code with a
+ * language_packs row, GitHub issues #12/#15), not just 'de'/'en' — main.tsx
+ * MUST await loadRuntimeLanguagePacks() before calling this, or
+ * i18n.changeLanguage() below could switch to a pack whose resources
+ * aren't registered yet, leaving the visitor stuck on English-fallback
+ * text under the "wrong" active language.
  */
 export async function applyAdminDefaultLanguage(): Promise<void> {
   if (cachedLanguageBeforeInit) return

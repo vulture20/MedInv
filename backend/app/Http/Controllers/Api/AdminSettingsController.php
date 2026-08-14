@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\Mail\MailStatusService;
 use App\Http\Controllers\Controller;
+use App\Models\LanguagePack;
 use App\Models\SystemSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -213,15 +214,21 @@ class AdminSettingsController extends Controller
     /**
      * The language a visitor's browser falls back to when it declares
      * neither German nor English (briefing 11.4) — read publicly (even
-     * pre-login) via GET /locale, see routes/api.php. Restricted to the two
-     * shipped languages for now, same as AccountSettingsController's own
-     * per-user preferred_language selector; once admin-managed language
-     * packs exist (GitHub issues #12/#15) this may need to accept those
-     * codes too.
+     * pre-login) via GET /locale, see routes/api.php. Accepts the two
+     * bundled languages plus any language pack that currently has a
+     * `language_packs` row — admin-added (LanguagePackController::store())
+     * or one of the repo-shipped languagepacks/*.json packs
+     * (BundledLanguagePackRegistry), it makes no difference here, since
+     * both end up as the same kind of row. The allowed-codes list is
+     * computed fresh on every request rather than cached, so a pack
+     * deleted a moment ago can't still be picked (and a just-installed one
+     * is immediately selectable) — this setting is small and rarely
+     * changed, so the extra query per save is not worth optimizing away.
      */
     public function updateLocale(Request $request)
     {
-        $data = $request->validate(['default_language' => ['required', Rule::in(['de', 'en'])]]);
+        $allowedCodes = [...['de', 'en'], ...LanguagePack::query()->pluck('code')->all()];
+        $data = $request->validate(['default_language' => ['required', Rule::in($allowedCodes)]]);
 
         SystemSetting::set('locale.default_language', $data['default_language']);
         $this->logSettingsChange($request, 'locale', $data);
