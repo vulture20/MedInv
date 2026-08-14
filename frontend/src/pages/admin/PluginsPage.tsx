@@ -1,4 +1,4 @@
-import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useEffect, useRef, useState } from 'react'
@@ -41,6 +41,46 @@ function fieldLabel(t: (key: string, opts?: Record<string, unknown>) => string, 
 
 /** Every media type a plugin can belong to (Library.media_type's own union) — fixed order the grouped tables render in below. */
 const MEDIA_TYPES: Plugin['media_type'][] = ['book', 'cd', 'dvd_bluray']
+
+/**
+ * Module-level, not inline object literals passed straight to useSensor()
+ * — dnd-kit's useSensor(sensor, options) is
+ * `useMemo(() => ({sensor, options}), [sensor, options])`, so a fresh
+ * `{ activationConstraint: {...} }`/`{ coordinateGetter: ... }` literal on
+ * every render (this component re-renders on every completed drag, since
+ * it calls setPlugins) gave that memo a new `options` reference every
+ * render, cascading into useSensors() also producing a brand-new sensors
+ * array each time — unnecessary churn dnd-kit's own docs call out as
+ * worth avoiding via a stable reference, exactly like this. Investigated
+ * as a candidate explanation for GitHub issue #41's "works once, then
+ * stuck" report; live testing (Playwright) showed this alone wasn't the
+ * actual cause — see pluginsInGroup()'s docblock for what was — but it's
+ * still a real, worthwhile fix to keep on its own merits.
+ */
+const POINTER_SENSOR_OPTIONS = { activationConstraint: { distance: 4 } }
+const KEYBOARD_SENSOR_OPTIONS = { coordinateGetter: sortableKeyboardCoordinates }
+
+/**
+ * One media type's plugins in the order they're actually displayed —
+ * sorted by priority, not left in whatever order the `plugins` array
+ * itself happens to be in. Shared by both the render below (`groupPlugins`)
+ * and handleDragEnd() so the two can never diverge from each other again:
+ * this was originally only fixed at the render call site (GitHub issue
+ * #41), but handleDragEnd() had its own independent, *unfixed* copy of the
+ * exact same `.filter()`-with-no-sort derivation for computing drag
+ * source/target indices. Right after a page load, array order and
+ * priority order coincide (the backend already returns priority-sorted
+ * rows), masking the bug for exactly one drag — but the very first
+ * completed drag only ever changes `priority` values, never the array's
+ * element order, so every drag after that computed source/target indices
+ * against a list that no longer matched what was actually on screen,
+ * silently producing a no-op reassignment. Confirmed live via Playwright
+ * with realistic, slow pointer motion: drag 1 always worked, every drag
+ * after it did visibly nothing.
+ */
+function pluginsInGroup(plugins: Plugin[], mediaType: Plugin['media_type']): Plugin[] {
+  return plugins.filter((p) => p.media_type === mediaType).sort((a, b) => a.priority - b.priority)
+}
 
 /**
  * One draggable row (dnd-kit's useSortable) — only the handle cell carries
@@ -99,12 +139,13 @@ export function PluginsPage() {
   const [formValues, setFormValues] = useState<Record<string, string>>({})
   const dialogRef = useRef<HTMLDialogElement>(null)
 
-  // A small activation distance so a plain click on the handle (or a
-  // slightly imprecise click near it) doesn't get mistaken for a drag.
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  )
+  // Both options objects are module-level constants, not created inline
+  // here — see POINTER_SENSOR_OPTIONS's docblock for why that stability
+  // actually matters, not just style. distance: 4 (via
+  // POINTER_SENSOR_OPTIONS) is a small activation distance so a plain
+  // click on the handle (or a slightly imprecise click near it) doesn't
+  // get mistaken for a drag.
+  const sensors = useSensors(useSensor(PointerSensor, POINTER_SENSOR_OPTIONS), useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS))
 
   async function load() {
     const { data } = await apiClient.get<Plugin[]>('/admin/metadata/plugins')
@@ -138,7 +179,11 @@ export function PluginsPage() {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const groupIds = plugins.filter((p) => p.media_type === mediaType).map((p) => p.id)
+    // pluginsInGroup(), not a fresh .filter() here — active/over's indices
+    // must be computed against the same priority-sorted order the rows are
+    // actually rendered in (see that function's docblock for the bug this
+    // caused when the two derivations disagreed).
+    const groupIds = pluginsInGroup(plugins, mediaType).map((p) => p.id)
     const oldIndex = groupIds.indexOf(Number(active.id))
     const newIndex = groupIds.indexOf(Number(over.id))
     if (oldIndex === -1 || newIndex === -1) return
@@ -187,31 +232,42 @@ export function PluginsPage() {
       <h2>{t('admin.plugins')}</h2>
       {error && <p role="alert">{error}</p>}
       {MEDIA_TYPES.map((mediaType) => {
-        // GitHub issue #41: sorted by priority, not left in whatever order
-        // `plugins` happens to already be in — handleDragEnd() below only
-        // ever updates each plugin's `priority` field, it never reorders
-        // the `plugins` array itself. Without this sort, a completed drag
-        // visibly snapped back to its old position: SortableContext's
-        // `items` (derived from this list) came out in the exact same
-        // order as before the drop, since only the priority *values* had
-        // changed, not this array's element order.
-        const groupPlugins = plugins.filter((p) => p.media_type === mediaType).sort((a, b) => a.priority - b.priority)
+        const groupPlugins = pluginsInGroup(plugins, mediaType)
         if (groupPlugins.length === 0) return null
 
         return (
           <div key={mediaType} className="plugin-group">
             <h3>{t(`libraries.mediaType.${mediaType}`)}</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th aria-hidden="true" />
-                  <th>{t('common.name')}</th>
-                  <th>{t('admin.table.priority')}</th>
-                  <th>{t('admin.table.enabled')}</th>
-                  <th>{t('admin.pluginConfig.settings')}</th>
-                </tr>
-              </thead>
-              <DndContext sensors={sensors} onDragEnd={(event) => void handleDragEnd(mediaType, event)}>
+            {/*
+              GitHub issue #41 follow-up: DndContext must wrap the whole
+              <table>, not sit *inside* it next to <thead> — DndContext
+              renders its own DOM (hidden a11y description/live-region
+              <div>s) alongside whatever children it's given, and a <div>
+              landing as a direct child of <table> (a sibling of <thead>/
+              <tbody>, not inside either) is invalid HTML. React doesn't go
+              through the HTML parser for DOM writes, so the browser never
+              "fixes" that nesting the way it would for parsed markup — the
+              invalid structure was really there, confirmed live via
+              Playwright (element.outerHTML showed both DndDescribedBy-0
+              and DndLiveRegion-0 as direct <table> children, right after
+              </tbody>) — plausible cause of the reported "works once, then
+              rows stop moving" behavior, since it left the actual DOM
+              structure subtly different from a normal table every render
+              after the first. SortableContext itself renders no DOM at
+              all (a bare context provider), so it can still wrap just
+              <tbody> without the same problem.
+            */}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(event) => void handleDragEnd(mediaType, event)}>
+              <table>
+                <thead>
+                  <tr>
+                    <th aria-hidden="true" />
+                    <th>{t('common.name')}</th>
+                    <th>{t('admin.table.priority')}</th>
+                    <th>{t('admin.table.enabled')}</th>
+                    <th>{t('admin.pluginConfig.settings')}</th>
+                  </tr>
+                </thead>
                 <SortableContext items={groupPlugins.map((p) => p.id)} strategy={verticalListSortingStrategy}>
                   <tbody>
                     {groupPlugins.map((p, index) => (
@@ -246,8 +302,8 @@ export function PluginsPage() {
                     ))}
                   </tbody>
                 </SortableContext>
-              </DndContext>
-            </table>
+              </table>
+            </DndContext>
           </div>
         )
       })}
