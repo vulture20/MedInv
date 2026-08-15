@@ -13,39 +13,48 @@ export type Template = string
 const BUILT_IN_TEMPLATES = ['light', 'dark']
 
 /**
- * The exact CSS custom-property names (minus the leading `--`) every
- * template must define — matches backend `App\Models\Template::
- * REQUIRED_COLOR_KEYS` and index.css's `:root`/`:root[data-template='dark']`
- * blocks one-for-one. `color-scheme` is the one non-`--`-prefixed entry (a
- * real CSS property, not a custom property, but set the same way via
- * style.setProperty) — it's what gives native browser UI (scrollbars, form
- * controls) an OS-native dark appearance instead of light-themed chrome
- * drawn over a dark page.
+ * The single <style> element every runtime template's CSS is injected
+ * into/cleared from. One shared element (created lazily, reused across
+ * template switches) rather than one per template — only ever one
+ * template is active at a time, so there's nothing to gain from keeping
+ * an inactive template's <style> element around, and a single element
+ * keeps "what CSS is currently affecting the page" trivially inspectable
+ * in devtools.
  */
-export interface TemplateColors {
-  'color-bg': string
-  'color-surface': string
-  'color-text': string
-  'color-text-muted': string
-  'color-border': string
-  'color-accent': string
-  'color-danger': string
-  'color-danger-bg': string
-  'color-scheme': string
+const STYLE_ELEMENT_ID = 'medinv-runtime-template'
+
+function getOrCreateStyleElement(): HTMLStyleElement {
+  let el = document.getElementById(STYLE_ELEMENT_ID) as HTMLStyleElement | null
+  if (!el) {
+    el = document.createElement('style')
+    el.id = STYLE_ELEMENT_ID
+    // Appended to <head>, which places it after the app's own stylesheet
+    // (already present by the time this runs, since it's loaded before any
+    // React code executes) — later in document order wins the cascade for
+    // equal-specificity selectors, e.g. a template's `:root { ... }` block
+    // against index.css's own `:root { ... }` block.
+    document.head.appendChild(el)
+  }
+  return el
 }
 
-/** Exported so TemplatesPage.tsx can build its color-picker form from the same single list, instead of a second hand-maintained copy. */
-export const COLOR_KEYS = [
-  'color-bg',
-  'color-surface',
-  'color-text',
-  'color-text-muted',
-  'color-border',
-  'color-accent',
-  'color-danger',
-  'color-danger-bg',
-  'color-scheme',
-] as const satisfies readonly (keyof TemplateColors)[]
+/**
+ * Applies one template's CSS by setting it as the shared <style> element's
+ * text content. Deliberately `.textContent`, never `.innerHTML`: setting
+ * textContent on an existing DOM node is never re-parsed as HTML, so
+ * whatever a template's CSS contains — including a literal `</style>`
+ * substring — can never break out into markup or script, regardless of who
+ * authored it (this data ultimately comes from an admin, but "an admin
+ * you trust with theming" shouldn't have to also be trusted with the
+ * entire page).
+ */
+function applyCss(css: string): void {
+  getOrCreateStyleElement().textContent = css
+}
+
+function clearCss(): void {
+  getOrCreateStyleElement().textContent = ''
+}
 
 export interface TemplateSummary {
   code: string
@@ -58,32 +67,18 @@ interface ThemeContextValue {
   /** Runtime-installed templates only (light/dark are always implicitly available, not listed here). */
   runtimeTemplates: TemplateSummary[]
   /**
-   * Registers one runtime template's colors, applying them immediately if
-   * it's the currently active one — shared by the initial GET /templates
-   * load below and TemplatesPage.tsx, so a template an admin just
+   * Registers one runtime template's CSS, applying it immediately if it's
+   * the currently active one — shared by the initial GET /templates load
+   * below and TemplatesPage.tsx, so a template an admin just
    * created/edited/(re)installed takes effect in this same tab without a
    * full reload, same pattern as i18n/index.ts's registerLanguagePack().
    */
-  registerTemplate: (code: string, name: string, colors: TemplateColors) => void
+  registerTemplate: (code: string, name: string, css: string) => void
   /** Counterpart to registerTemplate(), used by TemplatesPage.tsx after deleting a template. */
   unregisterTemplate: (code: string) => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
-
-/** Applies one template's colors as inline CSS custom properties on <html> — inline always wins over any stylesheet rule. */
-function applyColors(colors: TemplateColors): void {
-  for (const key of COLOR_KEYS) {
-    document.documentElement.style.setProperty(`--${key}`, colors[key])
-  }
-}
-
-/** Removes any inline override, letting the static light/dark CSS rules (index.css) take back over. */
-function clearInlineColors(): void {
-  for (const key of COLOR_KEYS) {
-    document.documentElement.style.removeProperty(`--${key}`)
-  }
-}
 
 /**
  * Applies `data-template` on <html> so CSS can key off it (see index.css).
@@ -93,12 +88,12 @@ function clearInlineColors(): void {
  *
  * 'light'/'dark' keep working exactly as before this ever existed — purely
  * via the `data-template` attribute plus index.css's static rules, no JS-
- * applied colors involved. A runtime template (GitHub issue #11) is the
- * one addition: its colors live only in the `templates` database table, so
- * there's no static CSS rule for it to key off — instead, whenever `template`
- * resolves to a runtime code, its colors are applied directly as inline
- * custom properties (applyColors()), which take effect regardless of
- * whether any `[data-template='<code>']` CSS block exists at all.
+ * applied CSS involved. A runtime template (GitHub issue #11) is the one
+ * addition: its CSS lives only in the `templates` database table, so
+ * there's no static CSS rule for it to key off — instead, whenever
+ * `template` resolves to a runtime code, its CSS is injected verbatim into
+ * a dedicated <style> element (applyCss()), which takes effect regardless
+ * of whether any `[data-template='<code>']` CSS block exists at all.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [template, setTemplateState] = useState<Template>(() => {
@@ -106,25 +101,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (stored) return stored
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
-  // code -> {name, colors} for every runtime template currently known —
+  // code -> {name, css} for every runtime template currently known —
   // loaded once on mount (GET /templates(/{code})) and kept up to date
   // in-place by registerTemplate()/unregisterTemplate() afterwards.
-  const [templates, setTemplates] = useState<Record<string, { name: string; colors: TemplateColors }>>({})
+  const [templates, setTemplates] = useState<Record<string, { name: string; css: string }>>({})
 
   useEffect(() => {
     document.documentElement.setAttribute('data-template', template)
     localStorage.setItem('medinv.template', template)
 
     if (BUILT_IN_TEMPLATES.includes(template)) {
-      clearInlineColors()
+      clearCss()
     } else {
       const entry = templates[template]
-      if (entry) applyColors(entry.colors)
-      // else: colors not loaded yet (e.g. a runtime template chosen on a
+      if (entry) applyCss(entry.css)
+      // else: css not loaded yet (e.g. a runtime template chosen on a
       // previous visit, before this tab's GET /templates round trip
-      // completes) — the previously active template's inline properties
-      // simply remain in place a moment longer, rather than flashing to an
-      // unstyled/default look; the effect re-runs once templates updates.
+      // completes) — the previously active template's <style> content
+      // simply remains in place a moment longer, rather than flashing to
+      // an unstyled/default look; the effect re-runs once templates updates.
     }
   }, [template, templates])
 
@@ -150,8 +145,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     await Promise.all(
       summaries.map(async (summary) => {
         try {
-          const { data } = await apiClient.get<{ code: string; name: string; colors: TemplateColors }>(`/templates/${summary.code}`)
-          registerTemplate(data.code, data.name, data.colors)
+          const { data } = await apiClient.get<{ code: string; name: string; css: string }>(`/templates/${summary.code}`)
+          registerTemplate(data.code, data.name, data.css)
         } catch {
           // One bad/unreachable template shouldn't take the others down.
         }
@@ -159,8 +154,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  function registerTemplate(code: string, name: string, colors: TemplateColors): void {
-    setTemplates((prev) => ({ ...prev, [code]: { name, colors } }))
+  function registerTemplate(code: string, name: string, css: string): void {
+    setTemplates((prev) => ({ ...prev, [code]: { name, css } }))
   }
 
   function unregisterTemplate(code: string): void {

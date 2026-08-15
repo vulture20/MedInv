@@ -1,0 +1,5 @@
+{
+  "code": "solarized-light",
+  "name": "Solarized Light",
+  "css": ":root {\n  --color-bg: #fdf6e3;\n  --color-surface: #eee8d5;\n  --color-text: #073642;\n  --color-text-muted: #657b83;\n  --color-border: #93a1a1;\n  --color-accent: #268bd2;\n  --color-danger: #dc322f;\n  --color-danger-bg: #fdece9;\n  color-scheme: light;\n}\n"
+}

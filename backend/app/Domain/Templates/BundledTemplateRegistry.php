@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  * see config/medinv.php for why it lives there and how the path resolves
  * identically in dev and Docker), each shaped like what
  * TemplateController::show() already returns for one template:
- * {code, name, colors}. Deliberate structural mirror of
+ * {code, name, css}. Deliberate structural mirror of
  * BundledLanguagePackRegistry — see that class's docblock for the shared
  * reasoning (plain JSON for easy hand-editing, a bundled entry becomes a
  * completely ordinary database row once installed with no further
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  */
 class BundledTemplateRegistry
 {
-    /** @return array<int, array{code: string, name: string, colors: array}> */
+    /** @return array<int, array{code: string, name: string, css: string}> */
     public function readAll(): array
     {
         $dir = config('medinv.templates_path');
@@ -36,18 +36,9 @@ class BundledTemplateRegistry
             // installMissing() (DatabaseSeeder, docker/entrypoint.sh's
             // `db:seed --force`) — a single malformed bundled file must not
             // break every fresh install and restart, same reasoning as
-            // BundledLanguagePackRegistry's identical guard. Also checks
-            // every REQUIRED_COLOR_KEYS entry is present, not just that
-            // `colors` is non-empty — the language-pack equivalent doesn't
-            // need this (a partial translations object degrades gracefully
-            // via i18next's fallback), but a template missing a color just
-            // leaves that one UI element unstyled.
-            $missingColorKeys = is_array($data['colors'] ?? null)
-                ? array_diff(Template::REQUIRED_COLOR_KEYS, array_keys($data['colors']))
-                : Template::REQUIRED_COLOR_KEYS;
-
-            if (json_last_error() !== JSON_ERROR_NONE || empty($data['code']) || empty($data['name']) || $missingColorKeys !== []) {
-                Log::warning('Skipping malformed bundled template file', ['file' => basename($file), 'missing_color_keys' => $missingColorKeys]);
+            // BundledLanguagePackRegistry's identical guard.
+            if (json_last_error() !== JSON_ERROR_NONE || empty($data['code']) || empty($data['name']) || empty($data['css']) || ! is_string($data['css'])) {
+                Log::warning('Skipping malformed bundled template file', ['file' => basename($file)]);
 
                 continue;
             }
@@ -58,7 +49,7 @@ class BundledTemplateRegistry
         return $templates;
     }
 
-    /** @return array<int, array{code: string, name: string}> Lightweight listing for the admin UI — no colors blob. */
+    /** @return array<int, array{code: string, name: string}> Lightweight listing for the admin UI — no css blob. */
     public function available(): array
     {
         return array_map(
@@ -82,15 +73,15 @@ class BundledTemplateRegistry
         foreach ($this->readAll() as $template) {
             Template::query()->firstOrCreate(
                 ['code' => $template['code']],
-                ['name' => $template['name'], 'colors' => $template['colors']],
+                ['name' => $template['name'], 'css' => $template['css']],
             );
         }
     }
 
     /**
      * Installs (or reinstalls) exactly one bundled template by code, always
-     * overwriting name/colors — unlike installMissing()'s boot-time self-
-     * heal, this backs a deliberate admin action
+     * overwriting name/css — unlike installMissing()'s boot-time self-heal,
+     * this backs a deliberate admin action
      * (TemplateController::installBundled()), so it's allowed to reset a
      * template an admin had since edited back to the shipped default.
      * Returns null if no bundled file matches $code (never actually
@@ -106,7 +97,7 @@ class BundledTemplateRegistry
 
         return Template::query()->updateOrCreate(
             ['code' => $template['code']],
-            ['name' => $template['name'], 'colors' => $template['colors']],
+            ['name' => $template['name'], 'css' => $template['css']],
         );
     }
 }

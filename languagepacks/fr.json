@@ -341,17 +341,8 @@
         "bundledReinstall": "Réinstaller",
         "confirmReinstall": "Réinstaller le template « {{name}} » ? Les modifications personnalisées apportées à ce template seront perdues et remplacées par la version fournie.",
         "builtInHint": "Clair et sombre sont intégrés à l'application elle-même ; ils n'apparaissent donc dans la liste que pour être consultés et téléchargés — ils ne peuvent être ni modifiés ni supprimés.",
-        "colorFields": {
-          "color-bg": "Arrière-plan",
-          "color-surface": "Surface (cartes, barre d'en-tête)",
-          "color-text": "Texte",
-          "color-text-muted": "Texte atténué",
-          "color-border": "Bordure",
-          "color-accent": "Accent (liens, mise en évidence)",
-          "color-danger": "Couleur d'alerte",
-          "color-danger-bg": "Couleur d'alerte, arrière-plan",
-          "color-scheme": "Palette (pour les éléments natifs du navigateur)"
-        },
+        "css": "CSS",
+        "cssHint": "Le contenu littéral d'un fichier CSS, appliqué tant que ce modèle est sélectionné. Redéfinir les mêmes propriétés personnalisées que celles utilisées par clair/sombre — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, ainsi que color-scheme — suffit à repeindre toute l'application de façon cohérente, par ex. : :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Tout ce qu'une feuille de style peut faire d'autre est également possible.",
         "errors": {
           "codeInvalid": "Ce code est déjà utilisé ou réservé (light/dark sont réservés)."
         }

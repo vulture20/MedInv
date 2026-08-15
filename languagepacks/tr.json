@@ -341,17 +341,8 @@
         "bundledReinstall": "Yeniden kur",
         "confirmReinstall": "\"{{name}}\" şablonu yeniden kurulsun mu? Bu şablonda yapılan özel değişiklikler kaybolacak ve birlikte gelen sürümle değiştirilecek.",
         "builtInHint": "Açık ve koyu tema doğrudan uygulamaya gömülüdür, bu nedenle listede yalnızca görüntüleme ve indirme amacıyla görünürler — düzenlenemez veya silinemezler.",
-        "colorFields": {
-          "color-bg": "Arka plan",
-          "color-surface": "Yüzey (kartlar, üst bilgi çubuğu)",
-          "color-text": "Metin",
-          "color-text-muted": "Soluk metin",
-          "color-border": "Kenarlık",
-          "color-accent": "Vurgu (bağlantılar, öne çıkarmalar)",
-          "color-danger": "Tehlike rengi",
-          "color-danger-bg": "Tehlike rengi, arka plan",
-          "color-scheme": "Renk şeması (yerel tarayıcı bileşenleri için)"
-        },
+        "css": "CSS",
+        "cssHint": "Bu şablon seçiliyken uygulanan bir CSS dosyasının birebir içeriği. Açık/koyu temanın kullandığı aynı özel özellikleri — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg ve color-scheme — yeniden tanımlamak, tüm uygulamayı tutarlı biçimde yeniden renklendirmeye yeter, örn.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Bir stil sayfasının yapabileceği başka her şeye de izin verilir.",
         "errors": {
           "codeInvalid": "Bu kod zaten kullanılıyor veya ayrılmış (light/dark ayrılmıştır)."
         }

@@ -22,6 +22,8 @@ class BundledTemplateTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const SAMPLE_CSS = ":root {\n  --color-bg: #fdf6e3;\n}\n";
+
     private string $fixtureDir;
 
     protected function setUp(): void
@@ -36,21 +38,6 @@ class BundledTemplateTest extends TestCase
     {
         File::deleteDirectory($this->fixtureDir);
         parent::tearDown();
-    }
-
-    private function validColors(array $overrides = []): array
-    {
-        return array_merge([
-            'color-bg' => '#fdf6e3',
-            'color-surface' => '#eee8d5',
-            'color-text' => '#073642',
-            'color-text-muted' => '#657b83',
-            'color-border' => '#93a1a1',
-            'color-accent' => '#268bd2',
-            'color-danger' => '#dc322f',
-            'color-danger-bg' => '#fdf0ef',
-            'color-scheme' => 'light',
-        ], $overrides);
     }
 
     private function writeFixture(string $filename, array $data): void
@@ -68,8 +55,8 @@ class BundledTemplateTest extends TestCase
 
     public function test_available_lists_every_valid_bundled_file(): void
     {
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
-        $this->writeFixture('sepia.json', ['code' => 'sepia', 'name' => 'Sepia', 'colors' => $this->validColors(['color-bg' => '#f4ecd8'])]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
+        $this->writeFixture('sepia.json', ['code' => 'sepia', 'name' => 'Sepia', 'css' => self::SAMPLE_CSS]);
 
         $available = app(BundledTemplateRegistry::class)->available();
 
@@ -81,7 +68,7 @@ class BundledTemplateTest extends TestCase
 
     public function test_available_skips_a_malformed_file_without_failing(): void
     {
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
         file_put_contents("{$this->fixtureDir}/broken.json", '{not valid json');
 
         $available = app(BundledTemplateRegistry::class)->available();
@@ -89,12 +76,20 @@ class BundledTemplateTest extends TestCase
         $this->assertSame([['code' => 'solarized', 'name' => 'Solarized']], $available);
     }
 
-    public function test_available_skips_a_file_with_incomplete_colors(): void
+    public function test_available_skips_a_file_with_empty_css(): void
     {
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
-        $incomplete = $this->validColors();
-        unset($incomplete['color-accent']);
-        $this->writeFixture('half-baked.json', ['code' => 'half-baked', 'name' => 'Half Baked', 'colors' => $incomplete]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
+        $this->writeFixture('empty.json', ['code' => 'empty', 'name' => 'Empty', 'css' => '']);
+
+        $available = app(BundledTemplateRegistry::class)->available();
+
+        $this->assertSame([['code' => 'solarized', 'name' => 'Solarized']], $available);
+    }
+
+    public function test_available_skips_a_file_missing_css_entirely(): void
+    {
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
+        $this->writeFixture('no-css.json', ['code' => 'no-css', 'name' => 'No CSS']);
 
         $available = app(BundledTemplateRegistry::class)->available();
 
@@ -103,7 +98,7 @@ class BundledTemplateTest extends TestCase
 
     public function test_install_missing_creates_every_bundled_template_that_does_not_exist_yet(): void
     {
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
 
         app(BundledTemplateRegistry::class)->installMissing();
 
@@ -112,8 +107,8 @@ class BundledTemplateTest extends TestCase
 
     public function test_install_missing_never_overwrites_a_template_an_admin_has_edited(): void
     {
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
-        Template::query()->create(['code' => 'solarized', 'name' => 'Custom name', 'colors' => $this->validColors(['color-bg' => '#000000'])]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
+        Template::query()->create(['code' => 'solarized', 'name' => 'Custom name', 'css' => ':root { --color-bg: #000000; }']);
 
         app(BundledTemplateRegistry::class)->installMissing();
 
@@ -123,9 +118,9 @@ class BundledTemplateTest extends TestCase
     public function test_bundled_endpoint_flags_which_templates_are_already_installed(): void
     {
         $this->actingAsAdmin();
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
-        $this->writeFixture('sepia.json', ['code' => 'sepia', 'name' => 'Sepia', 'colors' => $this->validColors()]);
-        Template::query()->create(['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
+        $this->writeFixture('sepia.json', ['code' => 'sepia', 'name' => 'Sepia', 'css' => self::SAMPLE_CSS]);
+        Template::query()->create(['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
 
         $response = $this->getJson('/api/admin/templates/bundled');
 
@@ -147,7 +142,7 @@ class BundledTemplateTest extends TestCase
     public function test_admin_can_install_a_bundled_template(): void
     {
         $this->actingAsAdmin();
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
 
         $response = $this->postJson('/api/admin/templates/bundled/solarized');
 
@@ -158,14 +153,14 @@ class BundledTemplateTest extends TestCase
     public function test_installing_a_bundled_template_overwrites_a_previously_edited_row(): void
     {
         $this->actingAsAdmin();
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors(['color-bg' => '#fdf6e3'])]);
-        Template::query()->create(['code' => 'solarized', 'name' => 'Edited name', 'colors' => $this->validColors(['color-bg' => '#000000'])]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
+        Template::query()->create(['code' => 'solarized', 'name' => 'Edited name', 'css' => ':root { --color-bg: #000000; }']);
 
         $this->postJson('/api/admin/templates/bundled/solarized')->assertCreated();
 
         $template = Template::query()->where('code', 'solarized')->firstOrFail();
         $this->assertSame('Solarized', $template->name);
-        $this->assertSame('#fdf6e3', $template->colors['color-bg']);
+        $this->assertSame(self::SAMPLE_CSS, $template->css);
     }
 
     public function test_installing_an_unknown_bundled_code_404s(): void
@@ -179,7 +174,7 @@ class BundledTemplateTest extends TestCase
     {
         $user = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $this->actingAs($user);
-        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'colors' => $this->validColors()]);
+        $this->writeFixture('solarized.json', ['code' => 'solarized', 'name' => 'Solarized', 'css' => self::SAMPLE_CSS]);
 
         $this->postJson('/api/admin/templates/bundled/solarized')->assertForbidden();
         $this->assertDatabaseMissing((new Template)->getTable(), ['code' => 'solarized']);

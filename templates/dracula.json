@@ -1,0 +1,5 @@
+{
+  "code": "dracula",
+  "name": "Dracula",
+  "css": ":root {\n  --color-bg: #282a36;\n  --color-surface: #343746;\n  --color-text: #f8f8f2;\n  --color-text-muted: #6272a4;\n  --color-border: #44475a;\n  --color-accent: #bd93f9;\n  --color-danger: #ff5555;\n  --color-danger-bg: #46232b;\n  color-scheme: dark;\n}\n"
+}

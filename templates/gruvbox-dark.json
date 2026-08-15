@@ -1,0 +1,5 @@
+{
+  "code": "gruvbox-dark",
+  "name": "Gruvbox Dark",
+  "css": ":root {\n  --color-bg: #282828;\n  --color-surface: #3c3836;\n  --color-text: #ebdbb2;\n  --color-text-muted: #a89984;\n  --color-border: #504945;\n  --color-accent: #fe8019;\n  --color-danger: #fb4934;\n  --color-danger-bg: #3c2a26;\n  color-scheme: dark;\n}\n"
+}

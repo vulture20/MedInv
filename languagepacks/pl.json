@@ -341,17 +341,8 @@
         "bundledReinstall": "Zainstaluj ponownie",
         "confirmReinstall": "Zainstalować ponownie szablon „{{name}}”? Własne zmiany w tym szablonie zostaną utracone i zastąpione dołączoną wersją.",
         "builtInHint": "Jasny i ciemny są wbudowane w samą aplikację, dlatego na liście pojawiają się tylko do przeglądania i pobierania — nie można ich edytować ani usuwać.",
-        "colorFields": {
-          "color-bg": "Tło",
-          "color-surface": "Powierzchnia (karty, pasek nagłówka)",
-          "color-text": "Tekst",
-          "color-text-muted": "Tekst przygaszony",
-          "color-border": "Obramowanie",
-          "color-accent": "Akcent (linki, wyróżnienia)",
-          "color-danger": "Kolor ostrzegawczy",
-          "color-danger-bg": "Kolor ostrzegawczy, tło",
-          "color-scheme": "Schemat kolorów (dla natywnych elementów przeglądarki)"
-        },
+        "css": "CSS",
+        "cssHint": "Dosłowna zawartość pliku CSS, stosowana, dopóki ten szablon jest wybrany. Ponowne zdefiniowanie tych samych właściwości niestandardowych, których używają jasny/ciemny — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg oraz color-scheme — wystarczy, aby spójnie zmienić wygląd całej aplikacji, np.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Dozwolone jest też wszystko inne, co potrafi arkusz stylów.",
         "errors": {
           "codeInvalid": "Ten kod jest już zajęty lub zarezerwowany (light/dark są zarezerwowane)."
         }

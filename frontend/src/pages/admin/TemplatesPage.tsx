@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { describeError } from './adminErrors'
-import { COLOR_KEYS, useTheme, type TemplateColors, type TemplateSummary } from '../../theme/ThemeContext'
-import { BUILT_IN_TEMPLATE_COLORS } from '../../theme/builtInColors'
+import { useTheme, type TemplateSummary } from '../../theme/ThemeContext'
+import { BUILT_IN_TEMPLATE_CSS } from '../../theme/builtInCss'
 
 interface FullTemplate extends TemplateSummary {
-  colors: TemplateColors
+  css: string
 }
 
 interface BundledTemplate extends TemplateSummary {
@@ -16,51 +16,7 @@ interface BundledTemplate extends TemplateSummary {
 
 const BUILT_IN_CODES = ['light', 'dark'] as const
 
-/** The 8 `--color-*` keys get an `<input type="color">` each; `color-scheme` (not a color) gets its own light/dark <select> below. */
-const COLOR_PICKER_KEYS = COLOR_KEYS.filter((key) => key !== 'color-scheme')
-
-function emptyColors(): TemplateColors {
-  return {
-    'color-bg': '#ffffff',
-    'color-surface': '#ffffff',
-    'color-text': '#000000',
-    'color-text-muted': '#666666',
-    'color-border': '#cccccc',
-    'color-accent': '#2f6fed',
-    'color-danger': '#c62828',
-    'color-danger-bg': '#fdecea',
-    'color-scheme': 'light',
-  }
-}
-
-/**
- * A top-level component, not nested inside TemplatesPage() — defining a
- * component function inside another component's render body would give it
- * a brand-new identity on every render, forcing React to unmount/remount
- * its <input type="color"> fields (and lose focus) on every keystroke
- * elsewhere on the page.
- */
-function ColorFields({ colors, onChange }: { colors: TemplateColors; onChange: (colors: TemplateColors) => void }) {
-  const { t } = useTranslation()
-
-  return (
-    <>
-      {COLOR_PICKER_KEYS.map((key) => (
-        <label key={key}>
-          {t(`admin.templatesPage.colorFields.${key}`)}
-          <input type="color" value={colors[key]} onChange={(e) => onChange({ ...colors, [key]: e.target.value })} />
-        </label>
-      ))}
-      <label>
-        {t('admin.templatesPage.colorFields.color-scheme')}
-        <select value={colors['color-scheme']} onChange={(e) => onChange({ ...colors, 'color-scheme': e.target.value })}>
-          <option value="light">{t('settings.template.light')}</option>
-          <option value="dark">{t('settings.template.dark')}</option>
-        </select>
-      </label>
-    </>
-  )
-}
+const emptyNewTemplate = { code: '', name: '', css: '' }
 
 /**
  * Admin CRUD for UI templates beyond the bundled light/dark
@@ -69,12 +25,12 @@ function ColorFields({ colors, onChange }: { colors: TemplateColors; onChange: (
  * reasoning: bundled-template install section, built-in light/dark listed
  * view/download-only, every successful create/edit/delete updates the live
  * ThemeContext registry so a template an admin just touched is immediately
- * selectable in this same tab). The one real difference: a template's
- * `colors` is a small, fixed 9-key set (Template::REQUIRED_COLOR_KEYS),
- * unlike a language pack's ~260-key `translations` — so this uses a real
- * <input type="color"> picker per key instead of a raw JSON <textarea>,
- * which briefing 11.4's "einfacher Texteditor" reasoning for language
- * packs doesn't apply to at all here.
+ * selectable in this same tab). `css` is a raw CSS <textarea>, the same
+ * "einfacher Texteditor" treatment briefing 11.4 already prescribes for a
+ * language pack's `translations` — a template used to be a small fixed set
+ * of color-picker fields, but that was replaced with a real CSS text blob
+ * so admins get full theming power ("not just color values, complete CSS
+ * files") instead of nine hardcoded properties.
  */
 export function TemplatesPage() {
   const { t } = useTranslation()
@@ -86,14 +42,12 @@ export function TemplatesPage() {
   const [installingCode, setInstallingCode] = useState<string | null>(null)
   const [installError, setInstallError] = useState<string | null>(null)
 
-  const [newCode, setNewCode] = useState('')
-  const [newName, setNewName] = useState('')
-  const [newColors, setNewColors] = useState<TemplateColors>(emptyColors)
+  const [newTemplate, setNewTemplate] = useState(emptyNewTemplate)
   const [createError, setCreateError] = useState<string | null>(null)
 
   const [editingCode, setEditingCode] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
-  const [editColors, setEditColors] = useState<TemplateColors>(emptyColors)
+  const [editCss, setEditCss] = useState('')
   const [editError, setEditError] = useState<string | null>(null)
 
   const [viewingBuiltIn, setViewingBuiltIn] = useState<(typeof BUILT_IN_CODES)[number] | null>(null)
@@ -118,10 +72,10 @@ export function TemplatesPage() {
    * A validation error on `code` here always means "already taken" or
    * "light/dark are reserved" (TemplateController::store()'s
    * Rule::notIn) — same reasoning as LanguagesPage.tsx's identical helper.
-   * A validation error on `colors` means a required key is missing, which
-   * the color-picker form below can't actually produce (every field always
-   * has a value), so it's not specially handled — describeError()'s
-   * generic fallback covers it if it somehow still happens.
+   * A validation error on `css` (empty, or over the length limit) has no
+   * special-cased message — describeError()'s generic fallback already
+   * prints the field message Laravel returns, which is specific enough on
+   * its own.
    */
   function describeTemplateError(err: unknown): string {
     if (isAxiosError(err)) {
@@ -138,14 +92,12 @@ export function TemplatesPage() {
 
     try {
       const { data } = await apiClient.post<FullTemplate>('/admin/templates', {
-        code: newCode,
-        name: newName,
-        colors: newColors,
+        code: newTemplate.code,
+        name: newTemplate.name,
+        css: newTemplate.css,
       })
-      registerTemplate(data.code, data.name, data.colors)
-      setNewCode('')
-      setNewName('')
-      setNewColors(emptyColors())
+      registerTemplate(data.code, data.name, data.css)
+      setNewTemplate(emptyNewTemplate)
       await load()
     } catch (err) {
       setCreateError(describeTemplateError(err))
@@ -157,7 +109,7 @@ export function TemplatesPage() {
     setEditError(null)
     const { data } = await apiClient.get<FullTemplate>(`/templates/${template.code}`)
     setEditName(data.name)
-    setEditColors(data.colors)
+    setEditCss(data.css)
   }
 
   function cancelEdit() {
@@ -171,9 +123,9 @@ export function TemplatesPage() {
     try {
       const { data } = await apiClient.put<FullTemplate>(`/admin/templates/${code}`, {
         name: editName,
-        colors: editColors,
+        css: editCss,
       })
-      registerTemplate(data.code, data.name, data.colors)
+      registerTemplate(data.code, data.name, data.css)
       setEditingCode(null)
       await load()
     } catch (err) {
@@ -200,7 +152,7 @@ export function TemplatesPage() {
     setInstallingCode(template.code)
     try {
       const { data } = await apiClient.post<FullTemplate>(`/admin/templates/bundled/${template.code}`)
-      registerTemplate(data.code, data.name, data.colors)
+      registerTemplate(data.code, data.name, data.css)
       await load()
       await loadBundled()
     } catch (err) {
@@ -210,14 +162,13 @@ export function TemplatesPage() {
     }
   }
 
-  /** Same reasoning as LanguagesPage.tsx's downloadBuiltIn() — light/dark are already fully present client-side, no server round trip needed. */
+  /** Same reasoning as LanguagesPage.tsx's downloadBuiltIn() — light/dark's CSS is already fully present client-side, no server round trip needed. Downloads the raw .css text itself (not wrapped in JSON) so it's directly usable/editable as a real stylesheet. */
   function downloadBuiltIn(code: (typeof BUILT_IN_CODES)[number]) {
-    const payload = { code, name: t(`settings.template.${code}`), colors: BUILT_IN_TEMPLATE_COLORS[code] }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const blob = new Blob([BUILT_IN_TEMPLATE_CSS[code]], { type: 'text/css' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `medinv-template-${code}.json`
+    a.download = `medinv-template-${code}.css`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -263,7 +214,7 @@ export function TemplatesPage() {
                 <tr key={code}>
                   <td>{code}</td>
                   <td>
-                    <textarea rows={10} readOnly value={JSON.stringify(BUILT_IN_TEMPLATE_COLORS[code], null, 2)} />
+                    <textarea rows={10} readOnly value={BUILT_IN_TEMPLATE_CSS[code]} />
                   </td>
                   <td>
                     <button onClick={() => setViewingBuiltIn(null)}>{t('admin.actions.close')}</button>
@@ -291,7 +242,7 @@ export function TemplatesPage() {
                   <td>{template.code}</td>
                   <td>
                     <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                    <ColorFields colors={editColors} onChange={setEditColors} />
+                    <textarea rows={10} value={editCss} onChange={(e) => setEditCss(e.target.value)} required />
                   </td>
                   <td>
                     <button onClick={() => void saveEdit(template.code)}>{t('admin.actions.save')}</button>
@@ -318,13 +269,34 @@ export function TemplatesPage() {
       <form onSubmit={createTemplate}>
         <label>
           {t('admin.languagesPage.code')}
-          <input value={newCode} onChange={(e) => setNewCode(e.target.value)} placeholder="solarized" maxLength={20} required />
+          <input
+            value={newTemplate.code}
+            onChange={(e) => setNewTemplate({ ...newTemplate, code: e.target.value })}
+            placeholder="solarized"
+            maxLength={20}
+            required
+          />
         </label>
         <label>
           {t('common.name')}
-          <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Solarized" required />
+          <input
+            value={newTemplate.name}
+            onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+            placeholder="Solarized"
+            required
+          />
         </label>
-        <ColorFields colors={newColors} onChange={setNewColors} />
+        <p className="hint">{t('admin.templatesPage.cssHint')}</p>
+        <label>
+          {t('admin.templatesPage.css')}
+          <textarea
+            rows={10}
+            value={newTemplate.css}
+            onChange={(e) => setNewTemplate({ ...newTemplate, css: e.target.value })}
+            placeholder=":root { --color-bg: #fdf6e3; ... }"
+            required
+          />
+        </label>
         <button type="submit">{t('admin.templatesPage.create')}</button>
         {createError && <p role="alert">{createError}</p>}
       </form>

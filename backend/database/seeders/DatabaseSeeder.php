@@ -43,9 +43,9 @@ class DatabaseSeeder extends Seeder
         app(BundledLanguagePackRegistry::class)->installMissing();
 
         // Bundled UI templates (briefing 10./11.4, GitHub issue #11) — same
-        // reasoning as the language packs just above. templates/ is empty by
-        // default (see its README.md), so this is a no-op today, but keeps
-        // a fresh install self-healing the moment a template lands there.
+        // reasoning as the language packs just above: a fresh install gets
+        // every templates/*.json theme (Dracula, Nord, Solarized Light,
+        // Sepia, Gruvbox Dark, High Contrast) pre-installed from the start.
         app(BundledTemplateRegistry::class)->installMissing();
 
         $adminEmail = env('MEDINV_ADMINUSER');

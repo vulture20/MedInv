@@ -71,16 +71,17 @@ class DatabaseSeederTest extends TestCase
     }
 
     /**
-     * templates/ is empty by default (see its README.md) — GitHub issue #11
-     * only asked for the plugin infrastructure itself, not example bundled
-     * templates. This just confirms BundledTemplateRegistry::installMissing()
-     * is actually wired into DatabaseSeeder and doesn't error on an empty
-     * directory, mirroring the language-pack integration check above.
+     * Same integration check as the language-pack one above, but for
+     * templates/*.json (GitHub issue #11's bundled themes beyond
+     * light/dark) — confirms config('medinv.templates_path')'s default
+     * actually reaches the real, repo-shipped files on a fresh install.
      */
-    public function test_a_freshly_seeded_install_does_not_error_with_no_bundled_templates(): void
+    public function test_a_freshly_seeded_install_has_the_bundled_templates(): void
     {
         $this->seed();
 
-        $this->assertSame(0, Template::query()->count());
+        foreach (['dracula', 'nord', 'solarized-light', 'sepia', 'gruvbox-dark', 'high-contrast'] as $code) {
+            $this->assertDatabaseHas((new Template)->getTable(), ['code' => $code]);
+        }
     }
 }

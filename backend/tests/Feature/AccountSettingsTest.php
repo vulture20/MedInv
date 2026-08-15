@@ -49,7 +49,7 @@ class AccountSettingsTest extends TestCase
     public function test_a_user_can_set_preferred_template_to_an_installed_template(): void
     {
         $user = $this->actingAsUser();
-        Template::query()->create(['code' => 'solarized', 'name' => 'Solarized', 'colors' => ['color-bg' => '#fdf6e3']]);
+        Template::query()->create(['code' => 'solarized', 'name' => 'Solarized', 'css' => ':root { --color-bg: #fdf6e3; }']);
 
         $this->putJson('/api/me/settings', ['preferred_template' => 'solarized'])
             ->assertOk()
@@ -60,7 +60,7 @@ class AccountSettingsTest extends TestCase
     public function test_setting_the_template_to_a_since_deleted_template_is_rejected(): void
     {
         $this->actingAsUser();
-        $template = Template::query()->create(['code' => 'solarized', 'name' => 'Solarized', 'colors' => ['color-bg' => '#fdf6e3']]);
+        $template = Template::query()->create(['code' => 'solarized', 'name' => 'Solarized', 'css' => ':root { --color-bg: #fdf6e3; }']);
         $template->delete();
 
         $this->putJson('/api/me/settings', ['preferred_template' => 'solarized'])

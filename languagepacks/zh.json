@@ -341,17 +341,8 @@
         "bundledReinstall": "重新安装",
         "confirmReinstall": "重新安装模板“{{name}}”？对该模板的自定义修改将丢失，并被内置版本替换。",
         "builtInHint": "浅色和深色已内置于应用程序中，因此仅在列表中显示以供查看和下载 — 无法编辑或删除。",
-        "colorFields": {
-          "color-bg": "背景",
-          "color-surface": "表面（卡片、顶部栏）",
-          "color-text": "文本",
-          "color-text-muted": "弱化文本",
-          "color-border": "边框",
-          "color-accent": "强调色（链接、高亮）",
-          "color-danger": "警示色",
-          "color-danger-bg": "警示色（背景）",
-          "color-scheme": "配色方案（用于原生浏览器控件）"
-        },
+        "css": "CSS",
+        "cssHint": "这是在选中此模板期间应用的 CSS 文件的字面内容。只需重新定义浅色/深色主题所使用的相同自定义属性 —— --color-bg、--color-surface、--color-text、--color-text-muted、--color-border、--color-accent、--color-danger、--color-danger-bg,以及 color-scheme —— 即可为整个应用统一换肤,例如::root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }。样式表能做的其他任何事情同样可以使用。",
         "errors": {
           "codeInvalid": "该代码已被占用或为保留代码（light/dark 为保留代码）。"
         }

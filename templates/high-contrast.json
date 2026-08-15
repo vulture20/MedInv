@@ -1,0 +1,5 @@
+{
+  "code": "high-contrast",
+  "name": "High Contrast",
+  "css": ":root {\n  --color-bg: #000000;\n  --color-surface: #0a0a0a;\n  --color-text: #ffffff;\n  --color-text-muted: #ffffff;\n  --color-border: #ffffff;\n  --color-accent: #ffff00;\n  --color-danger: #ff6b6b;\n  --color-danger-bg: #2a0000;\n  color-scheme: dark;\n}\n\n/* Beyond colors: a highly visible focus ring and thicker structural\n   borders, the two things a high-contrast/low-vision theme needs most\n   and colors alone can't provide. */\n*:focus-visible {\n  outline: 3px solid #ffff00;\n  outline-offset: 2px;\n}\n\ninput,\nselect,\ntextarea,\nbutton,\ntable,\nth,\ntd {\n  border-width: 2px !important;\n}\n"
+}

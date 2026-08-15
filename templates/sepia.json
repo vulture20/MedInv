@@ -1,0 +1,5 @@
+{
+  "code": "sepia",
+  "name": "Sepia",
+  "css": ":root {\n  --color-bg: #f4ecd8;\n  --color-surface: #efe4c8;\n  --color-text: #4b3621;\n  --color-text-muted: #7a6a53;\n  --color-border: #d8c8a0;\n  --color-accent: #8b4513;\n  --color-danger: #b03a2e;\n  --color-danger-bg: #f3ded9;\n  color-scheme: light;\n}\n"
+}

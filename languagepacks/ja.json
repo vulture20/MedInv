@@ -341,17 +341,8 @@
         "bundledReinstall": "再インストール",
         "confirmReinstall": "テンプレート「{{name}}」を再インストールしますか? このテンプレートへの独自の変更は失われ、同梱バージョンに置き換えられます。",
         "builtInHint": "ライトとダークはアプリケーション自体に組み込まれているため、一覧には閲覧とダウンロードのためだけに表示されます — 編集や削除はできません。",
-        "colorFields": {
-          "color-bg": "背景",
-          "color-surface": "サーフェス（カード、ヘッダーバー）",
-          "color-text": "テキスト",
-          "color-text-muted": "控えめなテキスト",
-          "color-border": "枠線",
-          "color-accent": "アクセント（リンク、強調表示）",
-          "color-danger": "警告色",
-          "color-danger-bg": "警告色（背景）",
-          "color-scheme": "カラースキーム（ネイティブブラウザー要素用）"
-        },
+        "css": "CSS",
+        "cssHint": "このテンプレートが選択されている間に適用される、CSSファイルそのままの内容です。ライト/ダークが使用しているのと同じカスタムプロパティ — --color-bg、--color-surface、--color-text、--color-text-muted、--color-border、--color-accent、--color-danger、--color-danger-bg、および color-scheme — を再定義するだけで、アプリ全体を一貫して再配色できます。例::root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }。スタイルシートにできることであれば、それ以外も自由に記述できます。",
         "errors": {
           "codeInvalid": "このコードはすでに使用されているか予約済みです（light/darkは予約済みです）。"
         }

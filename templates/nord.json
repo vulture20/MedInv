@@ -1,0 +1,5 @@
+{
+  "code": "nord",
+  "name": "Nord",
+  "css": ":root {\n  --color-bg: #2e3440;\n  --color-surface: #3b4252;\n  --color-text: #eceff4;\n  --color-text-muted: #d8dee9;\n  --color-border: #4c566a;\n  --color-accent: #88c0d0;\n  --color-danger: #bf616a;\n  --color-danger-bg: #3d2a2e;\n  color-scheme: dark;\n}\n"
+}

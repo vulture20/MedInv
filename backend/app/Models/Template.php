@@ -10,44 +10,23 @@ use Illuminate\Database\Eloquent\Model;
  * (briefing 10./11.4, GitHub issue #11). `code` is immutable once created
  * (TemplateController::update() never accepts it), same as LanguagePack's
  * `code` / MetadataPlugin's `provider_key`.
+ *
+ * `css` is the literal text content of a CSS file — not a fixed set of
+ * color values — injected verbatim into a <style> element by
+ * ThemeContext.tsx whenever this template is selected (via `.textContent`,
+ * never `.innerHTML`, specifically so admin-authored CSS can never break
+ * out into markup/script regardless of its content). There is no
+ * server-side schema for what it must contain beyond "non-empty string";
+ * see templates/README.md for the recommended `:root { --color-bg: ...; }`
+ * pattern that keeps a template visually consistent with the rest of the
+ * app, which every built-in component already reads its colors from.
  */
-#[Fillable(['code', 'name', 'colors'])]
+#[Fillable(['code', 'name', 'css'])]
 class Template extends Model
 {
-    /**
-     * The exact CSS custom-property names (minus the leading `--`) every
-     * template's `colors` must define — matches frontend/src/index.css's
-     * `:root`/`:root[data-template='dark']` blocks exactly, since
-     * ThemeContext.tsx applies these to a runtime template via
-     * document.documentElement.style.setProperty('--' + key, value)
-     * one-for-one. `color-scheme` is the one non-`--`-prefixed entry (a
-     * real CSS property, not a custom property, but set the same way) —
-     * it's what gives native browser UI (scrollbars, form controls,
-     * `<input type="color">` widgets) an OS-native dark appearance instead
-     * of drawing light-themed chrome over a dark page.
-     */
-    public const REQUIRED_COLOR_KEYS = [
-        'color-bg',
-        'color-surface',
-        'color-text',
-        'color-text-muted',
-        'color-border',
-        'color-accent',
-        'color-danger',
-        'color-danger-bg',
-        'color-scheme',
-    ];
-
     /** `code` (e.g. "solarized") is the stable, publicly visible identifier — routes bind on it, not the numeric id. */
     public function getRouteKeyName(): string
     {
         return 'code';
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'colors' => 'array',
-        ];
     }
 }

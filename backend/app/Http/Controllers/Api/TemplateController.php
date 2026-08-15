@@ -13,13 +13,24 @@ use Illuminate\Validation\Rule;
  * Admin-managed additional UI templates beyond the bundled light/dark
  * (briefing 10./11.4, GitHub issue #11). index()/store()/update()/destroy()
  * are plain CRUD with no business rules beyond the reserved-code check in
- * store() and the required-color-key check shared by store()/update(); the
- * other exception is bundled()/installBundled(), which delegate to
- * BundledTemplateRegistry (repo-shipped templates/*.json files, pre-
- * installed on fresh boot via DatabaseSeeder — this pair is what lets an
- * admin (re)install one on demand afterwards instead). Deliberate
- * structural mirror of LanguagePackController — see that class's docblock
- * and the templates table migration for the reasoning this one shares.
+ * store(); the other exception is bundled()/installBundled(), which
+ * delegate to BundledTemplateRegistry (repo-shipped templates/*.json
+ * files, pre-installed on fresh boot via DatabaseSeeder — this pair is
+ * what lets an admin (re)install one on demand afterwards instead).
+ * Deliberate structural mirror of LanguagePackController — see that
+ * class's docblock and the templates table migration for the reasoning
+ * this one shares.
+ *
+ * A template's payload (`css`) is a raw CSS text blob, not a fixed set of
+ * color values — an earlier version of this feature validated a required
+ * 9-key `colors` object, but that was replaced (see the
+ * 2026_08_15_100000_replace_template_colors_with_css migration) so admins
+ * get real theming power ("complete CSS files", not just a handful of
+ * color pickers). There is deliberately no schema validation of `css`'s
+ * *content* beyond "non-empty string within a sane size limit" — unlike
+ * the old colors map, an incomplete/unusual CSS file doesn't corrupt
+ * anything, it just styles less (or differently) than intended, which is
+ * the admin's call to make.
  *
  * index()/show() are registered fully outside the auth:sanctum group in
  * routes/api.php, same reasoning as GET /languages(/{languagePack}):
@@ -30,6 +41,14 @@ use Illuminate\Validation\Rule;
  */
 class TemplateController extends Controller
 {
+    /**
+     * 200,000 characters (~200 KB) — generous for even a large hand-written
+     * theme (the bundled ones here are a few KB each) while still keeping a
+     * malicious/accidental paste from ballooning the `templates` table or
+     * the page's DOM once injected as a <style> element.
+     */
+    private const MAX_CSS_LENGTH = 200000;
+
     public function __construct(private readonly BundledTemplateRegistry $bundledRegistry) {}
 
     public function index()
@@ -46,13 +65,7 @@ class TemplateController extends Controller
      * `light`/`dark` are rejected case-insensitively — those codes belong
      * to the two bundled templates (frontend/src/index.css's static
      * `:root`/`:root[data-template='dark']` rules), which this table has
-     * no row for at all and isn't meant to override. `colors` must contain
-     * every key in Template::REQUIRED_COLOR_KEYS — unlike a language
-     * pack's `translations` (allowed to be partial, i18next falls back
-     * gracefully per missing key), a template missing a color just leaves
-     * that one UI element unstyled rather than degrading gracefully, so
-     * this is validated up front instead of silently shipping a
-     * half-broken template.
+     * no row for at all and isn't meant to override.
      */
     public function store(Request $request)
     {
@@ -61,13 +74,7 @@ class TemplateController extends Controller
         $data = $request->validate([
             'code' => ['required', 'string', 'max:20', 'unique:templates,code', Rule::notIn(['light', 'dark'])],
             'name' => ['required', 'string', 'max:255'],
-            // Deliberately no nested 'colors.*' rule alongside this
-            // top-level 'array' one — same validation pitfall documented on
-            // MetadataController::import()'s `attributes` field and
-            // LanguagePackController::store()'s `translations`; the
-            // required-key check below is a plain closure instead, for the
-            // same reason.
-            'colors' => ['required', 'array', self::requiredColorKeysRule()],
+            'css' => ['required', 'string', 'max:'.self::MAX_CSS_LENGTH],
         ]);
 
         $template = Template::query()->create($data);
@@ -82,7 +89,7 @@ class TemplateController extends Controller
     {
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
-            'colors' => ['sometimes', 'array', self::requiredColorKeysRule()],
+            'css' => ['sometimes', 'string', 'max:'.self::MAX_CSS_LENGTH],
         ]);
 
         $template->update($data);
@@ -91,7 +98,7 @@ class TemplateController extends Controller
             'actor_id' => $request->user()->id,
             'code' => $template->code,
             'name' => $data['name'] ?? null,
-            'colors_changed' => array_key_exists('colors', $data),
+            'css_changed' => array_key_exists('css', $data),
         ]);
 
         return $template;
@@ -125,7 +132,7 @@ class TemplateController extends Controller
      * boot-time installMissing() (which never touches a template an admin
      * has since edited), this is a deliberate admin action — see
      * BundledTemplateRegistry::install()'s docblock — so it always
-     * overwrites name/colors from the shipped file.
+     * overwrites name/css from the shipped file.
      */
     public function installBundled(Request $request, string $code)
     {
@@ -135,15 +142,5 @@ class TemplateController extends Controller
         Log::info('Bundled template installed', ['actor_id' => $request->user()->id, 'code' => $template->code, 'name' => $template->name]);
 
         return response()->json($template, 201);
-    }
-
-    private static function requiredColorKeysRule(): \Closure
-    {
-        return function (string $attribute, mixed $value, \Closure $fail) {
-            $missing = array_diff(Template::REQUIRED_COLOR_KEYS, array_keys(is_array($value) ? $value : []));
-            if ($missing !== []) {
-                $fail('The colors field is missing required key(s): '.implode(', ', $missing).'.');
-            }
-        };
     }
 }

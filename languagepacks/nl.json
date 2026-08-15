@@ -341,17 +341,8 @@
         "bundledReinstall": "Opnieuw installeren",
         "confirmReinstall": "Template \"{{name}}\" opnieuw installeren? Eigen wijzigingen aan dit template gaan verloren en worden vervangen door de meegeleverde versie.",
         "builtInHint": "Licht en donker zijn ingebouwd in de toepassing zelf en verschijnen daarom alleen ter inzage en download in de lijst — ze kunnen niet worden bewerkt of verwijderd.",
-        "colorFields": {
-          "color-bg": "Achtergrond",
-          "color-surface": "Oppervlak (kaarten, kopbalk)",
-          "color-text": "Tekst",
-          "color-text-muted": "Gedempte tekst",
-          "color-border": "Rand",
-          "color-accent": "Accent (links, markeringen)",
-          "color-danger": "Waarschuwingskleur",
-          "color-danger-bg": "Waarschuwingskleur, achtergrond",
-          "color-scheme": "Kleurschema (voor systeemeigen browserelementen)"
-        },
+        "css": "CSS",
+        "cssHint": "De letterlijke inhoud van een CSS-bestand, toegepast zolang dit template is geselecteerd. Het opnieuw definiëren van dezelfde aangepaste eigenschappen die licht/donker gebruiken — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, plus color-scheme — is al genoeg om de hele app consistent van stijl te veranderen, bijv.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Al het andere wat een stylesheet kan, is ook toegestaan.",
         "errors": {
           "codeInvalid": "Deze code is al in gebruik of gereserveerd (light/dark zijn gereserveerd)."
         }

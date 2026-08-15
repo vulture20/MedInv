@@ -341,17 +341,8 @@
         "bundledReinstall": "Reinstalla",
         "confirmReinstall": "Reinstallare il template «{{name}}»? Le modifiche personalizzate a questo template andranno perse e verranno sostituite dalla versione inclusa.",
         "builtInHint": "Chiaro e scuro sono integrati nell'applicazione stessa, quindi compaiono nell'elenco solo per la visualizzazione e il download — non possono essere modificati né eliminati.",
-        "colorFields": {
-          "color-bg": "Sfondo",
-          "color-surface": "Superficie (schede, barra superiore)",
-          "color-text": "Testo",
-          "color-text-muted": "Testo attenuato",
-          "color-border": "Bordo",
-          "color-accent": "Accento (link, evidenziazioni)",
-          "color-danger": "Colore di pericolo",
-          "color-danger-bg": "Colore di pericolo, sfondo",
-          "color-scheme": "Schema colore (per i controlli nativi del browser)"
-        },
+        "css": "CSS",
+        "cssHint": "Il contenuto letterale di un file CSS, applicato finché questo template è selezionato. Ridefinire le stesse proprietà personalizzate usate da chiaro/scuro — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, oltre a color-scheme — basta per ridipingere l'intera applicazione in modo coerente, ad es.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Anche qualsiasi altra cosa un foglio di stile possa fare è consentita.",
         "errors": {
           "codeInvalid": "Questo codice è già utilizzato o riservato (light/dark sono riservati)."
         }
