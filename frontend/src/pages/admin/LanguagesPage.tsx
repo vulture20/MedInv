@@ -19,14 +19,21 @@ const emptyNewPack = { code: '', name: '', translationsText: '' }
 /**
  * Admin CRUD for language packs beyond the bundled German/English
  * (briefing 11.4/17., GitHub issue #15 — backend enforcement is #12).
- * `translations` is a raw JSON <textarea>, deliberately not a field-by-field
+ * `translations` is sourced from an uploaded JSON file (`<input
+ * type="file">`, read via File.text()), deliberately not a field-by-field
  * form: 11.4 explicitly describes the format as editable "mit einem
  * einfachen Texteditor", and the key set mirrors locales/de.json's, which
- * has far too many keys for a generated form to be worth building. Every
- * successful create/update/delete here also updates the live i18next
- * instance (registerLanguagePack()/unregisterLanguagePack()) and republishes
- * the runtime-pack list (setRuntimeLanguagePacks()) so a pack an admin just
- * touched is immediately reflected in this same tab — e.g. SettingsPage.tsx's
+ * has far too many keys for a generated form to be worth building. A raw
+ * textarea was tried first, but pasting a translations blob that size
+ * directly into the page was worse than editing it in a real editor and
+ * uploading the result — especially paired with the "Download" button
+ * every row already has (built-in and admin-created alike), which turns
+ * editing an existing pack into a clean download → edit locally → re-upload
+ * round trip instead. Every successful create/update/delete here also
+ * updates the live i18next instance (registerLanguagePack()/
+ * unregisterLanguagePack()) and republishes the runtime-pack list
+ * (setRuntimeLanguagePacks()) so a pack an admin just touched is
+ * immediately reflected in this same tab — e.g. SettingsPage.tsx's
  * language <select> — without a full reload.
  *
  * Also offers the repo-shipped languagepacks/*.json packs for one-click
@@ -92,6 +99,13 @@ export function LanguagesPage() {
     }
 
     return describeError(err, t)
+  }
+
+  /** Reads the chosen file's text content, used by both the create form's and an edit row's file input. */
+  async function readUploadedFile(e: React.ChangeEvent<HTMLInputElement>): Promise<string | null> {
+    const file = e.target.files?.[0]
+    if (!file) return null
+    return file.text()
   }
 
   async function createPack(e: React.FormEvent) {
@@ -271,12 +285,15 @@ export function LanguagesPage() {
                   <td>{pack.code}</td>
                   <td>
                     <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                    <textarea
-                      rows={10}
-                      value={editTranslationsText}
-                      onChange={(e) => setEditTranslationsText(e.target.value)}
-                      required
-                    />
+                    <label>
+                      {t('admin.languagesPage.translations')}
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setEditTranslationsText(text))}
+                      />
+                    </label>
+                    <p className="hint">{t('admin.languagesPage.editFileHint')}</p>
                   </td>
                   <td>
                     <button onClick={() => void saveEdit(pack.code)}>{t('admin.actions.save')}</button>
@@ -323,11 +340,10 @@ export function LanguagesPage() {
         <p className="hint">{t('admin.languagesPage.translationsHint')}</p>
         <label>
           {t('admin.languagesPage.translations')}
-          <textarea
-            rows={10}
-            value={newPack.translationsText}
-            onChange={(e) => setNewPack({ ...newPack, translationsText: e.target.value })}
-            placeholder='{"login": {"title": "..."}, ...}'
+          <input
+            type="file"
+            accept=".json,application/json"
+            onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setNewPack({ ...newPack, translationsText: text }))}
             required
           />
         </label>

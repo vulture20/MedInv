@@ -223,7 +223,8 @@
         "none": "Todavía no hay paquetes de idioma adicionales.",
         "create": "Añadir paquete de idioma",
         "translations": "Traducciones (JSON)",
-        "translationsHint": "Misma estructura clave-valor que los archivos de idioma integrados (briefing 11.4) — escríbela en un editor de texto y pégala aquí.",
+        "translationsHint": "Misma estructura clave-valor que los archivos de idioma integrados (briefing 11.4) — descarga una de las filas integradas de alemán/inglés de arriba como punto de partida, edítala en un editor de texto y luego sube el archivo resultante abajo.",
+        "editFileHint": "Elige un archivo para reemplazar las traducciones actuales, o deja esto vacío para conservarlas y cambiar solo el nombre.",
         "confirmDelete": "¿Eliminar el paquete de idioma «{{name}}»? Esta acción no se puede deshacer.",
         "bundledTitle": "Paquetes de idioma incluidos",
         "bundledInstalled": "instalado",
@@ -342,7 +343,8 @@
         "confirmReinstall": "¿Reinstalar la plantilla «{{name}}»? Las modificaciones personalizadas de esta plantilla se perderán y se sustituirán por la versión incluida.",
         "builtInHint": "Claro y oscuro están integrados en la propia aplicación, por lo que solo aparecen en la lista para verlos y descargarlos — no se pueden editar ni eliminar.",
         "css": "CSS",
-        "cssHint": "El contenido literal de un archivo CSS, aplicado mientras esta plantilla esté seleccionada. Redefinir las mismas propiedades personalizadas que usan claro/oscuro — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, además de color-scheme — basta para retematizar toda la aplicación de forma coherente, p. ej.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Cualquier otra cosa que una hoja de estilos pueda hacer también es válida.",
+        "cssHint": "El contenido literal de un archivo CSS, aplicado mientras esta plantilla esté seleccionada. Redefinir las mismas propiedades personalizadas que usan claro/oscuro — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, además de color-scheme — basta para retematizar toda la aplicación de forma coherente, p. ej.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Cualquier otra cosa que una hoja de estilos pueda hacer también es válida. Sube un archivo .css abajo — descargar el CSS de claro u oscuro de arriba es un buen punto de partida para editar y volver a subir.",
+        "editFileHint": "Elige un archivo para reemplazar el CSS actual, o deja esto vacío para conservarlo y cambiar solo el nombre.",
         "errors": {
           "codeInvalid": "Este código ya está en uso o reservado (light/dark están reservados)."
         }

@@ -223,7 +223,8 @@
         "none": "Brak dodatkowych pakietów językowych.",
         "create": "Dodaj pakiet językowy",
         "translations": "Tłumaczenia (JSON)",
-        "translationsHint": "Ta sama struktura klucz-wartość co dołączone pliki językowe (briefing 11.4) — napisz w edytorze tekstu i wklej tutaj.",
+        "translationsHint": "Ta sama struktura klucz-wartość co dołączone pliki językowe (briefing 11.4) — pobierz jeden z wbudowanych wierszy niemiecki/angielski powyżej jako punkt wyjścia, edytuj go w edytorze tekstu, a następnie prześlij powstały plik poniżej.",
+        "editFileHint": "Wybierz plik, aby zastąpić bieżące tłumaczenia, lub pozostaw puste, aby je zachować i zmienić tylko nazwę.",
         "confirmDelete": "Usunąć pakiet językowy „{{name}}”? Tej czynności nie można cofnąć.",
         "bundledTitle": "Dołączone pakiety językowe",
         "bundledInstalled": "zainstalowany",
@@ -342,7 +343,8 @@
         "confirmReinstall": "Zainstalować ponownie szablon „{{name}}”? Własne zmiany w tym szablonie zostaną utracone i zastąpione dołączoną wersją.",
         "builtInHint": "Jasny i ciemny są wbudowane w samą aplikację, dlatego na liście pojawiają się tylko do przeglądania i pobierania — nie można ich edytować ani usuwać.",
         "css": "CSS",
-        "cssHint": "Dosłowna zawartość pliku CSS, stosowana, dopóki ten szablon jest wybrany. Ponowne zdefiniowanie tych samych właściwości niestandardowych, których używają jasny/ciemny — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg oraz color-scheme — wystarczy, aby spójnie zmienić wygląd całej aplikacji, np.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Dozwolone jest też wszystko inne, co potrafi arkusz stylów.",
+        "cssHint": "Dosłowna zawartość pliku CSS, stosowana, dopóki ten szablon jest wybrany. Ponowne zdefiniowanie tych samych właściwości niestandardowych, których używają jasny/ciemny — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg oraz color-scheme — wystarczy, aby spójnie zmienić wygląd całej aplikacji, np.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Dozwolone jest też wszystko inne, co potrafi arkusz stylów. Prześlij plik .css poniżej — pobranie CSS jasnego lub ciemnego motywu powyżej to dobry punkt wyjścia do edycji i ponownego przesłania.",
+        "editFileHint": "Wybierz plik, aby zastąpić bieżący CSS, lub pozostaw puste, aby go zachować i zmienić tylko nazwę.",
         "errors": {
           "codeInvalid": "Ten kod jest już zajęty lub zarezerwowany (light/dark są zarezerwowane)."
         }

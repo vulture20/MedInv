@@ -223,7 +223,8 @@
         "none": "追加の言語パックはまだありません。",
         "create": "言語パックを追加",
         "translations": "翻訳データ（JSON）",
-        "translationsHint": "同梱の言語ファイルと同じキー・バリュー構造です（仕様書11.4項）。テキストエディタで作成し、ここに貼り付けてください。",
+        "translationsHint": "同梱の言語ファイルと同じキー・バリュー構造です（仕様書11.4項）。まず上のドイツ語/英語の組み込み行のいずれかを出発点としてダウンロードし、テキストエディタで編集したうえで、できあがったファイルを下からアップロードしてください。",
+        "editFileHint": "現在の翻訳を置き換えるにはファイルを選択してください。空のままにすると翻訳はそのまま保持され、名前のみ変更されます。",
         "confirmDelete": "言語パック「{{name}}」を削除しますか? この操作は元に戻せません。",
         "bundledTitle": "同梱の言語パック",
         "bundledInstalled": "インストール済み",
@@ -342,7 +343,8 @@
         "confirmReinstall": "テンプレート「{{name}}」を再インストールしますか? このテンプレートへの独自の変更は失われ、同梱バージョンに置き換えられます。",
         "builtInHint": "ライトとダークはアプリケーション自体に組み込まれているため、一覧には閲覧とダウンロードのためだけに表示されます — 編集や削除はできません。",
         "css": "CSS",
-        "cssHint": "このテンプレートが選択されている間に適用される、CSSファイルそのままの内容です。ライト/ダークが使用しているのと同じカスタムプロパティ — --color-bg、--color-surface、--color-text、--color-text-muted、--color-border、--color-accent、--color-danger、--color-danger-bg、および color-scheme — を再定義するだけで、アプリ全体を一貫して再配色できます。例::root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }。スタイルシートにできることであれば、それ以外も自由に記述できます。",
+        "cssHint": "このテンプレートが選択されている間に適用される、CSSファイルそのままの内容です。ライト/ダークが使用しているのと同じカスタムプロパティ — --color-bg、--color-surface、--color-text、--color-text-muted、--color-border、--color-accent、--color-danger、--color-danger-bg、および color-scheme — を再定義するだけで、アプリ全体を一貫して再配色できます。例::root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }。スタイルシートにできることであれば、それ以外も自由に記述できます。 下から.cssファイルをアップロードしてください — 上のライトまたはダークのCSSをダウンロードして編集し、再アップロードするのが良い出発点です。",
+        "editFileHint": "現在のCSSを置き換えるにはファイルを選択してください。空のままにするとCSSはそのまま保持され、名前のみ変更されます。",
         "errors": {
           "codeInvalid": "このコードはすでに使用されているか予約済みです（light/darkは予約済みです）。"
         }

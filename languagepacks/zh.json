@@ -223,7 +223,8 @@
         "none": "暂无额外的语言包。",
         "create": "添加语言包",
         "translations": "翻译内容（JSON）",
-        "translationsHint": "结构与内置语言文件相同（键值对，见简报 11.4 章）——请在文本编辑器中编写后粘贴到此处。",
+        "translationsHint": "结构与内置语言文件相同(键值对,见简报 11.4 章)——先下载上方内置的德语/英语行之一作为起点,在文本编辑器中编辑,然后在下方上传生成的文件。",
+        "editFileHint": "选择一个文件以替换当前的翻译,或留空以保留翻译并仅更改名称。",
         "confirmDelete": "删除语言包“{{name}}”？此操作无法撤销。",
         "bundledTitle": "内置语言包",
         "bundledInstalled": "已安装",
@@ -342,7 +343,8 @@
         "confirmReinstall": "重新安装模板“{{name}}”？对该模板的自定义修改将丢失，并被内置版本替换。",
         "builtInHint": "浅色和深色已内置于应用程序中，因此仅在列表中显示以供查看和下载 — 无法编辑或删除。",
         "css": "CSS",
-        "cssHint": "这是在选中此模板期间应用的 CSS 文件的字面内容。只需重新定义浅色/深色主题所使用的相同自定义属性 —— --color-bg、--color-surface、--color-text、--color-text-muted、--color-border、--color-accent、--color-danger、--color-danger-bg,以及 color-scheme —— 即可为整个应用统一换肤,例如::root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }。样式表能做的其他任何事情同样可以使用。",
+        "cssHint": "这是在选中此模板期间应用的 CSS 文件的字面内容。只需重新定义浅色/深色主题所使用的相同自定义属性 —— --color-bg、--color-surface、--color-text、--color-text-muted、--color-border、--color-accent、--color-danger、--color-danger-bg,以及 color-scheme —— 即可为整个应用统一换肤,例如::root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }。样式表能做的其他任何事情同样可以使用。 在下方上传一个 .css 文件 —— 下载上方浅色或深色主题的 CSS 是一个很好的起点,编辑后重新上传即可。",
+        "editFileHint": "选择一个文件以替换当前的 CSS,或留空以保留它并仅更改名称。",
         "errors": {
           "codeInvalid": "该代码已被占用或为保留代码（light/dark 为保留代码）。"
         }

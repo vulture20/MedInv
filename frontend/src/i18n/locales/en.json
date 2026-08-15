@@ -221,7 +221,8 @@
       "none": "No additional language packs yet.",
       "create": "Add language pack",
       "translations": "Translations (JSON)",
-      "translationsHint": "Same key-value structure as the bundled language files (briefing 11.4) — write it in a text editor and paste it here.",
+      "translationsHint": "Same key-value structure as the bundled language files (briefing 11.4) — download one of the built-in German/English rows above as a starting point, edit it in a text editor, then upload the resulting file below.",
+      "editFileHint": "Choose a file to replace the current translations, or leave this empty to keep them and only change the name.",
       "confirmDelete": "Delete language pack \"{{name}}\"? This cannot be undone.",
       "bundledTitle": "Bundled language packs",
       "bundledInstalled": "installed",
@@ -246,7 +247,8 @@
       "confirmReinstall": "Reinstall template \"{{name}}\"? Any custom edits to it will be lost and replaced with the bundled version.",
       "builtInHint": "Light and dark are built into the application itself, so they only appear in the list to view and download — they cannot be edited or deleted.",
       "css": "CSS",
-      "cssHint": "The literal content of a CSS file, applied while this template is selected. Redefining the same custom properties light/dark use — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, plus color-scheme — is enough to reskin the whole app consistently, e.g.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Anything else a stylesheet can do is fair game too.",
+      "cssHint": "The literal content of a CSS file, applied while this template is selected. Redefining the same custom properties light/dark use — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, plus color-scheme — is enough to reskin the whole app consistently, e.g.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Anything else a stylesheet can do is fair game too. Upload a .css file below — downloading light or dark's CSS above is a good starting point to edit and re-upload.",
+      "editFileHint": "Choose a file to replace the current CSS, or leave this empty to keep it and only change the name.",
       "errors": {
         "codeInvalid": "This code is already taken or reserved (light/dark are reserved)."
       }

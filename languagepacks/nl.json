@@ -223,7 +223,8 @@
         "none": "Nog geen extra taalpakketten.",
         "create": "Taalpakket toevoegen",
         "translations": "Vertalingen (JSON)",
-        "translationsHint": "Dezelfde sleutel-waardestructuur als de meegeleverde taalbestanden (briefing 11.4) — schrijf dit in een teksteditor en plak het hier.",
+        "translationsHint": "Dezelfde sleutel-waardestructuur als de meegeleverde taalbestanden (briefing 11.4) — download eerst een van de ingebouwde Duitse/Engelse rijen hierboven als uitgangspunt, bewerk het in een teksteditor en upload het resulterende bestand hieronder.",
+        "editFileHint": "Kies een bestand om de huidige vertalingen te vervangen, of laat dit leeg om ze te behouden en alleen de naam te wijzigen.",
         "confirmDelete": "Taalpakket \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
         "bundledTitle": "Meegeleverde taalpakketten",
         "bundledInstalled": "geïnstalleerd",
@@ -342,7 +343,8 @@
         "confirmReinstall": "Template \"{{name}}\" opnieuw installeren? Eigen wijzigingen aan dit template gaan verloren en worden vervangen door de meegeleverde versie.",
         "builtInHint": "Licht en donker zijn ingebouwd in de toepassing zelf en verschijnen daarom alleen ter inzage en download in de lijst — ze kunnen niet worden bewerkt of verwijderd.",
         "css": "CSS",
-        "cssHint": "De letterlijke inhoud van een CSS-bestand, toegepast zolang dit template is geselecteerd. Het opnieuw definiëren van dezelfde aangepaste eigenschappen die licht/donker gebruiken — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, plus color-scheme — is al genoeg om de hele app consistent van stijl te veranderen, bijv.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Al het andere wat een stylesheet kan, is ook toegestaan.",
+        "cssHint": "De letterlijke inhoud van een CSS-bestand, toegepast zolang dit template is geselecteerd. Het opnieuw definiëren van dezelfde aangepaste eigenschappen die licht/donker gebruiken — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, plus color-scheme — is al genoeg om de hele app consistent van stijl te veranderen, bijv.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Al het andere wat een stylesheet kan, is ook toegestaan. Upload hieronder een .css-bestand — het CSS van licht of donker hierboven downloaden is een goed uitgangspunt om te bewerken en opnieuw te uploaden.",
+        "editFileHint": "Kies een bestand om het huidige CSS te vervangen, of laat dit leeg om het te behouden en alleen de naam te wijzigen.",
         "errors": {
           "codeInvalid": "Deze code is al in gebruik of gereserveerd (light/dark zijn gereserveerd)."
         }

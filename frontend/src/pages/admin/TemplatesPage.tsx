@@ -25,12 +25,16 @@ const emptyNewTemplate = { code: '', name: '', css: '' }
  * reasoning: bundled-template install section, built-in light/dark listed
  * view/download-only, every successful create/edit/delete updates the live
  * ThemeContext registry so a template an admin just touched is immediately
- * selectable in this same tab). `css` is a raw CSS <textarea>, the same
- * "einfacher Texteditor" treatment briefing 11.4 already prescribes for a
- * language pack's `translations` — a template used to be a small fixed set
- * of color-picker fields, but that was replaced with a real CSS text blob
- * so admins get full theming power ("not just color values, complete CSS
- * files") instead of nine hardcoded properties.
+ * selectable in this same tab). `css` is sourced from an uploaded .css
+ * file (`<input type="file">`, read via File.text()) — same reasoning as
+ * LanguagesPage.tsx's identical switch away from a raw textarea: editing a
+ * sizeable stylesheet is a real-editor job, and every row already has a
+ * "Download" button (built-in and admin-created alike), turning editing an
+ * existing template into a clean download → edit locally → re-upload round
+ * trip. A template used to be a small fixed set of color-picker fields, but
+ * that was replaced with a real CSS text blob so admins get full theming
+ * power ("not just color values, complete CSS files") instead of nine
+ * hardcoded properties.
  */
 export function TemplatesPage() {
   const { t } = useTranslation()
@@ -84,6 +88,13 @@ export function TemplatesPage() {
     }
 
     return describeError(err, t)
+  }
+
+  /** Reads the chosen file's text content, used by both the create form's and an edit row's file input. */
+  async function readUploadedFile(e: React.ChangeEvent<HTMLInputElement>): Promise<string | null> {
+    const file = e.target.files?.[0]
+    if (!file) return null
+    return file.text()
   }
 
   async function createTemplate(e: React.FormEvent) {
@@ -242,7 +253,15 @@ export function TemplatesPage() {
                   <td>{template.code}</td>
                   <td>
                     <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                    <textarea rows={10} value={editCss} onChange={(e) => setEditCss(e.target.value)} required />
+                    <label>
+                      {t('admin.templatesPage.css')}
+                      <input
+                        type="file"
+                        accept=".css,text/css"
+                        onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setEditCss(text))}
+                      />
+                    </label>
+                    <p className="hint">{t('admin.templatesPage.editFileHint')}</p>
                   </td>
                   <td>
                     <button onClick={() => void saveEdit(template.code)}>{t('admin.actions.save')}</button>
@@ -289,11 +308,10 @@ export function TemplatesPage() {
         <p className="hint">{t('admin.templatesPage.cssHint')}</p>
         <label>
           {t('admin.templatesPage.css')}
-          <textarea
-            rows={10}
-            value={newTemplate.css}
-            onChange={(e) => setNewTemplate({ ...newTemplate, css: e.target.value })}
-            placeholder=":root { --color-bg: #fdf6e3; ... }"
+          <input
+            type="file"
+            accept=".css,text/css"
+            onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setNewTemplate({ ...newTemplate, css: text }))}
             required
           />
         </label>

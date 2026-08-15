@@ -221,7 +221,8 @@
       "none": "Keine zusätzlichen Sprachpakete vorhanden.",
       "create": "Sprachpaket anlegen",
       "translations": "Übersetzungen (JSON)",
-      "translationsHint": "Gleiche Schlüssel-Wert-Struktur wie die mitgelieferten Sprachdateien (briefing 11.4) — mit einem Texteditor erstellt und hier eingefügt.",
+      "translationsHint": "Gleiche Schlüssel-Wert-Struktur wie die mitgelieferten Sprachdateien (briefing 11.4) — am besten eine der eingebauten Zeilen für Deutsch/Englisch oben als Ausgangspunkt herunterladen, in einem Texteditor bearbeiten und die entstandene Datei unten hochladen.",
+      "editFileHint": "Datei wählen, um die aktuellen Übersetzungen zu ersetzen, oder leer lassen, um sie beizubehalten und nur den Namen zu ändern.",
       "confirmDelete": "Sprachpaket „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
       "bundledTitle": "Mitgelieferte Sprachpakete",
       "bundledInstalled": "installiert",
@@ -246,7 +247,8 @@
       "confirmReinstall": "Template „{{name}}“ neu installieren? Eigene Änderungen an diesem Template gehen dabei verloren und werden durch die mitgelieferte Version ersetzt.",
       "builtInHint": "Hell und Dunkel sind fest in die Anwendung eingebaut und erscheinen daher nur zum Ansehen und Herunterladen in der Liste — bearbeiten oder löschen lassen sie sich nicht.",
       "css": "CSS",
-      "cssHint": "Der wörtliche Inhalt einer CSS-Datei, angewendet solange dieses Template ausgewählt ist. Es reicht, dieselben benutzerdefinierten Eigenschaften wie Hell/Dunkel neu zu definieren — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, sowie color-scheme —, um die gesamte Oberfläche einheitlich neu einzufärben, z. B.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Alles andere, was ein Stylesheet kann, ist ebenfalls möglich.",
+      "cssHint": "Der wörtliche Inhalt einer CSS-Datei, angewendet solange dieses Template ausgewählt ist. Es reicht, dieselben benutzerdefinierten Eigenschaften wie Hell/Dunkel neu zu definieren — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, sowie color-scheme —, um die gesamte Oberfläche einheitlich neu einzufärben, z. B.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Alles andere, was ein Stylesheet kann, ist ebenfalls möglich. Unten eine .css-Datei hochladen — das CSS von Hell oder Dunkel oben herunterzuladen ist ein guter Ausgangspunkt zum Bearbeiten und erneuten Hochladen.",
+      "editFileHint": "Datei wählen, um das aktuelle CSS zu ersetzen, oder leer lassen, um es beizubehalten und nur den Namen zu ändern.",
       "errors": {
         "codeInvalid": "Dieser Code ist bereits vergeben oder reserviert (light/dark sind reserviert)."
       }

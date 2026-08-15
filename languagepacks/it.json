@@ -223,7 +223,8 @@
         "none": "Nessun pacchetto lingua aggiuntivo per ora.",
         "create": "Aggiungi pacchetto lingua",
         "translations": "Traduzioni (JSON)",
-        "translationsHint": "Stessa struttura chiave-valore dei file di lingua inclusi (briefing 11.4) — scrivila in un editor di testo e incollala qui.",
+        "translationsHint": "Stessa struttura chiave-valore dei file di lingua inclusi (briefing 11.4) — scarica una delle righe integrate tedesco/inglese qui sopra come punto di partenza, modificala in un editor di testo, poi carica il file risultante qui sotto.",
+        "editFileHint": "Scegli un file per sostituire le traduzioni attuali, oppure lascia vuoto per mantenerle e modificare solo il nome.",
         "confirmDelete": "Eliminare il pacchetto lingua «{{name}}»? Questa azione non può essere annullata.",
         "bundledTitle": "Pacchetti lingua inclusi",
         "bundledInstalled": "installato",
@@ -342,7 +343,8 @@
         "confirmReinstall": "Reinstallare il template «{{name}}»? Le modifiche personalizzate a questo template andranno perse e verranno sostituite dalla versione inclusa.",
         "builtInHint": "Chiaro e scuro sono integrati nell'applicazione stessa, quindi compaiono nell'elenco solo per la visualizzazione e il download — non possono essere modificati né eliminati.",
         "css": "CSS",
-        "cssHint": "Il contenuto letterale di un file CSS, applicato finché questo template è selezionato. Ridefinire le stesse proprietà personalizzate usate da chiaro/scuro — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, oltre a color-scheme — basta per ridipingere l'intera applicazione in modo coerente, ad es.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Anche qualsiasi altra cosa un foglio di stile possa fare è consentita.",
+        "cssHint": "Il contenuto letterale di un file CSS, applicato finché questo template è selezionato. Ridefinire le stesse proprietà personalizzate usate da chiaro/scuro — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, oltre a color-scheme — basta per ridipingere l'intera applicazione in modo coerente, ad es.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Anche qualsiasi altra cosa un foglio di stile possa fare è consentita. Carica un file .css qui sotto — scaricare il CSS di chiaro o scuro sopra è un buon punto di partenza da modificare e ricaricare.",
+        "editFileHint": "Scegli un file per sostituire il CSS attuale, oppure lascia vuoto per mantenerlo e modificare solo il nome.",
         "errors": {
           "codeInvalid": "Questo codice è già utilizzato o riservato (light/dark sono riservati)."
         }
