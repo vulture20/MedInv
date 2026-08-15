@@ -42,6 +42,10 @@ class BackupExportTest extends TestCase
             'timezone',
             'loglevel',
             'locale.default_language',
+            'oidc.enabled',
+            'oidc.auto_provision',
+            'oidc.default_level',
+            'oidc.provider_name',
         ], array_keys($manifest['system_settings']));
         $this->assertSame(6, $manifest['system_settings']['security.throttle_max_attempts']);
     }

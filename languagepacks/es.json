@@ -26,7 +26,8 @@
       "submit": "Iniciar sesión",
       "mailServerWarning": "El servidor de correo no está disponible o está mal configurado. El restablecimiento de contraseña está desactivado.",
       "forgotPassword": "¿Olvidaste tu contraseña?",
-      "sessionExpired": "Tu sesión ha expirado. Vuelve a iniciar sesión."
+      "sessionExpired": "Tu sesión ha expirado. Vuelve a iniciar sesión.",
+      "ssoButton": "Iniciar sesión con {{provider}}"
     },
     "userMenu": {
       "settings": "Configuración personalizada",
@@ -165,6 +166,7 @@
       "backups": "Copias de seguridad",
       "exportImport": "Exportar/Importar",
       "mail": "Correo",
+      "oidc": "Inicio de sesión único (SSO)",
       "languages": "Paquetes de idioma",
       "settings": "Configuración del sistema",
       "confirmDeleteUser": "¿Eliminar al usuario «{{name}}»? Esta acción no se puede deshacer.",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "El servidor de correo todavía no está configurado.",
         "testMailFailed": "No se pudo enviar el correo de prueba: {{message}}"
       },
+      "oidcSettings": {
+        "intro": "Permite a los usuarios iniciar sesión a través de un proveedor de identidad OpenID Connect externo (p. ej. Pocket ID) además del formulario de contraseña — funciona con cualquier proveedor compatible con el estándar, siguiendo su propio documento de descubrimiento en lugar de algo específico del proveedor.",
+        "enabled": "Activar inicio de sesión OIDC",
+        "providerName": "Nombre del proveedor",
+        "issuer": "URL del emisor (issuer)",
+        "issuerHint": "La URL base del proveedor, sin barra final — se espera que su documento de descubrimiento OpenID esté en «<issuer>/.well-known/openid-configuration».",
+        "clientId": "ID de cliente",
+        "clientSecret": "Secreto de cliente",
+        "clientSecretHint": "Dejar en blanco para conservar el secreto actual.",
+        "autoProvision": "Crear automáticamente una cuenta en el primer inicio de sesión",
+        "autoProvisionHint": "Si está desactivado (predeterminado), solo puede iniciar sesión mediante OIDC una dirección de correo para la que un administrador ya haya creado una cuenta. Si está activado, el primer inicio de sesión crea una cuenta nueva con el nivel de abajo.",
+        "defaultLevel": "Nivel para las cuentas recién creadas",
+        "saved": "Configuración de OIDC guardada."
+      },
       "backupSettings": {
         "title": "Programación de copias de seguridad",
         "intervalMode": "Intervalo",
@@ -374,7 +390,12 @@
       "invalid_credentials": "Credenciales no válidas.",
       "account_locked": "Demasiados intentos fallidos. Esta cuenta está bloqueada temporalmente.",
       "account_deactivated": "Esta cuenta ha sido desactivada.",
-      "generic": "Error al iniciar sesión. Inténtalo de nuevo más tarde o ponte en contacto con un administrador."
+      "generic": "Error al iniciar sesión. Inténtalo de nuevo más tarde o ponte en contacto con un administrador.",
+      "oidc_provider_error": "El inicio de sesión único fue cancelado o rechazado por el proveedor de identidad.",
+      "oidc_state_mismatch": "No se pudo verificar la solicitud de inicio de sesión único. Vuelva a intentarlo.",
+      "oidc_failed": "El inicio de sesión único falló. Vuelva a intentarlo o utilice su contraseña.",
+      "oidc_no_account": "Aún no existe una cuenta para esta identidad. Póngase en contacto con un administrador.",
+      "oidc_account_deactivated": "Esta cuenta ha sido desactivada."
     }
   }
 }

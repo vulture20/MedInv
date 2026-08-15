@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\LanguagePackController;
 use App\Http\Controllers\Api\LibraryController;
 use App\Http\Controllers\Api\MediaItemController;
 use App\Http\Controllers\Api\MetadataController;
+use App\Http\Controllers\Api\OidcAuthController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatisticsController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Api\TemplateController;
 use App\Http\Controllers\Api\UserController;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 // Public (briefing 11.1: login screen is the only thing reachable unauthenticated).
 Route::post('/login', [AuthController::class, 'login']);
@@ -58,6 +60,38 @@ Route::get('/languages/{languagePack}', [LanguagePackController::class, 'show'])
 // create()/update()/destroy() below, in the level:admin group.
 Route::get('/templates', [TemplateController::class, 'index']);
 Route::get('/templates/{template}', [TemplateController::class, 'show']);
+
+// OpenID Connect login (GitHub issue #16) — additional to, not a
+// replacement for, the password form above. /config is a plain JSON
+// probe (public, like /version and /locale) so LoginPage.tsx knows
+// whether to render the SSO button at all. /redirect and /callback are
+// full-page browser navigations, not XHR — see OidcAuthController's own
+// docblock for why they need the 'web' middleware group rather than
+// this file's default statefulApi()-gated session handling, which the
+// callback leg (Referer = the provider's domain) would fail.
+//
+// withoutMiddleware(EnsureFrontendRequestsAreStateful) is deliberate, not
+// redundant with the 'web' group just added: statefulApi() (applied to
+// every route in this file) conditionally prepends its own
+// EncryptCookies+StartSession whenever a request's Origin/Referer happens
+// to match sanctum.stateful — true for /redirect specifically, since it's
+// a real navigation initiated from this app's own SPA. Without this
+// exclusion, /redirect would get session-handling middleware applied
+// *twice* (once from that conditional prepend, once from 'web' below),
+// and a second EncryptCookies pass tries to decrypt a cookie value the
+// first pass already decrypted in place — confirmed live via a real
+// browser: the session written to mid-request silently never persisted,
+// StartSession's second pass instead started a brand new one every time.
+// Excluding Sanctum's conditional middleware here makes 'web' the *only*
+// session mechanism for both routes, applied exactly once, regardless of
+// which leg's Origin/Referer would or wouldn't have otherwise matched.
+Route::get('/auth/oidc/config', [OidcAuthController::class, 'config']);
+Route::middleware('web')
+    ->withoutMiddleware(EnsureFrontendRequestsAreStateful::class)
+    ->group(function () {
+        Route::get('/auth/oidc/redirect', [OidcAuthController::class, 'redirect']);
+        Route::get('/auth/oidc/callback', [OidcAuthController::class, 'callback']);
+    });
 
 // Sanctum SPA session auth (bootstrap/app.php: ->statefulApi()).
 Route::middleware(['auth:sanctum', 'active'])->group(function () {
@@ -154,6 +188,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::put('/settings/loglevel', [AdminSettingsController::class, 'updateLoglevel']);
         Route::put('/settings/locale', [AdminSettingsController::class, 'updateLocale']);
         Route::put('/settings/timezone', [AdminSettingsController::class, 'updateTimezone']);
+        Route::put('/settings/oidc', [AdminSettingsController::class, 'updateOidc']);
 
         // Actual "only admins may add a language pack" enforcement (briefing
         // 11.4/17., GitHub issue #12) — reading a pack is public, see

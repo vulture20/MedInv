@@ -26,7 +26,8 @@
       "submit": "Entrar",
       "mailServerWarning": "O servidor de e-mail está inacessível ou mal configurado. A redefinição de senha está desativada.",
       "forgotPassword": "Esqueceu sua senha?",
-      "sessionExpired": "Sua sessão expirou. Faça login novamente."
+      "sessionExpired": "Sua sessão expirou. Faça login novamente.",
+      "ssoButton": "Entrar com {{provider}}"
     },
     "userMenu": {
       "settings": "Configurações personalizadas",
@@ -165,6 +166,7 @@
       "backups": "Backups",
       "exportImport": "Exportar/Importar",
       "mail": "E-mail",
+      "oidc": "Login único (SSO)",
       "languages": "Pacotes de idioma",
       "settings": "Configurações do sistema",
       "confirmDeleteUser": "Excluir o usuário \"{{name}}\"? Esta ação não pode ser desfeita.",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "O servidor de e-mail ainda não está configurado.",
         "testMailFailed": "Não foi possível enviar o e-mail de teste: {{message}}"
       },
+      "oidcSettings": {
+        "intro": "Permite que os usuários entrem por meio de um provedor de identidade OpenID Connect externo (por ex. Pocket ID), além do formulário de senha — qualquer provedor compatível com o padrão funciona, seguindo seu próprio documento de descoberta em vez de algo específico do provedor.",
+        "enabled": "Ativar login OIDC",
+        "providerName": "Nome do provedor",
+        "issuer": "URL do emissor (issuer)",
+        "issuerHint": "A URL base do provedor, sem barra final — espera-se que o documento de descoberta OpenID esteja em \"<issuer>/.well-known/openid-configuration\".",
+        "clientId": "ID do cliente",
+        "clientSecret": "Segredo do cliente",
+        "clientSecretHint": "Deixe em branco para manter o segredo atual.",
+        "autoProvision": "Criar automaticamente uma conta no primeiro login",
+        "autoProvisionHint": "Quando desativado (padrão), somente um endereço de e-mail para o qual um administrador já criou uma conta pode entrar via OIDC. Quando ativado, o primeiro login cria uma nova conta com o nível abaixo.",
+        "defaultLevel": "Nível para contas recém-criadas",
+        "saved": "Configurações OIDC salvas."
+      },
       "backupSettings": {
         "title": "Agendamento de backup",
         "intervalMode": "Intervalo",
@@ -374,7 +390,12 @@
       "invalid_credentials": "Credenciais inválidas.",
       "account_locked": "Muitas tentativas falhas. Esta conta está temporariamente bloqueada.",
       "account_deactivated": "Esta conta foi desativada.",
-      "generic": "Falha no login. Tente novamente mais tarde ou entre em contato com um administrador."
+      "generic": "Falha no login. Tente novamente mais tarde ou entre em contato com um administrador.",
+      "oidc_provider_error": "O login único foi cancelado ou recusado pelo provedor de identidade.",
+      "oidc_state_mismatch": "Não foi possível verificar a solicitação de login único. Tente novamente.",
+      "oidc_failed": "O login único falhou. Tente novamente ou use sua senha.",
+      "oidc_no_account": "Ainda não existe uma conta para esta identidade. Entre em contato com um administrador.",
+      "oidc_account_deactivated": "Esta conta foi desativada."
     }
   }
 }

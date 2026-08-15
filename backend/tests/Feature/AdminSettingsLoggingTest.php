@@ -135,4 +135,23 @@ class AdminSettingsLoggingTest extends TestCase
 
         $this->putJson('/api/admin/settings/locale', ['default_language' => 'de'])->assertOk();
     }
+
+    public function test_updating_oidc_settings_is_logged_with_the_client_secret_redacted(): void
+    {
+        $admin = $this->actingAsAdmin();
+
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
+        Log::shouldReceive('info')->once()->with('Settings updated', Mockery::on(function ($context) use ($admin) {
+            return $context['actor_id'] === $admin->id
+                && $context['category'] === 'oidc'
+                && $context['changes']['issuer'] === 'https://idp.example.test'
+                && $context['changes']['client_secret'] === '[REDACTED]';
+        }));
+
+        $this->putJson('/api/admin/settings/oidc', [
+            'enabled' => true, 'issuer' => 'https://idp.example.test', 'client_id' => 'medinv',
+            'client_secret' => 'TOTALLY-SECRET-OIDC-CLIENT-SECRET', 'provider_name' => 'Pocket ID',
+            'auto_provision' => false, 'default_level' => 'user',
+        ])->assertOk();
+    }
 }

@@ -1,13 +1,28 @@
-import { useState } from 'react'
-import { Link, Navigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { useAuth } from '../../auth/AuthContext'
 import { Logo } from '../../components/Logo'
 import { VersionBadge } from '../../components/VersionBadge'
+import { apiClient, API_BASE } from '../../api/client'
 
 /** error_code values AuthController::loginError() can return — kept in sync with backend/app/Http/Controllers/Api/AuthController.php. */
 const KNOWN_ERROR_CODES = ['invalid_credentials', 'account_locked', 'account_deactivated'] as const
+
+/**
+ * error_code values OidcAuthController::failure() can redirect back here
+ * with as `?oidc_error=<code>` — kept in sync with that method. Arrives via
+ * a query param rather than an axios error response, since the whole OIDC
+ * flow is a full-page browser redirect (GitHub issue #16), not an XHR call.
+ */
+const KNOWN_OIDC_ERROR_CODES = [
+  'oidc_provider_error',
+  'oidc_state_mismatch',
+  'oidc_failed',
+  'oidc_no_account',
+  'oidc_account_deactivated',
+] as const
 
 /**
  * Login screen (briefing 11.1). Shows the red admin mail-server warning and
@@ -21,10 +36,36 @@ export function LoginPage() {
   const { t } = useTranslation()
   const { user, mailServerHealthy, login, sessionEndReason } = useAuth()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [oidcConfig, setOidcConfig] = useState<{ enabled: boolean; provider_name: string } | null>(null)
+
+  // Public probe (GitHub issue #16) — decides whether to render the SSO
+  // button at all, and with what label, without requiring authentication.
+  useEffect(() => {
+    apiClient
+      .get<{ enabled: boolean; provider_name: string }>('/auth/oidc/config')
+      .then(({ data }) => setOidcConfig(data))
+      .catch(() => setOidcConfig({ enabled: false, provider_name: '' }))
+  }, [])
+
+  // OidcAuthController::failure() redirects back here with `?oidc_error=<code>`
+  // instead of an axios error response, since the whole flow is a full-page
+  // browser redirect rather than an XHR call — same KNOWN_ERROR_CODES-style
+  // translation, just sourced from the URL instead of a failed request.
+  useEffect(() => {
+    const oidcError = searchParams.get('oidc_error')
+    if (!oidcError) return
+    if ((KNOWN_OIDC_ERROR_CODES as readonly string[]).includes(oidcError)) {
+      setError(t(`errors.${oidcError}`))
+    } else {
+      setError(t('errors.generic'))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (user) {
     const from = (location.state as { from?: Location })?.from?.pathname ?? '/'
@@ -91,6 +132,16 @@ export function LoginPage() {
         <button type="submit" disabled={submitting}>
           {t('login.submit')}
         </button>
+
+        {/* Additional to, not a replacement for, the password form above (GitHub issue #16) — only
+            rendered once /auth/oidc/config confirms the admin has actually configured a provider. A
+            plain <a>, not a client-side navigation: the whole point is leaving this SPA entirely to
+            authenticate at the provider, then coming back once OidcAuthController::callback() redirects here. */}
+        {oidcConfig?.enabled && (
+          <a href={`${API_BASE}/api/auth/oidc/redirect`} className="login-form__sso">
+            {t('login.ssoButton', { provider: oidcConfig.provider_name })}
+          </a>
+        )}
 
         <Link to="/password/forgot" aria-disabled={!mailServerHealthy} className="login-form__forgot">
           {t('login.forgotPassword')}

@@ -254,6 +254,23 @@ a {
   color: var(--color-text-muted);
 }
 
+/* OIDC "login with <provider>" link (GitHub issue #16, LoginPage.tsx) — a plain <a>, not a
+ * <button> (it's a real navigation away from the SPA), styled to look like one anyway so it
+ * doesn't read as a stray text link next to the password form's actual submit button. */
+.login-form__sso {
+  display: block;
+  text-align: center;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.login-form__sso:hover {
+  background: var(--color-bg);
+}
+
 .warning {
   padding: 0.5rem 0.75rem;
   border-radius: 6px;

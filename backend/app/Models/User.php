@@ -19,7 +19,7 @@ use Laravel\Sanctum\HasApiTokens;
  * read access on top of that is governed by LibraryShare (4.3), not by this
  * model.
  */
-#[Fillable(['name', 'email', 'password', 'level', 'is_active', 'is_protected', 'preferred_language', 'preferred_template'])]
+#[Fillable(['name', 'email', 'password', 'level', 'is_active', 'is_protected', 'preferred_language', 'preferred_template', 'oidc_subject'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

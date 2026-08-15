@@ -55,6 +55,17 @@ class AdminSettingsController extends Controller
                 'default_language' => SystemSetting::get('locale.default_language', 'en'),
             ],
             'timezone' => SystemSetting::get('timezone', SystemSetting::defaultTimezone()),
+            'oidc' => [
+                'enabled' => SystemSetting::get('oidc.enabled', false),
+                'issuer' => SystemSetting::get('oidc.issuer'),
+                'client_id' => SystemSetting::get('oidc.client_id'),
+                // client_secret deliberately omitted — same "never echo a
+                // stored secret back to the admin UI" policy as mail.password
+                // above; OidcPage.tsx's secret field always starts empty.
+                'provider_name' => SystemSetting::get('oidc.provider_name', 'Single Sign-On'),
+                'auto_provision' => SystemSetting::get('oidc.auto_provision', false),
+                'default_level' => SystemSetting::get('oidc.default_level', 'user'),
+            ],
         ];
     }
 
@@ -63,13 +74,16 @@ class AdminSettingsController extends Controller
      * logged at all — an admin changing mail/security/backup-schedule/etc.
      * configuration left no record beyond whatever the value happens to be
      * *now*, with no way to tell who changed it or when. $changes is logged
-     * as-is except for a `password` key (updateMail()'s SMTP password),
-     * which must never reach the log in the clear.
+     * as-is except for a `password` key (updateMail()'s SMTP password) or a
+     * `client_secret` key (updateOidc()'s OIDC client secret), neither of
+     * which may ever reach the log in the clear.
      */
     private function logSettingsChange(Request $request, string $category, array $changes): void
     {
-        if (array_key_exists('password', $changes) && $changes['password'] !== null) {
-            $changes['password'] = '[REDACTED]';
+        foreach (['password', 'client_secret'] as $secretKey) {
+            if (array_key_exists($secretKey, $changes) && $changes[$secretKey] !== null) {
+                $changes[$secretKey] = '[REDACTED]';
+            }
         }
 
         Log::info('Settings updated', ['actor_id' => $request->user()->id, 'category' => $category, 'changes' => $changes]);
@@ -234,5 +248,39 @@ class AdminSettingsController extends Controller
         $this->logSettingsChange($request, 'locale', $data);
 
         return response()->json(['default_language' => $data['default_language']]);
+    }
+
+    /**
+     * GitHub issue #16. `client_secret` follows the exact same convention
+     * as updateMail()'s `password`: never echoed back by index() (so the
+     * field on OidcPage.tsx always starts empty), and left untouched here
+     * when submitted empty — only actually stored when the admin types a
+     * new one. `default_level` is restricted to guest/user at the
+     * validation layer already, but OidcAuthController::resolveUser()
+     * clamps it again independently rather than trusting that no other
+     * path could ever write an unvalidated value into this setting.
+     */
+    public function updateOidc(Request $request)
+    {
+        $data = $request->validate([
+            'enabled' => ['required', 'boolean'],
+            'issuer' => ['nullable', 'string', 'url'],
+            'client_id' => ['nullable', 'string'],
+            'client_secret' => ['nullable', 'string'],
+            'provider_name' => ['nullable', 'string', 'max:255'],
+            'auto_provision' => ['required', 'boolean'],
+            'default_level' => ['required', Rule::in(['guest', 'user'])],
+        ]);
+
+        foreach ($data as $key => $value) {
+            if ($key === 'client_secret' && ($value === null || $value === '')) {
+                continue;
+            }
+            SystemSetting::set("oidc.{$key}", $value);
+        }
+
+        $this->logSettingsChange($request, 'oidc', $data);
+
+        return $this->index()['oidc'];
     }
 }

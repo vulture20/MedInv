@@ -26,7 +26,8 @@
       "submit": "Inloggen",
       "mailServerWarning": "De mailserver is niet bereikbaar of onjuist geconfigureerd. Wachtwoord herstellen is uitgeschakeld.",
       "forgotPassword": "Wachtwoord vergeten?",
-      "sessionExpired": "Uw sessie is verlopen. Log opnieuw in."
+      "sessionExpired": "Uw sessie is verlopen. Log opnieuw in.",
+      "ssoButton": "Inloggen met {{provider}}"
     },
     "userMenu": {
       "settings": "Persoonlijke instellingen",
@@ -165,6 +166,7 @@
       "backups": "Back-ups",
       "exportImport": "Exporteren/Importeren",
       "mail": "E-mail",
+      "oidc": "Single Sign-On",
       "languages": "Taalpakketten",
       "settings": "Systeeminstellingen",
       "confirmDeleteUser": "Gebruiker \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "De mailserver is nog niet geconfigureerd.",
         "testMailFailed": "De testmail kon niet worden verzonden: {{message}}"
       },
+      "oidcSettings": {
+        "intro": "Laat gebruikers naast het wachtwoordformulier ook inloggen via een externe OpenID Connect-identiteitsprovider (bijv. Pocket ID) — elke standaardconforme provider werkt, doordat diens eigen discovery-document wordt gevolgd in plaats van iets providerspecifieks.",
+        "enabled": "OIDC-login inschakelen",
+        "providerName": "Providernaam",
+        "issuer": "Issuer-URL",
+        "issuerHint": "De basis-URL van de provider, zonder afsluitende schuine streep — het OpenID-discoverydocument wordt verwacht op \"<issuer>/.well-known/openid-configuration\".",
+        "clientId": "Client-ID",
+        "clientSecret": "Clientgeheim",
+        "clientSecretHint": "Laat leeg om het huidige geheim te behouden.",
+        "autoProvision": "Automatisch een account aanmaken bij eerste login",
+        "autoProvisionHint": "Indien uitgeschakeld (standaard) kan alleen een e-mailadres waarvoor een beheerder al een account heeft aangemaakt via OIDC inloggen. Indien ingeschakeld, wordt bij de eerste login een nieuw account aangemaakt met het niveau hieronder.",
+        "defaultLevel": "Niveau voor nieuw aangemaakte accounts",
+        "saved": "OIDC-instellingen opgeslagen."
+      },
       "backupSettings": {
         "title": "Back-upschema",
         "intervalMode": "Interval",
@@ -374,7 +390,12 @@
       "invalid_credentials": "Ongeldige inloggegevens.",
       "account_locked": "Te veel mislukte pogingen. Dit account is tijdelijk vergrendeld.",
       "account_deactivated": "Dit account is gedeactiveerd.",
-      "generic": "Inloggen mislukt. Probeer het later opnieuw of neem contact op met een beheerder."
+      "generic": "Inloggen mislukt. Probeer het later opnieuw of neem contact op met een beheerder.",
+      "oidc_provider_error": "Single sign-on is geannuleerd of geweigerd door de identiteitsprovider.",
+      "oidc_state_mismatch": "Het single-sign-on-verzoek kon niet worden geverifieerd. Probeer het opnieuw.",
+      "oidc_failed": "Single sign-on is mislukt. Probeer het opnieuw of gebruik in plaats daarvan uw wachtwoord.",
+      "oidc_no_account": "Er bestaat nog geen account voor deze identiteit. Neem contact op met een beheerder.",
+      "oidc_account_deactivated": "Dit account is gedeactiveerd."
     }
   }
 }

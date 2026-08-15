@@ -26,7 +26,8 @@
       "submit": "Oturum aç",
       "mailServerWarning": "Posta sunucusuna ulaşılamıyor veya yanlış yapılandırılmış. Parola sıfırlama devre dışı.",
       "forgotPassword": "Parolanızı mı unuttunuz?",
-      "sessionExpired": "Oturumunuzun süresi doldu. Lütfen tekrar oturum açın."
+      "sessionExpired": "Oturumunuzun süresi doldu. Lütfen tekrar oturum açın.",
+      "ssoButton": "{{provider}} ile giriş yap"
     },
     "userMenu": {
       "settings": "Kişisel ayarlar",
@@ -165,6 +166,7 @@
       "backups": "Yedeklemeler",
       "exportImport": "Dışa Aktar/İçe Aktar",
       "mail": "Posta",
+      "oidc": "Tek Oturum Açma (SSO)",
       "languages": "Dil paketleri",
       "settings": "Sistem ayarları",
       "confirmDeleteUser": "\"{{name}}\" kullanıcısı silinsin mi? Bu işlem geri alınamaz.",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "Posta sunucusu henüz yapılandırılmamış.",
         "testMailFailed": "Test e-postası gönderilemedi: {{message}}"
       },
+      "oidcSettings": {
+        "intro": "Kullanıcıların parola formuna ek olarak harici bir OpenID Connect kimlik sağlayıcısı (örn. Pocket ID) üzerinden giriş yapmasına izin verir — sağlayıcıya özgü bir uygulama yerine kendi keşif belgesini takip ettiği için standartlara uygun her sağlayıcı çalışır.",
+        "enabled": "OIDC girişini etkinleştir",
+        "providerName": "Sağlayıcı adı",
+        "issuer": "Issuer URL'si",
+        "issuerHint": "Sağlayıcının, sonunda eğik çizgi olmayan taban URL'si — OpenID keşif belgesinin \"<issuer>/.well-known/openid-configuration\" adresinde olması beklenir.",
+        "clientId": "İstemci Kimliği",
+        "clientSecret": "İstemci gizli anahtarı",
+        "clientSecretHint": "Mevcut gizli anahtarı korumak için boş bırakın.",
+        "autoProvision": "İlk girişte otomatik olarak hesap oluştur",
+        "autoProvisionHint": "Devre dışı bırakıldığında (varsayılan), yalnızca bir yöneticinin zaten hesap oluşturduğu bir e-posta adresi OIDC ile giriş yapabilir. Etkinleştirildiğinde, ilk giriş aşağıdaki düzeyde yeni bir hesap oluşturur.",
+        "defaultLevel": "Yeni oluşturulan hesaplar için düzey",
+        "saved": "OIDC ayarları kaydedildi."
+      },
       "backupSettings": {
         "title": "Yedekleme zamanlaması",
         "intervalMode": "Aralık",
@@ -374,7 +390,12 @@
       "invalid_credentials": "Geçersiz kimlik bilgileri.",
       "account_locked": "Çok fazla başarısız deneme. Bu hesap geçici olarak kilitlendi.",
       "account_deactivated": "Bu hesap devre dışı bırakıldı.",
-      "generic": "Oturum açma başarısız. Lütfen daha sonra tekrar deneyin veya bir yöneticiyle iletişime geçin."
+      "generic": "Oturum açma başarısız. Lütfen daha sonra tekrar deneyin veya bir yöneticiyle iletişime geçin.",
+      "oidc_provider_error": "Tek oturum açma iptal edildi veya kimlik sağlayıcı tarafından reddedildi.",
+      "oidc_state_mismatch": "Tek oturum açma isteği doğrulanamadı. Lütfen tekrar deneyin.",
+      "oidc_failed": "Tek oturum açma başarısız oldu. Lütfen tekrar deneyin veya bunun yerine parolanızı kullanın.",
+      "oidc_no_account": "Bu kimlik için henüz bir hesap yok. Lütfen bir yöneticiyle iletişime geçin.",
+      "oidc_account_deactivated": "Bu hesap devre dışı bırakıldı."
     }
   }
 }

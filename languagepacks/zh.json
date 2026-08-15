@@ -26,7 +26,8 @@
       "submit": "登录",
       "mailServerWarning": "邮件服务器无法访问或配置有误。密码重置功能已禁用。",
       "forgotPassword": "忘记密码？",
-      "sessionExpired": "您的会话已过期，请重新登录。"
+      "sessionExpired": "您的会话已过期，请重新登录。",
+      "ssoButton": "使用 {{provider}} 登录"
     },
     "userMenu": {
       "settings": "个人设置",
@@ -165,6 +166,7 @@
       "backups": "备份",
       "exportImport": "导出/导入",
       "mail": "邮件",
+      "oidc": "单点登录",
       "languages": "语言包",
       "settings": "系统设置",
       "confirmDeleteUser": "删除用户“{{name}}”？此操作无法撤销。",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "邮件服务器尚未配置。",
         "testMailFailed": "测试邮件发送失败：{{message}}"
       },
+      "oidcSettings": {
+        "intro": "允许用户除密码表单外，还可以通过外部 OpenID Connect 身份提供商（例如 Pocket ID）登录 —— 任何符合标准的提供商都可以使用，因为遵循的是其自身的发现文档，而非特定于提供商的实现。",
+        "enabled": "启用 OIDC 登录",
+        "providerName": "提供商名称",
+        "issuer": "颁发者（Issuer）URL",
+        "issuerHint": "提供商的基础 URL，末尾不带斜杠 —— 其 OpenID 发现文档应位于“<issuer>/.well-known/openid-configuration”。",
+        "clientId": "客户端 ID",
+        "clientSecret": "客户端密钥",
+        "clientSecretHint": "留空以保留当前密钥。",
+        "autoProvision": "首次登录时自动创建账户",
+        "autoProvisionHint": "禁用时（默认），只有管理员已为其创建账户的电子邮件地址才能通过 OIDC 登录。启用时，首次登录将以下方选择的级别创建一个新账户。",
+        "defaultLevel": "新创建账户的级别",
+        "saved": "OIDC 设置已保存。"
+      },
       "backupSettings": {
         "title": "备份计划",
         "intervalMode": "间隔",
@@ -374,7 +390,12 @@
       "invalid_credentials": "凭据无效。",
       "account_locked": "失败尝试次数过多，此账户已被暂时锁定。",
       "account_deactivated": "此账户已被停用。",
-      "generic": "登录失败，请稍后重试或联系管理员。"
+      "generic": "登录失败，请稍后重试或联系管理员。",
+      "oidc_provider_error": "单点登录已被取消或被身份提供商拒绝。",
+      "oidc_state_mismatch": "无法验证单点登录请求。请重试。",
+      "oidc_failed": "单点登录失败。请重试，或改用密码登录。",
+      "oidc_no_account": "该身份尚不存在对应账户。请联系管理员。",
+      "oidc_account_deactivated": "此账户已被停用。"
     }
   }
 }

@@ -26,7 +26,8 @@
       "submit": "Zaloguj się",
       "mailServerWarning": "Serwer poczty jest niedostępny lub błędnie skonfigurowany. Resetowanie hasła jest wyłączone.",
       "forgotPassword": "Nie pamiętasz hasła?",
-      "sessionExpired": "Twoja sesja wygasła. Zaloguj się ponownie."
+      "sessionExpired": "Twoja sesja wygasła. Zaloguj się ponownie.",
+      "ssoButton": "Zaloguj się przez {{provider}}"
     },
     "userMenu": {
       "settings": "Ustawienia użytkownika",
@@ -165,6 +166,7 @@
       "backups": "Kopie zapasowe",
       "exportImport": "Eksport/Import",
       "mail": "Poczta",
+      "oidc": "Logowanie jednokrotne (SSO)",
       "languages": "Pakiety językowe",
       "settings": "Ustawienia systemowe",
       "confirmDeleteUser": "Usunąć użytkownika „{{name}}”? Tej czynności nie można cofnąć.",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "Serwer poczty nie jest jeszcze skonfigurowany.",
         "testMailFailed": "Nie udało się wysłać e-maila testowego: {{message}}"
       },
+      "oidcSettings": {
+        "intro": "Umożliwia użytkownikom logowanie za pomocą zewnętrznego dostawcy tożsamości OpenID Connect (np. Pocket ID) oprócz formularza z hasłem — działa z każdym dostawcą zgodnym ze standardem, ponieważ wykorzystywany jest jego własny dokument discovery, a nie rozwiązanie specyficzne dla dostawcy.",
+        "enabled": "Włącz logowanie OIDC",
+        "providerName": "Nazwa dostawcy",
+        "issuer": "URL wystawcy (issuer)",
+        "issuerHint": "Podstawowy URL dostawcy, bez ukośnika na końcu — dokument discovery OpenID powinien znajdować się pod adresem „<issuer>/.well-known/openid-configuration”.",
+        "clientId": "ID klienta",
+        "clientSecret": "Sekret klienta",
+        "clientSecretHint": "Pozostaw puste, aby zachować bieżący sekret.",
+        "autoProvision": "Automatycznie utwórz konto przy pierwszym logowaniu",
+        "autoProvisionHint": "Gdy wyłączone (domyślnie), zalogować się przez OIDC może tylko adres e-mail, dla którego administrator już utworzył konto. Gdy włączone, pierwsze logowanie tworzy nowe konto z poziomem wybranym poniżej.",
+        "defaultLevel": "Poziom dla nowo utworzonych kont",
+        "saved": "Zapisano ustawienia OIDC."
+      },
       "backupSettings": {
         "title": "Harmonogram kopii zapasowych",
         "intervalMode": "Interwał",
@@ -374,7 +390,12 @@
       "invalid_credentials": "Nieprawidłowe dane uwierzytelniające.",
       "account_locked": "Zbyt wiele nieudanych prób. To konto jest tymczasowo zablokowane.",
       "account_deactivated": "To konto zostało dezaktywowane.",
-      "generic": "Logowanie nie powiodło się. Spróbuj ponownie później lub skontaktuj się z administratorem."
+      "generic": "Logowanie nie powiodło się. Spróbuj ponownie później lub skontaktuj się z administratorem.",
+      "oidc_provider_error": "Logowanie jednokrotne zostało anulowane lub odrzucone przez dostawcę tożsamości.",
+      "oidc_state_mismatch": "Nie udało się zweryfikować żądania logowania jednokrotnego. Spróbuj ponownie.",
+      "oidc_failed": "Logowanie jednokrotne nie powiodło się. Spróbuj ponownie lub zaloguj się hasłem.",
+      "oidc_no_account": "Dla tej tożsamości nie istnieje jeszcze konto. Skontaktuj się z administratorem.",
+      "oidc_account_deactivated": "To konto zostało dezaktywowane."
     }
   }
 }

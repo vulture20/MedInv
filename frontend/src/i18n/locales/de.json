@@ -23,7 +23,8 @@
     "submit": "Anmelden",
     "mailServerWarning": "Der Mailserver ist nicht erreichbar oder falsch konfiguriert. Die Passwort-Zurücksetzen-Funktion ist deaktiviert.",
     "forgotPassword": "Passwort vergessen?",
-    "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an."
+    "sessionExpired": "Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.",
+    "ssoButton": "Mit {{provider}} anmelden"
   },
   "userMenu": {
     "settings": "Benutzerdefinierte Einstellungen",
@@ -162,6 +163,7 @@
     "backups": "Backups",
     "exportImport": "Export/Import",
     "mail": "Mail",
+    "oidc": "Single Sign-On",
     "languages": "Sprachpakete",
     "templates": "Templates",
     "settings": "Systemeinstellungen",
@@ -291,6 +293,20 @@
       "testMailNotConfigured": "Der Mailserver ist noch nicht konfiguriert.",
       "testMailFailed": "Die Testmail konnte nicht versendet werden: {{message}}"
     },
+    "oidcSettings": {
+      "intro": "Ermöglicht Benutzern die Anmeldung über einen externen OpenID-Connect-Identitätsanbieter (z. B. Pocket ID) zusätzlich zum Passwort-Formular — jeder standardkonforme Anbieter funktioniert, da anhand von dessen eigenem Discovery-Dokument vorgegangen wird statt anbieterspezifisch.",
+      "enabled": "OIDC-Anmeldung aktivieren",
+      "providerName": "Anbietername",
+      "issuer": "Issuer-URL",
+      "issuerHint": "Die Basis-URL des Anbieters, ohne abschließenden Schrägstrich — dessen OpenID-Discovery-Dokument wird unter „<issuer>/.well-known/openid-configuration“ erwartet.",
+      "clientId": "Client-ID",
+      "clientSecret": "Client-Secret",
+      "clientSecretHint": "Leer lassen, um das aktuelle Secret beizubehalten.",
+      "autoProvision": "Bei erster Anmeldung automatisch ein Konto anlegen",
+      "autoProvisionHint": "Ist diese Option deaktiviert (Standard), können sich nur E-Mail-Adressen per OIDC anmelden, für die bereits ein Admin ein Konto angelegt hat. Ist sie aktiviert, wird bei der ersten Anmeldung ein neues Konto mit der unten gewählten Berechtigungsstufe angelegt.",
+      "defaultLevel": "Berechtigungsstufe für neu angelegte Konten",
+      "saved": "OIDC-Einstellungen gespeichert."
+    },
     "backupSettings": {
       "title": "Backup-Zeitplan",
       "intervalMode": "Intervall",
@@ -371,6 +387,11 @@
     "invalid_credentials": "Ungültige Anmeldedaten.",
     "account_locked": "Zu viele Fehlversuche. Dieses Konto ist vorübergehend gesperrt.",
     "account_deactivated": "Dieses Konto wurde deaktiviert.",
-    "generic": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut oder wenden Sie sich an einen Administrator."
+    "generic": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut oder wenden Sie sich an einen Administrator.",
+    "oidc_provider_error": "Single Sign-On wurde abgebrochen oder vom Identitätsanbieter abgelehnt.",
+    "oidc_state_mismatch": "Die Single-Sign-On-Anfrage konnte nicht verifiziert werden. Bitte erneut versuchen.",
+    "oidc_failed": "Single Sign-On ist fehlgeschlagen. Bitte erneut versuchen oder stattdessen mit Passwort anmelden.",
+    "oidc_no_account": "Für diese Identität existiert noch kein Konto. Bitte an einen Administrator wenden.",
+    "oidc_account_deactivated": "Dieses Konto wurde deaktiviert."
   }
 }

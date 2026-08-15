@@ -26,7 +26,8 @@
       "submit": "Se connecter",
       "mailServerWarning": "Le serveur de messagerie est inaccessible ou mal configuré. La réinitialisation du mot de passe est désactivée.",
       "forgotPassword": "Mot de passe oublié ?",
-      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+      "ssoButton": "Se connecter avec {{provider}}"
     },
     "userMenu": {
       "settings": "Paramètres personnalisés",
@@ -165,6 +166,7 @@
       "backups": "Sauvegardes",
       "exportImport": "Export/Import",
       "mail": "Messagerie",
+      "oidc": "Authentification unique (SSO)",
       "languages": "Packs de langue",
       "settings": "Paramètres système",
       "confirmDeleteUser": "Supprimer l'utilisateur « {{name}} » ? Cette action est irréversible.",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "Le serveur de messagerie n'est pas encore configuré.",
         "testMailFailed": "L'e-mail de test n'a pas pu être envoyé : {{message}}"
       },
+      "oidcSettings": {
+        "intro": "Permet aux utilisateurs de se connecter via un fournisseur d'identité OpenID Connect externe (p. ex. Pocket ID) en plus du formulaire de mot de passe — tout fournisseur conforme aux standards fonctionne, en suivant son propre document de découverte plutôt qu'une intégration spécifique à un fournisseur.",
+        "enabled": "Activer la connexion OIDC",
+        "providerName": "Nom du fournisseur",
+        "issuer": "URL de l'émetteur (issuer)",
+        "issuerHint": "L'URL de base du fournisseur, sans barre oblique finale — son document de découverte OpenID est attendu à « <issuer>/.well-known/openid-configuration ».",
+        "clientId": "ID client",
+        "clientSecret": "Secret client",
+        "clientSecretHint": "Laisser vide pour conserver le secret actuel.",
+        "autoProvision": "Créer automatiquement un compte lors de la première connexion",
+        "autoProvisionHint": "Si désactivé (par défaut), seule une adresse e-mail pour laquelle un administrateur a déjà créé un compte peut se connecter via OIDC. Si activé, une première connexion crée un nouveau compte avec le niveau ci-dessous.",
+        "defaultLevel": "Niveau des comptes nouvellement créés",
+        "saved": "Paramètres OIDC enregistrés."
+      },
       "backupSettings": {
         "title": "Planification des sauvegardes",
         "intervalMode": "Intervalle",
@@ -374,7 +390,12 @@
       "invalid_credentials": "Identifiants invalides.",
       "account_locked": "Trop de tentatives échouées. Ce compte est temporairement verrouillé.",
       "account_deactivated": "Ce compte a été désactivé.",
-      "generic": "Échec de la connexion. Veuillez réessayer plus tard ou contacter un administrateur."
+      "generic": "Échec de la connexion. Veuillez réessayer plus tard ou contacter un administrateur.",
+      "oidc_provider_error": "L'authentification unique a été annulée ou refusée par le fournisseur d'identité.",
+      "oidc_state_mismatch": "La demande d'authentification unique n'a pas pu être vérifiée. Veuillez réessayer.",
+      "oidc_failed": "L'authentification unique a échoué. Veuillez réessayer ou utiliser votre mot de passe à la place.",
+      "oidc_no_account": "Aucun compte n'existe encore pour cette identité. Veuillez contacter un administrateur.",
+      "oidc_account_deactivated": "Ce compte a été désactivé."
     }
   }
 }

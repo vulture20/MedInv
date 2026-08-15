@@ -23,7 +23,8 @@
     "submit": "Sign in",
     "mailServerWarning": "The mail server is unreachable or misconfigured. Password reset is disabled.",
     "forgotPassword": "Forgot your password?",
-    "sessionExpired": "Your session has expired. Please sign in again."
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "ssoButton": "Log in with {{provider}}"
   },
   "userMenu": {
     "settings": "Custom settings",
@@ -162,6 +163,7 @@
     "backups": "Backups",
     "exportImport": "Export/Import",
     "mail": "Mail",
+    "oidc": "Single Sign-On",
     "languages": "Language packs",
     "templates": "Templates",
     "settings": "System settings",
@@ -291,6 +293,20 @@
       "testMailNotConfigured": "The mail server is not configured yet.",
       "testMailFailed": "The test email could not be sent: {{message}}"
     },
+    "oidcSettings": {
+      "intro": "Let users log in via an external OpenID Connect identity provider (e.g. Pocket ID) in addition to the password form — any standards-compliant provider works, following its own discovery document rather than anything provider-specific.",
+      "enabled": "Enable OIDC login",
+      "providerName": "Provider name",
+      "issuer": "Issuer URL",
+      "issuerHint": "The provider's base URL, without a trailing slash — its OpenID discovery document is expected at \"<issuer>/.well-known/openid-configuration\".",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "clientSecretHint": "Leave blank to keep the current secret.",
+      "autoProvision": "Automatically create an account on first login",
+      "autoProvisionHint": "When disabled (default), only an email address an admin already created an account for can log in via OIDC. When enabled, a first-time login creates a new account at the level below.",
+      "defaultLevel": "Level for newly created accounts",
+      "saved": "OIDC settings saved."
+    },
     "backupSettings": {
       "title": "Backup schedule",
       "intervalMode": "Interval",
@@ -371,6 +387,11 @@
     "invalid_credentials": "Invalid credentials.",
     "account_locked": "Too many failed attempts. This account is temporarily locked.",
     "account_deactivated": "This account has been deactivated.",
-    "generic": "Login failed. Please try again later or contact an administrator."
+    "generic": "Login failed. Please try again later or contact an administrator.",
+    "oidc_provider_error": "Single sign-on was cancelled or declined by the identity provider.",
+    "oidc_state_mismatch": "The single sign-on request could not be verified. Please try again.",
+    "oidc_failed": "Single sign-on failed. Please try again or use your password instead.",
+    "oidc_no_account": "No account exists for this identity yet. Please contact an administrator.",
+    "oidc_account_deactivated": "This account has been deactivated."
   }
 }

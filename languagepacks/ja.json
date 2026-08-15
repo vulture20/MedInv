@@ -26,7 +26,8 @@
       "submit": "サインイン",
       "mailServerWarning": "メールサーバーに接続できないか、設定に誤りがあります。パスワードのリセットは無効になっています。",
       "forgotPassword": "パスワードをお忘れですか?",
-      "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください。"
+      "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください。",
+      "ssoButton": "{{provider}} でログイン"
     },
     "userMenu": {
       "settings": "個人設定",
@@ -165,6 +166,7 @@
       "backups": "バックアップ",
       "exportImport": "エクスポート/インポート",
       "mail": "メール",
+      "oidc": "シングルサインオン",
       "languages": "言語パック",
       "settings": "システム設定",
       "confirmDeleteUser": "ユーザー「{{name}}」を削除しますか? この操作は元に戻せません。",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "メールサーバーはまだ設定されていません。",
         "testMailFailed": "テストメールを送信できませんでした: {{message}}"
       },
+      "oidcSettings": {
+        "intro": "パスワードフォームに加えて、外部のOpenID Connect IDプロバイダー（例：Pocket ID）経由でのログインをユーザーに許可します — 標準に準拠したプロバイダーであれば、プロバイダー固有の実装ではなく、その独自のディスカバリードキュメントに従うため、どれでも利用できます。",
+        "enabled": "OIDCログインを有効にする",
+        "providerName": "プロバイダー名",
+        "issuer": "発行者（Issuer）URL",
+        "issuerHint": "プロバイダーのベースURL（末尾のスラッシュなし）— OpenIDディスカバリードキュメントは「<issuer>/.well-known/openid-configuration」にあることが想定されます。",
+        "clientId": "クライアントID",
+        "clientSecret": "クライアントシークレット",
+        "clientSecretHint": "現在のシークレットを保持する場合は空欄のままにしてください。",
+        "autoProvision": "初回ログイン時にアカウントを自動作成する",
+        "autoProvisionHint": "無効の場合（デフォルト）、管理者が既にアカウントを作成済みのメールアドレスのみがOIDC経由でログインできます。有効の場合、初回ログイン時に下記のレベルで新しいアカウントが作成されます。",
+        "defaultLevel": "新規作成されるアカウントのレベル",
+        "saved": "OIDC設定を保存しました。"
+      },
       "backupSettings": {
         "title": "バックアップスケジュール",
         "intervalMode": "間隔",
@@ -374,7 +390,12 @@
       "invalid_credentials": "認証情報が正しくありません。",
       "account_locked": "失敗回数が多すぎます。このアカウントは一時的にロックされています。",
       "account_deactivated": "このアカウントは無効化されています。",
-      "generic": "サインインに失敗しました。しばらくしてから再度お試しいただくか、管理者にお問い合わせください。"
+      "generic": "サインインに失敗しました。しばらくしてから再度お試しいただくか、管理者にお問い合わせください。",
+      "oidc_provider_error": "シングルサインオンはキャンセルされたか、IDプロバイダーによって拒否されました。",
+      "oidc_state_mismatch": "シングルサインオンのリクエストを検証できませんでした。もう一度お試しください。",
+      "oidc_failed": "シングルサインオンに失敗しました。もう一度お試しいただくか、代わりにパスワードでログインしてください。",
+      "oidc_no_account": "このIDに対応するアカウントはまだ存在しません。管理者にお問い合わせください。",
+      "oidc_account_deactivated": "このアカウントは無効化されています。"
     }
   }
 }

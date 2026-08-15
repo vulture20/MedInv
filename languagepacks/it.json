@@ -26,7 +26,8 @@
       "submit": "Accedi",
       "mailServerWarning": "Il server di posta non è raggiungibile o è configurato in modo errato. Il ripristino della password è disabilitato.",
       "forgotPassword": "Password dimenticata?",
-      "sessionExpired": "La sessione è scaduta. Effettua nuovamente l'accesso."
+      "sessionExpired": "La sessione è scaduta. Effettua nuovamente l'accesso.",
+      "ssoButton": "Accedi con {{provider}}"
     },
     "userMenu": {
       "settings": "Impostazioni personali",
@@ -165,6 +166,7 @@
       "backups": "Backup",
       "exportImport": "Esporta/Importa",
       "mail": "Posta",
+      "oidc": "Single Sign-On",
       "languages": "Pacchetti lingua",
       "settings": "Impostazioni di sistema",
       "confirmDeleteUser": "Eliminare l'utente «{{name}}»? Questa azione non può essere annullata.",
@@ -275,6 +277,20 @@
         "testMailNotConfigured": "Il server di posta non è ancora configurato.",
         "testMailFailed": "Impossibile inviare l'email di prova: {{message}}"
       },
+      "oidcSettings": {
+        "intro": "Consente agli utenti di accedere tramite un provider di identità OpenID Connect esterno (ad es. Pocket ID) oltre al modulo con password — funziona con qualsiasi provider conforme allo standard, seguendo il proprio documento di discovery anziché un'integrazione specifica del provider.",
+        "enabled": "Abilita accesso OIDC",
+        "providerName": "Nome del provider",
+        "issuer": "URL dell'issuer",
+        "issuerHint": "L'URL di base del provider, senza barra finale — il suo documento di discovery OpenID è previsto all'indirizzo «<issuer>/.well-known/openid-configuration».",
+        "clientId": "ID client",
+        "clientSecret": "Client secret",
+        "clientSecretHint": "Lasciare vuoto per mantenere il secret attuale.",
+        "autoProvision": "Crea automaticamente un account al primo accesso",
+        "autoProvisionHint": "Se disabilitato (predefinito), solo un indirizzo email per cui un amministratore ha già creato un account può accedere tramite OIDC. Se abilitato, il primo accesso crea un nuovo account con il livello sottostante.",
+        "defaultLevel": "Livello per gli account appena creati",
+        "saved": "Impostazioni OIDC salvate."
+      },
       "backupSettings": {
         "title": "Pianificazione backup",
         "intervalMode": "Intervallo",
@@ -374,7 +390,12 @@
       "invalid_credentials": "Credenziali non valide.",
       "account_locked": "Troppi tentativi falliti. Questo account è temporaneamente bloccato.",
       "account_deactivated": "Questo account è stato disattivato.",
-      "generic": "Accesso non riuscito. Riprova più tardi o contatta un amministratore."
+      "generic": "Accesso non riuscito. Riprova più tardi o contatta un amministratore.",
+      "oidc_provider_error": "Il Single Sign-On è stato annullato o rifiutato dal provider di identità.",
+      "oidc_state_mismatch": "Impossibile verificare la richiesta di Single Sign-On. Riprovare.",
+      "oidc_failed": "Il Single Sign-On non è riuscito. Riprovare oppure utilizzare la password.",
+      "oidc_no_account": "Non esiste ancora un account per questa identità. Contattare un amministratore.",
+      "oidc_account_deactivated": "Questo account è stato disattivato."
     }
   }
 }

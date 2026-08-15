@@ -60,6 +60,23 @@ class SystemSetting extends Model
             'timezone' => static::defaultTimezone(),
             'loglevel' => env('MEDINV_LOGLEVEL', 'WARNING'),
             'locale.default_language' => 'en',
+            // GitHub issue #16: OIDC login is off until an admin explicitly
+            // enables and configures it (issuer/client_id/client_secret have
+            // no sensible default, see OidcClient::isEnabled()).
+            // auto_provision defaults to false — the more conservative
+            // choice between the issue's own two open questions ("should a
+            // first-time OIDC login create a new account, or only work for
+            // one an admin already created?"): requiring a pre-created
+            // account matched by email is the safer default for a
+            // self-hosted app where the operator may not want literally
+            // anyone who can authenticate against their IdP to gain access.
+            // default_level is deliberately capped to guest/user in
+            // OidcAuthController::resolveUser() regardless of what's stored
+            // here — auto-provisioning an admin account is never allowed.
+            'oidc.enabled' => false,
+            'oidc.auto_provision' => false,
+            'oidc.default_level' => 'user',
+            'oidc.provider_name' => 'Single Sign-On',
         ];
     }
 
