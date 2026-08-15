@@ -131,6 +131,7 @@ export function OidcPage() {
             <option value="user">user</option>
           </select>
         </label>
+        <p className="hint">{t('admin.oidcSettings.levelClaimHint')}</p>
         <button type="submit">{t('admin.actions.save')}</button>
         {saved && <p role="status">{t('admin.oidcSettings.saved')}</p>}
         {error && <p role="alert">{error}</p>}

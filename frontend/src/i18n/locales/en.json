@@ -305,6 +305,7 @@
       "autoProvision": "Automatically create an account on first login",
       "autoProvisionHint": "When disabled (default), only an email address an admin already created an account for can log in via OIDC. When enabled, a first-time login creates a new account at the level below.",
       "defaultLevel": "Level for newly created accounts",
+      "levelClaimHint": "An account's name and level are also kept in sync with the provider on every login, independently of the setting above: the name comes from a \"medinv_name\" custom claim if present, otherwise from the standard \"name\" claim; the level comes from a \"medinv_level\" custom claim with the value \"guest\", \"user\", or \"admin\" — admin included. In Pocket ID, add a custom claim with the exact key you need to a user or group under Admin → Users/User Groups → Custom Claims. Any of these claims being absent leaves the corresponding field untouched.",
       "saved": "OIDC settings saved."
     },
     "backupSettings": {

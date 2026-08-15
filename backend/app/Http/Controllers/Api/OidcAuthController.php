@@ -44,6 +44,32 @@ use Illuminate\Support\Str;
  */
 class OidcAuthController extends Controller
 {
+    /**
+     * Pocket ID (and most other providers) has no single standard claim for
+     * an application-specific role — a level needs a provider-side custom
+     * claim an admin explicitly configures (Pocket ID: Admin UI -> a
+     * group's or a user's "Custom Claims", a key/value pair added to that
+     * identity's ID token). Both keys are `medinv_` prefixed so they read
+     * unambiguously as "this claim is specifically for MedInv" in Pocket
+     * ID's claim list, next to whatever other apps' custom claims might
+     * also be configured there — matching this app's own convention of
+     * prefixing everything it owns (CLAUDE.md: "All environment variables
+     * are MEDINV_-prefixed").
+     */
+    private const LEVEL_CLAIM_KEY = 'medinv_level';
+
+    /**
+     * Optional override for the standard OIDC "name" claim (see
+     * nameFromClaims()) — checked first, since a Pocket ID admin who
+     * explicitly went to the trouble of configuring a MedInv-specific
+     * custom claim clearly means for it to win. Unlike the level, a
+     * perfectly good standard claim already exists for this and needs no
+     * provider-side configuration at all, so this is only for the case
+     * where an admin specifically wants MedInv to show a different name
+     * than the identity's regular one.
+     */
+    private const NAME_CLAIM_KEY = 'medinv_name';
+
     public function __construct(private readonly OidcClient $oidc) {}
 
     /** Public — LoginPage.tsx calls this to decide whether to render the SSO button at all, and with what label. */
@@ -187,6 +213,8 @@ class OidcAuthController extends Controller
         }
 
         if ($user) {
+            $this->syncFromClaims($user, $claims);
+
             return $user;
         }
 
@@ -194,24 +222,103 @@ class OidcAuthController extends Controller
             return null;
         }
 
-        // Never 'admin', regardless of what's stored — even a tampered or
-        // misconfigured setting can only ever auto-provision the two
-        // lowest levels; granting admin access always requires a human to
-        // explicitly promote the account afterwards.
-        $level = SystemSetting::get('oidc.default_level', 'user');
-        $level = in_array($level, ['guest', 'user'], true) ? $level : 'user';
-
         return User::query()->create([
-            'name' => $claims->name ?? explode('@', $email)[0],
+            'name' => $this->nameFromClaims($claims) ?? explode('@', $email)[0],
             'email' => $email,
             // Unguessable and never used — an OIDC-provisioned account has
             // no local password to log in with; only the OIDC flow (or an
             // admin-initiated password reset afterwards) can authenticate it.
             'password' => Hash::make(Str::random(40)),
-            'level' => $level,
+            // An explicit medinv_level claim (see LEVEL_CLAIM_KEY's docblock)
+            // is trusted outright, admin level included — an admin who
+            // configured that specific claim for this specific identity has
+            // already made that call themselves. Absent that, the
+            // *system-wide* default (oidc.default_level) is still clamped to
+            // guest/user, same as before: with no explicit per-identity
+            // signal at all, silently defaulting a brand new account to
+            // admin remains too risky to do implicitly.
+            'level' => $this->levelFromClaims($claims) ?? $this->clampedDefaultLevel(),
             'is_active' => true,
             'oidc_subject' => $subject,
         ]);
+    }
+
+    /**
+     * Keeps an already-resolved (existing) account's name/level in sync
+     * with the provider on every login — not just at the moment an account
+     * is first created — so Pocket ID (or whatever's configured) genuinely
+     * stays the source of truth for both, the way GitHub issue #16's whole
+     * premise ("use an already-existing central identity management
+     * instead of a separate one") intends. Only touches a field the
+     * provider actually sent a usable value for; either one being absent
+     * (or, for level, present but not one of guest/user/admin) leaves that
+     * field exactly as it already was — this never *removes* a level an
+     * admin set locally, it only overrides it when the provider explicitly
+     * says to.
+     */
+    private function syncFromClaims(User $user, \stdClass $claims): void
+    {
+        $dirty = false;
+
+        $name = $this->nameFromClaims($claims);
+        if ($name !== null && $user->name !== $name) {
+            $user->name = $name;
+            $dirty = true;
+        }
+
+        $level = $this->levelFromClaims($claims);
+        if ($level !== null && $user->level !== $level) {
+            Log::info('OIDC login changed a user\'s level via medinv_level claim', [
+                'user_id' => $user->id, 'from' => $user->level, 'to' => $level,
+            ]);
+            $user->level = $level;
+            $dirty = true;
+        }
+
+        if ($dirty) {
+            $user->save();
+        }
+    }
+
+    /**
+     * The medinv_name custom claim (see NAME_CLAIM_KEY's docblock) wins if
+     * present, otherwise falls back to the standard "name" claim — either
+     * one being an empty/non-string value is treated the same as it being
+     * absent entirely, not as "the name should be blanked out".
+     */
+    private function nameFromClaims(\stdClass $claims): ?string
+    {
+        $name = $claims->{self::NAME_CLAIM_KEY} ?? $claims->name ?? null;
+
+        return is_string($name) && trim($name) !== '' ? $name : null;
+    }
+
+    /**
+     * Reads the medinv_level custom claim (see LEVEL_CLAIM_KEY's docblock)
+     * — trimmed/lowercased so a Pocket ID admin typing "Admin" or "ADMIN "
+     * into the custom-claims UI still matches. Returns null (not a level)
+     * for anything that isn't exactly guest/user/admin, including the
+     * claim being entirely absent — the caller treats null as "no opinion,
+     * leave whatever level policy already applies untouched" throughout.
+     */
+    private function levelFromClaims(\stdClass $claims): ?string
+    {
+        $value = $claims->{self::LEVEL_CLAIM_KEY} ?? null;
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $value = strtolower(trim($value));
+
+        return in_array($value, ['guest', 'user', 'admin'], true) ? $value : null;
+    }
+
+    /** Never 'admin' — see the call site in resolveUser()'s docblock for why only this system-wide fallback, not an explicit per-identity medinv_level claim, stays capped. */
+    private function clampedDefaultLevel(): string
+    {
+        $level = SystemSetting::get('oidc.default_level', 'user');
+
+        return in_array($level, ['guest', 'user'], true) ? $level : 'user';
     }
 
     private function failure(Request $request, string $code, string $message, array $context = []): RedirectResponse

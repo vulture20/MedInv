@@ -289,6 +289,7 @@
         "autoProvision": "Automatisch een account aanmaken bij eerste login",
         "autoProvisionHint": "Indien uitgeschakeld (standaard) kan alleen een e-mailadres waarvoor een beheerder al een account heeft aangemaakt via OIDC inloggen. Indien ingeschakeld, wordt bij de eerste login een nieuw account aangemaakt met het niveau hieronder.",
         "defaultLevel": "Niveau voor nieuw aangemaakte accounts",
+        "levelClaimHint": "De naam en het niveau van een account worden bij elke login ook gesynchroniseerd met de provider, onafhankelijk van de instelling hierboven: de naam komt uit een aangepaste \"medinv_name\"-claim indien aanwezig, anders uit de standaard \"name\"-claim; het niveau komt uit een aangepaste \"medinv_level\"-claim met de waarde \"guest\", \"user\" of \"admin\" — admin inbegrepen. Voeg in Pocket ID onder Admin → Gebruikers/Gebruikersgroepen → Aangepaste claims een aangepaste claim met de benodigde sleutel toe aan een gebruiker of groep. Ontbreekt een van deze claims, dan blijft het betreffende veld ongewijzigd.",
         "saved": "OIDC-instellingen opgeslagen."
       },
       "backupSettings": {

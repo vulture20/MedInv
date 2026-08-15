@@ -305,6 +305,7 @@
       "autoProvision": "Bei erster Anmeldung automatisch ein Konto anlegen",
       "autoProvisionHint": "Ist diese Option deaktiviert (Standard), können sich nur E-Mail-Adressen per OIDC anmelden, für die bereits ein Admin ein Konto angelegt hat. Ist sie aktiviert, wird bei der ersten Anmeldung ein neues Konto mit der unten gewählten Berechtigungsstufe angelegt.",
       "defaultLevel": "Berechtigungsstufe für neu angelegte Konten",
+      "levelClaimHint": "Name und Berechtigungsstufe eines Kontos werden zusätzlich unabhängig von obiger Einstellung bei jeder Anmeldung mit dem Anbieter abgeglichen: Der Name stammt, sofern vorhanden, aus einem Custom Claim „medinv_name“, sonst aus dem Standard-Claim „name“; die Berechtigungsstufe stammt aus einem Custom Claim „medinv_level“ mit dem Wert „guest“, „user“ oder „admin“ — auch Admin. Bei Pocket ID einen Custom Claim mit dem jeweils benötigten Schlüssel unter Admin → Benutzer/Benutzergruppen → Custom Claims hinzufügen. Fehlt einer dieser Claims, bleibt das jeweilige Feld unverändert.",
       "saved": "OIDC-Einstellungen gespeichert."
     },
     "backupSettings": {

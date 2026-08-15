@@ -289,6 +289,7 @@
         "autoProvision": "首次登录时自动创建账户",
         "autoProvisionHint": "禁用时（默认），只有管理员已为其创建账户的电子邮件地址才能通过 OIDC 登录。启用时，首次登录将以下方选择的级别创建一个新账户。",
         "defaultLevel": "新创建账户的级别",
+        "levelClaimHint": "账户的姓名和权限级别也会在每次登录时与提供商同步,与上面的设置无关：姓名优先取自自定义声明“medinv_name”(如果存在),否则取自标准声明“name”；权限级别取自值为“guest”“user”或“admin”的自定义声明“medinv_level”——包括 admin。在 Pocket ID 中,请在“管理 → 用户/用户组 → 自定义声明”下,为某个用户或用户组添加所需键名的自定义声明。若缺少其中任一声明,对应字段将保持不变。",
         "saved": "OIDC 设置已保存。"
       },
       "backupSettings": {

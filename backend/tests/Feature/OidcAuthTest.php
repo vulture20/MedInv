@@ -159,6 +159,150 @@ class OidcAuthTest extends TestCase
         $this->assertSame('user', $user->level);
     }
 
+    public function test_a_medinv_level_claim_grants_admin_even_when_auto_provisioning(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, ['nonce' => 'expected-nonce', 'medinv_level' => 'admin']),
+        ]);
+        SystemSetting::set('oidc.auto_provision', true);
+        // Deliberately left at the default ('user') — an explicit medinv_level
+        // claim must win over it regardless of what the system-wide fallback says.
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $user = User::query()->where('email', 'person@example.test')->firstOrFail();
+        $this->assertSame('admin', $user->level);
+    }
+
+    public function test_a_medinv_level_claim_updates_an_existing_users_level_on_every_login(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, ['nonce' => 'expected-nonce', 'medinv_level' => 'admin']),
+        ]);
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'level' => 'user']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('admin', $user->fresh()->level);
+    }
+
+    public function test_a_medinv_level_claim_can_downgrade_an_existing_admin(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, ['nonce' => 'expected-nonce', 'medinv_level' => 'user']),
+        ]);
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'level' => 'admin']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('user', $user->fresh()->level);
+    }
+
+    public function test_an_invalid_medinv_level_claim_value_is_ignored(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, ['nonce' => 'expected-nonce', 'medinv_level' => 'superadmin']),
+        ]);
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'level' => 'user']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('user', $user->fresh()->level);
+    }
+
+    public function test_a_medinv_level_claim_is_matched_case_insensitively_and_trimmed(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, ['nonce' => 'expected-nonce', 'medinv_level' => ' Admin ']),
+        ]);
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'level' => 'user']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('admin', $user->fresh()->level);
+    }
+
+    public function test_an_absent_medinv_level_claim_leaves_an_existing_users_level_unchanged(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair); // default token has no medinv_level claim at all
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'level' => 'admin']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('admin', $user->fresh()->level);
+    }
+
+    public function test_the_name_claim_syncs_an_existing_users_name_on_every_login(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair); // default token has name: 'Person Example'
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'name' => 'Stale Old Name']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('Person Example', $user->fresh()->name);
+    }
+
+    public function test_an_absent_name_claim_leaves_an_existing_users_name_unchanged(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, ['nonce' => 'expected-nonce', 'name' => null]),
+        ]);
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'name' => 'Keep This Name']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('Keep This Name', $user->fresh()->name);
+    }
+
+    public function test_a_medinv_name_claim_takes_precedence_over_the_standard_name_claim(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, [
+                'nonce' => 'expected-nonce', 'name' => 'Standard Claim Name', 'medinv_name' => 'Custom Claim Name',
+            ]),
+        ]);
+        $user = User::factory()->create(['email' => 'person@example.test', 'is_active' => true, 'name' => 'Stale Old Name']);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $this->assertSame('Custom Claim Name', $user->fresh()->name);
+    }
+
+    public function test_the_medinv_name_claim_is_used_when_auto_provisioning_too(): void
+    {
+        $keyPair = $this->generateOidcKeyPair();
+        $this->fakeOidcProvider($keyPair, [
+            'id_token' => $this->signOidcIdToken($keyPair, [
+                'nonce' => 'expected-nonce', 'name' => 'Standard Claim Name', 'medinv_name' => 'Custom Claim Name',
+            ]),
+        ]);
+        SystemSetting::set('oidc.auto_provision', true);
+
+        $this->withSession($this->callbackSession())
+            ->get('/api/auth/oidc/callback?state=the-state&code=auth-code-123');
+
+        $user = User::query()->where('email', 'person@example.test')->firstOrFail();
+        $this->assertSame('Custom Claim Name', $user->name);
+    }
+
     public function test_callback_rejects_auto_provisioning_from_an_unverified_email(): void
     {
         $keyPair = $this->generateOidcKeyPair();

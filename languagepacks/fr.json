@@ -289,6 +289,7 @@
         "autoProvision": "Créer automatiquement un compte lors de la première connexion",
         "autoProvisionHint": "Si désactivé (par défaut), seule une adresse e-mail pour laquelle un administrateur a déjà créé un compte peut se connecter via OIDC. Si activé, une première connexion crée un nouveau compte avec le niveau ci-dessous.",
         "defaultLevel": "Niveau des comptes nouvellement créés",
+        "levelClaimHint": "Le nom et le niveau d'un compte sont également synchronisés avec le fournisseur à chaque connexion, indépendamment du paramètre ci-dessus : le nom provient d'un claim personnalisé « medinv_name » s'il est présent, sinon du claim standard « name » ; le niveau provient d'un claim personnalisé « medinv_level » avec la valeur « guest », « user » ou « admin » — admin inclus. Dans Pocket ID, ajoutez un claim personnalisé avec la clé exacte dont vous avez besoin à un utilisateur ou un groupe sous Admin → Utilisateurs/Groupes d'utilisateurs → Claims personnalisés. L'absence de l'un de ces claims laisse le champ correspondant inchangé.",
         "saved": "Paramètres OIDC enregistrés."
       },
       "backupSettings": {

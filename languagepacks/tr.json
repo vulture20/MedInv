@@ -289,6 +289,7 @@
         "autoProvision": "İlk girişte otomatik olarak hesap oluştur",
         "autoProvisionHint": "Devre dışı bırakıldığında (varsayılan), yalnızca bir yöneticinin zaten hesap oluşturduğu bir e-posta adresi OIDC ile giriş yapabilir. Etkinleştirildiğinde, ilk giriş aşağıdaki düzeyde yeni bir hesap oluşturur.",
         "defaultLevel": "Yeni oluşturulan hesaplar için düzey",
+        "levelClaimHint": "Bir hesabın adı ve düzeyi, yukarıdaki ayardan bağımsız olarak her girişte sağlayıcıyla da senkronize edilir: ad, varsa özel \"medinv_name\" claim'inden, yoksa standart \"name\" claim'inden alınır; düzey, \"guest\", \"user\" veya \"admin\" değerine sahip özel \"medinv_level\" claim'inden alınır — admin dahil. Pocket ID'de, Admin → Kullanıcılar/Kullanıcı Grupları → Özel Claim'ler altında bir kullanıcıya veya gruba ihtiyacınız olan anahtarla özel bir claim ekleyin. Bu claim'lerden herhangi biri eksikse, ilgili alan değişmeden kalır.",
         "saved": "OIDC ayarları kaydedildi."
       },
       "backupSettings": {

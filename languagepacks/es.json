@@ -289,6 +289,7 @@
         "autoProvision": "Crear automáticamente una cuenta en el primer inicio de sesión",
         "autoProvisionHint": "Si está desactivado (predeterminado), solo puede iniciar sesión mediante OIDC una dirección de correo para la que un administrador ya haya creado una cuenta. Si está activado, el primer inicio de sesión crea una cuenta nueva con el nivel de abajo.",
         "defaultLevel": "Nivel para las cuentas recién creadas",
+        "levelClaimHint": "El nombre y el nivel de una cuenta también se sincronizan con el proveedor en cada inicio de sesión, independientemente de la opción anterior: el nombre proviene de un claim personalizado «medinv_name» si está presente, o si no, del claim estándar «name»; el nivel proviene de un claim personalizado «medinv_level» con el valor «guest», «user» o «admin», admin incluido. En Pocket ID, agregue un claim personalizado con la clave exacta que necesite a un usuario o grupo en Admin → Usuarios/Grupos de usuarios → Claims personalizados. Si falta alguno de estos claims, el campo correspondiente permanece sin cambios.",
         "saved": "Configuración de OIDC guardada."
       },
       "backupSettings": {
