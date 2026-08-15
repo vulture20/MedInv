@@ -70,7 +70,14 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
   }
 
   return (
-    <dialog ref={dialogRef} onClose={onClose} className="media-item-dialog">
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      // See MediaItemDetailDialog.tsx's identical handler for why this is
+      // safe against misfiring on a normal in-dialog click.
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="media-item-dialog"
+    >
       {open && (
         <>
           <h3>{t('mediaItem.createTitle')}</h3>

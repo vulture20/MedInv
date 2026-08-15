@@ -319,7 +319,16 @@ export function PluginsPage() {
         )
       })}
 
-      <dialog ref={dialogRef} onClose={() => setEditingPluginId(null)} className="plugin-config-dialog">
+      <dialog
+        ref={dialogRef}
+        onClose={() => setEditingPluginId(null)}
+        // See MediaItemDetailDialog.tsx's identical handler for why this is
+        // safe against misfiring on a normal in-dialog click. closeSettings()
+        // rather than setEditingPluginId(null) directly, to match exactly
+        // what the Cancel button already does.
+        onClick={(e) => e.target === e.currentTarget && closeSettings()}
+        className="plugin-config-dialog"
+      >
         {editingPlugin && (
           <form onSubmit={(e) => void saveSettings(e)}>
             <h3>{editingPlugin.name}</h3>

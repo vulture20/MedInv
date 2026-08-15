@@ -127,7 +127,18 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   }
 
   return (
-    <dialog ref={dialogRef} onClose={onClose} className="media-item-dialog">
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      // Clicking the ::backdrop (outside the dialog's own content) fires a
+      // click event whose target is the <dialog> element itself, never a
+      // descendant — a click on any actual content inside always has that
+      // content element as the target instead, so this can't misfire on a
+      // normal in-dialog click. Native <dialog> doesn't close on backdrop
+      // click by default, only Esc/a real close()/form method="dialog".
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="media-item-dialog"
+    >
       {item && (
         <>
           <h3>{item.title}</h3>
