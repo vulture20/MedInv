@@ -61,11 +61,26 @@ export interface TemplateSummary {
   name: string
 }
 
+/**
+ * `runtimeTemplates` below carries the CSS too, unlike TemplateSummary —
+ * GET /templates itself is deliberately a lightweight code+name-only
+ * listing (TemplatesPage.tsx fetches that directly for its own list), but
+ * ThemeProvider already has to load every runtime template's full CSS
+ * anyway (to be able to apply it the moment it's selected), so exposing it
+ * here costs nothing extra and lets SettingsPage.tsx's swatch preview
+ * (GitHub issue: "Vorschau... analog zu hell/dunkel") read the same
+ * `--color-*` custom properties out of it that light/dark preview with
+ * hardcoded values.
+ */
+export interface RuntimeTemplate extends TemplateSummary {
+  css: string
+}
+
 interface ThemeContextValue {
   template: Template
   setTemplate: (template: Template) => void
   /** Runtime-installed templates only (light/dark are always implicitly available, not listed here). */
-  runtimeTemplates: TemplateSummary[]
+  runtimeTemplates: RuntimeTemplate[]
   /**
    * Registers one runtime template's CSS, applying it immediately if it's
    * the currently active one — shared by the initial GET /templates load
@@ -166,7 +181,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const runtimeTemplates: TemplateSummary[] = Object.entries(templates).map(([code, { name }]) => ({ code, name }))
+  const runtimeTemplates: RuntimeTemplate[] = Object.entries(templates).map(([code, { name, css }]) => ({ code, name, css }))
 
   return (
     <ThemeContext.Provider
