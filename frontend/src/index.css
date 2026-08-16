@@ -746,29 +746,25 @@ td {
   color: var(--color-text-muted);
 }
 
-/* One table per media type (PluginsPage.tsx) — priority only ever ranks
- * providers within the same media type, so grouping the tables this way
- * mirrors what the ranking actually means instead of implying a single
- * flat, cross-media-type order. */
-.plugin-group {
-  margin-bottom: 1.5rem;
-}
-
-.plugin-group h3 {
-  margin: 0 0 0.4rem;
-}
-
 /*
- * Each group is a genuinely separate <table> (see .plugin-group's
- * docblock above for why), and the default table-layout: auto sizes a
- * table's columns purely from that table's own cell content — so even
- * though every group has the same conceptual columns, one table's "Name"
- * column ended up a different width than another's depending on how long
- * its providers' names happened to be, reported as the tables looking
- * visually misaligned when stacked. table-layout: fixed switches column
- * sizing over to the widths declared on <colgroup>/<col> below (identical
- * markup in every group), so corresponding columns line up across all of
- * them regardless of that table's own content.
+ * One table per media type, one .panel-card each (PluginsPage.tsx) —
+ * priority only ever ranks providers within the same media type, so
+ * grouping the tables this way mirrors what the ranking actually means
+ * instead of implying a single flat, cross-media-type order. Used to have
+ * its own .plugin-group class for the group-to-group margin; retired once
+ * .panel-card started supplying that instead (same reasoning as
+ * .statistics-library's retirement).
+ *
+ * Each group is a genuinely separate <table>, and the default
+ * table-layout: auto sizes a table's columns purely from that table's own
+ * cell content — so even though every group has the same conceptual
+ * columns, one table's "Name" column ended up a different width than
+ * another's depending on how long its providers' names happened to be,
+ * reported as the tables looking visually misaligned when stacked.
+ * table-layout: fixed switches column sizing over to the widths declared
+ * on <colgroup>/<col> below (identical markup in every group), so
+ * corresponding columns line up across all of them regardless of that
+ * table's own content.
  */
 .plugin-table {
   table-layout: fixed;

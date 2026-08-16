@@ -145,6 +145,14 @@ function SortableRow({ id, children }: { id: number; children: (handle: { attrib
  * real, safety/reliability-relevant difference for an operator deciding
  * whether to enable a plugin (see AmazonScraping's docblock, #50: ToS risk,
  * no success guarantee, higher chance of silently breaking).
+ *
+ * Card layout matches UsersPage.tsx's (.panel-page/.panel-card, see
+ * index.css's shared docblock) — one card per media type, the same
+ * "each distinct thing gets its own card" treatment LibrariesPage.tsx's
+ * per-library cards use, superseding the old .plugin-group class's own
+ * margin (retired, see its former docblock). Deliberately does *not*
+ * change where DndContext sits relative to <table> — see the comment right
+ * above it below for why that specific nesting matters.
  */
 export function PluginsPage() {
   const { t } = useTranslation()
@@ -243,16 +251,15 @@ export function PluginsPage() {
   const editingPlugin = plugins.find((p) => p.id === editingPluginId) ?? null
 
   return (
-    <section>
-      <h2>{t('admin.plugins')}</h2>
+    <div className="panel-page">
       {error && <p role="alert">{error}</p>}
       {MEDIA_TYPES.map((mediaType) => {
         const groupPlugins = pluginsInGroup(plugins, mediaType)
         if (groupPlugins.length === 0) return null
 
         return (
-          <div key={mediaType} className="plugin-group">
-            <h3>{t(`libraries.mediaType.${mediaType}`)}</h3>
+          <section key={mediaType} className="panel-card">
+            <h2>{t(`libraries.mediaType.${mediaType}`)}</h2>
             {/*
               GitHub issue #41 follow-up: DndContext must wrap the whole
               <table>, not sit *inside* it next to <thead> — DndContext
@@ -341,7 +348,7 @@ export function PluginsPage() {
                 </SortableContext>
               </table>
             </DndContext>
-          </div>
+          </section>
         )
       })}
 
@@ -378,6 +385,6 @@ export function PluginsPage() {
           </form>
         )}
       </dialog>
-    </section>
+    </div>
   )
 }
