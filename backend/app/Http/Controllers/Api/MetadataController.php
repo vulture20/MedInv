@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Libraries\CurrencyConversionService;
 use App\Domain\Libraries\DuplicateEanException;
 use App\Domain\Libraries\LibraryAccessService;
 use App\Domain\Libraries\MediaItemService;
@@ -29,6 +30,7 @@ class MetadataController extends Controller
         private readonly MediaItemService $mediaItemService,
         private readonly CoverDownloadService $coverDownloadService,
         private readonly MetadataProviderRegistry $registry,
+        private readonly CurrencyConversionService $currencyConversion,
     ) {}
 
     /**
@@ -109,6 +111,10 @@ class MetadataController extends Controller
         if (empty($data['attributes']['ean']) || ! is_string($data['attributes']['ean'])) {
             throw ValidationException::withMessages(['attributes.ean' => 'The attributes.ean field is required.']);
         }
+
+        // GitHub issue #64 — see CurrencyConversionService's docblock and
+        // MediaItemController::store()'s matching call.
+        $data['attributes'] = $this->currencyConversion->convertToDefaultCurrency($data['attributes']);
 
         try {
             $item = $this->mediaItemService->create($library, $data['attributes']);

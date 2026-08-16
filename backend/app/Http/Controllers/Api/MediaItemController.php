@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Libraries\CurrencyConversionService;
 use App\Domain\Libraries\DuplicateEanException;
 use App\Domain\Libraries\LibraryAccessService;
 use App\Domain\Libraries\MediaItemService;
@@ -24,6 +25,7 @@ class MediaItemController extends Controller
         private readonly LibraryAccessService $access,
         private readonly MediaItemService $mediaItemService,
         private readonly CoverDownloadService $coverDownloadService,
+        private readonly CurrencyConversionService $currencyConversion,
     ) {}
 
     public function index(Request $request, Library $library)
@@ -138,6 +140,13 @@ class MediaItemController extends Controller
         abort_unless($this->access->canWrite($request->user(), $library), 403);
 
         $data = $request->validate($this->rulesFor($library->media_type));
+        // GitHub issue #64: a live-converted price stays meaningful in
+        // StatisticsService::overviewFor()'s sum('price') without that
+        // service needing to know about multiple currencies at all — see
+        // CurrencyConversionService's docblock. A no-op when no default
+        // currency is configured, no price/currency was entered, or it
+        // already matches the default.
+        $data = $this->currencyConversion->convertToDefaultCurrency($data);
 
         try {
             $item = $this->mediaItemService->create($library, $data);
