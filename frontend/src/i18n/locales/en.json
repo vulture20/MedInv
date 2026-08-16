@@ -84,6 +84,7 @@
       "description": "Description",
       "release_date": "Release date",
       "price": "Price",
+      "currency": "Currency",
       "authors": "Author(s)",
       "format": "Format",
       "genre": "Genre",

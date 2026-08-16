@@ -83,6 +83,7 @@
         "description": "Description",
         "release_date": "Date de sortie",
         "price": "Prix",
+        "currency": "Devise",
         "authors": "Auteur(s)",
         "format": "Format",
         "genre": "Genre",

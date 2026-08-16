@@ -84,6 +84,7 @@
       "description": "Beschreibung",
       "release_date": "Erscheinungstermin",
       "price": "Preis",
+      "currency": "Währung",
       "authors": "Autor(en)",
       "format": "Format",
       "genre": "Genre",

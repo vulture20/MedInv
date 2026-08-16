@@ -62,6 +62,7 @@ class AmazonCdProviderTest extends TestCase
         $this->assertSame('724385522925', $candidate->attributes['ean']);
         // GitHub issue #58.
         $this->assertSame(13.98, $candidate->attributes['price']);
+        $this->assertSame('USD', $candidate->attributes['currency']);
         $this->assertSame(['https://m.media-amazon.com/images/I/okc-large.jpg'], $candidate->coverUrls);
         // Deliberately never a track listing — see this provider's docblock.
         $this->assertArrayNotHasKey('tracks', $candidate->attributes);

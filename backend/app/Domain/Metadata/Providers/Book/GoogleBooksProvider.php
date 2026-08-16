@@ -155,6 +155,7 @@ class GoogleBooksProvider implements MetadataProviderInterface
     {
         $info = $item['volumeInfo'] ?? [];
         $identifiers = collect($info['industryIdentifiers'] ?? []);
+        [$price, $currency] = $this->salePrice($item);
 
         return new MetadataCandidate(
             providerKey: $this->key(),
@@ -178,9 +179,46 @@ class GoogleBooksProvider implements MetadataProviderInterface
                 'isbn13' => $identifiers->firstWhere('type', 'ISBN_13')['identifier'] ?? null,
                 'isbn10' => $identifiers->firstWhere('type', 'ISBN_10')['identifier'] ?? null,
                 'ean' => $code,
+                // GitHub issue #58: unlike AmazonScraping's scraped text,
+                // Google Books' own `saleInfo` reports an explicit
+                // currencyCode alongside the amount, so both travel
+                // together rather than assuming a fixed currency.
+                'price' => $price,
+                'currency' => $currency,
             ],
             coverUrls: $this->coverUrls($info['imageLinks'] ?? []),
         );
+    }
+
+    /**
+     * `saleInfo.listPrice`/`retailPrice` (GitHub issue #58) — a sibling of
+     * `volumeInfo` on the same `$item`, not nested inside it. Preferred:
+     * `listPrice` (Google's own documented "cover price"/MSRP, closer to
+     * what this app's `price` field means for a physical item than
+     * `retailPrice`, which is Google's own discounted digital-edition
+     * selling price), falling back to `retailPrice` when `listPrice` is
+     * absent. Only reported when `saleability` is `'FOR_SALE'` — a book
+     * with `saleability` `'NOT_FOR_SALE'`/`'FREE'` (out of print, public
+     * domain, ...) can still carry a stale/zero price object that isn't a
+     * real price to store.
+     *
+     * @return array{0: ?float, 1: ?string} [price, currency]
+     */
+    private function salePrice(array $item): array
+    {
+        $saleInfo = $item['saleInfo'] ?? [];
+
+        if (($saleInfo['saleability'] ?? null) !== 'FOR_SALE') {
+            return [null, null];
+        }
+
+        $listPrice = $saleInfo['listPrice'] ?? $saleInfo['retailPrice'] ?? null;
+
+        if (! is_array($listPrice) || ! isset($listPrice['amount'])) {
+            return [null, null];
+        }
+
+        return [(float) $listPrice['amount'], $listPrice['currencyCode'] ?? null];
     }
 
     /**

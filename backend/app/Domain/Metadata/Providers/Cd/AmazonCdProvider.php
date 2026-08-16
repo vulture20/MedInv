@@ -103,9 +103,9 @@ class AmazonCdProvider implements MetadataProviderInterface
                 'medium' => $this->amazonBullet($bullets, 'Format'),
                 'release_date' => $this->parseAmazonDate($this->amazonBullet($bullets, 'Release Date', 'Original Release Date')),
                 'ean' => $code,
-                // GitHub issue #58 — see AmazonScraping::amazonProductPage()'s
-                // docblock for why this is safe without a currency field today.
+                // GitHub issue #58 — see AmazonScraping::amazonProductPage()'s docblock.
                 'price' => $page['price'],
+                'currency' => $page['currency'],
             ],
             coverUrls: $page['cover_url'] ? [$page['cover_url']] : [],
         );

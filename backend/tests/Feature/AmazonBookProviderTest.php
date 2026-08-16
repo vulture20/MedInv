@@ -81,6 +81,7 @@ class AmazonBookProviderTest extends TestCase
         $this->assertSame('9780441013593', $candidate->attributes['ean']);
         // GitHub issue #58.
         $this->assertSame(10.49, $candidate->attributes['price']);
+        $this->assertSame('USD', $candidate->attributes['currency']);
         $this->assertStringContainsString('adventure and mysticism', $candidate->attributes['description']);
         $this->assertSame(['https://m.media-amazon.com/images/I/dune-large.jpg'], $candidate->coverUrls);
         $this->assertSame('0441013597', $candidate->sourceId);
@@ -129,6 +130,7 @@ class AmazonBookProviderTest extends TestCase
         $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
 
         $this->assertNull($candidate->attributes['price']);
+        $this->assertNull($candidate->attributes['currency']);
     }
 
     public function test_lookup_by_code_requests_the_search_page_with_the_code_as_the_query(): void

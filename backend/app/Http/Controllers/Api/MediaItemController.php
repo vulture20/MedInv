@@ -246,6 +246,10 @@ class MediaItemController extends Controller
                 'publisher' => ['nullable', 'string'],
                 'release_date' => ['nullable', 'date'],
                 'price' => ['nullable', 'numeric'],
+                // GitHub issue #58: an ISO 4217 code (e.g. "USD"/"EUR"), not
+                // validated against an actual currency list — this only
+                // records what the admin/provider says it is.
+                'currency' => ['nullable', 'string', 'max:3'],
                 'isbn10' => ['nullable', 'string', 'max:10'],
                 'isbn13' => ['nullable', 'string', 'max:13'],
             ],
@@ -269,6 +273,10 @@ class MediaItemController extends Controller
                 'runtime_computed' => ['nullable', 'boolean'],
                 'release_date' => ['nullable', 'date'],
                 'price' => ['nullable', 'numeric'],
+                // GitHub issue #58: an ISO 4217 code (e.g. "USD"/"EUR"), not
+                // validated against an actual currency list — this only
+                // records what the admin/provider says it is.
+                'currency' => ['nullable', 'string', 'max:3'],
             ],
             'dvd_bluray' => [
                 'title' => ['required', 'string', 'max:255'],
@@ -283,6 +291,10 @@ class MediaItemController extends Controller
                 'release_date' => ['nullable', 'date'],
                 'production_year' => ['nullable', 'integer'],
                 'price' => ['nullable', 'numeric'],
+                // GitHub issue #58: an ISO 4217 code (e.g. "USD"/"EUR"), not
+                // validated against an actual currency list — this only
+                // records what the admin/provider says it is.
+                'currency' => ['nullable', 'string', 'max:3'],
             ],
         };
     }

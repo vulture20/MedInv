@@ -140,18 +140,17 @@ trait AmazonScraping
      * lookup against it, so this stays a dumb, order-preserving map rather
      * than trying to normalize labels itself.
      *
-     * `price` (GitHub issue #58) is deliberately a plain float, not parsed
-     * against any currency — see this trait's own docblock for why that's
-     * safe *today* specifically because BASE_URL is hardcoded to
-     * amazon.com (USD) rather than a configurable/regional domain; every
-     * price this trait ever extracts is in the same currency as every
-     * other one, matching the implicit single-currency assumption
-     * `price`'s plain `decimal` column (and the "Gesamtwert des Bestands"
-     * statistic that sums it) already makes across every other provider.
-     * If BASE_URL ever became configurable per-deployment/region, this
-     * assumption would need revisiting.
+     * `price` (GitHub issue #58) is a plain float — BASE_URL is hardcoded
+     * to amazon.com, so this is always USD; `currency` is set to the
+     * literal string `'USD'` alongside it (null, not `'USD'`, when no
+     * price was found at all — an unset price has no currency to report
+     * either) rather than left for the caller to assume, now that `price`
+     * columns actually carry a `currency` field of their own (#58
+     * follow-up) instead of a bare, currency-less decimal. If BASE_URL
+     * ever became configurable per-deployment/region, this hardcoded
+     * 'USD' would need to become a real per-domain lookup instead.
      *
-     * @return array{title: ?string, cover_url: ?string, byline: ?string, description: ?string, bullets: array<string, string>, price: ?float}|null Null when the page couldn't be fetched/parsed at all (blocked, network failure, ...).
+     * @return array{title: ?string, cover_url: ?string, byline: ?string, description: ?string, bullets: array<string, string>, price: ?float, currency: ?string}|null Null when the page couldn't be fetched/parsed at all (blocked, network failure, ...).
      */
     private function amazonProductPage(string $asin): ?array
     {
@@ -174,6 +173,7 @@ trait AmazonScraping
         $coverUrl = $coverNode instanceof DOMElement
             ? ($coverNode->getAttribute('data-old-hires') ?: $coverNode->getAttribute('src') ?: null)
             : null;
+        $price = $this->parseAmazonPrice($this->amazonPriceText($xpath));
 
         return [
             'title' => $title,
@@ -181,7 +181,8 @@ trait AmazonScraping
             'byline' => $byline,
             'description' => $description,
             'bullets' => $this->amazonDetailBullets($xpath),
-            'price' => $this->parseAmazonPrice($this->amazonPriceText($xpath)),
+            'price' => $price,
+            'currency' => $price !== null ? 'USD' : null,
         ];
     }
 

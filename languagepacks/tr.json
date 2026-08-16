@@ -83,6 +83,7 @@
         "description": "Açıklama",
         "release_date": "Yayın tarihi",
         "price": "Fiyat",
+        "currency": "Para birimi",
         "authors": "Yazar(lar)",
         "format": "Format",
         "genre": "Tür",

@@ -83,6 +83,7 @@
         "description": "Описание",
         "release_date": "Дата выхода",
         "price": "Цена",
+        "currency": "Валюта",
         "authors": "Автор(ы)",
         "format": "Формат",
         "genre": "Жанр",

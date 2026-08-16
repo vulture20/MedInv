@@ -83,6 +83,7 @@
         "description": "Beschrijving",
         "release_date": "Releasedatum",
         "price": "Prijs",
+        "currency": "Valuta",
         "authors": "Auteur(s)",
         "format": "Formaat",
         "genre": "Genre",

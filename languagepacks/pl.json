@@ -83,6 +83,7 @@
         "description": "Opis",
         "release_date": "Data wydania",
         "price": "Cena",
+        "currency": "Waluta",
         "authors": "Autor(zy)",
         "format": "Format",
         "genre": "Gatunek",

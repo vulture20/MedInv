@@ -61,6 +61,12 @@ class GoogleBooksProviderTest extends TestCase
                     'thumbnail' => 'http://books.google.com/books/content?id=zyTCAlFPjgYC&img=1&zoom=1',
                 ],
             ],
+            // GitHub issue #58 — a sibling of volumeInfo, not nested inside it.
+            'saleInfo' => [
+                'saleability' => 'FOR_SALE',
+                'listPrice' => ['amount' => 18.0, 'currencyCode' => 'USD'],
+                'retailPrice' => ['amount' => 14.99, 'currencyCode' => 'USD'],
+            ],
         ];
     }
 
@@ -127,6 +133,48 @@ class GoogleBooksProviderTest extends TestCase
         $this->assertSame(496, $candidate->attributes['page_count']);
         $this->assertSame('Fiction', $candidate->attributes['genre']);
         $this->assertSame('en', $candidate->attributes['language']);
+        // GitHub issue #58: listPrice is preferred over retailPrice, see salePrice()'s docblock.
+        $this->assertSame(18.0, $candidate->attributes['price']);
+        $this->assertSame('USD', $candidate->attributes['currency']);
+    }
+
+    /** GitHub issue #58: a NOT_FOR_SALE book (out of print, ...) can still carry a stale/zero price object — not a real price to store. */
+    public function test_price_is_null_when_the_book_is_not_for_sale(): void
+    {
+        $volume = $this->hailMaryVolume();
+        $volume['saleInfo']['saleability'] = 'NOT_FOR_SALE';
+        $searchResponse = $this->hailMarySearchResponse();
+        $searchResponse['items'] = [$volume];
+
+        Http::fake([
+            self::BY_ID_API => Http::response($volume, 200),
+            self::SEARCH_API => Http::response($searchResponse, 200),
+        ]);
+
+        $candidate = app(GoogleBooksProvider::class)->lookupByCode('9780593135204')[0];
+
+        $this->assertNull($candidate->attributes['price']);
+        $this->assertNull($candidate->attributes['currency']);
+    }
+
+    /** GitHub issue #58: falls back to retailPrice when listPrice is absent. */
+    public function test_price_falls_back_to_retail_price_when_list_price_is_absent(): void
+    {
+        $volume = $this->hailMaryVolume();
+        unset($volume['saleInfo']['listPrice']);
+        $volume['saleInfo']['retailPrice'] = ['amount' => 12.5, 'currencyCode' => 'EUR'];
+        $searchResponse = $this->hailMarySearchResponse();
+        $searchResponse['items'] = [$volume];
+
+        Http::fake([
+            self::BY_ID_API => Http::response($volume, 200),
+            self::SEARCH_API => Http::response($searchResponse, 200),
+        ]);
+
+        $candidate = app(GoogleBooksProvider::class)->lookupByCode('9780593135204')[0];
+
+        $this->assertSame(12.5, $candidate->attributes['price']);
+        $this->assertSame('EUR', $candidate->attributes['currency']);
     }
 
     public function test_cover_urls_are_upgraded_from_http_to_https(): void

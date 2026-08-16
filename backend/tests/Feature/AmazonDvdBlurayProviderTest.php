@@ -67,6 +67,7 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertSame('012569783680', $candidate->attributes['ean']);
         // GitHub issue #58.
         $this->assertSame(19.99, $candidate->attributes['price']);
+        $this->assertSame('USD', $candidate->attributes['currency']);
         $this->assertSame(['https://m.media-amazon.com/images/I/br-large.jpg'], $candidate->coverUrls);
         // No dedicated "Actors" bullet in this fixture — falls back to bylineInfo.
         $this->assertSame('Starring: Harrison Ford, Rutger Hauer', $candidate->attributes['cast']);
