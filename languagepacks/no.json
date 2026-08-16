@@ -225,6 +225,7 @@
       "settings": "Systeminnstillinger",
       "confirmDeleteUser": "Slette bruker «{{name}}»? Dette kan ikke angres.",
       "confirmDeleteBackup": "Slette sikkerhetskopi «{{filename}}»? Dette kan ikke angres.",
+      "noBackups": "Ingen sikkerhetskopier ennå.",
       "passwordHint": "Minst 10 tegn, med minst én stor bokstav, én liten bokstav, ett tall og ett spesialtegn.",
       "table": {
         "level": "Nivå",

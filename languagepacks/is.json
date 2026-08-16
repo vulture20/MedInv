@@ -225,6 +225,7 @@
       "settings": "Kerfisstillingar",
       "confirmDeleteUser": "Eyða notandanum „{{name}}“? Þessu er ekki hægt að afturkalla.",
       "confirmDeleteBackup": "Eyða öryggisafritinu „{{filename}}“? Þessu er ekki hægt að afturkalla.",
+      "noBackups": "Engin öryggisafrit ennþá.",
       "passwordHint": "Að minnsta kosti 10 stafir, með að minnsta kosti einum hástaf, einum lágstaf, einum tölustaf og einu sérstöku tákni.",
       "table": {
         "level": "Stig",

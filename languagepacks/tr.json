@@ -224,6 +224,7 @@
       "settings": "Sistem ayarları",
       "confirmDeleteUser": "\"{{name}}\" kullanıcısı silinsin mi? Bu işlem geri alınamaz.",
       "confirmDeleteBackup": "\"{{filename}}\" yedeği silinsin mi? Bu işlem geri alınamaz.",
+      "noBackups": "Henüz yedek yok.",
       "passwordHint": "En az 10 karakter, en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermeli.",
       "table": {
         "level": "Seviye",

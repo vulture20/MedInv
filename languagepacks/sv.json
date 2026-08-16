@@ -225,6 +225,7 @@
       "settings": "Systeminställningar",
       "confirmDeleteUser": "Ta bort användaren ”{{name}}”? Detta kan inte ångras.",
       "confirmDeleteBackup": "Ta bort säkerhetskopian ”{{filename}}”? Detta kan inte ångras.",
+      "noBackups": "Inga säkerhetskopior ännu.",
       "passwordHint": "Minst 10 tecken, med minst en stor bokstav, en liten bokstav, en siffra och ett specialtecken.",
       "table": {
         "level": "Nivå",

@@ -225,6 +225,7 @@
       "settings": "Järjestelmäasetukset",
       "confirmDeleteUser": "Poistetaanko käyttäjä ”{{name}}”? Tätä ei voi perua.",
       "confirmDeleteBackup": "Poistetaanko varmuuskopio ”{{filename}}”? Tätä ei voi perua.",
+      "noBackups": "Ei vielä varmuuskopioita.",
       "passwordHint": "Vähintään 10 merkkiä, ja mukana vähintään yksi iso kirjain, yksi pieni kirjain, yksi numero ja yksi erikoismerkki.",
       "table": {
         "level": "Taso",

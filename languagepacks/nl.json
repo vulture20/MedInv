@@ -224,6 +224,7 @@
       "settings": "Systeeminstellingen",
       "confirmDeleteUser": "Gebruiker \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "confirmDeleteBackup": "Back-up \"{{filename}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "noBackups": "Nog geen back-ups.",
       "passwordHint": "Minimaal 10 tekens, met minstens een hoofdletter, een kleine letter, een cijfer en een speciaal teken.",
       "table": {
         "level": "Niveau",

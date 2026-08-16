@@ -222,6 +222,7 @@
     "settings": "System settings",
     "confirmDeleteUser": "Delete user “{{name}}”? This cannot be undone.",
     "confirmDeleteBackup": "Delete backup “{{filename}}”? This cannot be undone.",
+    "noBackups": "No backups yet.",
     "passwordHint": "At least 10 characters, with at least one uppercase letter, one lowercase letter, one digit and one special character.",
     "table": {
       "level": "Level",

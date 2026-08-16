@@ -224,6 +224,7 @@
       "settings": "システム設定",
       "confirmDeleteUser": "ユーザー「{{name}}」を削除しますか? この操作は元に戻せません。",
       "confirmDeleteBackup": "バックアップ「{{filename}}」を削除しますか? この操作は元に戻せません。",
+      "noBackups": "まだバックアップがありません。",
       "passwordHint": "10文字以上で、大文字・小文字・数字・記号をそれぞれ1文字以上含めてください。",
       "table": {
         "level": "レベル",

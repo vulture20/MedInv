@@ -1520,3 +1520,68 @@ td {
   padding: 0.5rem 0;
   cursor: pointer;
 }
+
+/*
+ * BackupsPage.tsx's backup list — denser than .export-library-list's rows
+ * (filename/size/trigger/status plus several per-row actions, same
+ * "compare magnitude"-adjacent reasoning as LibraryDetailPage.tsx's
+ * media-item list), so each row gets its own flex layout that wraps on
+ * narrow viewports rather than a single fixed row.
+ */
+.backup-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.backup-list__row {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.backup-list__row:last-child {
+  border-bottom: none;
+}
+
+.backup-list__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.backup-list__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.backup-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* The per-backup restore form (briefing 9.3), expanded in place below its row. */
+.backup-restore {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+}
+
+.panel-card fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+}
+
+.panel-card legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}

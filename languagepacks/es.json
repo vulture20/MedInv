@@ -224,6 +224,7 @@
       "settings": "Configuración del sistema",
       "confirmDeleteUser": "¿Eliminar al usuario «{{name}}»? Esta acción no se puede deshacer.",
       "confirmDeleteBackup": "¿Eliminar la copia de seguridad «{{filename}}»? Esta acción no se puede deshacer.",
+      "noBackups": "Todavía no hay copias de seguridad.",
       "passwordHint": "Al menos 10 caracteres, con al menos una mayúscula, una minúscula, un dígito y un carácter especial.",
       "table": {
         "level": "Nivel",

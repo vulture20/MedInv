@@ -224,6 +224,7 @@
       "settings": "Configurações do sistema",
       "confirmDeleteUser": "Excluir o usuário \"{{name}}\"? Esta ação não pode ser desfeita.",
       "confirmDeleteBackup": "Excluir o backup \"{{filename}}\"? Esta ação não pode ser desfeita.",
+      "noBackups": "Ainda não há backups.",
       "passwordHint": "Pelo menos 10 caracteres, com pelo menos uma letra maiúscula, uma minúscula, um dígito e um caractere especial.",
       "table": {
         "level": "Nível",

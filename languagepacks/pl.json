@@ -224,6 +224,7 @@
       "settings": "Ustawienia systemowe",
       "confirmDeleteUser": "Usunąć użytkownika „{{name}}”? Tej czynności nie można cofnąć.",
       "confirmDeleteBackup": "Usunąć kopię zapasową „{{filename}}”? Tej czynności nie można cofnąć.",
+      "noBackups": "Brak kopii zapasowych.",
       "passwordHint": "Co najmniej 10 znaków, w tym co najmniej jedna wielka litera, jedna mała litera, jedna cyfra i jeden znak specjalny.",
       "table": {
         "level": "Poziom",

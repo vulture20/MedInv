@@ -224,6 +224,7 @@
       "settings": "Impostazioni di sistema",
       "confirmDeleteUser": "Eliminare l'utente «{{name}}»? Questa azione non può essere annullata.",
       "confirmDeleteBackup": "Eliminare il backup «{{filename}}»? Questa azione non può essere annullata.",
+      "noBackups": "Nessun backup ancora presente.",
       "passwordHint": "Almeno 10 caratteri, con almeno una lettera maiuscola, una minuscola, una cifra e un carattere speciale.",
       "table": {
         "level": "Livello",

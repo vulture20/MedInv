@@ -39,7 +39,20 @@ interface RestoreResult {
   users_restored: string[]
 }
 
-/** Backups (briefing 9.2): on-demand creation/download/delete plus the schedule/retention config. */
+/**
+ * Backups (briefing 9.2): on-demand creation/download/delete plus the
+ * schedule/retention config.
+ *
+ * Card layout matches ExportImportPage.tsx's (.panel-page/.panel-card/
+ * .panel-field/.panel-select/.panel-confirmation, see index.css's shared
+ * docblock) — a card for the backup list (each backup a dense row, same
+ * "compare magnitude"-adjacent reasoning as LibraryDetailPage.tsx's
+ * media-item list, plus an inline expandable restore panel per row), a
+ * card for the schedule/retention form. The restore panel's two checkbox
+ * labels use .panel-field for the same reason ExportImportPage.tsx's do
+ * (see that class's docblock) — two checkbox-only labels in a row would
+ * otherwise run into each other.
+ */
 export function BackupsPage() {
   const { t } = useTranslation()
   const [backups, setBackups] = useState<Backup[]>([])
@@ -131,59 +144,77 @@ export function BackupsPage() {
   }
 
   return (
-    <>
-      <section>
+    <div className="panel-page">
+      <section className="panel-card">
         <h2>{t('admin.backups')}</h2>
         <button onClick={() => void createBackup()}>{t('admin.actions.createBackupNow')}</button>
-        <ul>
-          {backups.map((b) => (
-            <li key={b.id}>
-              {b.filename} — {(b.size_bytes / 1024).toFixed(1)} KB — {b.trigger}
-              {b.reason && ` (${t(`admin.backupReason.${b.reason}`)})`} — {b.status}{' '}
-              <a href={`${apiClient.defaults.baseURL}/admin/backups/${b.id}/download`}>{t('admin.actions.download')}</a>{' '}
-              <button onClick={() => void deleteBackup(b)}>{t('admin.actions.delete')}</button>{' '}
-              {restoringId === b.id ? (
-                <button onClick={() => setRestoringId(null)}>{t('admin.actions.cancel')}</button>
-              ) : (
-                <button onClick={() => startRestore(b)}>{t('admin.actions.restore')}</button>
-              )}
-              {restoringId === b.id && (
-                <div>
-                  <p>{t('admin.backupRestore.warning')}</p>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={overwriteExisting}
-                      onChange={(e) => setOverwriteExisting(e.target.checked)}
-                    />
-                    {t('admin.backupRestore.overwriteExisting')}
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={restoreSettings}
-                      onChange={(e) => setRestoreSettings(e.target.checked)}
-                    />
-                    {t('admin.backupRestore.restoreSettings')}
-                  </label>
-                  <button onClick={() => void confirmRestore(b)}>{t('admin.backupRestore.submit')}</button>
-                  {restoreError && <p role="alert">{restoreError}</p>}
+        {backups.length === 0 ? (
+          <p className="hint">{t('admin.noBackups')}</p>
+        ) : (
+          <ul className="backup-list">
+            {backups.map((b) => (
+              <li key={b.id} className="backup-list__row">
+                <div className="backup-list__header">
+                  <div className="backup-list__info">
+                    <strong>{b.filename}</strong>
+                    <span className="hint">
+                      {(b.size_bytes / 1024).toFixed(1)} KB — {b.trigger}
+                      {b.reason && ` (${t(`admin.backupReason.${b.reason}`)})`} — {b.status}
+                    </span>
+                  </div>
+                  <div className="backup-list__actions">
+                    <a href={`${apiClient.defaults.baseURL}/admin/backups/${b.id}/download`}>{t('admin.actions.download')}</a>
+                    <button onClick={() => void deleteBackup(b)}>{t('admin.actions.delete')}</button>
+                    {restoringId === b.id ? (
+                      <button onClick={() => setRestoringId(null)}>{t('admin.actions.cancel')}</button>
+                    ) : (
+                      <button onClick={() => startRestore(b)}>{t('admin.actions.restore')}</button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </li>
-          ))}
-        </ul>
-        {restoreResult && <p role="status">{restoreResult}</p>}
+                {restoringId === b.id && (
+                  <div className="backup-restore">
+                    <p className="hint">{t('admin.backupRestore.warning')}</p>
+                    <label className="panel-field">
+                      <input
+                        type="checkbox"
+                        checked={overwriteExisting}
+                        onChange={(e) => setOverwriteExisting(e.target.checked)}
+                      />
+                      {t('admin.backupRestore.overwriteExisting')}
+                    </label>
+                    <label className="panel-field">
+                      <input
+                        type="checkbox"
+                        checked={restoreSettings}
+                        onChange={(e) => setRestoreSettings(e.target.checked)}
+                      />
+                      {t('admin.backupRestore.restoreSettings')}
+                    </label>
+                    <button onClick={() => void confirmRestore(b)}>{t('admin.backupRestore.submit')}</button>
+                    {restoreError && <p role="alert">{restoreError}</p>}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {restoreResult && (
+          <p role="status" className="panel-confirmation">
+            {restoreResult}
+          </p>
+        )}
       </section>
 
       {settings && (
-        <section>
+        <section className="panel-card">
           <h2>{t('admin.backupSettings.title')}</h2>
           <p className="hint">{t('admin.backupSettings.retentionHint')}</p>
           <form onSubmit={saveSettings}>
             <label>
               {t('admin.backupSettings.intervalMode')}
               <select
+                className="panel-select"
                 value={settings.interval_mode}
                 onChange={(e) =>
                   setSettings({ ...settings, interval_mode: e.target.value as BackupSettings['interval_mode'] })
@@ -199,6 +230,7 @@ export function BackupsPage() {
               <label>
                 {t('admin.backupSettings.cronExpression')}
                 <input
+                  className="panel-select"
                   value={settings.cron_expression ?? ''}
                   onChange={(e) => setSettings({ ...settings, cron_expression: e.target.value })}
                   required
@@ -216,6 +248,7 @@ export function BackupsPage() {
                 />
                 {t('admin.backupSettings.retentionCount')}
                 <input
+                  className="panel-select"
                   type="number"
                   min={1}
                   disabled={settings.retention_mode !== 'count'}
@@ -234,6 +267,7 @@ export function BackupsPage() {
                 />
                 {t('admin.backupSettings.retentionMaxAgeDays')}
                 <input
+                  className="panel-select"
                   type="number"
                   min={1}
                   disabled={settings.retention_mode !== 'age'}
@@ -248,11 +282,15 @@ export function BackupsPage() {
               </label>
             </fieldset>
             <button type="submit">{t('admin.actions.save')}</button>
-            {settingsSaved && <p role="status">{t('admin.backupSettings.saved')}</p>}
+            {settingsSaved && (
+              <p role="status" className="panel-confirmation">
+                {t('admin.backupSettings.saved')}
+              </p>
+            )}
             {settingsError && <p role="alert">{settingsError}</p>}
           </form>
         </section>
       )}
-    </>
+    </div>
   )
 }

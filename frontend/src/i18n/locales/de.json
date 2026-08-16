@@ -222,6 +222,7 @@
     "settings": "Systemeinstellungen",
     "confirmDeleteUser": "Benutzer „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
     "confirmDeleteBackup": "Backup „{{filename}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+    "noBackups": "Noch keine Backups vorhanden.",
     "passwordHint": "Mindestens 10 Zeichen, mit mindestens einem Großbuchstaben, einem Kleinbuchstaben, einer Ziffer und einem Sonderzeichen.",
     "table": {
       "level": "Level",

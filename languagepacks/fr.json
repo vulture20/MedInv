@@ -224,6 +224,7 @@
       "settings": "Paramètres système",
       "confirmDeleteUser": "Supprimer l'utilisateur « {{name}} » ? Cette action est irréversible.",
       "confirmDeleteBackup": "Supprimer la sauvegarde « {{filename}} » ? Cette action est irréversible.",
+      "noBackups": "Aucune sauvegarde pour le moment.",
       "passwordHint": "Au moins 10 caractères, avec au moins une majuscule, une minuscule, un chiffre et un caractère spécial.",
       "table": {
         "level": "Niveau",

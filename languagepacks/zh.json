@@ -224,6 +224,7 @@
       "settings": "系统设置",
       "confirmDeleteUser": "删除用户“{{name}}”？此操作无法撤销。",
       "confirmDeleteBackup": "删除备份“{{filename}}”？此操作无法撤销。",
+      "noBackups": "暂无备份。",
       "passwordHint": "至少 10 个字符，且至少包含一个大写字母、一个小写字母、一个数字和一个特殊字符。",
       "table": {
         "level": "级别",
