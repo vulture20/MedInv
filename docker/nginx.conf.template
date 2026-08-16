@@ -35,11 +35,23 @@ http {
             fastcgi_param SCRIPT_FILENAME /var/www/backend/public/index.php;
         }
 
+        # Laravel's built-in health-check route (bootstrap/app.php's
+        # `health: '/up'`) — proxied here so the Docker HEALTHCHECK
+        # (Dockerfile) actually reaches php-fpm/Laravel instead of falling
+        # through to the SPA's index.html below, which would report
+        # "healthy" even if php-fpm had crashed entirely. Exact match, not
+        # a prefix, since this is the one specific path Laravel registers.
+        location = /up {
+            include fastcgi_params;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_param SCRIPT_FILENAME /var/www/backend/public/index.php;
+        }
+
         # Everything else that looks like a PHP/API entrypoint must NOT
-        # fall through to the SPA's index.html — only /api and /sanctum are
-        # proxied to php-fpm (above); nothing else on this port reaches
-        # Laravel at all, keeping the API surface strictly limited to those
-        # two prefixes.
+        # fall through to the SPA's index.html — only /api, /sanctum and the
+        # single /up health-check path above are proxied to php-fpm; nothing
+        # else on this port reaches Laravel at all, keeping the API surface
+        # strictly limited to those.
         location / {
             root /var/www/spa;
             try_files $uri $uri/ /index.html;

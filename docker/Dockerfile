@@ -87,5 +87,26 @@ VOLUME ["/var/www/backend/storage"]
 # only; the actual listen port is only known at container start, and
 # docker-compose.yml maps whatever is really configured.
 EXPOSE 8080
+
+# Hits Laravel's built-in /up route (bootstrap/app.php, proxied to php-fpm
+# by nginx.conf.template) rather than / (would just report the static SPA
+# healthy even with php-fpm down) or /api/version (a plain config() read —
+# works, but /up is the framework's own dedicated liveness signal, so this
+# uses that instead of repurposing an unrelated endpoint). Deliberately
+# stays a pure liveness check, not a readiness check that also pings the
+# database — mariadb/postgres already have their own connectivity-checking
+# healthcheck below in docker-compose.yml, and a transient DB hiccup
+# shouldn't also flip *this* container to unhealthy. curl (not busybox
+# wget) since it's already present in the base php:8.4-fpm-alpine image
+# (confirmed, no extra apk install needed) and -f turns any non-2xx status
+# into a nonzero exit for HEALTHCHECK to act on. Shell form (no exec-array
+# brackets) so ${MEDINV_PortWeb} expands via /bin/sh -c against the
+# container's real environment, set by entrypoint.sh below before
+# supervisord ever starts. start-period=40s covers entrypoint.sh's
+# migrate/seed/restore work, which all runs — and must finish — before
+# nginx/php-fpm even start listening.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD curl -fsS "http://127.0.0.1:${MEDINV_PortWeb:-8080}/up" || exit 1
+
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
