@@ -4,7 +4,7 @@ import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem } from './mediaItemFields'
-import { MetadataMergeReview, type MergedMetadata } from '../capture/MetadataMergeReview'
+import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from '../capture/MetadataMergeReview'
 
 export type { MediaItem } from './mediaItemFields'
 
@@ -50,6 +50,8 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   const [refreshStatus, setRefreshStatus] = useState<'idle' | 'loading' | 'no_match' | 'candidates'>('idle')
   const [refreshMerged, setRefreshMerged] = useState<MergedMetadata | null>(null)
   const [refreshError, setRefreshError] = useState<string | null>(null)
+  // GitHub issue #53.
+  const [refreshProviderStatuses, setRefreshProviderStatuses] = useState<ProviderStatus[]>([])
 
   const specs = FIELD_SPECS[library.media_type]
 
@@ -62,6 +64,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       setRefreshStatus('idle')
       setRefreshMerged(null)
       setRefreshError(null)
+      setRefreshProviderStatuses([])
       setValues(valuesFromItem(item, specs))
       dialogRef.current?.showModal()
     } else {
@@ -151,20 +154,22 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
    * Re-queries every enabled provider by the item's stored EAN (GitHub
    * issue #56) — e.g. a provider that failed on the original capture, a
    * new plugin enabled since, or improved source data. Shares its result
-   * shape ({status, merged}) with BulkImportService::resolveOne(), so the
-   * 'candidates' branch below can hand it straight to the same
-   * MetadataMergeReview component the capture flow already uses.
+   * shape ({status, merged, provider_statuses}) with
+   * BulkImportService::resolveOne() (provider_statuses since GitHub issue
+   * #53), so the 'candidates' branch below can hand it straight to the
+   * same MetadataMergeReview component the capture flow already uses.
    */
   async function refreshMetadata() {
     if (!item) return
     setRefreshError(null)
     setRefreshStatus('loading')
     try {
-      const { data } = await apiClient.get<{ status: string; merged: MergedMetadata }>(
+      const { data } = await apiClient.get<{ status: string; merged: MergedMetadata; provider_statuses: ProviderStatus[] }>(
         `/libraries/${library.id}/items/${item.id}/metadata/refresh`
       )
       setRefreshMerged(data.status === 'candidates' ? data.merged : null)
       setRefreshStatus(data.status === 'candidates' ? 'candidates' : 'no_match')
+      setRefreshProviderStatuses(data.provider_statuses)
     } catch (err) {
       setRefreshError(describeApiError(err))
       setRefreshStatus('idle')
@@ -357,6 +362,10 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
 
           {refreshError && <p role="alert">{refreshError}</p>}
           {refreshStatus === 'no_match' && <p className="hint">{t('capture.noMatch')}</p>}
+          {/* GitHub issue #53: shown for both 'no_match' (where it's most useful) and 'candidates'. */}
+          {(refreshStatus === 'no_match' || refreshStatus === 'candidates') && (
+            <ProviderStatusList statuses={refreshProviderStatuses} />
+          )}
           {refreshStatus === 'candidates' && refreshMerged && (
             <MetadataMergeReview
               ean={item.ean}

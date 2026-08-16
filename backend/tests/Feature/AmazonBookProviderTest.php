@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Book\AmazonBookProvider;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -126,11 +127,21 @@ class AmazonBookProviderTest extends TestCase
         $this->assertSame([], $candidates);
     }
 
-    public function test_no_candidates_when_the_search_request_is_blocked(): void
+    /** GitHub issue #53: a blocked/failed request is reported as 'failed', not silently as 'no_match' — the exact scenario this issue names AmazonScraping as an example of. */
+    public function test_lookup_by_code_throws_when_the_search_request_is_blocked(): void
     {
         Http::fake([self::SEARCH_API => Http::response('Robot Check', 503)]);
 
-        $candidates = app(AmazonBookProvider::class)->lookupByCode('9780441013593');
+        $this->expectException(MetadataProviderRequestException::class);
+        app(AmazonBookProvider::class)->lookupByCode('9780441013593');
+    }
+
+    /** search() (unlike lookupByCode()) deliberately keeps the old silent-empty behavior on a block — see AmazonScraping::amazonSearch()'s docblock. */
+    public function test_search_returns_no_candidates_when_the_search_request_is_blocked(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response('Robot Check', 503)]);
+
+        $candidates = app(AmazonBookProvider::class)->search('Dune');
 
         $this->assertSame([], $candidates);
     }

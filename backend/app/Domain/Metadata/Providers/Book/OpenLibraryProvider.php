@@ -4,6 +4,7 @@ namespace App\Domain\Metadata\Providers\Book;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -50,8 +51,12 @@ class OpenLibraryProvider implements MetadataProviderInterface
             'jscmd' => 'data',
         ]);
 
+        // Distinguished from "no entry for this ISBN" below (a genuine
+        // no-match): a non-2xx response means the request itself didn't
+        // succeed, which MetadataImportService::collectCandidatesByCode()
+        // reports as 'failed' rather than 'no_match' (GitHub issue #53).
         if ($response->failed()) {
-            return [];
+            throw new MetadataProviderRequestException("Open Library request failed with status {$response->status()}.");
         }
 
         $entry = $response->json("ISBN:{$code}");

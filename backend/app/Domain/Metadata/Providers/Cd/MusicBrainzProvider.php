@@ -4,6 +4,7 @@ namespace App\Domain\Metadata\Providers\Cd;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -69,8 +70,16 @@ class MusicBrainzProvider implements MetadataProviderInterface
         $response = Http::withHeaders(['User-Agent' => 'MedInv/1.0'])
             ->get('https://musicbrainz.org/ws/2/release', ['query' => "barcode:{$code}", 'fmt' => 'json']);
 
+        // GitHub issue #53: a failed response means the request itself
+        // didn't succeed, reported as 'failed' rather than 'no_match' — see
+        // this class's own docblock for why silently treating this as
+        // "no results" is a real, previously-lived risk (the /ws2/ vs. /ws/2/
+        // 404 that went unnoticed for exactly this reason). search() below
+        // deliberately keeps the old "return [], don't throw" behavior —
+        // only this lookup-by-code path (the one #53 is about) distinguishes
+        // the two.
         if ($response->failed()) {
-            return [];
+            throw new MetadataProviderRequestException("MusicBrainz request failed with status {$response->status()}.");
         }
 
         return collect($response->json('releases', []))

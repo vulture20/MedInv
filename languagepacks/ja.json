@@ -125,7 +125,13 @@
       "mergeNoCover": "カバーなし",
       "mergeConfirm": "この値を使用",
       "mergeTracksCount_one": "{{count}}曲",
-      "mergeTracksCount_other": "{{count}}曲"
+      "mergeTracksCount_other": "{{count}}曲",
+      "providerStatus": {
+        "ok_one": "{{count}} 件",
+        "ok_other": "{{count}} 件",
+        "no_match": "該当なし",
+        "failed": "リクエスト失敗"
+      }
     },
     "search": {
       "placeholder": "検索…",

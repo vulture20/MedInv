@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -150,38 +151,40 @@ class HardcoverProviderTest extends TestCase
         $this->assertSame([], $candidates);
     }
 
-    public function test_no_candidates_when_the_request_fails(): void
+    /** GitHub issue #53: a failed request is reported as 'failed', not silently as 'no_match'. */
+    public function test_lookup_by_code_throws_when_the_request_fails(): void
     {
         $this->configureApiKey();
         // The real, documented (and live-confirmed) shape of an unauthenticated/invalid-token response.
         Http::fake([self::GRAPHQL_URL => Http::response(['error' => 'Unable to verify token'], 401)]);
 
-        $candidates = app(HardcoverProvider::class)->lookupByCode('9780547928227');
-
-        $this->assertSame([], $candidates);
+        $this->expectException(MetadataProviderRequestException::class);
+        app(HardcoverProvider::class)->lookupByCode('9780547928227');
     }
 
-    /** Hasura (what Hardcover's API runs on) returns HTTP 200 with an `errors` array for a query-level failure, e.g. a depth-limit violation. */
-    public function test_no_candidates_when_the_response_has_graphql_errors_despite_http_200(): void
+    /** Hasura (what Hardcover's API runs on) returns HTTP 200 with an `errors` array for a query-level failure, e.g. a depth-limit violation — still 'failed' (#53), not 'no_match'. */
+    public function test_lookup_by_code_throws_when_the_response_has_graphql_errors_despite_http_200(): void
     {
         $this->configureApiKey();
         Http::fake([self::GRAPHQL_URL => Http::response([
             'errors' => [['message' => 'query depth limit exceeded']],
         ], 200)]);
 
-        $candidates = app(HardcoverProvider::class)->lookupByCode('9780547928227');
-
-        $this->assertSame([], $candidates);
+        $this->expectException(MetadataProviderRequestException::class);
+        app(HardcoverProvider::class)->lookupByCode('9780547928227');
     }
 
-    public function test_no_candidates_when_no_api_key_is_configured(): void
+    /** GitHub issue #53: a missing required api_key is a misconfiguration, reported as 'failed' — the exact "falsch konfigurierter API-Key" example the issue names. */
+    public function test_lookup_by_code_throws_when_no_api_key_is_configured(): void
     {
         Http::fake();
 
-        $candidates = app(HardcoverProvider::class)->lookupByCode('9780547928227');
-
-        $this->assertSame([], $candidates);
-        Http::assertNothingSent();
+        $this->expectException(MetadataProviderRequestException::class);
+        try {
+            app(HardcoverProvider::class)->lookupByCode('9780547928227');
+        } finally {
+            Http::assertNothingSent();
+        }
     }
 
     public function test_the_stored_key_is_sent_with_a_bearer_prefix(): void

@@ -125,7 +125,13 @@
       "mergeNoCover": "Aucune pochette",
       "mergeConfirm": "Utiliser ces valeurs",
       "mergeTracksCount_one": "{{count}} piste",
-      "mergeTracksCount_other": "{{count}} pistes"
+      "mergeTracksCount_other": "{{count}} pistes",
+      "providerStatus": {
+        "ok_one": "{{count}} résultat",
+        "ok_other": "{{count}} résultats",
+        "no_match": "aucun résultat",
+        "failed": "requête échouée"
+      }
     },
     "search": {
       "placeholder": "Rechercher…",

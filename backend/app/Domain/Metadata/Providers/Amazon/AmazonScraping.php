@@ -82,14 +82,24 @@ trait AmazonScraping
      * same "search by code" approach every other provider's lookupByCode()
      * uses under the hood).
      *
-     * @return array<int, array{asin: string, title: ?string, thumbnail_url: ?string}>
+     * Null (rather than an empty array) specifically means the underlying
+     * request itself didn't succeed (network failure, non-2xx, a block —
+     * see amazonGet()) — distinct from a successful request that genuinely
+     * found nothing. lookupByCode() (GitHub issue #53) uses that
+     * distinction to report a blocked/failed scrape as 'failed' rather than
+     * 'no_match'; search() deliberately keeps treating both cases the same
+     * (`?? []`), matching this class's documented stance that a block is
+     * "treated exactly like any other lookup failure: logged, empty
+     * result" for that path.
+     *
+     * @return array<int, array{asin: string, title: ?string, thumbnail_url: ?string}>|null
      */
-    private function amazonSearch(string $query): array
+    private function amazonSearch(string $query): ?array
     {
         $html = $this->amazonGet(self::BASE_URL.'/s', ['k' => $query]);
 
         if ($html === null) {
-            return [];
+            return null;
         }
 
         $xpath = $this->xpathFor($html);

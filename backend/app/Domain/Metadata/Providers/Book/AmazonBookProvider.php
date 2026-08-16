@@ -4,6 +4,7 @@ namespace App\Domain\Metadata\Providers\Book;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
 
 /**
@@ -47,6 +48,16 @@ class AmazonBookProvider implements MetadataProviderInterface
     public function lookupByCode(string $code): array
     {
         $results = $this->amazonSearch($code);
+
+        // Distinguished from "search succeeded but found nothing" below (a
+        // genuine no-match): null means the request itself didn't succeed
+        // (network failure, non-2xx, a block — see AmazonScraping's own
+        // docblock), reported as 'failed' rather than 'no_match' (GitHub
+        // issue #53's own motivating example for this class specifically).
+        if ($results === null) {
+            throw new MetadataProviderRequestException('Amazon scrape request failed.');
+        }
+
         $first = $results[0] ?? null;
 
         if ($first === null) {
@@ -69,7 +80,7 @@ class AmazonBookProvider implements MetadataProviderInterface
         // request volume than either of those.
         return array_map(
             fn (array $result) => $this->mapSearchResultToCandidate($result, null),
-            $this->amazonSearch($query),
+            $this->amazonSearch($query) ?? [],
         );
     }
 

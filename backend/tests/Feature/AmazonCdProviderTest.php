@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -93,6 +94,15 @@ class AmazonCdProviderTest extends TestCase
         Http::fake([self::SEARCH_API => Http::response('<html><body>No results.</body></html>', 200)]);
 
         $this->assertSame([], app(AmazonCdProvider::class)->lookupByCode('000000000000'));
+    }
+
+    /** GitHub issue #53: a blocked/failed request is reported as 'failed', not silently as 'no_match' — the exact scenario this issue names AmazonScraping as an example of. */
+    public function test_lookup_by_code_throws_when_the_search_request_is_blocked(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response('Robot Check', 503)]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(AmazonCdProvider::class)->lookupByCode('000000000000');
     }
 
     public function test_name_and_version_flag_this_as_beta(): void

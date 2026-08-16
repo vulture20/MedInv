@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
 import type { LibraryRef, MediaItem } from '../libraries/mediaItemFields'
-import { MetadataMergeReview, type MergedMetadata } from './MetadataMergeReview'
+import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from './MetadataMergeReview'
 
 // The barcode decoder (@zxing/library) is a heavy dependency (~800KB) that
 // most captures never touch — hardware-scanner and manual entry cover the
@@ -18,6 +18,8 @@ interface ScanResult {
   ean: string
   /** Field-by-field comparison across every provider that matched (see MetadataMerger) — what CapturePage's UI actually renders/submits for a 'candidates' result. */
   merged?: MergedMetadata
+  /** GitHub issue #53: per-provider ok/no_match/failed — absent for a 'duplicate' result, since no lookup ever ran. */
+  provider_statuses?: ProviderStatus[]
 }
 
 /**
@@ -162,6 +164,8 @@ export function CapturePage() {
                 </button>
               </span>
             )}
+            {/* GitHub issue #53: shown for both 'no_match' (where it's most useful — tells apart "genuinely nothing" from "a provider's request failed") and 'candidates'. */}
+            {result.provider_statuses && <ProviderStatusList statuses={result.provider_statuses} />}
             {result.status === 'candidates' && result.merged && (
               <MetadataMergeReview
                 ean={result.ean}

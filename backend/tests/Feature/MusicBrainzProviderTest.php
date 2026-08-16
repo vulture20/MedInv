@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -182,14 +183,20 @@ class MusicBrainzProviderTest extends TestCase
         $this->assertSame([], $candidates);
     }
 
-    /** A failed response (e.g. the historical 404) must degrade to "no results", never an exception — a single failing provider must not block the others (briefing 8.3). */
-    public function test_no_candidates_when_the_request_fails(): void
+    /**
+     * A failed response (e.g. the historical /ws2/ vs /ws/2/ 404 this
+     * class's own docblock documents) now throws (GitHub issue #53) so it's
+     * reported as 'failed' rather than silently as 'no_match' — this is
+     * still caught by MetadataImportService::collectCandidatesByCode() and
+     * does not block any other enabled provider (briefing 8.3), see
+     * MetadataProviderStatusTest for that multi-provider coverage.
+     */
+    public function test_lookup_by_code_throws_when_the_request_fails(): void
     {
         Http::fake([self::SEARCH_API => Http::response(['error' => 'not found'], 404)]);
 
-        $candidates = app(MusicBrainzProvider::class)->lookupByCode('724385522925');
-
-        $this->assertSame([], $candidates);
+        $this->expectException(MetadataProviderRequestException::class);
+        app(MusicBrainzProvider::class)->lookupByCode('724385522925');
     }
 
     /** A failed track-detail fetch is best-effort — must not fail the whole candidate, just leave it without tracks. */

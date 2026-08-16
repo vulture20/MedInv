@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -215,13 +216,13 @@ class GoogleBooksProviderTest extends TestCase
         $this->assertSame([], $candidates);
     }
 
-    public function test_no_candidates_when_the_search_request_fails_eg_quota_exceeded(): void
+    /** GitHub issue #53: a failed request (e.g. quota exceeded) is reported as 'failed', not silently as 'no_match'. */
+    public function test_lookup_by_code_throws_when_the_search_request_fails_eg_quota_exceeded(): void
     {
         Http::fake([self::SEARCH_API => Http::response(['error' => ['code' => 429]], 429)]);
 
-        $candidates = app(GoogleBooksProvider::class)->lookupByCode('9780593135204');
-
-        $this->assertSame([], $candidates);
+        $this->expectException(MetadataProviderRequestException::class);
+        app(GoogleBooksProvider::class)->lookupByCode('9780593135204');
     }
 
     public function test_search_maps_every_item_without_the_extra_by_id_enrichment_call(): void

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -90,6 +91,15 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertCount(1, $candidates);
         $this->assertSame('Blade Runner', $candidates[0]->attributes['title']);
         Http::assertNotSent(fn ($request) => str_contains($request->url(), '/dp/'));
+    }
+
+    /** GitHub issue #53: a blocked/failed request is reported as 'failed', not silently as 'no_match' — the exact scenario this issue names AmazonScraping as an example of. */
+    public function test_lookup_by_code_throws_when_the_search_request_is_blocked(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response('Robot Check', 503)]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(AmazonDvdBlurayProvider::class)->lookupByCode('000000000000');
     }
 
     public function test_name_and_version_flag_this_as_beta(): void

@@ -43,6 +43,13 @@ interface Props {
   onReject: () => void
 }
 
+/** GitHub issue #53: per-provider request outcome, alongside a scan/refresh result — 'ok' still means "the request succeeded", not "it found a match a user would pick"; a provider can be 'ok' with candidate_count 0 disagreements resolved elsewhere in `merged`. */
+export interface ProviderStatus {
+  provider_key: string
+  status: 'ok' | 'no_match' | 'failed'
+  candidate_count: number
+}
+
 /** "cd.discogs" -> "Discogs", "book.open_library" -> "Open Library" — a small generic formatter rather than a lookup table, since a provider's human-readable name (MetadataPlugin.name) is only exposed via the admin-only /admin/metadata/plugins endpoint and this page is usable by any user with library write access, not just admins. */
 function formatProviderKey(key: string): string {
   const withoutMediaType = key.includes('.') ? key.slice(key.indexOf('.') + 1) : key
@@ -50,6 +57,34 @@ function formatProviderKey(key: string): string {
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
+}
+
+/**
+ * GitHub issue #53: shows how each enabled provider's request actually
+ * went, so a misconfigured API key or a blocked scraper (e.g. the Amazon
+ * ones from #50) shows up distinctly from "no provider found a match" —
+ * previously indistinguishable from the merged result alone, with the
+ * failure reaching only the server log. Rendered both for a 'no_match'
+ * overall result (where it's most useful) and alongside a 'candidates'
+ * result's MetadataMergeReview.
+ */
+export function ProviderStatusList({ statuses }: { statuses: ProviderStatus[] }) {
+  const { t } = useTranslation()
+
+  if (statuses.length === 0) return null
+
+  return (
+    <ul className="provider-status-list">
+      {statuses.map((s) => (
+        <li key={s.provider_key} className="provider-status-list__item">
+          <span>{formatProviderKey(s.provider_key)}:</span>
+          <span className={`provider-status-list__status--${s.status}`}>
+            {t(`capture.providerStatus.${s.status}`, { count: s.candidate_count })}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 /** Total duration of a track list, formatted, only when every track's duration is known — mirrors the backend's TrackListRuntimeCalculator (a confidently-wrong partial sum is worse than no total at all), used here purely to help the user tell two same-length-looking track list options apart at a glance. */

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,8 +15,10 @@ use Tests\TestCase;
  * source, UPCMDB (https://upcmdb.com/), corrected here. Covers the real
  * API integration: base URL, x-api-key header sourced from
  * metadata_plugins.config, response-field mapping onto MediaDvdBluray's
- * columns, and graceful no-candidate handling (missing API key, 404, other
- * failures).
+ * columns, a genuine 404 no-candidate result, and — since GitHub issue #53 —
+ * a missing api_key or any other request failure (401/403/429/5xx) throwing
+ * MetadataProviderRequestException instead of silently returning [], so
+ * that's reported as 'failed' rather than 'no_match'.
  */
 class UpcMdbProviderTest extends TestCase
 {
@@ -103,15 +106,15 @@ class UpcMdbProviderTest extends TestCase
         $this->assertSame([], $candidate->coverUrls);
     }
 
-    public function test_lookup_by_code_returns_no_candidates_without_a_configured_api_key(): void
+    public function test_lookup_by_code_throws_without_a_configured_api_key(): void
     {
-        // No withApiKey() call — no metadata_plugins row at all.
+        // No withApiKey() call — no metadata_plugins row at all. GitHub
+        // issue #53: a missing required config field is a misconfiguration,
+        // not a genuine no-match.
         Http::fake();
 
-        $candidates = app(UpcMdbProvider::class)->lookupByCode('853901163114');
-
-        $this->assertSame([], $candidates);
-        Http::assertNothingSent();
+        $this->expectException(MetadataProviderRequestException::class);
+        app(UpcMdbProvider::class)->lookupByCode('853901163114');
     }
 
     public function test_lookup_by_code_returns_no_candidates_when_not_found(): void
@@ -122,6 +125,16 @@ class UpcMdbProviderTest extends TestCase
         $candidates = app(UpcMdbProvider::class)->lookupByCode('0000000000000');
 
         $this->assertSame([], $candidates);
+    }
+
+    /** GitHub issue #53: unlike a genuine 404, any other failure (wrong/expired key, rate limit, ...) means the request itself didn't succeed. */
+    public function test_lookup_by_code_throws_on_a_non_404_failure(): void
+    {
+        $this->withApiKey();
+        Http::fake([self::BASE_URL.'/v1/lookup/ean/*' => Http::response(['error' => 'Invalid API key'], 401)]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(UpcMdbProvider::class)->lookupByCode('853901163114');
     }
 
     public function test_search_calls_the_search_endpoint_with_the_title_query(): void
