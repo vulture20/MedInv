@@ -35,6 +35,14 @@ const emptyNewTemplate = { code: '', name: '', css: '' }
  * that was replaced with a real CSS text blob so admins get full theming
  * power ("not just color values, complete CSS files") instead of nine
  * hardcoded properties.
+ *
+ * Card layout mirrors LanguagesPage.tsx's (.panel-page/.panel-card/
+ * .panel-select, see index.css's shared docblock) the same way this
+ * component's own logic already mirrors LanguagesPage.tsx's — one card for
+ * the bundled-templates list (reusing its .bundled-language-list/__row,
+ * name notwithstanding: see that class's own docblock), one for the
+ * installed-templates table (kept a plain, dense table rather than a card
+ * per row, same reasoning as LanguagesPage.tsx's), one for the create form.
  */
 export function TemplatesPage() {
   const { t } = useTranslation()
@@ -185,139 +193,148 @@ export function TemplatesPage() {
   }
 
   return (
-    <section>
-      <h2>{t('admin.templates')}</h2>
+    <div className="panel-page">
+      <section className="panel-card">
+        <h2>{t('admin.templatesPage.bundledTitle')}</h2>
+        {bundled.length === 0 ? (
+          <p className="hint">{t('admin.templatesPage.bundledNone')}</p>
+        ) : (
+          <ul className="bundled-language-list">
+            {bundled.map((template) => (
+              <li key={template.code} className="bundled-language-list__row">
+                <span>
+                  {template.name} <span className="hint">({template.code})</span>
+                  {template.installed && <span className="hint"> — {t('admin.templatesPage.bundledInstalled')}</span>}
+                </span>
+                <button onClick={() => void installBundled(template)} disabled={installingCode === template.code}>
+                  {template.installed ? t('admin.templatesPage.bundledReinstall') : t('admin.templatesPage.bundledInstall')}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {installError && <p role="alert">{installError}</p>}
+      </section>
 
-      <h3>{t('admin.templatesPage.bundledTitle')}</h3>
-      {bundled.length === 0 ? (
-        <p className="hint">{t('admin.templatesPage.bundledNone')}</p>
-      ) : (
-        <ul className="bundled-language-list">
-          {bundled.map((template) => (
-            <li key={template.code}>
-              {template.name} ({template.code})
-              {template.installed && ` — ${t('admin.templatesPage.bundledInstalled')}`}{' '}
-              <button onClick={() => void installBundled(template)} disabled={installingCode === template.code}>
-                {template.installed ? t('admin.templatesPage.bundledReinstall') : t('admin.templatesPage.bundledInstall')}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {installError && <p role="alert">{installError}</p>}
+      <section className="panel-card">
+        <h2>{t('admin.templates')}</h2>
+        <p className="hint">{t('admin.templatesPage.builtInHint')}</p>
 
-      <p className="hint">{t('admin.templatesPage.builtInHint')}</p>
-
-      {loading ? (
-        <p>…</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>{t('admin.languagesPage.code')}</th>
-              <th>{t('common.name')}</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {BUILT_IN_CODES.map((code) =>
-              viewingBuiltIn === code ? (
-                <tr key={code}>
-                  <td>{code}</td>
-                  <td>
-                    <textarea rows={10} readOnly value={BUILT_IN_TEMPLATE_CSS[code]} />
-                  </td>
-                  <td>
-                    <button onClick={() => setViewingBuiltIn(null)}>{t('admin.actions.close')}</button>
-                  </td>
-                </tr>
-              ) : (
-                <tr key={code}>
-                  <td>{code}</td>
-                  <td>{t(`settings.template.${code}`)}</td>
-                  <td>
-                    <button onClick={() => setViewingBuiltIn(code)}>{t('admin.actions.view')}</button>
-                    <button onClick={() => downloadBuiltIn(code)}>{t('admin.actions.download')}</button>
-                  </td>
-                </tr>
-              ),
-            )}
-            {templates.length === 0 && (
+        {loading ? (
+          <p className="hint">…</p>
+        ) : (
+          <table>
+            <thead>
               <tr>
-                <td colSpan={3}>{t('admin.templatesPage.none')}</td>
+                <th>{t('admin.languagesPage.code')}</th>
+                <th>{t('common.name')}</th>
+                <th />
               </tr>
-            )}
-            {templates.map((template) =>
-              editingCode === template.code ? (
-                <tr key={template.code}>
-                  <td>{template.code}</td>
-                  <td>
-                    <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                    <label>
-                      {t('admin.templatesPage.css')}
-                      <input
-                        type="file"
-                        accept=".css,text/css"
-                        onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setEditCss(text))}
-                      />
-                    </label>
-                    <p className="hint">{t('admin.templatesPage.editFileHint')}</p>
-                  </td>
-                  <td>
-                    <button onClick={() => void saveEdit(template.code)}>{t('admin.actions.save')}</button>
-                    <button onClick={cancelEdit}>{t('admin.actions.cancel')}</button>
-                    {editError && <p role="alert">{editError}</p>}
-                  </td>
+            </thead>
+            <tbody>
+              {BUILT_IN_CODES.map((code) =>
+                viewingBuiltIn === code ? (
+                  <tr key={code}>
+                    <td>{code}</td>
+                    <td>
+                      <textarea rows={10} readOnly value={BUILT_IN_TEMPLATE_CSS[code]} />
+                    </td>
+                    <td>
+                      <button onClick={() => setViewingBuiltIn(null)}>{t('admin.actions.close')}</button>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={code}>
+                    <td>{code}</td>
+                    <td>{t(`settings.template.${code}`)}</td>
+                    <td>
+                      <button onClick={() => setViewingBuiltIn(code)}>{t('admin.actions.view')}</button>
+                      <button onClick={() => downloadBuiltIn(code)}>{t('admin.actions.download')}</button>
+                    </td>
+                  </tr>
+                ),
+              )}
+              {templates.length === 0 && (
+                <tr>
+                  <td colSpan={3}>{t('admin.templatesPage.none')}</td>
                 </tr>
-              ) : (
-                <tr key={template.code}>
-                  <td>{template.code}</td>
-                  <td>{template.name}</td>
-                  <td>
-                    <button onClick={() => void startEdit(template)}>{t('admin.actions.edit')}</button>
-                    <button onClick={() => void deleteTemplate(template)}>{t('admin.actions.delete')}</button>
-                  </td>
-                </tr>
-              ),
-            )}
-          </tbody>
-        </table>
-      )}
+              )}
+              {templates.map((template) =>
+                editingCode === template.code ? (
+                  <tr key={template.code}>
+                    <td>{template.code}</td>
+                    <td>
+                      <input className="panel-select" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                      <label>
+                        {t('admin.templatesPage.css')}
+                        <input
+                          type="file"
+                          accept=".css,text/css"
+                          onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setEditCss(text))}
+                        />
+                      </label>
+                      <p className="hint">{t('admin.templatesPage.editFileHint')}</p>
+                    </td>
+                    <td>
+                      <button onClick={() => void saveEdit(template.code)}>{t('admin.actions.save')}</button>
+                      <button onClick={cancelEdit}>{t('admin.actions.cancel')}</button>
+                      {editError && <p role="alert">{editError}</p>}
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={template.code}>
+                    <td>{template.code}</td>
+                    <td>{template.name}</td>
+                    <td>
+                      <button onClick={() => void startEdit(template)}>{t('admin.actions.edit')}</button>
+                      <button onClick={() => void deleteTemplate(template)}>{t('admin.actions.delete')}</button>
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
+        )}
+      </section>
 
-      <h3>{t('admin.templatesPage.create')}</h3>
-      <form onSubmit={createTemplate}>
-        <label>
-          {t('admin.languagesPage.code')}
-          <input
-            value={newTemplate.code}
-            onChange={(e) => setNewTemplate({ ...newTemplate, code: e.target.value })}
-            placeholder="solarized"
-            maxLength={20}
-            required
-          />
-        </label>
-        <label>
-          {t('common.name')}
-          <input
-            value={newTemplate.name}
-            onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
-            placeholder="Solarized"
-            required
-          />
-        </label>
-        <p className="hint">{t('admin.templatesPage.cssHint')}</p>
-        <label>
-          {t('admin.templatesPage.css')}
-          <input
-            type="file"
-            accept=".css,text/css"
-            onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setNewTemplate({ ...newTemplate, css: text }))}
-            required
-          />
-        </label>
-        <button type="submit">{t('admin.templatesPage.create')}</button>
-        {createError && <p role="alert">{createError}</p>}
-      </form>
-    </section>
+      <section className="panel-card">
+        <h2>{t('admin.templatesPage.create')}</h2>
+        <form onSubmit={createTemplate}>
+          <label>
+            {t('admin.languagesPage.code')}
+            <input
+              className="panel-select"
+              value={newTemplate.code}
+              onChange={(e) => setNewTemplate({ ...newTemplate, code: e.target.value })}
+              placeholder="solarized"
+              maxLength={20}
+              required
+            />
+          </label>
+          <label>
+            {t('common.name')}
+            <input
+              className="panel-select"
+              value={newTemplate.name}
+              onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
+              placeholder="Solarized"
+              required
+            />
+          </label>
+          <p className="hint">{t('admin.templatesPage.cssHint')}</p>
+          <label>
+            {t('admin.templatesPage.css')}
+            <input
+              type="file"
+              accept=".css,text/css"
+              onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setNewTemplate({ ...newTemplate, css: text }))}
+              required
+            />
+          </label>
+          <button type="submit">{t('admin.templatesPage.create')}</button>
+          {createError && <p role="alert">{createError}</p>}
+        </form>
+      </section>
+    </div>
   )
 }
