@@ -110,12 +110,15 @@
       "textFileImport": "Tekstbestand importeren",
       "duplicate": "Dit item bestaat al in deze bibliotheek.",
       "noMatch": "Geen metadata gevonden — handmatig toevoegen.",
-      "chooseCandidate": "Kies een overeenkomst of wijs ze allemaal af.",
+      "chooseCandidate": "Waarden waarover alle bronnen het eens zijn, worden automatisch ingevuld. Waar ze verschillen, kies hieronder een waarde.",
       "rejectAll": "Alle overeenkomsten afwijzen",
       "cameraScan": "Scannen met camera",
       "cameraClose": "Camera sluiten",
       "cameraHint": "Houd een streepjescode voor de camera.",
-      "cameraAccessError": "Geen toegang tot de camera. Verleen toestemming of voer handmatig een EAN/ISBN in."
+      "cameraAccessError": "Geen toegang tot de camera. Verleen toestemming of voer handmatig een EAN/ISBN in.",
+      "mergeCover": "Cover",
+      "mergeNoCover": "Geen cover",
+      "mergeConfirm": "Deze waarden gebruiken"
     },
     "search": {
       "placeholder": "Zoeken…",

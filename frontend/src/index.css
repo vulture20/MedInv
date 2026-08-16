@@ -765,3 +765,90 @@ td {
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
+
+/*
+ * Metadata merge review (CapturePage.tsx / MetadataMergeReview.tsx) — the
+ * per-field comparison across every provider that matched a scanned code.
+ * A field every provider agreed on renders as plain text (nothing to
+ * choose); one they disagree on renders as a radio group, one option per
+ * distinct value, each tagged with the provider(s) that reported it.
+ */
+.metadata-merge {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+  background: var(--color-surface);
+}
+
+.metadata-merge__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.metadata-merge__field:last-of-type {
+  border-bottom: none;
+}
+
+.metadata-merge__field-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.metadata-merge__agreed-value {
+  font-size: 0.95rem;
+}
+
+.metadata-merge__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.metadata-merge__option {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  color: var(--color-text) !important;
+  margin-bottom: 0 !important;
+}
+
+.metadata-merge__option-source {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.metadata-merge__covers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.metadata-merge__cover-option {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted) !important;
+  margin-bottom: 0 !important;
+}
+
+.metadata-merge__cover-thumb {
+  width: 4rem;
+  height: 5.5rem;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.metadata-merge__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}

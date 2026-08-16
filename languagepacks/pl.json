@@ -110,12 +110,15 @@
       "textFileImport": "Import pliku tekstowego",
       "duplicate": "Ta pozycja już istnieje w tej bibliotece.",
       "noMatch": "Nie znaleziono metadanych — dodaj ręcznie.",
-      "chooseCandidate": "Wybierz dopasowanie lub odrzuć wszystkie.",
+      "chooseCandidate": "Wartości, co do których zgadzają się wszystkie źródła, są uzupełniane automatycznie. Tam, gdzie się różnią, wybierz wartość poniżej.",
       "rejectAll": "Odrzuć wszystkie dopasowania",
       "cameraScan": "Skanuj aparatem",
       "cameraClose": "Zamknij aparat",
       "cameraHint": "Umieść kod kreskowy przed aparatem.",
-      "cameraAccessError": "Nie można uzyskać dostępu do aparatu. Przyznaj uprawnienia lub wprowadź EAN/ISBN ręcznie."
+      "cameraAccessError": "Nie można uzyskać dostępu do aparatu. Przyznaj uprawnienia lub wprowadź EAN/ISBN ręcznie.",
+      "mergeCover": "Okładka",
+      "mergeNoCover": "Brak okładki",
+      "mergeConfirm": "Użyj tych wartości"
     },
     "search": {
       "placeholder": "Szukaj…",

@@ -15,8 +15,10 @@ use App\Models\Library;
  *
  * Every code goes through the same steps regardless of entry path (7.2):
  * duplicate check within the target library (5.1) first, then automatic
- * metadata lookup (8.3). Ambiguous matches are returned as candidates for
- * the user to pick from or reject entirely — this service never guesses.
+ * metadata lookup (8.3). Ambiguous/differing values across providers are
+ * returned as a per-field comparison (`merged`, see MetadataMerger) for the
+ * user to pick from or reject the whole match entirely — this service
+ * never guesses.
  */
 class BulkImportService
 {
@@ -25,19 +27,20 @@ class BulkImportService
         private readonly MediaItemService $mediaItemService,
     ) {}
 
-    /** @return array{status: string, ean: string, candidates?: array} */
+    /** @return array{status: string, ean: string, candidates?: array, merged?: array} */
     public function resolveOne(Library $library, string $ean): array
     {
         if ($this->eanExistsInLibrary($library, $ean)) {
             return ['status' => 'duplicate', 'ean' => $ean];
         }
 
-        $candidates = $this->metadataImportService->lookup($library, $ean);
+        $result = $this->metadataImportService->lookupMerged($library, $ean);
 
         return [
-            'status' => empty($candidates) ? 'no_match' : 'candidates',
+            'status' => empty($result['candidates']) ? 'no_match' : 'candidates',
             'ean' => $ean,
-            'candidates' => $candidates,
+            'candidates' => $result['candidates'],
+            'merged' => $result['merged'],
         ];
     }
 

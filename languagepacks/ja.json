@@ -110,12 +110,15 @@
       "textFileImport": "テキストファイルのインポート",
       "duplicate": "このアイテムはすでにこのライブラリに存在します。",
       "noMatch": "一致するメタデータが見つかりません — 手動で追加してください。",
-      "chooseCandidate": "一致する項目を選択するか、すべて却下してください。",
+      "chooseCandidate": "すべてのソースが一致する値は自動的に入力されます。異なる場合は、下から値を選択してください。",
       "rejectAll": "すべての候補を却下",
       "cameraScan": "カメラでスキャン",
       "cameraClose": "カメラを閉じる",
       "cameraHint": "バーコードをカメラの前にかざしてください。",
-      "cameraAccessError": "カメラにアクセスできませんでした。アクセスを許可するか、EAN/ISBNを手動で入力してください。"
+      "cameraAccessError": "カメラにアクセスできませんでした。アクセスを許可するか、EAN/ISBNを手動で入力してください。",
+      "mergeCover": "カバー",
+      "mergeNoCover": "カバーなし",
+      "mergeConfirm": "この値を使用"
     },
     "search": {
       "placeholder": "検索…",

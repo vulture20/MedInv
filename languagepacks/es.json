@@ -110,12 +110,15 @@
       "textFileImport": "Importar archivo de texto",
       "duplicate": "Este elemento ya existe en esta biblioteca.",
       "noMatch": "No se encontraron metadatos coincidentes — añádelo manualmente.",
-      "chooseCandidate": "Elige una coincidencia o recházalas todas.",
+      "chooseCandidate": "Los valores en los que coinciden todas las fuentes se completan automáticamente. Donde difieran, elige un valor a continuación.",
       "rejectAll": "Rechazar todas las coincidencias",
       "cameraScan": "Escanear con la cámara",
       "cameraClose": "Cerrar cámara",
       "cameraHint": "Coloca un código de barras frente a la cámara.",
-      "cameraAccessError": "No se pudo acceder a la cámara. Concede el permiso o introduce un EAN/ISBN manualmente."
+      "cameraAccessError": "No se pudo acceder a la cámara. Concede el permiso o introduce un EAN/ISBN manualmente.",
+      "mergeCover": "Portada",
+      "mergeNoCover": "Sin portada",
+      "mergeConfirm": "Usar estos valores"
     },
     "search": {
       "placeholder": "Buscar…",

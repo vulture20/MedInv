@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
 import type { LibraryRef, MediaItem } from '../libraries/mediaItemFields'
+import { MetadataMergeReview, type MergedMetadata } from './MetadataMergeReview'
 
 // The barcode decoder (@zxing/library) is a heavy dependency (~800KB) that
 // most captures never touch — hardware-scanner and manual entry cover the
@@ -12,17 +13,23 @@ const CameraScanner = lazy(() => import('./CameraScanner').then((m) => ({ defaul
 
 type Library = LibraryRef
 
-interface MetadataCandidate {
-  provider_key: string
-  source_id: string
-  attributes: Record<string, unknown>
-  cover_urls: string[]
-}
-
 interface ScanResult {
   status: 'duplicate' | 'no_match' | 'candidates'
   ean: string
-  candidates?: MetadataCandidate[]
+  /** Field-by-field comparison across every provider that matched (see MetadataMerger) — what CapturePage's UI actually renders/submits for a 'candidates' result. */
+  merged?: MergedMetadata
+}
+
+/**
+ * A ScanResult plus the library it was actually scanned against, captured
+ * once at scan time rather than read from whatever's currently selected in
+ * the library dropdown when the result is later rendered/confirmed —
+ * scanning is asynchronous and results accumulate in a list, so the
+ * selector can easily have moved on to a different library (a different
+ * media_type, even) by the time an earlier result is still pending review.
+ */
+interface PendingResult extends ScanResult {
+  library: Library
 }
 
 /**
@@ -37,7 +44,7 @@ export function CapturePage() {
   const [libraries, setLibraries] = useState<Library[]>([])
   const [libraryId, setLibraryId] = useState<number | null>(null)
   const [codeInput, setCodeInput] = useState('')
-  const [results, setResults] = useState<ScanResult[]>([])
+  const [results, setResults] = useState<PendingResult[]>([])
   const [file, setFile] = useState<File | null>(null)
   const [cameraOpen, setCameraOpen] = useState(false)
   // Manual creation dead-end fix (GitHub issue #17): a `no_match` result
@@ -56,11 +63,12 @@ export function CapturePage() {
   }, [])
 
   async function scanCode(code: string) {
-    if (!libraryId || !code.trim()) return
-    const { data } = await apiClient.post<ScanResult>(`/libraries/${libraryId}/capture/scan`, {
+    const library = libraries.find((l) => l.id === libraryId)
+    if (!library || !code.trim()) return
+    const { data } = await apiClient.post<ScanResult>(`/libraries/${library.id}/capture/scan`, {
       ean: code.trim(),
     })
-    setResults((prev) => [data, ...prev])
+    setResults((prev) => [{ ...data, library }, ...prev])
   }
 
   async function submitCode(e: React.FormEvent) {
@@ -71,24 +79,26 @@ export function CapturePage() {
 
   async function submitTextFile(e: React.FormEvent) {
     e.preventDefault()
-    if (!libraryId || !file) return
+    const library = libraries.find((l) => l.id === libraryId)
+    if (!library || !file) return
     const form = new FormData()
     form.append('file', file)
-    const { data } = await apiClient.post<ScanResult[]>(`/libraries/${libraryId}/capture/textfile`, form, {
+    const { data } = await apiClient.post<ScanResult[]>(`/libraries/${library.id}/capture/textfile`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
-    setResults((prev) => [...data, ...prev])
+    setResults((prev) => [...data.map((r) => ({ ...r, library })), ...prev])
     setFile(null)
   }
 
-  async function importCandidate(candidate: MetadataCandidate) {
-    if (!libraryId) return
-    await apiClient.post(`/libraries/${libraryId}/metadata/import`, {
-      attributes: candidate.attributes,
-      cover_url: candidate.cover_urls[0],
+  async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null) {
+    await apiClient.post(`/libraries/${result.library.id}/metadata/import`, {
+      attributes,
+      cover_url: coverUrl ?? undefined,
     })
-    setResults((prev) => prev.filter((r) => r.ean !== candidate.attributes.ean))
+    setResults((prev) => prev.filter((r) => r.ean !== result.ean))
   }
+
+  const activeLibrary = libraries.find((l) => l.id === libraryId)
 
   return (
     <div>
@@ -152,39 +162,31 @@ export function CapturePage() {
                 </button>
               </span>
             )}
-            {result.status === 'candidates' && (
-              <div>
-                <p>{t('capture.chooseCandidate')}</p>
-                {result.candidates?.map((c) => (
-                  <button key={`${c.provider_key}:${c.source_id}`} onClick={() => void importCandidate(c)}>
-                    {String(c.attributes.title ?? c.source_id)} ({c.provider_key})
-                  </button>
-                ))}
-                <button onClick={() => setResults((prev) => prev.filter((r) => r.ean !== result.ean))}>
-                  {t('capture.rejectAll')}
-                </button>
-              </div>
+            {result.status === 'candidates' && result.merged && (
+              <MetadataMergeReview
+                ean={result.ean}
+                mediaType={result.library.media_type}
+                merged={result.merged}
+                onConfirm={(attributes, coverUrl) => void confirmMerged(result, attributes, coverUrl)}
+                onReject={() => setResults((prev) => prev.filter((r) => r.ean !== result.ean))}
+              />
             )}
           </li>
         ))}
       </ul>
 
-      {(() => {
-        const activeLibrary = libraries.find((l) => l.id === libraryId)
-        if (!activeLibrary) return null
-        return (
-          <CreateMediaItemDialog
-            library={activeLibrary}
-            initialEan={creatingForEan ?? undefined}
-            open={creatingForEan !== null}
-            onClose={() => setCreatingForEan(null)}
-            onCreated={(item: MediaItem) => {
-              setCreatingForEan(null)
-              setResults((prev) => prev.filter((r) => r.ean !== item.ean))
-            }}
-          />
-        )
-      })()}
+      {activeLibrary && (
+        <CreateMediaItemDialog
+          library={activeLibrary}
+          initialEan={creatingForEan ?? undefined}
+          open={creatingForEan !== null}
+          onClose={() => setCreatingForEan(null)}
+          onCreated={(item: MediaItem) => {
+            setCreatingForEan(null)
+            setResults((prev) => prev.filter((r) => r.ean !== item.ean))
+          }}
+        />
+      )}
     </div>
   )
 }

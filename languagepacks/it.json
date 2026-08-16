@@ -110,12 +110,15 @@
       "textFileImport": "Importazione file di testo",
       "duplicate": "Questo elemento esiste già in questa biblioteca.",
       "noMatch": "Nessuna corrispondenza di metadati trovata — aggiungi manualmente.",
-      "chooseCandidate": "Scegli una corrispondenza o rifiutale tutte.",
+      "chooseCandidate": "I valori su cui tutte le fonti concordano vengono compilati automaticamente. Dove differiscono, scegli un valore qui sotto.",
       "rejectAll": "Rifiuta tutte le corrispondenze",
       "cameraScan": "Scansiona con la fotocamera",
       "cameraClose": "Chiudi fotocamera",
       "cameraHint": "Tieni un codice a barre davanti alla fotocamera.",
-      "cameraAccessError": "Impossibile accedere alla fotocamera. Concedi l'autorizzazione oppure inserisci manualmente un EAN/ISBN."
+      "cameraAccessError": "Impossibile accedere alla fotocamera. Concedi l'autorizzazione oppure inserisci manualmente un EAN/ISBN.",
+      "mergeCover": "Copertina",
+      "mergeNoCover": "Nessuna copertina",
+      "mergeConfirm": "Usa questi valori"
     },
     "search": {
       "placeholder": "Cerca…",
