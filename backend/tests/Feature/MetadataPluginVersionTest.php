@@ -28,6 +28,12 @@ class MetadataPluginVersionTest extends TestCase
         $this->assertSame('v1.0', $versions->get('dvd_bluray.upcmdb'));
         $this->assertSame('v1.0', $versions->get('book.hardcover'));
         $this->assertSame('v1.0', $versions->get('book.google_books'));
+        // GitHub issue #50: the three Beta Amazon scrapers use the
+        // free-form "-beta" suffix the interface docblock explicitly
+        // calls out this string being for.
+        $this->assertSame('v0.1-beta', $versions->get('book.amazon'));
+        $this->assertSame('v0.1-beta', $versions->get('cd.amazon'));
+        $this->assertSame('v0.1-beta', $versions->get('dvd_bluray.amazon'));
     }
 
     public function test_plugins_endpoint_attaches_a_version_to_each_row(): void

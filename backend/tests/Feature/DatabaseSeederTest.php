@@ -36,12 +36,23 @@ class DatabaseSeederTest extends TestCase
         $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.upcmdb', 'enabled' => true]);
     }
 
+    /** GitHub issue #50: unlike every other default provider above, the three Beta Amazon scrapers must not be enabled just because the app was installed — an admin has to opt in. */
+    public function test_seeding_creates_the_amazon_providers_disabled(): void
+    {
+        $this->seed();
+
+        $table = (new MetadataPlugin)->getTable();
+        $this->assertDatabaseHas($table, ['provider_key' => 'book.amazon', 'enabled' => false]);
+        $this->assertDatabaseHas($table, ['provider_key' => 'cd.amazon', 'enabled' => false]);
+        $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.amazon', 'enabled' => false]);
+    }
+
     public function test_seeding_twice_does_not_duplicate_metadata_plugin_rows(): void
     {
         $this->seed();
         $this->seed();
 
-        $this->assertSame(6, MetadataPlugin::query()->count());
+        $this->assertSame(count(MetadataProviderRegistry::defaultProviders()), MetadataPlugin::query()->count());
     }
 
     public function test_a_freshly_seeded_install_actually_has_an_enabled_dvd_bluray_provider(): void

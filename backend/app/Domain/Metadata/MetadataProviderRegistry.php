@@ -3,11 +3,14 @@
 namespace App\Domain\Metadata;
 
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Providers\Book\AmazonBookProvider;
 use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
+use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
 use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
+use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Collection;
@@ -21,6 +24,19 @@ use Illuminate\Support\Collection;
  */
 class MetadataProviderRegistry
 {
+    /**
+     * Provider keys that must stay *disabled* until an admin explicitly
+     * turns them on, unlike every other default provider (GitHub issue
+     * #50): the three Amazon scrapers are Beta and carry a real ToS/legal
+     * consideration (see AmazonScraping's docblock) that no other source
+     * in this app has — enabling scraping traffic against a third party on
+     * an operator's behalf, silently, just because they installed MedInv,
+     * would be presumptuous in a way "on by default" isn't for a
+     * documented public API. See syncToDatabase() below for where this is
+     * actually applied.
+     */
+    private const DEFAULT_DISABLED_PROVIDER_KEYS = ['book.amazon', 'cd.amazon', 'dvd_bluray.amazon'];
+
     /** @return class-string<MetadataProviderInterface>[] */
     public static function defaultProviders(): array
     {
@@ -28,16 +44,21 @@ class MetadataProviderRegistry
             OpenLibraryProvider::class,
             GoogleBooksProvider::class,
             HardcoverProvider::class,
-            // TODO: AmazonBookProvider (briefing 8.2 — Buch)
+            AmazonBookProvider::class,
             MusicBrainzProvider::class,
             DiscogsProvider::class,
-            // TODO: AmazonCdProvider (briefing 8.2 — CD)
+            AmazonCdProvider::class,
             UpcMdbProvider::class,
-            // TODO: AmazonDvdBlurayProvider, EmunationProvider (briefing 8.2 — DVD/Blu-ray)
+            AmazonDvdBlurayProvider::class,
+            // TODO: EmunationProvider (briefing 8.2 — DVD/Blu-ray)
         ];
     }
 
-    /** Ensures every default provider has a corresponding metadata_plugins row. */
+    /**
+     * Ensures every default provider has a corresponding metadata_plugins
+     * row — enabled by default, except DEFAULT_DISABLED_PROVIDER_KEYS
+     * (GitHub issue #50), which an admin must explicitly opt into.
+     */
     public function syncToDatabase(): void
     {
         foreach (static::defaultProviders() as $class) {
@@ -46,7 +67,11 @@ class MetadataProviderRegistry
 
             MetadataPlugin::query()->firstOrCreate(
                 ['provider_key' => $provider->key()],
-                ['name' => $provider->name(), 'media_type' => $provider->mediaType(), 'enabled' => true],
+                [
+                    'name' => $provider->name(),
+                    'media_type' => $provider->mediaType(),
+                    'enabled' => ! in_array($provider->key(), self::DEFAULT_DISABLED_PROVIDER_KEYS, true),
+                ],
             );
         }
     }
