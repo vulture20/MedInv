@@ -104,6 +104,7 @@
       },
       "tracklist": "Lista utworów",
       "computedHint": "(obliczone)",
+      "refreshMetadata": "Odśwież metadane",
       "viewCoverFullscreen": "Wyświetl okładkę na pełnym ekranie"
     },
     "capture": {

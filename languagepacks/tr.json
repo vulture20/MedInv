@@ -104,6 +104,7 @@
       },
       "tracklist": "Parça listesi",
       "computedHint": "(hesaplandı)",
+      "refreshMetadata": "Meta verileri yenile",
       "viewCoverFullscreen": "Kapağı tam ekran görüntüle"
     },
     "capture": {

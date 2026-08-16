@@ -121,6 +121,64 @@ class MetadataController extends Controller
         return response()->json($item, 201);
     }
 
+    /**
+     * Re-runs the metadata lookup for an *already captured* item (GitHub
+     * issue #56) — e.g. a provider failed on the original import, a new
+     * plugin was enabled since, or the source data improved. Reuses
+     * lookupMerged() (#48) keyed off the item's own stored EAN, so the
+     * frontend gets back the exact same {candidates, merged} shape
+     * BulkImportService::resolveOne() already produces and can drive it
+     * through the same MetadataMergeReview component the initial capture
+     * flow uses, per explicit user instruction that this should offer the
+     * same per-field picking rather than a blind overwrite.
+     */
+    public function refresh(Request $request, Library $library, int $item)
+    {
+        abort_unless($this->access->canWrite($request->user(), $library), 403);
+
+        $record = $library->mediaItems()->findOrFail($item);
+        $result = $this->importService->lookupMerged($library, $record->ean);
+
+        return response()->json([
+            'status' => empty($result['candidates']) ? 'no_match' : 'candidates',
+            'candidates' => $result['candidates'],
+            'merged' => $result['merged'],
+        ]);
+    }
+
+    /**
+     * Applies the field-by-field selections from a refresh() review onto
+     * the existing item (GitHub issue #56) — the update-path counterpart
+     * to import()'s create. A replaced cover follows the same
+     * store-then-delete-old order uploadCover() already uses, so a failed
+     * download never leaves the item without the cover it had before.
+     */
+    public function reimport(Request $request, Library $library, int $item)
+    {
+        abort_unless($this->access->canWrite($request->user(), $library), 403);
+
+        $record = $library->mediaItems()->findOrFail($item);
+
+        $data = $request->validate([
+            'attributes' => ['required', 'array'],
+            'cover_url' => ['nullable', 'string'],
+        ]);
+
+        $this->mediaItemService->updateFromMetadata($record, $data['attributes']);
+
+        if (! empty($data['cover_url'])) {
+            $oldCoverPath = $record->cover_path;
+            $coverPath = $this->coverDownloadService->download($data['cover_url'], $library->media_type, $record->ean);
+
+            if ($coverPath) {
+                $record->update(['cover_path' => $coverPath]);
+                $this->coverDownloadService->delete($oldCoverPath);
+            }
+        }
+
+        return response()->json($record->fresh());
+    }
+
     /** Enable/disable a plugin or reorder it (briefing 15. — admin only, see routes/api.php). */
     public function updatePlugin(Request $request, MetadataPlugin $plugin)
     {

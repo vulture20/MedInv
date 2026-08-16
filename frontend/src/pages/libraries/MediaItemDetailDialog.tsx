@@ -4,6 +4,7 @@ import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem } from './mediaItemFields'
+import { MetadataMergeReview, type MergedMetadata } from '../capture/MetadataMergeReview'
 
 export type { MediaItem } from './mediaItemFields'
 
@@ -41,6 +42,14 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   // GitHub issue #45: a fullscreen view of the cover, opened by clicking
   // the small one in the details view below.
   const [coverFullscreen, setCoverFullscreen] = useState(false)
+  // GitHub issue #56: re-running the metadata lookup for an already
+  // captured item. 'candidates' drives the same MetadataMergeReview the
+  // initial capture flow uses (per explicit user instruction: per-field
+  // picking, not a blind overwrite) — kept separate from `error`/`values`
+  // so it doesn't interfere with the edit form's own state.
+  const [refreshStatus, setRefreshStatus] = useState<'idle' | 'loading' | 'no_match' | 'candidates'>('idle')
+  const [refreshMerged, setRefreshMerged] = useState<MergedMetadata | null>(null)
+  const [refreshError, setRefreshError] = useState<string | null>(null)
 
   const specs = FIELD_SPECS[library.media_type]
 
@@ -50,6 +59,9 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       setError(null)
       setMoveError(null)
       setCoverFullscreen(false)
+      setRefreshStatus('idle')
+      setRefreshMerged(null)
+      setRefreshError(null)
       setValues(valuesFromItem(item, specs))
       dialogRef.current?.showModal()
     } else {
@@ -132,6 +144,47 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       onUpdated(data)
     } catch (err) {
       setError(describeApiError(err))
+    }
+  }
+
+  /**
+   * Re-queries every enabled provider by the item's stored EAN (GitHub
+   * issue #56) — e.g. a provider that failed on the original capture, a
+   * new plugin enabled since, or improved source data. Shares its result
+   * shape ({status, merged}) with BulkImportService::resolveOne(), so the
+   * 'candidates' branch below can hand it straight to the same
+   * MetadataMergeReview component the capture flow already uses.
+   */
+  async function refreshMetadata() {
+    if (!item) return
+    setRefreshError(null)
+    setRefreshStatus('loading')
+    try {
+      const { data } = await apiClient.get<{ status: string; merged: MergedMetadata }>(
+        `/libraries/${library.id}/items/${item.id}/metadata/refresh`
+      )
+      setRefreshMerged(data.status === 'candidates' ? data.merged : null)
+      setRefreshStatus(data.status === 'candidates' ? 'candidates' : 'no_match')
+    } catch (err) {
+      setRefreshError(describeApiError(err))
+      setRefreshStatus('idle')
+    }
+  }
+
+  /** Applies the user's per-field picks from MetadataMergeReview onto the existing item (POST, not the create-path's PUT-equivalent). */
+  async function confirmRefresh(attributes: Record<string, unknown>, coverUrl: string | null) {
+    if (!item) return
+    setRefreshError(null)
+    try {
+      const { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items/${item.id}/metadata/refresh`, {
+        attributes,
+        cover_url: coverUrl ?? undefined,
+      })
+      onUpdated(data)
+      setRefreshStatus('idle')
+      setRefreshMerged(null)
+    } catch (err) {
+      setRefreshError(describeApiError(err))
     }
   }
 
@@ -291,10 +344,30 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                   {t('libraries.delete')}
                 </button>
               )}
+              {canWrite && (
+                <button type="button" disabled={refreshStatus === 'loading'} onClick={() => void refreshMetadata()}>
+                  {t('mediaItem.refreshMetadata')}
+                </button>
+              )}
               <button type="button" onClick={onClose}>
                 {t('admin.actions.cancel')}
               </button>
             </div>
+          )}
+
+          {refreshError && <p role="alert">{refreshError}</p>}
+          {refreshStatus === 'no_match' && <p className="hint">{t('capture.noMatch')}</p>}
+          {refreshStatus === 'candidates' && refreshMerged && (
+            <MetadataMergeReview
+              ean={item.ean}
+              mediaType={library.media_type}
+              merged={refreshMerged}
+              onConfirm={(attributes, coverUrl) => void confirmRefresh(attributes, coverUrl)}
+              onReject={() => {
+                setRefreshStatus('idle')
+                setRefreshMerged(null)
+              }}
+            />
           )}
 
           {!editing && canWrite && moveTargets.length > 0 && (

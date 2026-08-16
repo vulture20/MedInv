@@ -104,6 +104,7 @@
       },
       "tracklist": "曲目列表",
       "computedHint": "（已计算）",
+      "refreshMetadata": "刷新元数据",
       "viewCoverFullscreen": "全屏查看封面"
     },
     "capture": {

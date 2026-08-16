@@ -104,6 +104,7 @@
       },
       "tracklist": "Elenco tracce",
       "computedHint": "(calcolato)",
+      "refreshMetadata": "Aggiorna metadati",
       "viewCoverFullscreen": "Visualizza copertina a schermo intero"
     },
     "capture": {

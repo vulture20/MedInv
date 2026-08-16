@@ -77,6 +77,7 @@
     "createTitle": "Add media item",
     "tracklist": "Track listing",
     "computedHint": "(computed)",
+    "refreshMetadata": "Refresh metadata",
     "fields": {
       "title": "Title",
       "ean": "EAN",
