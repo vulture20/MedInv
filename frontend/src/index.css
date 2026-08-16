@@ -1198,17 +1198,18 @@ td {
 }
 
 /*
- * A label wrapping a lone checkbox (OidcPage.tsx's "enabled"/
- * "auto_provision" toggles) has only inline children, unlike every other
- * field <label> here, whose block-level .panel-select child incidentally
- * forces it onto its own line by splitting the label out of inline flow.
- * Without this, a checkbox-only label doesn't get that same free line
- * break and can end up sharing a line with whatever <label> follows it —
- * e.g. "OIDC-Anmeldung aktivieren" running straight into "Anbietername"
- * with no visual gap. display: block makes the row break explicit instead
- * of relying on that incidental side effect.
+ * A label whose only input child is inline-level — a checkbox
+ * (OidcPage.tsx's "enabled"/"auto_provision" toggles, ExportImportPage.tsx's
+ * "overwrite existing" toggle) or a file picker (ExportImportPage.tsx's
+ * import-file field) — unlike every other field <label> here, whose
+ * block-level .panel-select child incidentally forces it onto its own line
+ * by splitting the label out of inline flow. Without this, such a label
+ * doesn't get that same free line break and can end up sharing a line with
+ * whatever <label> follows it — e.g. "OIDC-Anmeldung aktivieren" running
+ * straight into "Anbietername" with no visual gap. display: block makes the
+ * row break explicit instead of relying on that incidental side effect.
  */
-.panel-checkbox {
+.panel-field {
   display: block;
   margin-bottom: 0.75rem;
 }
@@ -1489,4 +1490,33 @@ td {
 
 .bundled-language-list__row:last-child {
   border-bottom: none;
+}
+
+/*
+ * ExportImportPage.tsx's library-selection checklist — same row-list shape
+ * as .bundled-language-list above, but each row's whole content (checkbox
+ * + name + media type + owner) is itself the click target via the wrapping
+ * <label>, not a separate action button, so the row styling lives on the
+ * <label> rather than a __row modifier.
+ */
+.export-library-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.export-library-list li {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.export-library-list li:last-child {
+  border-bottom: none;
+}
+
+.export-library-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  cursor: pointer;
 }

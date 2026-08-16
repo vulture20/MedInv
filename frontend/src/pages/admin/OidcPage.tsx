@@ -83,7 +83,7 @@ export function OidcPage() {
         <h2>{t('admin.oidc')}</h2>
         <p className="hint">{t('admin.oidcSettings.intro')}</p>
         <form onSubmit={save}>
-          <label className="panel-checkbox">
+          <label className="panel-field">
             <input
               type="checkbox"
               checked={settings.enabled}
@@ -125,7 +125,7 @@ export function OidcPage() {
             <input className="panel-select" type="password" value={clientSecret} onChange={(e) => setClientSecret(e.target.value)} />
           </label>
           <p className="hint">{t('admin.oidcSettings.clientSecretHint')}</p>
-          <label className="panel-checkbox">
+          <label className="panel-field">
             <input
               type="checkbox"
               checked={settings.auto_provision}

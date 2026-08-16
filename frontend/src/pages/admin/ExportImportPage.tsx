@@ -54,6 +54,15 @@ function filenameFromContentDisposition(disposition: string | undefined): string
  * accounts at all (ExportImportService::exportLibraries() only embeds those
  * when called with $includeUsers, and export() never sets it), so offering
  * that option here would promise something it can't do.
+ *
+ * Card layout matches OidcPage.tsx's/MailPage.tsx's (.panel-page/
+ * .panel-card/.panel-confirmation, see index.css's shared docblock) — one
+ * card for the export selection, one for the import form. The import
+ * form's file/checkbox fields use .panel-field (see its own docblock),
+ * needed here for the same reason OidcPage.tsx's checkboxes needed it: a
+ * <label> around a file input or checkbox has no block-level child to
+ * incidentally force it onto its own line the way a .panel-select input
+ * does, so two such labels in a row would otherwise run into each other.
  */
 export function ExportImportPage() {
   const { t } = useTranslation()
@@ -141,8 +150,8 @@ export function ExportImportPage() {
   }
 
   return (
-    <>
-      <section>
+    <div className="panel-page">
+      <section className="panel-card">
         <h2>{t('admin.exportImportPage.exportTitle')}</h2>
         <ul className="export-library-list">
           {libraries.map((lib) => (
@@ -161,10 +170,10 @@ export function ExportImportPage() {
         {exportError && <p role="alert">{exportError}</p>}
       </section>
 
-      <section>
+      <section className="panel-card">
         <h2>{t('admin.exportImportPage.importTitle')}</h2>
         <form onSubmit={runImport}>
-          <label>
+          <label className="panel-field">
             {t('admin.exportImportPage.importFile')}
             <input
               type="file"
@@ -173,7 +182,7 @@ export function ExportImportPage() {
               required
             />
           </label>
-          <label>
+          <label className="panel-field">
             <input
               type="checkbox"
               checked={overwriteExisting}
@@ -185,9 +194,13 @@ export function ExportImportPage() {
             {t('admin.exportImportPage.importSubmit')}
           </button>
         </form>
-        {importResult && <p role="status">{importResult}</p>}
+        {importResult && (
+          <p role="status" className="panel-confirmation">
+            {importResult}
+          </p>
+        )}
         {importError && <p role="alert">{importError}</p>}
       </section>
-    </>
+    </div>
   )
 }
