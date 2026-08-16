@@ -140,7 +140,18 @@ trait AmazonScraping
      * lookup against it, so this stays a dumb, order-preserving map rather
      * than trying to normalize labels itself.
      *
-     * @return array{title: ?string, cover_url: ?string, byline: ?string, description: ?string, bullets: array<string, string>}|null Null when the page couldn't be fetched/parsed at all (blocked, network failure, ...).
+     * `price` (GitHub issue #58) is deliberately a plain float, not parsed
+     * against any currency — see this trait's own docblock for why that's
+     * safe *today* specifically because BASE_URL is hardcoded to
+     * amazon.com (USD) rather than a configurable/regional domain; every
+     * price this trait ever extracts is in the same currency as every
+     * other one, matching the implicit single-currency assumption
+     * `price`'s plain `decimal` column (and the "Gesamtwert des Bestands"
+     * statistic that sums it) already makes across every other provider.
+     * If BASE_URL ever became configurable per-deployment/region, this
+     * assumption would need revisiting.
+     *
+     * @return array{title: ?string, cover_url: ?string, byline: ?string, description: ?string, bullets: array<string, string>, price: ?float}|null Null when the page couldn't be fetched/parsed at all (blocked, network failure, ...).
      */
     private function amazonProductPage(string $asin): ?array
     {
@@ -170,7 +181,50 @@ trait AmazonScraping
             'byline' => $byline,
             'description' => $description,
             'bullets' => $this->amazonDetailBullets($xpath),
+            'price' => $this->parseAmazonPrice($this->amazonPriceText($xpath)),
         ];
+    }
+
+    /**
+     * Amazon has shown the buy-box price under several different
+     * containers over the years — #corePrice_feature_div (current) wraps
+     * it in a visually-split price (whole/fraction spans) plus a single
+     * screen-reader-only `.a-offscreen` span carrying the complete,
+     * already-formatted text ("$24.99") that this reads instead of
+     * reassembling the split parts itself; #priceblock_ourprice/
+     * #priceblock_dealprice are the older, pre-corePrice_feature_div ids.
+     * Deliberately scoped to these specific containers rather than a bare
+     * `.a-offscreen` anywhere on the page — that class also appears on
+     * unrelated prices elsewhere (e.g. "other sellers", related-products
+     * carousels), and the first one in document order isn't reliably the
+     * buy-box price.
+     */
+    private function amazonPriceText(DOMXPath $xpath): ?string
+    {
+        $node = $xpath->query(
+            '//*[@id="corePrice_feature_div"]//span[contains(@class, "a-offscreen")]
+             | //*[@id="priceblock_ourprice"]
+             | //*[@id="priceblock_dealprice"]'
+        )->item(0);
+
+        return $this->cleanText($node?->textContent);
+    }
+
+    /**
+     * Amazon formats a price as e.g. "$24.99" or "$1,299.00" — strips the
+     * currency symbol/thousands separators and parses the remaining
+     * decimal number. Deliberately not locale-aware (no "24,99 €" comma-
+     * decimal handling): BASE_URL is hardcoded to amazon.com, which always
+     * formats prices the US way regardless of the requesting client's own
+     * locale (Accept-Language only affects text, not number formatting).
+     */
+    private function parseAmazonPrice(?string $text): ?float
+    {
+        if ($text === null || ! preg_match('/[\d,]*\d\.\d{2}/', $text, $matches)) {
+            return null;
+        }
+
+        return (float) str_replace(',', '', $matches[0]);
     }
 
     /**

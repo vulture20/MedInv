@@ -101,6 +101,9 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
                 'release_date' => $releaseDate,
                 'production_year' => $releaseDate ? (int) substr($releaseDate, 0, 4) : null,
                 'ean' => $code,
+                // GitHub issue #58 — see AmazonScraping::amazonProductPage()'s
+                // docblock for why this is safe without a currency field today.
+                'price' => $page['price'],
             ],
             coverUrls: $page['cover_url'] ? [$page['cover_url']] : [],
         );

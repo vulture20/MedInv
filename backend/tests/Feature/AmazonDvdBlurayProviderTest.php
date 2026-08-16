@@ -34,6 +34,7 @@ class AmazonDvdBlurayProviderTest extends TestCase
             <div id="bylineInfo">Starring: Harrison Ford, Rutger Hauer</div>
             <img id="landingImage" src="https://m.media-amazon.com/images/I/br-small.jpg" data-old-hires="https://m.media-amazon.com/images/I/br-large.jpg" />
             <div id="feature-bullets"><ul><li>A neo-noir science fiction classic.</li></ul></div>
+            <div id="corePrice_feature_div"><span class="a-price"><span class="a-offscreen">$19.99</span></span></div>
             <div id="detailBullets_feature_div">
               <ul>
                 <li><span class="a-list-item"><span class="a-text-bold">Format &rlm;: &lrm;</span><span>Blu-ray</span></span></li>
@@ -64,6 +65,8 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertSame('2007-10-04', $candidate->attributes['release_date']);
         $this->assertSame(2007, $candidate->attributes['production_year']);
         $this->assertSame('012569783680', $candidate->attributes['ean']);
+        // GitHub issue #58.
+        $this->assertSame(19.99, $candidate->attributes['price']);
         $this->assertSame(['https://m.media-amazon.com/images/I/br-large.jpg'], $candidate->coverUrls);
         // No dedicated "Actors" bullet in this fixture — falls back to bylineInfo.
         $this->assertSame('Starring: Harrison Ford, Rutger Hauer', $candidate->attributes['cast']);

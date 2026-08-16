@@ -34,6 +34,7 @@ class AmazonCdProviderTest extends TestCase
             <div id="bylineInfo">Radiohead (Artist)</div>
             <img id="landingImage" src="https://m.media-amazon.com/images/I/okc-small.jpg" data-old-hires="https://m.media-amazon.com/images/I/okc-large.jpg" />
             <div id="feature-bullets"><ul><li>Radiohead's seminal 1997 album.</li></ul></div>
+            <div id="corePrice_feature_div"><span class="a-price"><span class="a-offscreen">$13.98</span></span></div>
             <div id="detailBullets_feature_div">
               <ul>
                 <li><span class="a-list-item"><span class="a-text-bold">Format &rlm;: &lrm;</span><span>Audio CD</span></span></li>
@@ -59,6 +60,8 @@ class AmazonCdProviderTest extends TestCase
         $this->assertSame('Audio CD', $candidate->attributes['medium']);
         $this->assertSame('1997-06-17', $candidate->attributes['release_date']);
         $this->assertSame('724385522925', $candidate->attributes['ean']);
+        // GitHub issue #58.
+        $this->assertSame(13.98, $candidate->attributes['price']);
         $this->assertSame(['https://m.media-amazon.com/images/I/okc-large.jpg'], $candidate->coverUrls);
         // Deliberately never a track listing — see this provider's docblock.
         $this->assertArrayNotHasKey('tracks', $candidate->attributes);

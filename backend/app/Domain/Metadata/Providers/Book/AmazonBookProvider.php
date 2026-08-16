@@ -109,6 +109,9 @@ class AmazonBookProvider implements MetadataProviderInterface
                 'isbn10' => $this->amazonBullet($bullets, 'ISBN-10', 'ISBN10'),
                 'isbn13' => $this->amazonBullet($bullets, 'ISBN-13', 'ISBN13'),
                 'ean' => $code,
+                // GitHub issue #58 — see AmazonScraping::amazonProductPage()'s
+                // docblock for why this is safe without a currency field today.
+                'price' => $page['price'],
             ],
             coverUrls: $page['cover_url'] ? [$page['cover_url']] : [],
         );

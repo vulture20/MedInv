@@ -47,6 +47,7 @@ class AmazonBookProviderTest extends TestCase
             <div id="bylineInfo"><a class="author">Frank Herbert</a> (Author)</div>
             <img id="landingImage" src="https://m.media-amazon.com/images/I/dune-small.jpg" data-old-hires="https://m.media-amazon.com/images/I/dune-large.jpg" />
             <div id="feature-bullets"><ul><li>A stunning blend of adventure and mysticism, environmentalism and politics.</li></ul></div>
+            <div id="corePrice_feature_div"><span class="a-price"><span class="a-offscreen">$10.49</span><span aria-hidden="true">$10<span>49</span></span></span></div>
             <div id="detailBullets_feature_div">
               <ul>
                 <li><span class="a-list-item"><span class="a-text-bold">Publisher &rlm;: &lrm;</span><span>Ace; Reissue edition (July 1, 2005)</span></span></li>
@@ -78,9 +79,56 @@ class AmazonBookProviderTest extends TestCase
         $this->assertSame('978-0441013593', $candidate->attributes['isbn13']);
         $this->assertSame('2005-07-01', $candidate->attributes['release_date']);
         $this->assertSame('9780441013593', $candidate->attributes['ean']);
+        // GitHub issue #58.
+        $this->assertSame(10.49, $candidate->attributes['price']);
         $this->assertStringContainsString('adventure and mysticism', $candidate->attributes['description']);
         $this->assertSame(['https://m.media-amazon.com/images/I/dune-large.jpg'], $candidate->coverUrls);
         $this->assertSame('0441013597', $candidate->sourceId);
+    }
+
+    /** GitHub issue #58: the older, pre-corePrice_feature_div price markup is checked too. */
+    public function test_price_is_read_from_the_legacy_priceblock_markup(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune</span><div id="priceblock_ourprice">$8.99</div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertSame(8.99, $candidate->attributes['price']);
+    }
+
+    /** GitHub issue #58: "$1,299.00" — the thousands separator must not become part of the parsed number. */
+    public function test_price_strips_the_thousands_separator(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune (Deluxe Edition)</span><div id="priceblock_ourprice">$1,299.00</div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertSame(1299.0, $candidate->attributes['price']);
+    }
+
+    /** GitHub issue #58: a product page with no price markup at all (e.g. currently unavailable) maps to null, not a missing key or a wrong guess. */
+    public function test_price_is_null_when_no_price_markup_is_present(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response('<html><body><span id="productTitle">Dune</span></body></html>', 200),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertNull($candidate->attributes['price']);
     }
 
     public function test_lookup_by_code_requests_the_search_page_with_the_code_as_the_query(): void
