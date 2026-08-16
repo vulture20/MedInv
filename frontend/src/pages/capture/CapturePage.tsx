@@ -40,6 +40,15 @@ interface PendingResult extends ScanResult {
  * code into `codeInput` followed by Enter (its native behavior), which
  * submits the form exactly like a manually typed EAN would, and
  * `CameraScanner` calls the exact same handler with its decoded result.
+ *
+ * Card layout matches SettingsPage.tsx's (.panel-page/.panel-card — see
+ * that file/index.css's shared docblock), per explicit user request to
+ * align the two rather than each carrying its own bespoke look. The scan/
+ * type input is deliberately never hidden behind a tab or a reveal toggle
+ * the way camera/text-file are: a hardware barcode scanner "types" into
+ * whichever input has focus and presses Enter on its own, so this input
+ * has to stay mounted and reachable at all times for that to keep working,
+ * not just when a "manual entry" mode happens to be selected.
  */
 export function CapturePage() {
   const { t } = useTranslation()
@@ -100,84 +109,122 @@ export function CapturePage() {
     setResults((prev) => prev.filter((r) => r.ean !== result.ean))
   }
 
+  /** Removes a result the user has no other action to take on (a 'duplicate' has none at all; a 'no_match' has "add manually" but may just as well not be wanted) — 'candidates' already has its own dismissal via MetadataMergeReview's "reject all". */
+  function dismissResult(ean: string) {
+    setResults((prev) => prev.filter((r) => r.ean !== ean))
+  }
+
   const activeLibrary = libraries.find((l) => l.id === libraryId)
 
   return (
-    <div>
-      <h1>{t('capture.title')}</h1>
+    <div className="panel-page">
+      <header className="panel-page__header">
+        <h1>{t('capture.title')}</h1>
+        <p className="hint">{t('capture.subtitle')}</p>
+      </header>
 
-      <label>
-        {t('libraries.title')}
-        <select value={libraryId ?? ''} onChange={(e) => setLibraryId(Number(e.target.value))}>
+      <section className="panel-card">
+        <h2>{t('libraries.title')}</h2>
+        <p className="hint">{t('capture.libraryHint')}</p>
+        <select className="panel-select" value={libraryId ?? ''} onChange={(e) => setLibraryId(Number(e.target.value))}>
           {libraries.map((lib) => (
             <option key={lib.id} value={lib.id}>
-              {lib.name}
+              {lib.name} — {t(`libraries.mediaType.${lib.media_type}`)}
             </option>
           ))}
         </select>
-      </label>
+      </section>
 
-      {/* Hardware scanner + manual entry share this one input (7.2). */}
-      <form onSubmit={submitCode}>
-        <label>
-          {t('capture.scan')}
+      <section className="panel-card">
+        <h2>{t('capture.methodTitle')}</h2>
+        <p className="hint">{t('capture.methodHint')}</p>
+
+        {/* Hardware scanner + manual entry share this one input (7.2) — see this component's own docblock for why it can never be hidden behind a reveal toggle the way camera/text-file below are. */}
+        <form className="capture-scan-form" onSubmit={submitCode}>
           <input
+            className="panel-select capture-scan-form__input"
             value={codeInput}
             onChange={(e) => setCodeInput(e.target.value)}
             placeholder={t('capture.eanIsbnPlaceholder')}
+            aria-label={t('capture.scan')}
             autoFocus
           />
-        </label>
-        <button type="submit">{t('capture.scan')}</button>
-      </form>
+          <button type="submit">{t('capture.scan')}</button>
+        </form>
 
-      {cameraOpen ? (
-        <Suspense fallback={<p>…</p>}>
-          <CameraScanner onDecode={(code) => void scanCode(code)} onClose={() => setCameraOpen(false)} />
-        </Suspense>
-      ) : (
-        <button type="button" onClick={() => setCameraOpen(true)}>
-          {t('capture.cameraScan')}
-        </button>
+        <div className="capture-divider">
+          <span>{t('capture.or')}</span>
+        </div>
+
+        <div className="capture-alt-methods">
+          {cameraOpen ? (
+            <Suspense fallback={<p className="hint">…</p>}>
+              <CameraScanner onDecode={(code) => void scanCode(code)} onClose={() => setCameraOpen(false)} />
+            </Suspense>
+          ) : (
+            <button type="button" onClick={() => setCameraOpen(true)}>
+              {t('capture.cameraScan')}
+            </button>
+          )}
+
+          <form className="capture-textfile-form" onSubmit={submitTextFile}>
+            <span className="capture-textfile-form__label-text">{t('capture.textFileImport')}</span>
+            <input type="file" accept=".txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            <button type="submit" disabled={!file}>
+              {t('capture.textFileImport')}
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {results.length > 0 && (
+        <section className="panel-card">
+          <h2>{t('capture.resultsTitle', { count: results.length })}</h2>
+
+          <ul className="capture-results">
+            {results.map((result) => (
+              <li key={result.ean} className="capture-result">
+                <div className="capture-result__header">
+                  <span className="capture-result__ean">{result.ean}</span>
+                  {result.status === 'duplicate' && <span className="warning warning--danger">{t('capture.duplicate')}</span>}
+                  {result.status !== 'candidates' && (
+                    <button
+                      type="button"
+                      className="capture-result__dismiss"
+                      aria-label={t('capture.dismiss')}
+                      onClick={() => dismissResult(result.ean)}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+
+                {result.status === 'no_match' && (
+                  <p className="capture-result__no-match">
+                    {t('capture.noMatch')}{' '}
+                    <button type="button" onClick={() => setCreatingForEan(result.ean)}>
+                      {t('mediaItem.addManually')}
+                    </button>
+                  </p>
+                )}
+
+                {/* GitHub issue #53: shown for both 'no_match' (where it's most useful — tells apart "genuinely nothing" from "a provider's request failed") and 'candidates'. */}
+                {result.provider_statuses && <ProviderStatusList statuses={result.provider_statuses} />}
+
+                {result.status === 'candidates' && result.merged && (
+                  <MetadataMergeReview
+                    ean={result.ean}
+                    mediaType={result.library.media_type}
+                    merged={result.merged}
+                    onConfirm={(attributes, coverUrl) => void confirmMerged(result, attributes, coverUrl)}
+                    onReject={() => dismissResult(result.ean)}
+                  />
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
-
-      <form onSubmit={submitTextFile}>
-        <label>
-          {t('capture.textFileImport')}
-          <input type="file" accept=".txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-        </label>
-        <button type="submit" disabled={!file}>
-          {t('capture.textFileImport')}
-        </button>
-      </form>
-
-      <ul className="capture-results">
-        {results.map((result) => (
-          <li key={result.ean}>
-            <strong>{result.ean}</strong>{' '}
-            {result.status === 'duplicate' && <span className="warning">{t('capture.duplicate')}</span>}
-            {result.status === 'no_match' && (
-              <span>
-                {t('capture.noMatch')}{' '}
-                <button type="button" onClick={() => setCreatingForEan(result.ean)}>
-                  {t('mediaItem.addManually')}
-                </button>
-              </span>
-            )}
-            {/* GitHub issue #53: shown for both 'no_match' (where it's most useful — tells apart "genuinely nothing" from "a provider's request failed") and 'candidates'. */}
-            {result.provider_statuses && <ProviderStatusList statuses={result.provider_statuses} />}
-            {result.status === 'candidates' && result.merged && (
-              <MetadataMergeReview
-                ean={result.ean}
-                mediaType={result.library.media_type}
-                merged={result.merged}
-                onConfirm={(attributes, coverUrl) => void confirmMerged(result, attributes, coverUrl)}
-                onReject={() => setResults((prev) => prev.filter((r) => r.ean !== result.ean))}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
 
       {activeLibrary && (
         <CreateMediaItemDialog

@@ -154,13 +154,13 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="settings-page">
-      <header className="settings-page__header">
+    <div className="panel-page">
+      <header className="panel-page__header">
         <h1>{t('userMenu.settings')}</h1>
         <p className="hint">{t('settings.subtitle')}</p>
       </header>
 
-      <section className="settings-card">
+      <section className="panel-card">
         <h2>{t('settings.template.label')}</h2>
         <p className="hint">{t('settings.template.hint')}</p>
 
@@ -201,18 +201,18 @@ export function SettingsPage() {
         </div>
 
         {templateSaved && (
-          <p role="status" className="settings-saved">
+          <p role="status" className="panel-confirmation">
             {t('settings.saved')}
           </p>
         )}
         {templateError && <p role="alert">{templateError}</p>}
       </section>
 
-      <section className="settings-card">
+      <section className="panel-card">
         <h2>{t('settings.language.label')}</h2>
         <p className="hint">{t('settings.language.hint')}</p>
 
-        <select className="settings-select" value={language} onChange={(e) => void saveLanguage(e.target.value)}>
+        <select className="panel-select" value={language} onChange={(e) => void saveLanguage(e.target.value)}>
           {AVAILABLE_LANGUAGES.map((lng) => (
             <option key={lng} value={lng}>
               {t(`settings.language.${lng}`)}
@@ -229,7 +229,7 @@ export function SettingsPage() {
         </select>
 
         {languageSaved && (
-          <p role="status" className="settings-saved">
+          <p role="status" className="panel-confirmation">
             {t('settings.saved')}
           </p>
         )}

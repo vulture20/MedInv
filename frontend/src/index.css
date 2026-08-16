@@ -595,7 +595,18 @@ td {
   }
 }
 
-/* Camera-based barcode scanning (briefing 7.2, CameraScanner.tsx). */
+/* Camera-based barcode scanning (briefing 7.2, CameraScanner.tsx) — a
+   recessed nested panel (--color-bg, like .capture-result) so it reads as
+   contained within CapturePage's surrounding .panel-card, not a stray
+   unstyled block dropped into it. */
+.camera-scanner {
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
 .camera-scanner__video {
   display: block;
   max-width: 100%;
@@ -1011,24 +1022,28 @@ td {
 }
 
 /*
- * Personal preferences (briefing 4.1, SettingsPage.tsx) — the one settings
- * surface a non-admin user ever sees, given a real card-based treatment
- * rather than the bare label/select stacks the admin-only settings pages
- * use for a much longer, denser list of options.
+ * Shared card-page language, introduced for SettingsPage.tsx (briefing
+ * 4.1's "benutzerdefinierte Einstellungen" — the one settings surface a
+ * non-admin user ever sees, given a real card-based treatment rather than
+ * the bare label/select stacks the admin-only settings pages use for a
+ * much longer, denser list of options) and reused as-is by CapturePage.tsx
+ * so the two pages read as one visual language rather than two competing
+ * ones — a page wraps its sections in .panel-card, each with an <h2> and
+ * an optional .hint line under it.
  */
-.settings-page {
+.panel-page {
   max-width: 42rem;
 }
 
-.settings-page__header {
+.panel-page__header {
   margin-bottom: 1.5rem;
 }
 
-.settings-page__header h1 {
+.panel-page__header h1 {
   margin-bottom: 0.25rem;
 }
 
-.settings-card {
+.panel-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 10px;
@@ -1036,12 +1051,12 @@ td {
   margin-bottom: 1.25rem;
 }
 
-.settings-card h2 {
+.panel-card h2 {
   margin: 0;
   font-size: 1.05rem;
 }
 
-.settings-card .hint {
+.panel-card .hint {
   margin: 0.2rem 0 0.9rem;
 }
 
@@ -1080,7 +1095,8 @@ td {
  * accent pill) rendered in that template's real colors — shows what
  * "Light"/"Dark" actually look like instead of leaving it to the reader's
  * imagination. Colors are supplied inline per template (SettingsPage.tsx's
- * builtInPreviews) rather than via var(--color-*): the whole point is
+ * BUILT_IN_PREVIEW_COLORS/extractPreviewColors()) rather than via
+ * var(--color-*): the whole point is
  * showing the *other* template's look while a *different* one is active
  * on the real page, which the live custom properties can't do since only
  * one [data-template] ever applies to <html> at a time.
@@ -1149,7 +1165,7 @@ td {
   accent-color: var(--color-accent);
 }
 
-.settings-select {
+.panel-select {
   display: block;
   width: 100%;
   max-width: 20rem;
@@ -1162,21 +1178,21 @@ td {
 }
 
 /* Transient save confirmation (SettingsPage.tsx's flashSaved()) — auto-hides itself again, see the JS timeout. */
-.settings-saved {
+.panel-confirmation {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   margin: 0.75rem 0 0;
   font-size: 0.85rem;
   color: var(--color-success);
-  animation: settings-saved-fade-in 0.2s ease;
+  animation: panel-confirmation-fade-in 0.2s ease;
 }
 
-.settings-saved::before {
+.panel-confirmation::before {
   content: '✓';
 }
 
-@keyframes settings-saved-fade-in {
+@keyframes panel-confirmation-fade-in {
   from {
     opacity: 0;
     transform: translateY(-2px);
@@ -1189,8 +1205,118 @@ td {
 
 @media (prefers-reduced-motion: reduce) {
   .theme-swatch,
-  .settings-saved {
+  .panel-confirmation {
     transition: none;
     animation: none;
   }
+}
+
+/*
+ * CapturePage.tsx (briefing 7.2), reusing .panel-page/.panel-card from
+ * above rather than its own copy — the hardware-scanner/manual-entry input
+ * stays a plain, always-mounted form (see the component's own docblock for
+ * why it can't be tucked behind a reveal toggle); camera and text-file
+ * import are visually secondary, below a labeled divider that spells out
+ * they're alternatives to the input above, not a second required step.
+ */
+.capture-scan-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.capture-scan-form__input {
+  flex: 1;
+  max-width: none;
+}
+
+.capture-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.capture-divider::before,
+.capture-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.capture-alt-methods {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.capture-textfile-form {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.capture-textfile-form__label-text {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.capture-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* One scanned/imported code's outcome — recessed (--color-bg) against the
+   containing .panel-card the same way .camera-scanner and SettingsPage's
+   own .theme-swatch are, so a page/card/result three-level nesting reads
+   consistently by spacing and tone rather than needing a shadow per level. */
+.capture-result {
+  padding: 0.75rem 1rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.capture-result__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Barcodes are numbers meant to be compared/skimmed at a glance — tabular-nums keeps
+   digits aligned the same way .media-item-dialog__track-duration already does for durations. */
+.capture-result__ean {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.capture-result__dismiss {
+  margin-left: auto;
+  padding: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.capture-result__dismiss:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.capture-result__no-match {
+  margin: 0.5rem 0 0;
 }
