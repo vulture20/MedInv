@@ -45,6 +45,13 @@ const TIMEZONES: string[] = (() => {
  * filenames (GitHub issue #31). Mail lives on its own page, backup
  * schedule/retention lives with the backups list — see
  * pages/admin/{Mail,Backups}Page.tsx.
+ *
+ * Card layout matches LibrariesPage.tsx's/StatisticsPage.tsx's (.panel-page/
+ * .panel-card/.panel-select/.panel-confirmation, see index.css's shared
+ * docblock) — one card per setting group. No .panel-page__header here: this
+ * renders inside AdminLayout.tsx's <Outlet/>, which already supplies the
+ * "Administration" page title and tab strip shared by every admin/*Page.tsx,
+ * so a second, page-level heading here would be redundant.
  */
 export function SystemSettingsPage() {
   const { t } = useTranslation()
@@ -189,14 +196,15 @@ export function SystemSettingsPage() {
   }
 
   return (
-    <>
+    <div className="panel-page">
       {security && (
-        <section>
+        <section className="panel-card">
           <h2>{t('admin.securitySettings.title')}</h2>
           <form onSubmit={saveSecurity}>
             <label>
               {t('admin.securitySettings.maxAttempts')}
               <input
+                className="panel-select"
                 type="number"
                 min={1}
                 value={security.throttle_max_attempts}
@@ -207,6 +215,7 @@ export function SystemSettingsPage() {
             <label>
               {t('admin.securitySettings.windowMinutes')}
               <input
+                className="panel-select"
                 type="number"
                 min={1}
                 value={security.throttle_window_minutes}
@@ -217,6 +226,7 @@ export function SystemSettingsPage() {
             <label>
               {t('admin.securitySettings.lockMinutes')}
               <input
+                className="panel-select"
                 type="number"
                 min={1}
                 value={security.throttle_lock_minutes}
@@ -225,19 +235,23 @@ export function SystemSettingsPage() {
               />
             </label>
             <button type="submit">{t('admin.actions.save')}</button>
-            {securitySaved && <p role="status">{t('admin.securitySettings.saved')}</p>}
+            {securitySaved && (
+              <p role="status" className="panel-confirmation">
+                {t('admin.securitySettings.saved')}
+              </p>
+            )}
             {securityError && <p role="alert">{securityError}</p>}
           </form>
         </section>
       )}
 
       {loglevel && (
-        <section>
+        <section className="panel-card">
           <h2>{t('admin.logLevel.title')}</h2>
           <form onSubmit={saveLoglevel}>
             <label>
               {t('admin.logLevel.title')}
-              <select value={loglevel} onChange={(e) => setLoglevel(e.target.value as LogLevel)}>
+              <select className="panel-select" value={loglevel} onChange={(e) => setLoglevel(e.target.value as LogLevel)}>
                 <option value="DEBUG">DEBUG</option>
                 <option value="INFO">INFO</option>
                 <option value="WARNING">WARNING</option>
@@ -245,20 +259,24 @@ export function SystemSettingsPage() {
               </select>
             </label>
             <button type="submit">{t('admin.actions.save')}</button>
-            {loglevelSaved && <p role="status">{t('admin.logLevel.saved')}</p>}
+            {loglevelSaved && (
+              <p role="status" className="panel-confirmation">
+                {t('admin.logLevel.saved')}
+              </p>
+            )}
             {loglevelError && <p role="alert">{loglevelError}</p>}
           </form>
         </section>
       )}
 
       {defaultLanguage && (
-        <section>
+        <section className="panel-card">
           <h2>{t('admin.localeSettings.title')}</h2>
-          <p>{t('admin.localeSettings.hint')}</p>
+          <p className="hint">{t('admin.localeSettings.hint')}</p>
           <form onSubmit={saveLocale}>
             <label>
               {t('admin.localeSettings.defaultLanguage')}
-              <select value={defaultLanguage} onChange={(e) => setDefaultLanguage(e.target.value)}>
+              <select className="panel-select" value={defaultLanguage} onChange={(e) => setDefaultLanguage(e.target.value)}>
                 {AVAILABLE_LANGUAGES.map((lng) => (
                   <option key={lng} value={lng}>
                     {t(`settings.language.${lng}`)}
@@ -276,20 +294,24 @@ export function SystemSettingsPage() {
               </select>
             </label>
             <button type="submit">{t('admin.actions.save')}</button>
-            {localeSaved && <p role="status">{t('admin.localeSettings.saved')}</p>}
+            {localeSaved && (
+              <p role="status" className="panel-confirmation">
+                {t('admin.localeSettings.saved')}
+              </p>
+            )}
             {localeError && <p role="alert">{localeError}</p>}
           </form>
         </section>
       )}
 
       {timezone && (
-        <section>
+        <section className="panel-card">
           <h2>{t('admin.timezoneSettings.title')}</h2>
           <p className="hint">{t('admin.timezoneSettings.hint')}</p>
           <form onSubmit={saveTimezone}>
             <label>
               {t('admin.timezoneSettings.timezone')}
-              <select value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+              <select className="panel-select" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
                 {TIMEZONES.map((tz) => (
                   <option key={tz} value={tz}>
                     {tz}
@@ -298,20 +320,25 @@ export function SystemSettingsPage() {
               </select>
             </label>
             <button type="submit">{t('admin.actions.save')}</button>
-            {timezoneSaved && <p role="status">{t('admin.timezoneSettings.saved')}</p>}
+            {timezoneSaved && (
+              <p role="status" className="panel-confirmation">
+                {t('admin.timezoneSettings.saved')}
+              </p>
+            )}
             {timezoneError && <p role="alert">{timezoneError}</p>}
           </form>
         </section>
       )}
 
       {defaultCurrency !== undefined && (
-        <section>
+        <section className="panel-card">
           <h2>{t('admin.statisticsSettings.title')}</h2>
           <p className="hint">{t('admin.statisticsSettings.hint')}</p>
           <form onSubmit={saveDefaultCurrency}>
             <label>
               {t('admin.statisticsSettings.defaultCurrency')}
               <input
+                className="panel-select"
                 value={defaultCurrency ?? ''}
                 onChange={(e) => setDefaultCurrency(e.target.value)}
                 placeholder="EUR"
@@ -319,14 +346,18 @@ export function SystemSettingsPage() {
               />
             </label>
             <button type="submit">{t('admin.actions.save')}</button>
-            {defaultCurrencySaved && <p role="status">{t('admin.statisticsSettings.saved')}</p>}
+            {defaultCurrencySaved && (
+              <p role="status" className="panel-confirmation">
+                {t('admin.statisticsSettings.saved')}
+              </p>
+            )}
             {defaultCurrencyError && <p role="alert">{defaultCurrencyError}</p>}
           </form>
         </section>
       )}
 
       {coverCleanup && (
-        <section>
+        <section className="panel-card">
           <h2>{t('admin.coverCleanup.title')}</h2>
           <p className="hint">{t('admin.coverCleanup.hint')}</p>
           <label>
@@ -337,10 +368,14 @@ export function SystemSettingsPage() {
             />
             {t('admin.coverCleanup.enabled')}
           </label>
-          {coverCleanupSaved && <p role="status">{t('admin.coverCleanup.saved')}</p>}
+          {coverCleanupSaved && (
+            <p role="status" className="panel-confirmation">
+              {t('admin.coverCleanup.saved')}
+            </p>
+          )}
           {coverCleanupError && <p role="alert">{coverCleanupError}</p>}
         </section>
       )}
-    </>
+    </div>
   )
 }
