@@ -283,7 +283,6 @@ export function PluginsPage() {
                   <col className="plugin-table__col--name" />
                   <col className="plugin-table__col--version" />
                   <col className="plugin-table__col--source-type" />
-                  <col className="plugin-table__col--priority" />
                   <col className="plugin-table__col--enabled" />
                   <col className="plugin-table__col--settings" />
                 </colgroup>
@@ -293,14 +292,13 @@ export function PluginsPage() {
                     <th>{t('common.name')}</th>
                     <th>{t('admin.table.version')}</th>
                     <th>{t('admin.table.sourceType')}</th>
-                    <th>{t('admin.table.priority')}</th>
                     <th>{t('admin.table.enabled')}</th>
                     <th>{t('admin.pluginConfig.settings')}</th>
                   </tr>
                 </thead>
                 <SortableContext items={groupPlugins.map((p) => p.id)} strategy={verticalListSortingStrategy}>
                   <tbody>
-                    {groupPlugins.map((p, index) => (
+                    {groupPlugins.map((p) => (
                       <SortableRow key={p.id} id={p.id}>
                         {({ attributes, listeners }) => (
                           <>
@@ -323,7 +321,6 @@ export function PluginsPage() {
                                 '—'
                               )}
                             </td>
-                            <td>{index + 1}</td>
                             <td>
                               <input type="checkbox" checked={p.enabled} onChange={(e) => void update(p, { enabled: e.target.checked })} />
                             </td>

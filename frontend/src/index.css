@@ -771,7 +771,10 @@ td {
  * (GitHub issue #44) took its 12% out of name/settings proportionally
  * when it was added, keeping every other column's ratio to each other
  * unchanged. source-type (GitHub issue #55) took its 12% out of settings
- * alone (33% -> 21%) the same way.
+ * alone (33% -> 21%) the same way. The priority column was later removed
+ * outright (its 18% given back to settings, 21% -> 39%) — dragging a row
+ * still reorders it (see the handle column), only the redundant numeric
+ * rank display next to it is gone.
  */
 .plugin-table__col--handle {
   width: 4%;
@@ -789,16 +792,12 @@ td {
   width: 12%;
 }
 
-.plugin-table__col--priority {
-  width: 18%;
-}
-
 .plugin-table__col--enabled {
   width: 18%;
 }
 
 .plugin-table__col--settings {
-  width: 21%;
+  width: 39%;
 }
 
 /* Drag handle cell (dnd-kit, PluginsPage.tsx) — dnd-kit's own `attributes`
