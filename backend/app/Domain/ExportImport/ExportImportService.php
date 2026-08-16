@@ -40,18 +40,28 @@ class ExportImportService
 
     /**
      * @param  int[]|null  $libraryIds  Null exports all libraries ("alle", briefing 9.1).
-     * @param  bool  $includeUsers  Whether to also embed every user account (incl. hashed
-     *                              password) under `users`, and every metadata_plugins row
-     *                              (incl. provider config such as an API key, GitHub issue
-     *                              #29) under `metadata_plugins`. Deliberately opt-in and off
-     *                              by default: an ordinary admin-initiated multi-library
-     *                              export to share with another instance (briefing 9.1) has
-     *                              no reason to leak either — a plugin's stored API key is
-     *                              exactly as sensitive as an account's password hash.
+     * @param  bool  $includeUsers  Whether to also embed system_settings (briefing 15.,
+     *                              including secrets in plaintext — mail.password,
+     *                              oidc.client_secret) under `system_settings`, every user
+     *                              account (incl. hashed password) under `users`, and every
+     *                              metadata_plugins row (incl. provider config such as an API
+     *                              key, GitHub issue #29) under `metadata_plugins`.
+     *                              Deliberately opt-in and off by default: an ordinary
+     *                              admin-initiated multi-library export to share with another
+     *                              instance (briefing 9.1) has no reason to leak any of these
+     *                              — a plugin's stored API key or a mail/OIDC secret is
+     *                              exactly as sensitive as an account's password hash. All
+     *                              three used to be conditional on this flag except
+     *                              system_settings, which was included unconditionally in
+     *                              every export regardless — a real reported leak: a plain
+     *                              library export downloaded to share with someone else
+     *                              carried the SMTP password and OIDC client secret in
+     *                              plaintext even though nothing about that export's UI
+     *                              suggested system configuration was involved at all.
      *                              BackupService::create() is the one caller that passes
      *                              true — a backup is meant to be a full snapshot of this
-     *                              instance, both included.
-     * @return array{format_version: int, exported_at: string, libraries: array, system_settings: array, users?: array, metadata_plugins?: array}
+     *                              instance, all three included.
+     * @return array{format_version: int, exported_at: string, libraries: array, system_settings?: array, users?: array, metadata_plugins?: array}
      */
     public function exportLibraries(?array $libraryIds = null, bool $includeUsers = false): array
     {
@@ -64,13 +74,6 @@ class ExportImportService
         $data = [
             'format_version' => 1,
             'exported_at' => now()->toIso8601String(),
-            // Included unconditionally (BackupService::create() always exports "alle" and
-            // reuses this method) so a backup carries the full system configuration
-            // (mail/backup/security settings, briefing 15.) alongside the library data —
-            // restoring them is opt-in per importLibraries()'s $restoreSettings flag,
-            // since the settings of the *target* instance shouldn't change on every
-            // ordinary library import.
-            'system_settings' => SystemSetting::allAsArray(),
             'libraries' => $query->get()->map(fn (Library $library) => [
                 'name' => $library->name,
                 'description' => $library->description,
@@ -86,6 +89,17 @@ class ExportImportService
         ];
 
         if ($includeUsers) {
+            // A full backup (briefing 9.2) needs the complete system configuration
+            // to actually be a restore point, including settings an admin never
+            // explicitly saved (see SystemSetting::allAsArray()'s docblock) —
+            // applying it back onto the target instance is still separately opt-in
+            // via importLibraries()'s $restoreSettings flag, but that's a decision
+            // about whether to *apply* the data on import, not whether the file
+            // should *contain* it at all; see this parameter's docblock above for
+            // why containing it at all is exactly the leak an ordinary library
+            // export must never repeat.
+            $data['system_settings'] = SystemSetting::allAsArray();
+
             // No `id` (a restore assigns new ones, same as libraries above) and no
             // remember_token/API tokens — those are session-bound and shouldn't
             // travel between instances.

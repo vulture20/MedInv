@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Domain\Backup\BackupService;
 use App\Domain\ExportImport\ExportImportService;
+use App\Models\Library;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -80,6 +82,29 @@ class BackupExportTest extends TestCase
         $export = app(ExportImportService::class)->exportLibraries(null);
 
         $this->assertArrayNotHasKey('users', $export);
+    }
+
+    /**
+     * Regression test for a real reported leak: system_settings used to be
+     * embedded in *every* export unconditionally, including a plain
+     * admin-initiated library export with no `includeUsers` involved at
+     * all — so downloading and sharing a single library's export also
+     * handed over the SMTP password and OIDC client secret in plaintext,
+     * even though nothing about the export UI suggested system
+     * configuration was part of it. Only a real backup (includeUsers:
+     * true, i.e. BackupService::create()) should carry it — see
+     * test_backup_includes_all_system_settings_even_when_never_explicitly_saved
+     * above for that case still working correctly.
+     */
+    public function test_ordinary_export_does_not_leak_system_settings(): void
+    {
+        SystemSetting::set('mail.password', 'super-secret-smtp-password');
+        SystemSetting::set('oidc.client_secret', 'super-secret-oidc-client-secret');
+        Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => User::factory()->create()->id]);
+
+        $export = app(ExportImportService::class)->exportLibraries(null);
+
+        $this->assertArrayNotHasKey('system_settings', $export);
     }
 
     public function test_restoring_a_backup_with_restore_settings_recreates_users(): void

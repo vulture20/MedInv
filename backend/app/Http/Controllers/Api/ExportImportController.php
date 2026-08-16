@@ -68,16 +68,16 @@ class ExportImportController extends Controller
     /**
      * Same conflict-resolution options as backup restore (briefing 9.1 + 9.3):
      * rename | merge | overwrite | skip per library name, or __all__=cancel.
-     * `restore_settings` opts into also applying the file's system_settings
-     * (see ExportImportService::exportLibraries()) onto this instance —
-     * off by default so an ordinary library import can't silently change
-     * mail/backup/security configuration. Still accepted here for API
-     * completeness/future use, but ExportImportPage.tsx deliberately never
-     * sends it: export() never sets $includeUsers, so a plain export's
-     * `restore_settings` could only ever have restored system_settings
-     * (never the user accounts the option's label — copied from
-     * BackupsPage's restore form, where a real backup does include them —
-     * would otherwise promise on this page).
+     * `restore_settings` opts into also applying the file's system_settings/
+     * users/metadata_plugins (see ExportImportService::exportLibraries()) onto
+     * this instance — off by default so an ordinary library import can't
+     * silently change mail/backup/security configuration. Still accepted
+     * here for API completeness/future use, but ExportImportPage.tsx
+     * deliberately never sends it: export() never sets $includeUsers, so a
+     * plain export never even contains system_settings/users/metadata_plugins
+     * in the first place (see that method's docblock for why — a real
+     * reported leak, not just an unused option) — `restore_settings` against
+     * a plain export is therefore always a no-op regardless of what's sent.
      */
     public function import(Request $request)
     {
