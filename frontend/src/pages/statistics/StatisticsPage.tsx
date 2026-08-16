@@ -185,56 +185,89 @@ function ValueHistoryChart({ title, points, cutoverDate }: { title: string; poin
  * one line per library plus an accumulated curve across every library
  * visible to the requesting user, both scoped through
  * LibraryAccessService like the rest of this page.
+ *
+ * Card layout matches LibrariesPage.tsx's (.panel-page/.panel-card, see
+ * index.css's shared docblock) — the accumulated chart and each library get
+ * their own card, the same "each distinct thing gets its own card"
+ * treatment LibrariesPage.tsx's per-library cards use, reusing its
+ * .library-card__header (name + a media-type badge here instead of
+ * LibrariesPage's) and .library-detail__meta (item count/total value here
+ * instead of LibraryDetailPage's media-type/owner line) rather than
+ * inventing parallel classes for what's structurally the same header shape.
  */
 export function StatisticsPage() {
   const { t } = useTranslation()
   const [stats, setStats] = useState<LibraryStats[]>([])
   const [history, setHistory] = useState<ValueHistoryResponse | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    void apiClient.get<LibraryStats[]>('/statistics').then(({ data }) => setStats(data))
-    void apiClient.get<ValueHistoryResponse>('/statistics/value-history').then(({ data }) => setHistory(data))
+    void Promise.all([
+      apiClient.get<LibraryStats[]>('/statistics').then(({ data }) => setStats(data)),
+      apiClient.get<ValueHistoryResponse>('/statistics/value-history').then(({ data }) => setHistory(data)),
+    ]).finally(() => setLoading(false))
   }, [])
 
   return (
-    <div>
-      <h1>{t('statistics.title')}</h1>
+    <div className="panel-page">
+      <header className="panel-page__header">
+        <h1>{t('statistics.title')}</h1>
+        <p className="hint">{t('statistics.subtitle')}</p>
+      </header>
 
-      {history && history.accumulated.series.length > 0 && (
-        <section className="statistics-library">
-          <h2>{t('statistics.valueHistory.accumulatedTitle')}</h2>
-          <ValueHistoryChart
-            title={t('statistics.valueHistory.title')}
-            points={history.accumulated.series}
-            cutoverDate={history.cutover_date}
-          />
-        </section>
+      {loading ? (
+        <p className="hint">…</p>
+      ) : (
+        <>
+          {history && history.accumulated.series.length > 0 && (
+            <section className="panel-card">
+              <h2>{t('statistics.valueHistory.accumulatedTitle')}</h2>
+              <ValueHistoryChart
+                title={t('statistics.valueHistory.title')}
+                points={history.accumulated.series}
+                cutoverDate={history.cutover_date}
+              />
+            </section>
+          )}
+
+          {stats.length === 0 ? (
+            <p className="hint">{t('statistics.none')}</p>
+          ) : (
+            stats.map((s) => {
+              const dimensions = Object.entries(s.distributions).filter(([, data]) => Object.keys(data).length > 0)
+              const libraryHistory = history?.libraries.find((h) => h.library_id === s.library_id)
+
+              return (
+                <section key={s.library_id} className="panel-card">
+                  <div className="library-card__header">
+                    <h2>{s.library_name}</h2>
+                    <span className="media-type-badge">{t(`libraries.mediaType.${s.media_type}`)}</span>
+                  </div>
+                  <p className="library-detail__meta hint">
+                    <span>
+                      {t('statistics.itemCount')}: {s.item_count}
+                    </span>
+                    <span>
+                      {t('statistics.totalValue')}: {s.total_value}
+                    </span>
+                  </p>
+                  {s.currency_mismatch && <p className="warning warning--danger">{t('statistics.currencyMismatchWarning')}</p>}
+                  {libraryHistory && (
+                    <ValueHistoryChart title={t('statistics.valueHistory.title')} points={libraryHistory.series} cutoverDate={history?.cutover_date ?? null} />
+                  )}
+                  {dimensions.length === 0 ? (
+                    <p className="hint">{t('statistics.noDistributions')}</p>
+                  ) : (
+                    dimensions.map(([dimension, data]) => (
+                      <DistributionList key={dimension} title={t(`statistics.dimension.${dimension}`)} data={data} />
+                    ))
+                  )}
+                </section>
+              )
+            })
+          )}
+        </>
       )}
-
-      {stats.map((s) => {
-        const dimensions = Object.entries(s.distributions).filter(([, data]) => Object.keys(data).length > 0)
-        const libraryHistory = history?.libraries.find((h) => h.library_id === s.library_id)
-
-        return (
-          <section key={s.library_id} className="statistics-library">
-            <h2>{s.library_name}</h2>
-            <p>
-              {t('statistics.itemCount')}: {s.item_count} — {t('statistics.totalValue')}: {s.total_value}
-            </p>
-            {s.currency_mismatch && <p className="warning warning--danger">{t('statistics.currencyMismatchWarning')}</p>}
-            {libraryHistory && (
-              <ValueHistoryChart title={t('statistics.valueHistory.title')} points={libraryHistory.series} cutoverDate={history?.cutover_date ?? null} />
-            )}
-            {dimensions.length === 0 ? (
-              <p>{t('statistics.noDistributions')}</p>
-            ) : (
-              dimensions.map(([dimension, data]) => (
-                <DistributionList key={dimension} title={t(`statistics.dimension.${dimension}`)} data={data} />
-              ))
-            )}
-          </section>
-        )
-      })}
     </div>
   )
 }

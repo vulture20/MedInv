@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "Statistieken",
+      "subtitle": "Overzicht van de omvang, waarde en samenstelling van je bibliotheken.",
+      "none": "Nog geen statistieken om te tonen.",
       "itemCount": "Aantal items",
       "totalValue": "Totale waarde",
       "currencyMismatchWarning": "Bevat items in een andere valuta dan de ingestelde standaardvaluta — dit totaal is mogelijk niet betekenisvol.",

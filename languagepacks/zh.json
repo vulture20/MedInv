@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "统计",
+      "subtitle": "您媒体库的规模、价值和组成概览。",
+      "none": "暂无可显示的统计数据。",
       "itemCount": "项目数量",
       "totalValue": "总价值",
       "currencyMismatchWarning": "包含与所设默认货币不同的条目——此总计可能没有意义。",

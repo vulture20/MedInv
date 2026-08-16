@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "統計",
+      "subtitle": "ライブラリの規模、価値、構成の概要です。",
+      "none": "表示できる統計はまだありません。",
       "itemCount": "アイテム数",
       "totalValue": "合計金額",
       "currencyMismatchWarning": "設定されたデフォルト通貨と異なる通貨の項目が含まれています — この合計は正確でない可能性があります。",

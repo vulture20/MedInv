@@ -629,13 +629,14 @@ td {
   background: #000;
 }
 
-/* Statistics distributions (briefing 14., StatisticsPage.tsx) — a single-hue
- * "compare magnitude" bar list per dimension (genre/language/year/...). */
-.statistics-library {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
+/*
+ * Statistics distributions (briefing 14., StatisticsPage.tsx) — a
+ * single-hue "compare magnitude" bar list per dimension
+ * (genre/language/year/...). Each library's card (.panel-card, see
+ * StatisticsPage.tsx's docblock) already supplies the visual separation a
+ * dedicated .statistics-library border/margin used to provide, so that
+ * class was retired rather than doubled up with the card's own border.
+ */
 
 .distribution {
   margin: 0.75rem 0;

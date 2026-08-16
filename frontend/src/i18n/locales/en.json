@@ -169,6 +169,8 @@
   },
   "statistics": {
     "title": "Statistics",
+    "subtitle": "Overview of your libraries' size, value, and composition.",
+    "none": "No statistics to show yet.",
     "itemCount": "Item count",
     "totalValue": "Total value",
     "currencyMismatchWarning": "Contains items in a currency other than the configured default — this total may not be meaningful.",

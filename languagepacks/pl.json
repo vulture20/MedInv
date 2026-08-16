@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "Statystyki",
+      "subtitle": "Przegląd rozmiaru, wartości i składu Twoich bibliotek.",
+      "none": "Brak statystyk do wyświetlenia.",
       "itemCount": "Liczba pozycji",
       "totalValue": "Wartość całkowita",
       "currencyMismatchWarning": "Zawiera pozycje w innej walucie niż skonfigurowana domyślna — ta suma może nie być miarodajna.",

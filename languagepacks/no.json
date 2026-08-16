@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "Statistikk",
+      "subtitle": "Oversikt over størrelsen, verdien og sammensetningen av bibliotekene dine.",
+      "none": "Ingen statistikk å vise ennå.",
       "itemCount": "Antall oppføringer",
       "totalValue": "Total verdi",
       "currencyMismatchWarning": "Inneholder oppføringer i en annen valuta enn den konfigurerte standarden — denne totalen er kanskje ikke meningsfull.",

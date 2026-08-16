@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "İstatistikler",
+      "subtitle": "Kitaplıklarınızın boyutuna, değerine ve içeriğine genel bakış.",
+      "none": "Henüz gösterilecek istatistik yok.",
       "itemCount": "Öğe sayısı",
       "totalValue": "Toplam değer",
       "currencyMismatchWarning": "Yapılandırılan varsayılandan farklı bir para biriminde öğeler içeriyor — bu toplam anlamlı olmayabilir.",

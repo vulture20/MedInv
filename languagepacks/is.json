@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "Tölfræði",
+      "subtitle": "Yfirlit yfir stærð, verðmæti og samsetningu safnanna þinna.",
+      "none": "Engin tölfræði til að sýna ennþá.",
       "itemCount": "Fjöldi færslna",
       "totalValue": "Heildarverðmæti",
       "currencyMismatchWarning": "Inniheldur færslur í öðrum gjaldmiðli en þeim sjálfgefna sem stilltur er — þessi heildartala er ef til vill ekki marktæk.",

@@ -169,6 +169,8 @@
   },
   "statistics": {
     "title": "Statistiken",
+    "subtitle": "Überblick über Größe, Wert und Zusammensetzung Ihrer Bibliotheken.",
+    "none": "Noch keine Statistiken vorhanden.",
     "itemCount": "Bestand",
     "totalValue": "Gesamtwert",
     "currencyMismatchWarning": "Enthält Einträge in einer anderen Währung als der eingestellten Standardwährung — dieser Gesamtwert ist möglicherweise nicht aussagekräftig.",

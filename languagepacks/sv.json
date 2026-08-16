@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "Statistik",
+      "subtitle": "Översikt över dina biblioteks storlek, värde och sammansättning.",
+      "none": "Ingen statistik att visa ännu.",
       "itemCount": "Antal poster",
       "totalValue": "Totalt värde",
       "currencyMismatchWarning": "Innehåller poster i en annan valuta än den konfigurerade standarden — denna summa kanske inte är meningsfull.",

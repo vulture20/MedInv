@@ -172,6 +172,8 @@
     },
     "statistics": {
       "title": "Tilastot",
+      "subtitle": "Yleiskatsaus kirjastojesi laajuuteen, arvoon ja koostumukseen.",
+      "none": "Ei vielä näytettäviä tilastoja.",
       "itemCount": "Kohteiden määrä",
       "totalValue": "Kokonaisarvo",
       "currencyMismatchWarning": "Sisältää kohteita, joiden valuutta poikkeaa asetetusta oletuksesta — tämä summa ei välttämättä ole merkityksellinen.",
