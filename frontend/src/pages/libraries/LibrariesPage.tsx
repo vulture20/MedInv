@@ -18,6 +18,14 @@ interface Library {
  * backend-driven (GET /libraries already applies LibraryAccessService), so
  * this component doesn't need its own permission logic beyond hiding the
  * "create" form from guests (4.2).
+ *
+ * Card layout matches SettingsPage.tsx/CapturePage.tsx's (.panel-page/
+ * .panel-card, see index.css's shared docblock) — one card per library,
+ * same "each distinct thing gets its own card" treatment CapturePage.tsx's
+ * result cards use, plus a reveal-on-demand create form (like Capture's
+ * camera/text-file import) rather than an always-open form competing with
+ * the list for attention on a page whose primary job is browsing, not
+ * creating.
  */
 export function LibrariesPage() {
   const { t } = useTranslation()
@@ -26,6 +34,7 @@ export function LibrariesPage() {
   const [name, setName] = useState('')
   const [mediaType, setMediaType] = useState<'book' | 'cd' | 'dvd_bluray'>('book')
   const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
 
   // Inline editing of name/description (briefing 5.), restricted to
   // owner/admin like deletion below — same PUT /libraries/{id} endpoint
@@ -48,6 +57,7 @@ export function LibrariesPage() {
     e.preventDefault()
     await apiClient.post('/libraries', { name, media_type: mediaType })
     setName('')
+    setCreating(false)
     await load()
   }
 
@@ -81,71 +91,90 @@ export function LibrariesPage() {
   }
 
   return (
-    <div>
-      <h1>{t('libraries.title')}</h1>
-
-      {loading ? (
-        <p>…</p>
-      ) : (
-        <ul className="library-list">
-          {libraries.map((lib) =>
-            editingId === lib.id ? (
-              <li key={lib.id}>
-                <form onSubmit={saveEdit}>
-                  <label>
-                    {t('common.name')}
-                    <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                  </label>
-                  <label>
-                    {t('libraries.descriptionLabel')}
-                    <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-                  </label>
-                  <button type="submit">{t('admin.actions.save')}</button>{' '}
-                  <button type="button" onClick={() => setEditingId(null)}>
-                    {t('admin.actions.cancel')}
-                  </button>
-                </form>
-              </li>
-            ) : (
-              <li key={lib.id}>
-                <strong>{lib.name}</strong> — {t(`libraries.mediaType.${lib.media_type}`)} ({lib.owner.name})
-                {lib.description && <p>{lib.description}</p>}
-                <Link to={`/libraries/${lib.id}`}>{t('libraries.view')}</Link>
-                {canDelete(lib) && (
-                  <>
-                    {' '}
-                    <button type="button" onClick={() => startEdit(lib)}>
-                      {t('admin.actions.edit')}
-                    </button>{' '}
-                    <button type="button" onClick={() => void deleteLibrary(lib)}>
-                      {t('libraries.delete')}
-                    </button>
-                  </>
-                )}
-              </li>
-            ),
-          )}
-        </ul>
-      )}
+    <div className="panel-page">
+      <header className="panel-page__header">
+        <h1>{t('libraries.title')}</h1>
+        <p className="hint">{t('libraries.subtitle')}</p>
+      </header>
 
       {user?.level !== 'guest' && (
-        <form onSubmit={createLibrary}>
-          <h2>{t('libraries.create')}</h2>
-          <label>
-            {t('common.name')}
-            <input value={name} onChange={(e) => setName(e.target.value)} required />
-          </label>
-          <label>
-            {/* media_type is fixed once created (briefing 5.) — no edit UI for it exists anywhere. */}
-            {t('libraries.mediaTypeLabel')}
-            <select value={mediaType} onChange={(e) => setMediaType(e.target.value as typeof mediaType)}>
-              <option value="book">{t('libraries.mediaType.book')}</option>
-              <option value="cd">{t('libraries.mediaType.cd')}</option>
-              <option value="dvd_bluray">{t('libraries.mediaType.dvd_bluray')}</option>
-            </select>
-          </label>
-          <button type="submit">{t('libraries.create')}</button>
-        </form>
+        <>
+          <button type="button" onClick={() => setCreating((prev) => !prev)}>
+            {t(creating ? 'admin.actions.cancel' : 'libraries.create')}
+          </button>
+
+          {creating && (
+            <section className="panel-card">
+              <h2>{t('libraries.create')}</h2>
+              <p className="hint">{t('libraries.createHint')}</p>
+              <form onSubmit={(e) => void createLibrary(e)}>
+                <label>
+                  {t('common.name')}
+                  <input className="panel-select" value={name} onChange={(e) => setName(e.target.value)} required />
+                </label>
+                <label>
+                  {/* media_type is fixed once created (briefing 5.) — libraries.createHint above says so. */}
+                  {t('libraries.mediaTypeLabel')}
+                  <select className="panel-select" value={mediaType} onChange={(e) => setMediaType(e.target.value as typeof mediaType)}>
+                    <option value="book">{t('libraries.mediaType.book')}</option>
+                    <option value="cd">{t('libraries.mediaType.cd')}</option>
+                    <option value="dvd_bluray">{t('libraries.mediaType.dvd_bluray')}</option>
+                  </select>
+                </label>
+                <button type="submit">{t('libraries.create')}</button>
+              </form>
+            </section>
+          )}
+        </>
+      )}
+
+      {loading ? (
+        <p className="hint">…</p>
+      ) : libraries.length === 0 ? (
+        <p className="hint">{t('libraries.none')}</p>
+      ) : (
+        libraries.map((lib) => (
+          <section key={lib.id} className="panel-card library-card">
+            {editingId === lib.id ? (
+              <form onSubmit={(e) => void saveEdit(e)}>
+                <label>
+                  {t('common.name')}
+                  <input className="panel-select" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                </label>
+                <label>
+                  {t('libraries.descriptionLabel')}
+                  <textarea className="panel-select" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                </label>
+                <button type="submit">{t('admin.actions.save')}</button>{' '}
+                <button type="button" onClick={() => setEditingId(null)}>
+                  {t('admin.actions.cancel')}
+                </button>
+              </form>
+            ) : (
+              <>
+                <div className="library-card__header">
+                  <h2>{lib.name}</h2>
+                  <span className="media-type-badge">{t(`libraries.mediaType.${lib.media_type}`)}</span>
+                </div>
+                <p className="hint">{lib.owner.name}</p>
+                {lib.description && <p>{lib.description}</p>}
+                <div className="library-card__actions">
+                  <Link to={`/libraries/${lib.id}`}>{t('libraries.view')}</Link>
+                  {canDelete(lib) && (
+                    <>
+                      <button type="button" onClick={() => startEdit(lib)}>
+                        {t('admin.actions.edit')}
+                      </button>
+                      <button type="button" onClick={() => void deleteLibrary(lib)}>
+                        {t('libraries.delete')}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
+        ))
       )}
     </div>
   )

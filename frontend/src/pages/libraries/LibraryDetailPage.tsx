@@ -318,48 +318,50 @@ export function LibraryDetailPage() {
   const bulkEditFieldSpec = bulkEditableFields.find((f) => f.key === bulkEditField)
 
   return (
-    <div>
+    <div className="panel-page">
       <p>
-        <Link to="/libraries">{t('libraries.title')}</Link>
+        <Link to="/libraries">← {t('libraries.title')}</Link>
       </p>
 
       {editingInfo ? (
-        <form onSubmit={(e) => void saveInfo(e)}>
-          <label>
-            {t('common.name')}
-            <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-          </label>
-          <label>
-            {t('libraries.descriptionLabel')}
-            <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-          </label>
-          <div>
-            <button type="submit">{t('admin.actions.save')}</button>{' '}
-            <button type="button" onClick={() => setEditingInfo(false)}>
-              {t('admin.actions.cancel')}
-            </button>
-          </div>
-          {infoError && <p role="alert">{infoError}</p>}
-        </form>
-      ) : (
-        <>
-          <h1>{library.name}</h1>
-          <p>
-            {t(`libraries.mediaType.${library.media_type}`)} — {library.owner.name}
-          </p>
-          {library.description && <p>{library.description}</p>}
-          {canManage && (
-            <p>
-              <button type="button" onClick={startEditInfo}>
-                {t('admin.actions.edit')}
+        <section className="panel-card">
+          <h2>{t('admin.actions.edit')}</h2>
+          <form onSubmit={(e) => void saveInfo(e)}>
+            <label>
+              {t('common.name')}
+              <input className="panel-select" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+            </label>
+            <label>
+              {t('libraries.descriptionLabel')}
+              <textarea className="panel-select" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+            </label>
+            <div>
+              <button type="submit">{t('admin.actions.save')}</button>{' '}
+              <button type="button" onClick={() => setEditingInfo(false)}>
+                {t('admin.actions.cancel')}
               </button>
-            </p>
+            </div>
+            {infoError && <p role="alert">{infoError}</p>}
+          </form>
+        </section>
+      ) : (
+        <header className="panel-page__header">
+          <h1>{library.name}</h1>
+          <p className="library-detail__meta">
+            <span className="media-type-badge">{t(`libraries.mediaType.${library.media_type}`)}</span>
+            <span className="hint">{library.owner.name}</span>
+          </p>
+          {library.description && <p className="hint">{library.description}</p>}
+          {canManage && (
+            <button type="button" onClick={startEditInfo}>
+              {t('admin.actions.edit')}
+            </button>
           )}
-        </>
+        </header>
       )}
 
       {canManage && (
-        <section>
+        <section className="panel-card">
           <h2>{t('libraries.sharing.title')}</h2>
           <p className="hint">{t('libraries.sharing.hint')}</p>
           <form onSubmit={(e) => void saveShares(e)}>
@@ -393,7 +395,7 @@ export function LibraryDetailPage() {
               )}
               {usersAvailableToAdd.length > 0 && (
                 <p>
-                  <select value={addUserId} onChange={(e) => setAddUserId(e.target.value ? Number(e.target.value) : '')}>
+                  <select className="panel-select" value={addUserId} onChange={(e) => setAddUserId(e.target.value ? Number(e.target.value) : '')}>
                     <option value="">{t('libraries.sharing.selectUser')}</option>
                     {usersAvailableToAdd.map((u) => (
                       <option key={u.id} value={u.id}>
@@ -409,18 +411,22 @@ export function LibraryDetailPage() {
             </div>
 
             <button type="submit">{t('admin.actions.save')}</button>
-            {sharesSaved && <p role="status">{t('libraries.sharing.saved')}</p>}
+            {sharesSaved && (
+              <p role="status" className="panel-confirmation">
+                {t('libraries.sharing.saved')}
+              </p>
+            )}
             {sharesError && <p role="alert">{sharesError}</p>}
           </form>
         </section>
       )}
 
       {canManage && shareableUsers.length > 0 && (
-        <section>
+        <section className="panel-card">
           <h2>{t('libraries.ownership.title')}</h2>
           <p className="hint">{t('libraries.ownership.hint')}</p>
           <p>
-            <select value={newOwnerId} onChange={(e) => setNewOwnerId(e.target.value ? Number(e.target.value) : '')}>
+            <select className="panel-select" value={newOwnerId} onChange={(e) => setNewOwnerId(e.target.value ? Number(e.target.value) : '')}>
               <option value="">{t('libraries.ownership.selectUser')}</option>
               {shareableUsers.map((u) => (
                 <option key={u.id} value={u.id}>
@@ -436,12 +442,16 @@ export function LibraryDetailPage() {
         </section>
       )}
 
-      {canManage && (
-        <p>
-          <button type="button" onClick={() => setCreating(true)}>
-            {t('mediaItem.addManually')}
-          </button>{' '}
-          {items && items.data.length > 0 && (
+      <section className="panel-card">
+        <h2>{t('libraries.itemsTitle', { count: items?.total ?? 0 })}</h2>
+
+        <div className="library-items-toolbar">
+          {canManage && (
+            <button type="button" onClick={() => setCreating(true)}>
+              {t('mediaItem.addManually')}
+            </button>
+          )}
+          {canManage && items && items.data.length > 0 && (
             <button
               type="button"
               onClick={() => {
@@ -456,100 +466,114 @@ export function LibraryDetailPage() {
               {t(bulkMode ? 'mediaItem.bulkDelete.exit' : 'mediaItem.bulkDelete.enter')}
             </button>
           )}
-        </p>
-      )}
+        </div>
 
-      {bulkMode && items && items.data.length > 0 && (
-        <p className="media-item-list__bulk-bar">
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedIds.size === items.data.length}
-              onChange={toggleSelectAll}
-            />
-            {t(selectedIds.size === items.data.length ? 'mediaItem.bulkDelete.deselectAll' : 'mediaItem.bulkDelete.selectAll')}
-          </label>{' '}
-          <button type="button" disabled={selectedIds.size === 0} onClick={() => void deleteSelected()}>
-            {t('mediaItem.bulkDelete.deleteSelected', { count: selectedIds.size })}
-          </button>
-          {bulkDeleteError && <span role="alert"> {bulkDeleteError}</span>}
-        </p>
-      )}
+        {bulkMode && items && items.data.length > 0 && (
+          <p className="media-item-list__bulk-bar">
+            <label>
+              <input
+                type="checkbox"
+                checked={selectedIds.size === items.data.length}
+                onChange={toggleSelectAll}
+              />
+              {t(selectedIds.size === items.data.length ? 'mediaItem.bulkDelete.deselectAll' : 'mediaItem.bulkDelete.selectAll')}
+            </label>{' '}
+            <button type="button" disabled={selectedIds.size === 0} onClick={() => void deleteSelected()}>
+              {t('mediaItem.bulkDelete.deleteSelected', { count: selectedIds.size })}
+            </button>
+            {bulkDeleteError && <span role="alert"> {bulkDeleteError}</span>}
+          </p>
+        )}
 
-      {/* GitHub issue #63: sets one field to one shared value across every selected item, alongside the delete bar above. */}
-      {bulkMode && items && items.data.length > 0 && (
-        <p className="media-item-list__bulk-bar">
-          <select value={bulkEditField} onChange={(e) => { setBulkEditField(e.target.value); setBulkEditValue('') }}>
-            {bulkEditableFields.map((f) => (
-              <option key={f.key} value={f.key}>
-                {t(`mediaItem.fields.${f.key}`)}
-              </option>
-            ))}
-          </select>
-          {bulkEditFieldSpec?.type === 'textarea' ? (
-            <textarea value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} />
-          ) : (
-            <input
-              type={bulkEditFieldSpec?.type ?? 'text'}
-              step={bulkEditFieldSpec?.type === 'number' ? 'any' : undefined}
-              value={bulkEditValue}
-              onChange={(e) => setBulkEditValue(e.target.value)}
-            />
-          )}
-          <button type="button" disabled={selectedIds.size === 0} onClick={() => void updateSelected()}>
-            {t('mediaItem.bulkUpdate.apply', { count: selectedIds.size })}
-          </button>
-          {bulkUpdateError && <span role="alert"> {bulkUpdateError}</span>}
-        </p>
-      )}
+        {/* GitHub issue #63: sets one field to one shared value across every selected item, alongside the delete bar above. */}
+        {bulkMode && items && items.data.length > 0 && (
+          <p className="media-item-list__bulk-bar">
+            <select className="panel-select" value={bulkEditField} onChange={(e) => { setBulkEditField(e.target.value); setBulkEditValue('') }}>
+              {bulkEditableFields.map((f) => (
+                <option key={f.key} value={f.key}>
+                  {t(`mediaItem.fields.${f.key}`)}
+                </option>
+              ))}
+            </select>
+            {bulkEditFieldSpec?.type === 'textarea' ? (
+              <textarea value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} />
+            ) : (
+              <input
+                type={bulkEditFieldSpec?.type ?? 'text'}
+                step={bulkEditFieldSpec?.type === 'number' ? 'any' : undefined}
+                value={bulkEditValue}
+                onChange={(e) => setBulkEditValue(e.target.value)}
+              />
+            )}
+            <button type="button" disabled={selectedIds.size === 0} onClick={() => void updateSelected()}>
+              {t('mediaItem.bulkUpdate.apply', { count: selectedIds.size })}
+            </button>
+            {bulkUpdateError && <span role="alert"> {bulkUpdateError}</span>}
+          </p>
+        )}
 
-      {items && items.data.length === 0 ? (
-        <p>{t('libraries.noItems')}</p>
-      ) : (
-        <ul className="media-item-list">
-          {items?.data.map((item) => (
-            <li key={item.id}>
-              {bulkMode && (
-                <input
-                  type="checkbox"
-                  className="media-item-list__checkbox"
-                  aria-label={item.title}
-                  checked={selectedIds.has(item.id)}
-                  onChange={() => toggleSelected(item.id)}
-                />
-              )}
-              {/* Opens MediaItemDetailDialog (view/edit/delete/move) below —
-                  in bulk mode, toggles this row's checkbox instead (GitHub
-                  issue #54), since offering both interactions on the same
-                  click target would fight over what a single click does. */}
-              <button
-                type="button"
-                className="media-item-list__row"
-                onClick={() => (bulkMode ? toggleSelected(item.id) : setSelectedItem(item))}
-              >
-                {/* The small generated thumbnail (MediaItemController::coverThumbnail()),
-                    not the full cover — this list can hold many rows, and CoverDownloadService
-                    already generates one alongside every stored cover for exactly this.
-                    Served through the API, not a direct storage URL — see
-                    CoverDownloadService's docblock for why — so it needs the session
-                    cookie even cross-origin in local dev. */}
-                {item.cover_path && (
-                  <img
-                    className="media-item-list__cover"
-                    src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover/thumbnail`}
-                    crossOrigin="use-credentials"
-                    alt=""
+        {items && items.data.length === 0 ? (
+          <p className="hint">{t('libraries.noItems')}</p>
+        ) : (
+          <ul className="media-item-list">
+            {items?.data.map((item) => (
+              <li key={item.id}>
+                {bulkMode && (
+                  <input
+                    type="checkbox"
+                    className="media-item-list__checkbox"
+                    aria-label={item.title}
+                    checked={selectedIds.has(item.id)}
+                    onChange={() => toggleSelected(item.id)}
                   />
                 )}
-                <strong>{item.title}</strong>
-                {subtitle(item, library.media_type) && <> — {subtitle(item, library.media_type)}</>}
-                {' — '}
-                {item.ean}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                {/* Opens MediaItemDetailDialog (view/edit/delete/move) below —
+                    in bulk mode, toggles this row's checkbox instead (GitHub
+                    issue #54), since offering both interactions on the same
+                    click target would fight over what a single click does. */}
+                <button
+                  type="button"
+                  className="media-item-list__row"
+                  onClick={() => (bulkMode ? toggleSelected(item.id) : setSelectedItem(item))}
+                >
+                  {/* The small generated thumbnail (MediaItemController::coverThumbnail()),
+                      not the full cover — this list can hold many rows, and CoverDownloadService
+                      already generates one alongside every stored cover for exactly this.
+                      Served through the API, not a direct storage URL — see
+                      CoverDownloadService's docblock for why — so it needs the session
+                      cookie even cross-origin in local dev. */}
+                  {item.cover_path && (
+                    <img
+                      className="media-item-list__cover"
+                      src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover/thumbnail`}
+                      crossOrigin="use-credentials"
+                      alt=""
+                    />
+                  )}
+                  <strong>{item.title}</strong>
+                  {subtitle(item, library.media_type) && <> — {subtitle(item, library.media_type)}</>}
+                  {' — '}
+                  {item.ean}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {items && items.last_page > 1 && (
+          <div className="library-pagination">
+            <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              ←
+            </button>
+            <span>
+              {items.current_page} / {items.last_page}
+            </span>
+            <button type="button" disabled={page >= items.last_page} onClick={() => setPage((p) => p + 1)}>
+              →
+            </button>
+          </div>
+        )}
+      </section>
 
       <CreateMediaItemDialog
         library={library}
@@ -595,18 +619,6 @@ export function LibraryDetailPage() {
           setSelectedItem(null)
         }}
       />
-
-      {items && items.last_page > 1 && (
-        <p>
-          <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            ←
-          </button>{' '}
-          {items.current_page} / {items.last_page}{' '}
-          <button type="button" disabled={page >= items.last_page} onClick={() => setPage((p) => p + 1)}>
-            →
-          </button>
-        </p>
-      )}
     </div>
   )
 }
