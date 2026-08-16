@@ -179,13 +179,17 @@
     }
   },
   "settings": {
+    "subtitle": "Persönliche Einstellungen für Ihr Konto.",
+    "saved": "Gespeichert",
     "template": {
-      "label": "Template",
+      "label": "Erscheinungsbild",
+      "hint": "Legen Sie fest, wie MedInv für Sie aussieht.",
       "light": "Hell",
       "dark": "Dunkel"
     },
     "language": {
       "label": "Sprache",
+      "hint": "Legen Sie die Sprache der Oberfläche fest.",
       "de": "Deutsch",
       "en": "Englisch"
     }

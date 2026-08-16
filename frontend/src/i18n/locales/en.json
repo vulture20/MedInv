@@ -179,13 +179,17 @@
     }
   },
   "settings": {
+    "subtitle": "Personal preferences for your account.",
+    "saved": "Saved",
     "template": {
-      "label": "Template",
+      "label": "Appearance",
+      "hint": "Choose how MedInv looks to you.",
       "light": "Light",
       "dark": "Dark"
     },
     "language": {
       "label": "Language",
+      "hint": "Choose the language of the interface.",
       "de": "German",
       "en": "English"
     }

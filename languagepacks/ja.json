@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "アカウントの個人設定です。",
+      "saved": "保存しました",
       "template": {
-        "label": "テンプレート",
+        "label": "外観",
+        "hint": "MedInvの見た目を選択します。",
         "light": "ライト",
         "dark": "ダーク"
       },
       "language": {
         "label": "言語",
+        "hint": "インターフェースの言語を選択します。",
         "de": "ドイツ語",
         "en": "英語"
       }

@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "Hesabınıza ait kişisel tercihler.",
+      "saved": "Kaydedildi",
       "template": {
-        "label": "Tema",
+        "label": "Görünüm",
+        "hint": "MedInv'in size nasıl göründüğünü seçin.",
         "light": "Açık",
         "dark": "Koyu"
       },
       "language": {
         "label": "Dil",
+        "hint": "Arayüz dilini seçin.",
         "de": "Almanca",
         "en": "İngilizce"
       }

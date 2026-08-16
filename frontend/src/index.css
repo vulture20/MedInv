@@ -1009,3 +1009,188 @@ td {
   color: var(--color-danger);
   font-weight: 600;
 }
+
+/*
+ * Personal preferences (briefing 4.1, SettingsPage.tsx) — the one settings
+ * surface a non-admin user ever sees, given a real card-based treatment
+ * rather than the bare label/select stacks the admin-only settings pages
+ * use for a much longer, denser list of options.
+ */
+.settings-page {
+  max-width: 42rem;
+}
+
+.settings-page__header {
+  margin-bottom: 1.5rem;
+}
+
+.settings-page__header h1 {
+  margin-bottom: 0.25rem;
+}
+
+.settings-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.settings-card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.settings-card .hint {
+  margin: 0.2rem 0 0.9rem;
+}
+
+.theme-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+/* Each template is a native radio, visually a card — keeps this a real
+   radiogroup (keyboard/screen-reader semantics for free) without hand-rolled ARIA. */
+.theme-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 8rem;
+  padding: 0.6rem;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--color-bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.theme-swatch:hover {
+  border-color: var(--color-accent);
+}
+
+.theme-swatch--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
+}
+
+/*
+ * A miniature of the actual app chrome (header strip + sidebar strip +
+ * accent pill) rendered in that template's real colors — shows what
+ * "Light"/"Dark" actually look like instead of leaving it to the reader's
+ * imagination. Colors are supplied inline per template (SettingsPage.tsx's
+ * builtInPreviews) rather than via var(--color-*): the whole point is
+ * showing the *other* template's look while a *different* one is active
+ * on the real page, which the live custom properties can't do since only
+ * one [data-template] ever applies to <html> at a time.
+ */
+.theme-swatch__preview {
+  position: relative;
+  display: block;
+  height: 3.25rem;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.theme-swatch__preview-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0.55rem;
+  border-bottom: 1px solid;
+}
+
+.theme-swatch__preview-sidebar {
+  position: absolute;
+  top: 0.55rem;
+  bottom: 0;
+  left: 0;
+  width: 1rem;
+  border-right: 1px solid;
+}
+
+.theme-swatch__preview-accent {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 1.4rem;
+  width: 1.5rem;
+  height: 0.4rem;
+  border-radius: 2px;
+}
+
+/* Runtime templates (GitHub issue #11) — their CSS is admin-authored and arbitrary, so there's
+   no live preview to show honestly; a neutral placeholder fill stands in for one. */
+.theme-swatch__preview--custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  font-size: 1.3rem;
+}
+
+.theme-swatch__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.theme-swatch__label {
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.theme-swatch input[type='radio'] {
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.settings-select {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+/* Transient save confirmation (SettingsPage.tsx's flashSaved()) — auto-hides itself again, see the JS timeout. */
+.settings-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-success);
+  animation: settings-saved-fade-in 0.2s ease;
+}
+
+.settings-saved::before {
+  content: '✓';
+}
+
+@keyframes settings-saved-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-swatch,
+  .settings-saved {
+    transition: none;
+    animation: none;
+  }
+}

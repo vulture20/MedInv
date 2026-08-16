@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "您账户的个人偏好设置。",
+      "saved": "已保存",
       "template": {
-        "label": "模板",
+        "label": "外观",
+        "hint": "选择 MedInv 的外观。",
         "light": "浅色",
         "dark": "深色"
       },
       "language": {
         "label": "语言",
+        "hint": "选择界面语言。",
         "de": "德语",
         "en": "英语"
       }

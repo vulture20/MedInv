@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "Preferenze personali del tuo account.",
+      "saved": "Salvato",
       "template": {
-        "label": "Tema",
+        "label": "Aspetto",
+        "hint": "Scegli l'aspetto di MedInv.",
         "light": "Chiaro",
         "dark": "Scuro"
       },
       "language": {
         "label": "Lingua",
+        "hint": "Scegli la lingua dell'interfaccia.",
         "de": "Tedesco",
         "en": "Inglese"
       }

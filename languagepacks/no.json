@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "Personlige innstillinger for kontoen din.",
+      "saved": "Lagret",
       "template": {
         "label": "Utseende",
+        "hint": "Velg hvordan MedInv skal se ut for deg.",
         "light": "Lyst",
         "dark": "Mørkt"
       },
       "language": {
         "label": "Språk",
+        "hint": "Velg språket for grensesnittet.",
         "de": "Tysk",
         "en": "Engelsk"
       }

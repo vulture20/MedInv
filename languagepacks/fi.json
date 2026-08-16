@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "Tilisi henkilökohtaiset asetukset.",
+      "saved": "Tallennettu",
       "template": {
-        "label": "Teema",
+        "label": "Ulkoasu",
+        "hint": "Valitse, miltä MedInv näyttää sinulle.",
         "light": "Vaalea",
         "dark": "Tumma"
       },
       "language": {
         "label": "Kieli",
+        "hint": "Valitse käyttöliittymän kieli.",
         "de": "Saksa",
         "en": "Englanti"
       }

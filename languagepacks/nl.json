@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "Persoonlijke voorkeuren voor uw account.",
+      "saved": "Opgeslagen",
       "template": {
-        "label": "Thema",
+        "label": "Weergave",
+        "hint": "Kies hoe MedInv er voor u uitziet.",
         "light": "Licht",
         "dark": "Donker"
       },
       "language": {
         "label": "Taal",
+        "hint": "Kies de taal van de interface.",
         "de": "Duits",
         "en": "Engels"
       }

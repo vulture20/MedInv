@@ -182,13 +182,17 @@
       }
     },
     "settings": {
+      "subtitle": "Persónulegar stillingar fyrir reikninginn þinn.",
+      "saved": "Vistað",
       "template": {
-        "label": "Þema",
+        "label": "Útlit",
+        "hint": "Veldu hvernig MedInv lítur út fyrir þig.",
         "light": "Ljóst",
         "dark": "Dökkt"
       },
       "language": {
         "label": "Tungumál",
+        "hint": "Veldu tungumál viðmótsins.",
         "de": "Þýska",
         "en": "Enska"
       }

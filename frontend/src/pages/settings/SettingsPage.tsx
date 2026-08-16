@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { useTheme, type Template } from '../../theme/ThemeContext'
 import i18n, { AVAILABLE_LANGUAGES } from '../../i18n'
 import { getRuntimeLanguagePacks, onRuntimeLanguagePacksChanged, type LanguagePackSummary } from '../../i18n/languagePackEvents'
+import { describeError } from '../admin/adminErrors'
+
+/** How long the "Saved" confirmation stays visible after a successful save, before fading back out on its own. */
+const SAVED_CONFIRMATION_MS = 2000
 
 /**
  * The logged-in user's own preferences (briefing 4.1, "benutzerdefinierte
@@ -28,6 +32,16 @@ export function SettingsPage() {
   // LanguagesPage.tsx) changes.
   const [runtimePacks, setRuntimePacks] = useState<LanguagePackSummary[]>(getRuntimeLanguagePacks)
 
+  // Save feedback — previously this page had none at all: a failed PUT
+  // (e.g. a runtime template deleted by an admin moments before this
+  // request) silently left the UI showing a choice that never actually
+  // persisted, with nothing to tell the user that happened.
+  const [templateSaved, setTemplateSaved] = useState(false)
+  const [templateError, setTemplateError] = useState<string | null>(null)
+  const [languageSaved, setLanguageSaved] = useState(false)
+  const [languageError, setLanguageError] = useState<string | null>(null)
+  const savedTimeouts = useRef<Partial<Record<'template' | 'language', ReturnType<typeof setTimeout>>>>({})
+
   useEffect(() => {
     const onLanguageChanged = (lng: string) => setLanguage(lng)
     i18n.on('languageChanged', onLanguageChanged)
@@ -36,48 +50,123 @@ export function SettingsPage() {
 
   useEffect(() => onRuntimeLanguagePacksChanged(setRuntimePacks), [])
 
-  async function save(patch: { preferred_language?: string; preferred_template?: Template }) {
-    await apiClient.put('/me/settings', patch)
+  // Timers are cleared, never left to fire after unmount — this page is
+  // small enough to navigate away from quickly right after changing a
+  // setting. Reads `.current` once, at effect-setup time, into a variable
+  // the cleanup closes over — `savedTimeouts.current` is only ever mutated
+  // in place (flashSaved() below), never reassigned, but this is the
+  // pattern React's own linter expects regardless.
+  useEffect(() => {
+    const timeouts = savedTimeouts.current
+    return () => {
+      Object.values(timeouts).forEach((id) => clearTimeout(id))
+    }
+  }, [])
+
+  function flashSaved(field: 'template' | 'language') {
+    const setSaved = field === 'template' ? setTemplateSaved : setLanguageSaved
+    clearTimeout(savedTimeouts.current[field])
+    setSaved(true)
+    savedTimeouts.current[field] = setTimeout(() => setSaved(false), SAVED_CONFIRMATION_MS)
+  }
+
+  async function saveTemplate(value: Template) {
+    const previous = template
+    setTemplate(value)
+    setTemplateError(null)
+    try {
+      await apiClient.put('/me/settings', { preferred_template: value })
+      flashSaved('template')
+    } catch (err) {
+      setTemplate(previous)
+      setTemplateError(describeError(err, t))
+    }
+  }
+
+  async function saveLanguage(value: string) {
+    const previous = language
+    setLanguage(value)
+    void i18n.changeLanguage(value)
+    setLanguageError(null)
+    try {
+      await apiClient.put('/me/settings', { preferred_language: value })
+      flashSaved('language')
+    } catch (err) {
+      setLanguage(previous)
+      void i18n.changeLanguage(previous)
+      setLanguageError(describeError(err, t))
+    }
+  }
+
+  // Built-in templates get a live miniature of the actual app chrome
+  // (header + sidebar + accent) in their real colors — literally showing
+  // what "Light"/"Dark" mean rather than making the reader picture it from
+  // a word. Colors here are deliberately hardcoded rather than reading
+  // var(--color-*) — the whole point is showing what the *other* template
+  // looks like while a *different* one is currently active on the actual
+  // page, which var() can't do since only one [data-template] is ever
+  // applied to <html> at a time. Keep in sync with index.css's :root /
+  // :root[data-template='dark'] token values by hand if either changes.
+  const builtInPreviews: Record<'light' | 'dark', { bg: string; surface: string; border: string; accent: string }> = {
+    light: { bg: '#f7f7f8', surface: '#ffffff', border: '#e0e0e3', accent: '#2f6fed' },
+    dark: { bg: '#16171a', surface: '#1f2024', border: '#2e2f34', accent: '#6a9bff' },
   }
 
   return (
-    <div>
-      <h1>{t('userMenu.settings')}</h1>
+    <div className="settings-page">
+      <header className="settings-page__header">
+        <h1>{t('userMenu.settings')}</h1>
+        <p className="hint">{t('settings.subtitle')}</p>
+      </header>
 
-      <label>
-        {t('settings.template.label')}
-        <select
-          value={template}
-          onChange={(e) => {
-            const value = e.target.value as Template
-            setTemplate(value)
-            void save({ preferred_template: value })
-          }}
-        >
-          <option value="light">{t('settings.template.light')}</option>
-          <option value="dark">{t('settings.template.dark')}</option>
-          {/* Runtime templates have no settings.template.<code> translation
-              key (the code is admin-chosen, not known ahead of time) — the
-              template's own `name` (e.g. "Solarized") is the label instead,
-              same pattern as the language <select> below. */}
-          {runtimeTemplates.map((tpl) => (
-            <option key={tpl.code} value={tpl.code}>
-              {tpl.name}
-            </option>
+      <section className="settings-card">
+        <h2>{t('settings.template.label')}</h2>
+        <p className="hint">{t('settings.template.hint')}</p>
+
+        <div className="theme-swatches" role="radiogroup" aria-label={t('settings.template.label')}>
+          {(['light', 'dark'] as const).map((code) => (
+            <label key={code} className={`theme-swatch${template === code ? ' theme-swatch--selected' : ''}`}>
+              <span className="theme-swatch__preview" style={{ background: builtInPreviews[code].bg }}>
+                <span className="theme-swatch__preview-header" style={{ background: builtInPreviews[code].surface, borderColor: builtInPreviews[code].border }} />
+                <span className="theme-swatch__preview-sidebar" style={{ background: builtInPreviews[code].surface, borderColor: builtInPreviews[code].border }} />
+                <span className="theme-swatch__preview-accent" style={{ background: builtInPreviews[code].accent }} />
+              </span>
+              <span className="theme-swatch__row">
+                <span className="theme-swatch__label">{t(`settings.template.${code}`)}</span>
+                <input type="radio" name="template" value={code} checked={template === code} onChange={() => void saveTemplate(code)} />
+              </span>
+            </label>
           ))}
-        </select>
-      </label>
 
-      <label>
-        {t('settings.language.label')}
-        <select
-          value={language}
-          onChange={(e) => {
-            setLanguage(e.target.value)
-            void i18n.changeLanguage(e.target.value)
-            void save({ preferred_language: e.target.value })
-          }}
-        >
+          {/* Runtime templates (GitHub issue #11) — no live preview, since their CSS is
+              admin-authored and arbitrary; a neutral placeholder swatch plus the template's
+              own name is the honest amount of preview to offer without parsing untrusted CSS. */}
+          {runtimeTemplates.map((tpl) => (
+            <label key={tpl.code} className={`theme-swatch${template === tpl.code ? ' theme-swatch--selected' : ''}`}>
+              <span className="theme-swatch__preview theme-swatch__preview--custom" aria-hidden="true">
+                ✦
+              </span>
+              <span className="theme-swatch__row">
+                <span className="theme-swatch__label">{tpl.name}</span>
+                <input type="radio" name="template" value={tpl.code} checked={template === tpl.code} onChange={() => void saveTemplate(tpl.code)} />
+              </span>
+            </label>
+          ))}
+        </div>
+
+        {templateSaved && (
+          <p role="status" className="settings-saved">
+            {t('settings.saved')}
+          </p>
+        )}
+        {templateError && <p role="alert">{templateError}</p>}
+      </section>
+
+      <section className="settings-card">
+        <h2>{t('settings.language.label')}</h2>
+        <p className="hint">{t('settings.language.hint')}</p>
+
+        <select className="settings-select" value={language} onChange={(e) => void saveLanguage(e.target.value)}>
           {AVAILABLE_LANGUAGES.map((lng) => (
             <option key={lng} value={lng}>
               {t(`settings.language.${lng}`)}
@@ -92,7 +181,14 @@ export function SettingsPage() {
             </option>
           ))}
         </select>
-      </label>
+
+        {languageSaved && (
+          <p role="status" className="settings-saved">
+            {t('settings.saved')}
+          </p>
+        )}
+        {languageError && <p role="alert">{languageError}</p>}
+      </section>
     </div>
   )
 }
