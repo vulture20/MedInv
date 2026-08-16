@@ -56,6 +56,18 @@ a {
   min-height: 100vh;
 }
 
+/* GitHub issue #52: .app-shell__content has no scroll containment of its
+ * own (see its own comment) — the *document* scrolls, so `position:
+ * sticky; top: 0` here is enough on its own, no wrapper/structure change
+ * needed. Kept for mobile too, not just the ≥769px layout: the off-canvas
+ * sidebar's only entry point, .sidebar-toggle, lives inside this header
+ * (Header.tsx), so losing the header while scrolled on mobile would also
+ * lose access to navigation entirely until scrolling back to the top —
+ * live-checked on a small viewport, the header's own footprint is compact
+ * enough that keeping it pinned doesn't meaningfully eat into the already
+ * tight vertical space. z-index sits above ordinary page content but below
+ * the mobile sidebar/backdrop (z-index 20/15 below) so an opened sidebar
+ * still correctly overlays the header rather than hiding behind it. */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -63,6 +75,9 @@ a {
   padding: 0.75rem 1.25rem;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .app-header__left,
