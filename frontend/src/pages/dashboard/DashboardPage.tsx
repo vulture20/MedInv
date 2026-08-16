@@ -22,6 +22,13 @@ const PREVIEW_COUNT = 5
  * LibraryAccessService::visibleLibrariesQuery() server-side (guest/user/
  * admin levels × per-library shares, 4.2–4.3), so this just renders
  * whatever comes back, same as LibrariesPage.tsx.
+ *
+ * Card layout matches LibrariesPage.tsx's/StatisticsPage.tsx's (.panel-page/
+ * .panel-card, see index.css's shared docblock). Unlike LibrariesPage.tsx's
+ * one-card-per-library treatment, this is a quick-glance excerpt rather
+ * than the management view, so the preview stays a single card with a
+ * compact row per library (reusing .media-type-badge) instead of the
+ * heavier full card per entry.
  */
 export function DashboardPage() {
   const { t } = useTranslation()
@@ -36,25 +43,30 @@ export function DashboardPage() {
   }, [])
 
   return (
-    <div>
-      <h1>{t('nav.home')}</h1>
-      <p>
-        {user?.name} ({user?.level})
-      </p>
+    <div className="panel-page">
+      <header className="panel-page__header">
+        <h1>{t('nav.home')}</h1>
+        <p className="hint">
+          {user?.name} ({user?.level})
+        </p>
+      </header>
 
-      <section>
+      <section className="panel-card">
         <h2>{t('libraries.title')}</h2>
         {libraries === null ? (
-          <p>…</p>
+          <p className="hint">…</p>
         ) : libraries.length === 0 ? (
-          <p>{t('dashboard.noLibraries')}</p>
+          <p className="hint">{t('dashboard.noLibraries')}</p>
         ) : (
           <>
             <ul className="library-list">
               {libraries.slice(0, PREVIEW_COUNT).map((lib) => (
-                <li key={lib.id}>
-                  <Link to={`/libraries/${lib.id}`}>{lib.name}</Link> — {t(`libraries.mediaType.${lib.media_type}`)} (
-                  {lib.owner.name})
+                <li key={lib.id} className="library-list__row">
+                  <Link to={`/libraries/${lib.id}`} className="library-list__link">
+                    <span className="library-list__name">{lib.name}</span>
+                    <span className="media-type-badge">{t(`libraries.mediaType.${lib.media_type}`)}</span>
+                  </Link>
+                  <span className="hint">{lib.owner.name}</span>
                 </li>
               ))}
             </ul>
