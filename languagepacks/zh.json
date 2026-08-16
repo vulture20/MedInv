@@ -106,6 +106,16 @@
       "tracklist": "曲目列表",
       "computedHint": "（已计算）",
       "refreshMetadata": "刷新元数据",
+      "bulkDelete": {
+        "enter": "选择",
+        "exit": "取消选择",
+        "selectAll": "选择本页全部",
+        "deselectAll": "取消全选",
+        "deleteSelected_one": "删除已选择的 {{count}} 项",
+        "deleteSelected_other": "删除已选择的 {{count}} 项",
+        "confirm_one": "删除已选择的 {{count}} 项？此操作无法撤销。",
+        "confirm_other": "删除已选择的 {{count}} 项？此操作无法撤销。"
+      },
       "viewCoverFullscreen": "全屏查看封面"
     },
     "capture": {

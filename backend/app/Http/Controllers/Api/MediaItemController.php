@@ -192,6 +192,43 @@ class MediaItemController extends Controller
     }
 
     /**
+     * Bulk-delete (GitHub issue #54, briefing 7.) — the multi-select
+     * counterpart to destroy() above, same write-access check and the same
+     * per-item cover/thumbnail cleanup, just looped over every requested id
+     * instead of one.
+     *
+     * `whereIn('id', ...)` scoped through `$library->mediaItems()` (not a
+     * bare `MediaBook::whereIn(...)`) is what keeps this from letting a
+     * request delete an item belonging to a *different* library just
+     * because its id happened to be included — same containment
+     * destroy()'s single-item findOrFail() already gets from the same
+     * relation. Unlike destroy(), an id that doesn't exist in this library
+     * (already deleted by someone else, a stale selection, a typo'd id) is
+     * silently skipped rather than 404ing the whole request — a bulk
+     * operation over a list is inherently "best effort per item", not one
+     * strict single-record lookup.
+     */
+    public function bulkDestroy(Request $request, Library $library)
+    {
+        abort_unless($this->access->canWrite($request->user(), $library), 403);
+
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $records = $library->mediaItems()->whereIn('id', $data['ids'])->get();
+
+        foreach ($records as $record) {
+            $coverPath = $record->cover_path;
+            $record->delete();
+            $this->coverDownloadService->delete($coverPath);
+        }
+
+        return response()->json(['deleted_ids' => $records->pluck('id')->values()]);
+    }
+
+    /**
      * Moves a media item into a different library (media item detail
      * dialog's "move" action). Requires write access to *both* libraries —
      * moving something out of a library the user doesn't own/administer

@@ -106,6 +106,16 @@
       "tracklist": "トラックリスト",
       "computedHint": "（計算値）",
       "refreshMetadata": "メタデータを再取得",
+      "bulkDelete": {
+        "enter": "選択",
+        "exit": "選択を解除",
+        "selectAll": "このページのすべてを選択",
+        "deselectAll": "すべての選択を解除",
+        "deleteSelected_one": "選択した{{count}}件を削除",
+        "deleteSelected_other": "選択した{{count}}件を削除",
+        "confirm_one": "選択した{{count}}件を削除しますか? この操作は元に戻せません。",
+        "confirm_other": "選択した{{count}}件を削除しますか? この操作は元に戻せません。"
+      },
       "viewCoverFullscreen": "カバー画像を全画面で表示"
     },
     "capture": {

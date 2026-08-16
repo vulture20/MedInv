@@ -106,6 +106,16 @@
       "tracklist": "Tracklist",
       "computedHint": "(berekend)",
       "refreshMetadata": "Metadata vernieuwen",
+      "bulkDelete": {
+        "enter": "Selecteren",
+        "exit": "Selectie annuleren",
+        "selectAll": "Alles op deze pagina selecteren",
+        "deselectAll": "Selectie opheffen",
+        "deleteSelected_one": "{{count}} geselecteerd item verwijderen",
+        "deleteSelected_other": "{{count}} geselecteerde items verwijderen",
+        "confirm_one": "{{count}} geselecteerd item verwijderen? Dit kan niet ongedaan worden gemaakt.",
+        "confirm_other": "{{count}} geselecteerde items verwijderen? Dit kan niet ongedaan worden gemaakt."
+      },
       "viewCoverFullscreen": "Cover op volledig scherm bekijken"
     },
     "capture": {

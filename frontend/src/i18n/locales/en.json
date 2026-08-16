@@ -78,6 +78,16 @@
     "tracklist": "Track listing",
     "computedHint": "(computed)",
     "refreshMetadata": "Refresh metadata",
+    "bulkDelete": {
+      "enter": "Select",
+      "exit": "Cancel selection",
+      "selectAll": "Select all on this page",
+      "deselectAll": "Deselect all",
+      "deleteSelected_one": "Delete {{count}} selected item",
+      "deleteSelected_other": "Delete {{count}} selected items",
+      "confirm_one": "Delete {{count}} selected item? This cannot be undone.",
+      "confirm_other": "Delete {{count}} selected items? This cannot be undone."
+    },
     "fields": {
       "title": "Title",
       "ean": "EAN",

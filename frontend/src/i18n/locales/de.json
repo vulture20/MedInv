@@ -78,6 +78,16 @@
     "tracklist": "Titelliste",
     "computedHint": "(berechnet)",
     "refreshMetadata": "Metadaten erneut abfragen",
+    "bulkDelete": {
+      "enter": "Auswählen",
+      "exit": "Auswahl abbrechen",
+      "selectAll": "Alle auf dieser Seite auswählen",
+      "deselectAll": "Auswahl aufheben",
+      "deleteSelected_one": "{{count}} ausgewählten Eintrag löschen",
+      "deleteSelected_other": "{{count}} ausgewählte Einträge löschen",
+      "confirm_one": "{{count}} ausgewählten Eintrag löschen? Dies kann nicht rückgängig gemacht werden.",
+      "confirm_other": "{{count}} ausgewählte Einträge löschen? Dies kann nicht rückgängig gemacht werden."
+    },
     "fields": {
       "title": "Titel",
       "ean": "EAN",

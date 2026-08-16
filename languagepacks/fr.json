@@ -106,6 +106,16 @@
       "tracklist": "Liste des pistes",
       "computedHint": "(calculé)",
       "refreshMetadata": "Actualiser les métadonnées",
+      "bulkDelete": {
+        "enter": "Sélectionner",
+        "exit": "Annuler la sélection",
+        "selectAll": "Tout sélectionner sur cette page",
+        "deselectAll": "Tout désélectionner",
+        "deleteSelected_one": "Supprimer {{count}} élément sélectionné",
+        "deleteSelected_other": "Supprimer {{count}} éléments sélectionnés",
+        "confirm_one": "Supprimer {{count}} élément sélectionné ? Cette action est irréversible.",
+        "confirm_other": "Supprimer {{count}} éléments sélectionnés ? Cette action est irréversible."
+      },
       "viewCoverFullscreen": "Afficher la couverture en plein écran"
     },
     "capture": {

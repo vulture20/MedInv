@@ -106,6 +106,16 @@
       "tracklist": "Lista utworów",
       "computedHint": "(obliczone)",
       "refreshMetadata": "Odśwież metadane",
+      "bulkDelete": {
+        "enter": "Zaznacz",
+        "exit": "Anuluj zaznaczanie",
+        "selectAll": "Zaznacz wszystko na tej stronie",
+        "deselectAll": "Odznacz wszystko",
+        "deleteSelected_one": "Usuń {{count}} zaznaczony element",
+        "deleteSelected_other": "Usuń {{count}} zaznaczonych elementów",
+        "confirm_one": "Usunąć {{count}} zaznaczony element? Tej operacji nie można cofnąć.",
+        "confirm_other": "Usunąć {{count}} zaznaczonych elementów? Tej operacji nie można cofnąć."
+      },
       "viewCoverFullscreen": "Wyświetl okładkę na pełnym ekranie"
     },
     "capture": {

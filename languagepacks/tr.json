@@ -106,6 +106,16 @@
       "tracklist": "Parça listesi",
       "computedHint": "(hesaplandı)",
       "refreshMetadata": "Meta verileri yenile",
+      "bulkDelete": {
+        "enter": "Seç",
+        "exit": "Seçimi iptal et",
+        "selectAll": "Bu sayfadaki tümünü seç",
+        "deselectAll": "Seçimi kaldır",
+        "deleteSelected_one": "{{count}} seçili öğeyi sil",
+        "deleteSelected_other": "{{count}} seçili öğeyi sil",
+        "confirm_one": "{{count}} seçili öğe silinsin mi? Bu işlem geri alınamaz.",
+        "confirm_other": "{{count}} seçili öğe silinsin mi? Bu işlem geri alınamaz."
+      },
       "viewCoverFullscreen": "Kapağı tam ekran görüntüle"
     },
     "capture": {

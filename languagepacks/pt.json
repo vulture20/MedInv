@@ -106,6 +106,16 @@
       "tracklist": "Lista de faixas",
       "computedHint": "(calculado)",
       "refreshMetadata": "Atualizar metadados",
+      "bulkDelete": {
+        "enter": "Selecionar",
+        "exit": "Cancelar seleção",
+        "selectAll": "Selecionar tudo nesta página",
+        "deselectAll": "Desmarcar tudo",
+        "deleteSelected_one": "Excluir {{count}} item selecionado",
+        "deleteSelected_other": "Excluir {{count}} itens selecionados",
+        "confirm_one": "Excluir {{count}} item selecionado? Esta ação não pode ser desfeita.",
+        "confirm_other": "Excluir {{count}} itens selecionados? Esta ação não pode ser desfeita."
+      },
       "viewCoverFullscreen": "Ver capa em tela cheia"
     },
     "capture": {

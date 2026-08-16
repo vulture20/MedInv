@@ -106,6 +106,16 @@
       "tracklist": "Список треків",
       "computedHint": "(обчислено)",
       "refreshMetadata": "Оновити метадані",
+      "bulkDelete": {
+        "enter": "Вибрати",
+        "exit": "Скасувати вибір",
+        "selectAll": "Вибрати все на цій сторінці",
+        "deselectAll": "Зняти виділення",
+        "deleteSelected_one": "Видалити {{count}} вибраний елемент",
+        "deleteSelected_other": "Видалити {{count}} вибраних елементів",
+        "confirm_one": "Видалити {{count}} вибраний елемент? Цю дію не можна скасувати.",
+        "confirm_other": "Видалити {{count}} вибраних елементів? Цю дію не можна скасувати."
+      },
       "viewCoverFullscreen": "Переглянути обкладинку на весь екран"
     },
     "capture": {

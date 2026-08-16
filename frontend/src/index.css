@@ -312,6 +312,22 @@ td {
   border-radius: 2px;
 }
 
+/*
+ * GitHub issue #54: a row's own selection checkbox, shown before the
+ * button below in bulk-delete mode — display: flex here (unconditionally,
+ * not just when the checkbox is present) is what keeps it and the
+ * full-width button on one line instead of the checkbox forcing a wrap.
+ */
+.media-item-list li {
+  display: flex;
+  align-items: center;
+}
+
+.media-item-list__checkbox {
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
 /* Each media item is a full-width, unstyled <button> (LibraryDetailPage.tsx)
  * so the whole row is clickable to open MediaItemDetailDialog, while still
  * looking like the plain row it replaced. */
@@ -330,6 +346,14 @@ td {
 
 .media-item-list__row:hover {
   color: var(--color-accent);
+}
+
+/* Select-all / bulk-delete action bar (GitHub issue #54), shown above the list in bulk mode. */
+.media-item-list__bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0.5rem 0;
 }
 
 /* Media item detail/edit/delete/move dialog (LibraryDetailPage.tsx,

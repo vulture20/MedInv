@@ -106,6 +106,16 @@
       "tracklist": "Elenco tracce",
       "computedHint": "(calcolato)",
       "refreshMetadata": "Aggiorna metadati",
+      "bulkDelete": {
+        "enter": "Seleziona",
+        "exit": "Annulla selezione",
+        "selectAll": "Seleziona tutto in questa pagina",
+        "deselectAll": "Deseleziona tutto",
+        "deleteSelected_one": "Elimina {{count}} elemento selezionato",
+        "deleteSelected_other": "Elimina {{count}} elementi selezionati",
+        "confirm_one": "Eliminare {{count}} elemento selezionato? Questa azione non può essere annullata.",
+        "confirm_other": "Eliminare {{count}} elementi selezionati? Questa azione non può essere annullata."
+      },
       "viewCoverFullscreen": "Visualizza copertina a schermo intero"
     },
     "capture": {

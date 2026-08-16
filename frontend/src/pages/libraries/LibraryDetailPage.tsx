@@ -70,6 +70,17 @@ export function LibraryDetailPage() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
+  // Bulk delete (GitHub issue #54) — a selection mode over the current
+  // page of items.data, entered/exited explicitly rather than always-on
+  // checkboxes, so the ordinary "click a row to open it" interaction stays
+  // the default. Selection is intentionally page-scoped (`items.data` is
+  // only ever one page at a time, see the Paginated<T> type above) rather
+  // than tracked across page changes — cleared on every page/library
+  // change below, same as bulkDeleteError.
+  const [bulkMode, setBulkMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
+
   // Library sharing (briefing 4.3, GitHub issue #32) — editable local state,
   // synced from `library.shares` whenever a fresh library loads (below),
   // submitted as one combined array to PUT /libraries/{id}/shares on save
@@ -125,6 +136,8 @@ export function LibraryDetailPage() {
 
   useEffect(() => {
     void load()
+    setSelectedIds(new Set())
+    setBulkDeleteError(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, page])
 
@@ -217,6 +230,37 @@ export function LibraryDetailPage() {
       await load()
     } catch (err) {
       setOwnerTransferError(describeError(err, t))
+    }
+  }
+
+  function toggleSelected(itemId: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(itemId)) {
+        next.delete(itemId)
+      } else {
+        next.add(itemId)
+      }
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (!items) return
+    setSelectedIds((prev) => (prev.size === items.data.length ? new Set() : new Set(items.data.map((i) => i.id))))
+  }
+
+  /** POST .../items/bulk-delete (GitHub issue #54) — mirrors MediaItemDetailDialog's single-item delete: confirm, then reload rather than splice, since a bulk delete can shift this page's remaining items/pagination in a way that's simplest to just re-fetch (same reasoning CreateMediaItemDialog's onCreated already documents). */
+  async function deleteSelected() {
+    if (selectedIds.size === 0) return
+    if (!window.confirm(t('mediaItem.bulkDelete.confirm', { count: selectedIds.size }))) return
+    setBulkDeleteError(null)
+    try {
+      await apiClient.post(`/libraries/${id}/items/bulk-delete`, { ids: Array.from(selectedIds) })
+      setSelectedIds(new Set())
+      await load()
+    } catch (err) {
+      setBulkDeleteError(describeError(err, t))
     }
   }
 
@@ -350,7 +394,36 @@ export function LibraryDetailPage() {
         <p>
           <button type="button" onClick={() => setCreating(true)}>
             {t('mediaItem.addManually')}
+          </button>{' '}
+          {items && items.data.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setBulkMode((prev) => !prev)
+                setSelectedIds(new Set())
+                setBulkDeleteError(null)
+              }}
+            >
+              {t(bulkMode ? 'mediaItem.bulkDelete.exit' : 'mediaItem.bulkDelete.enter')}
+            </button>
+          )}
+        </p>
+      )}
+
+      {bulkMode && items && items.data.length > 0 && (
+        <p className="media-item-list__bulk-bar">
+          <label>
+            <input
+              type="checkbox"
+              checked={selectedIds.size === items.data.length}
+              onChange={toggleSelectAll}
+            />
+            {t(selectedIds.size === items.data.length ? 'mediaItem.bulkDelete.deselectAll' : 'mediaItem.bulkDelete.selectAll')}
+          </label>{' '}
+          <button type="button" disabled={selectedIds.size === 0} onClick={() => void deleteSelected()}>
+            {t('mediaItem.bulkDelete.deleteSelected', { count: selectedIds.size })}
           </button>
+          {bulkDeleteError && <span role="alert"> {bulkDeleteError}</span>}
         </p>
       )}
 
@@ -360,8 +433,24 @@ export function LibraryDetailPage() {
         <ul className="media-item-list">
           {items?.data.map((item) => (
             <li key={item.id}>
-              {/* Opens MediaItemDetailDialog (view/edit/delete/move) below. */}
-              <button type="button" className="media-item-list__row" onClick={() => setSelectedItem(item)}>
+              {bulkMode && (
+                <input
+                  type="checkbox"
+                  className="media-item-list__checkbox"
+                  aria-label={item.title}
+                  checked={selectedIds.has(item.id)}
+                  onChange={() => toggleSelected(item.id)}
+                />
+              )}
+              {/* Opens MediaItemDetailDialog (view/edit/delete/move) below —
+                  in bulk mode, toggles this row's checkbox instead (GitHub
+                  issue #54), since offering both interactions on the same
+                  click target would fight over what a single click does. */}
+              <button
+                type="button"
+                className="media-item-list__row"
+                onClick={() => (bulkMode ? toggleSelected(item.id) : setSelectedItem(item))}
+              >
                 {/* The small generated thumbnail (MediaItemController::coverThumbnail()),
                     not the full cover — this list can hold many rows, and CoverDownloadService
                     already generates one alongside every stored cover for exactly this.

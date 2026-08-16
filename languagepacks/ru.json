@@ -106,6 +106,16 @@
       "tracklist": "Список треков",
       "computedHint": "(вычислено)",
       "refreshMetadata": "Обновить метаданные",
+      "bulkDelete": {
+        "enter": "Выбрать",
+        "exit": "Отменить выбор",
+        "selectAll": "Выбрать все на этой странице",
+        "deselectAll": "Снять выделение",
+        "deleteSelected_one": "Удалить {{count}} выбранный элемент",
+        "deleteSelected_other": "Удалить {{count}} выбранных элементов",
+        "confirm_one": "Удалить {{count}} выбранный элемент? Это действие нельзя отменить.",
+        "confirm_other": "Удалить {{count}} выбранных элементов? Это действие нельзя отменить."
+      },
       "viewCoverFullscreen": "Просмотреть обложку на весь экран"
     },
     "capture": {
