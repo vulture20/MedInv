@@ -4,13 +4,16 @@ namespace App\Domain\Metadata;
 
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Domain\Metadata\Providers\Book\AmazonBookProvider;
+use App\Domain\Metadata\Providers\Book\ClaudeBookProvider;
 use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
 use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
+use App\Domain\Metadata\Providers\Cd\ClaudeCdProvider;
 use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
+use App\Domain\Metadata\Providers\DvdBluray\ClaudeDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Collection;
@@ -34,8 +37,19 @@ class MetadataProviderRegistry
      * would be presumptuous in a way "on by default" isn't for a
      * documented public API. See syncToDatabase() below for where this is
      * actually applied.
+     *
+     * The three Claude providers (GitHub issue #59) are added here for a
+     * related but distinct reason: an LLM-backed source costs real money
+     * per lookup (unlike every non-Beta provider above, which is free or
+     * has a generous free tier) and carries a hallucination risk that, per
+     * the issue's own proposal, is exactly why it shouldn't turn on just
+     * because an admin installed/updated MedInv — a wrong, invented detail
+     * is quieter and easier to miss than a plain "no match".
      */
-    private const DEFAULT_DISABLED_PROVIDER_KEYS = ['book.amazon', 'cd.amazon', 'dvd_bluray.amazon'];
+    private const DEFAULT_DISABLED_PROVIDER_KEYS = [
+        'book.amazon', 'cd.amazon', 'dvd_bluray.amazon',
+        'book.claude', 'cd.claude', 'dvd_bluray.claude',
+    ];
 
     /** @return class-string<MetadataProviderInterface>[] */
     public static function defaultProviders(): array
@@ -45,11 +59,14 @@ class MetadataProviderRegistry
             GoogleBooksProvider::class,
             HardcoverProvider::class,
             AmazonBookProvider::class,
+            ClaudeBookProvider::class,
             MusicBrainzProvider::class,
             DiscogsProvider::class,
             AmazonCdProvider::class,
+            ClaudeCdProvider::class,
             UpcMdbProvider::class,
             AmazonDvdBlurayProvider::class,
+            ClaudeDvdBlurayProvider::class,
             // TODO: EmunationProvider (briefing 8.2 — DVD/Blu-ray)
         ];
     }

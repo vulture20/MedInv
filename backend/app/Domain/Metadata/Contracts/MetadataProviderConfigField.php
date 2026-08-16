@@ -21,12 +21,14 @@ final class MetadataProviderConfigField
 {
     /**
      * @param  string  $key  Property name inside metadata_plugins.config, e.g. "api_key".
-     * @param  'text'|'password'  $type  'password' is rendered (and treated) as masked input — for secrets like an API key.
+     * @param  'text'|'password'|'textarea'  $type  'password' is rendered (and treated) as masked input, for secrets like an API key. 'textarea' (GitHub issue #59) is a multi-line `<textarea>` instead of a single-line `<input>` — for a field like a customizable LLM prompt, where a one-line input would truncate the field visually and make editing painful.
+     * @param  ?string  $default  Pre-fills PluginsPage.tsx's settings-form field when `metadata_plugins.config` doesn't already have a value for this key (i.e. the admin hasn't customized it yet) — e.g. a provider's suggested default prompt (issue #59's addendum). Distinct from `required`: a field can have both a sensible default *and* still be required, in which case the pre-filled default already satisfies that requirement until an admin actually clears it.
      */
     public function __construct(
         public readonly string $key,
         public readonly string $type = 'text',
         public readonly bool $required = false,
+        public readonly ?string $default = null,
     ) {}
 
     public function toArray(): array
@@ -35,6 +37,7 @@ final class MetadataProviderConfigField
             'key' => $this->key,
             'type' => $this->type,
             'required' => $this->required,
+            'default' => $this->default,
         ];
     }
 }

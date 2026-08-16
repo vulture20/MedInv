@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Web scraping"
+        "scraping": "Web scraping",
+        "llm": "IA (LLM)"
       },
       "status": {
         "active": "Attivo",
@@ -407,7 +408,8 @@
         "settings": "Impostazioni",
         "noConfig": "Nessuna impostazione richiesta.",
         "fields": {
-          "api_key": "Chiave API"
+          "api_key": "Chiave API",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {

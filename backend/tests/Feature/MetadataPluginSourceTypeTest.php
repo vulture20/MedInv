@@ -34,6 +34,10 @@ class MetadataPluginSourceTypeTest extends TestCase
         $this->assertSame('scraping', $sourceTypes->get('book.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('cd.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('dvd_bluray.amazon'));
+        // GitHub issue #59: the three Claude providers are the only 'llm' providers.
+        $this->assertSame('llm', $sourceTypes->get('book.claude'));
+        $this->assertSame('llm', $sourceTypes->get('cd.claude'));
+        $this->assertSame('llm', $sourceTypes->get('dvd_bluray.claude'));
     }
 
     public function test_plugins_endpoint_attaches_a_source_type_to_each_row(): void

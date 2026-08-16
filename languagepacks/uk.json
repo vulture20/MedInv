@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Веб-скрапінг"
+        "scraping": "Веб-скрапінг",
+        "llm": "ШІ (LLM)"
       },
       "status": {
         "active": "Активний",
@@ -407,7 +408,8 @@
         "settings": "Налаштування",
         "noConfig": "Налаштування не потрібні.",
         "fields": {
-          "api_key": "Ключ API"
+          "api_key": "Ключ API",
+          "prompt": "Промпт"
         }
       },
       "pluginOrdering": {

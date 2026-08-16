@@ -238,7 +238,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Web-skraping"
+        "scraping": "Web-skraping",
+        "llm": "AI (LLM)"
       },
       "status": {
         "active": "Aktiv",
@@ -426,7 +427,8 @@
         "settings": "Innstillinger",
         "noConfig": "Ingen innstillinger nødvendig.",
         "fields": {
-          "api_key": "API-nøkkel"
+          "api_key": "API-nøkkel",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {

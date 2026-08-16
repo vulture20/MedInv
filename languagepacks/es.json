@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Web scraping"
+        "scraping": "Web scraping",
+        "llm": "IA (LLM)"
       },
       "status": {
         "active": "Activo",
@@ -407,7 +408,8 @@
         "settings": "Configuración",
         "noConfig": "No se requiere configuración.",
         "fields": {
-          "api_key": "Clave de API"
+          "api_key": "Clave de API",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {

@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "网页抓取"
+        "scraping": "网页抓取",
+        "llm": "AI（LLM）"
       },
       "status": {
         "active": "活跃",
@@ -407,7 +408,8 @@
         "settings": "设置",
         "noConfig": "无需设置。",
         "fields": {
-          "api_key": "API 密钥"
+          "api_key": "API 密钥",
+          "prompt": "提示词"
         }
       },
       "pluginOrdering": {

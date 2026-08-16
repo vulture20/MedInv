@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Scrapowanie"
+        "scraping": "Scrapowanie",
+        "llm": "AI (LLM)"
       },
       "status": {
         "active": "Aktywne",
@@ -407,7 +408,8 @@
         "settings": "Ustawienia",
         "noConfig": "Konfiguracja nie jest wymagana.",
         "fields": {
-          "api_key": "Klucz API"
+          "api_key": "Klucz API",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {

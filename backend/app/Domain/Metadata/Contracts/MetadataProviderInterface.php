@@ -90,6 +90,14 @@ interface MetadataProviderInterface
      * AmazonScraping's docblock, GitHub issue #50) — which is exactly why
      * this needs to be visible, not just version()'s "-beta" suffix on its
      * own.
+     *
+     * A third value, 'llm' (GitHub issue #59), was added alongside the
+     * original 'api'|'scraping' pair for the Claude-backed providers
+     * (App\Domain\Metadata\Providers\Claude\ClaudeMetadataProvider) — an
+     * LLM-backed source is neither a documented third-party API nor a
+     * scrape of a page not meant to be machine-read; it carries its own,
+     * different risk profile (hallucination, per-call cost) that the
+     * other two labels don't capture.
      */
     public function sourceType(): string;
 }

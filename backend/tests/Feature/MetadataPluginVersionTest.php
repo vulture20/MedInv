@@ -34,6 +34,10 @@ class MetadataPluginVersionTest extends TestCase
         $this->assertSame('v0.1-beta', $versions->get('book.amazon'));
         $this->assertSame('v0.1-beta', $versions->get('cd.amazon'));
         $this->assertSame('v0.1-beta', $versions->get('dvd_bluray.amazon'));
+        // GitHub issue #59: same free-form "-beta" suffix convention.
+        $this->assertSame('v0.1-beta', $versions->get('book.claude'));
+        $this->assertSame('v0.1-beta', $versions->get('cd.claude'));
+        $this->assertSame('v0.1-beta', $versions->get('dvd_bluray.claude'));
     }
 
     public function test_plugins_endpoint_attaches_a_version_to_each_row(): void

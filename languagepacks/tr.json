@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Web kazıma"
+        "scraping": "Web kazıma",
+        "llm": "YZ (LLM)"
       },
       "status": {
         "active": "Etkin",
@@ -407,7 +408,8 @@
         "settings": "Ayarlar",
         "noConfig": "Ayar gerekmiyor.",
         "fields": {
-          "api_key": "API Anahtarı"
+          "api_key": "API Anahtarı",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {

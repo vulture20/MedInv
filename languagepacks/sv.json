@@ -238,7 +238,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Webbskrapning"
+        "scraping": "Webbskrapning",
+        "llm": "AI (LLM)"
       },
       "status": {
         "active": "Aktiv",
@@ -426,7 +427,8 @@
         "settings": "Inställningar",
         "noConfig": "Inga inställningar krävs.",
         "fields": {
-          "api_key": "API-nyckel"
+          "api_key": "API-nyckel",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {

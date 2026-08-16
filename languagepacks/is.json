@@ -238,7 +238,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Vefskröpun"
+        "scraping": "Vefskröpun",
+        "llm": "Gervigreind (LLM)"
       },
       "status": {
         "active": "Virkt",
@@ -426,7 +427,8 @@
         "settings": "Stillingar",
         "noConfig": "Engar stillingar nauðsynlegar.",
         "fields": {
-          "api_key": "API-lykill"
+          "api_key": "API-lykill",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {

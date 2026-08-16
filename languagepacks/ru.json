@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Веб-скрапинг"
+        "scraping": "Веб-скрапинг",
+        "llm": "ИИ (LLM)"
       },
       "status": {
         "active": "Активен",
@@ -407,7 +408,8 @@
         "settings": "Настройки",
         "noConfig": "Настройки не требуются.",
         "fields": {
-          "api_key": "API-ключ"
+          "api_key": "API-ключ",
+          "prompt": "Промпт"
         }
       },
       "pluginOrdering": {

@@ -860,6 +860,16 @@ td {
   font-weight: 600;
 }
 
+/* GitHub issue #59: an 'llm' source (e.g. the Claude providers) carries its
+ * own, different risk profile than 'scraping' (hallucination/cost, not
+ * ToS/markup-stability) — flagged with --color-accent rather than reusing
+ * --color-danger, so it reads as "worth noticing" without implying the same
+ * kind of risk as a scraper. */
+.source-type-badge--llm {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
 /* Per-plugin settings dialog (briefing 8.1/15., PluginsPage.tsx, GitHub
  * issue #29) — a native <dialog>, themed explicitly since its UA default
  * (white background, no border-radius) ignores --color-* entirely and
@@ -895,12 +905,22 @@ td {
   color: var(--color-text-muted);
 }
 
-.plugin-config-dialog input {
+.plugin-config-dialog input,
+.plugin-config-dialog textarea {
   padding: 0.5rem;
   border: 1px solid var(--color-border);
   border-radius: 4px;
   background: var(--color-bg);
   color: var(--color-text);
+  font-family: inherit;
+}
+
+/* GitHub issue #59: the prompt field (e.g. ClaudeMetadataProvider's default
+ * grounding prompt) is multi-paragraph — tall enough to show its shape at a
+ * glance, resizable for anyone who wants to see the whole thing at once. */
+.plugin-config-dialog textarea {
+  min-height: 8rem;
+  resize: vertical;
 }
 
 .plugin-config-dialog__actions {

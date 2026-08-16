@@ -29,11 +29,28 @@ class MetadataPluginConfigFieldsTest extends TestCase
         $this->assertSame([], $fields->get('book.open_library'));
         $this->assertSame([], $fields->get('cd.musicbrainz'));
         $this->assertSame([
-            ['key' => 'api_key', 'type' => 'password', 'required' => true],
+            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null],
         ], $fields->get('dvd_bluray.upcmdb'));
         $this->assertSame([
-            ['key' => 'api_key', 'type' => 'password', 'required' => true],
+            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null],
         ], $fields->get('book.hardcover'));
+    }
+
+    /** GitHub issue #59: the Claude providers' prompt field is 'textarea', not 'text'/'password', and carries a non-null suggested default. */
+    public function test_the_claude_providers_expose_an_api_key_and_a_default_valued_prompt_textarea(): void
+    {
+        $fields = app(MetadataProviderRegistry::class)->configFieldsByProviderKey();
+
+        foreach (['book.claude', 'cd.claude', 'dvd_bluray.claude'] as $providerKey) {
+            $fieldsForProvider = collect($fields->get($providerKey));
+            $apiKeyField = $fieldsForProvider->firstWhere('key', 'api_key');
+            $promptField = $fieldsForProvider->firstWhere('key', 'prompt');
+
+            $this->assertSame(['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null], $apiKeyField);
+            $this->assertSame('textarea', $promptField['type']);
+            $this->assertFalse($promptField['required']);
+            $this->assertNotEmpty($promptField['default']);
+        }
     }
 
     public function test_plugins_endpoint_attaches_config_fields_to_each_row(): void
@@ -48,7 +65,7 @@ class MetadataPluginConfigFieldsTest extends TestCase
         $openLibrary = collect($response->json())->firstWhere('provider_key', 'book.open_library');
 
         $this->assertSame([
-            ['key' => 'api_key', 'type' => 'password', 'required' => true],
+            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null],
         ], $upcmdb['config_fields']);
         $this->assertSame([], $openLibrary['config_fields']);
     }

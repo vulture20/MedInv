@@ -35,7 +35,8 @@ class MetadataController extends Controller
      * All admin-visible plugins, or only those enabled for a media type
      * (briefing 15.). Each row carries a `config_fields` attribute (GitHub
      * issue #29), a `version` attribute (GitHub issue #44) and a
-     * `source_type` attribute (GitHub issue #55, 'api'|'scraping') — all
+     * `source_type` attribute (GitHub issue #55, 'api'|'scraping'|'llm' —
+     * the third value added by GitHub issue #59's Claude providers) — all
      * three declared by the matching provider class, not stored in the
      * database — so PluginsPage.tsx can render a settings form and show a
      * version/source type per plugin without any of them needing their own

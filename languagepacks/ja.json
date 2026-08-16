@@ -237,7 +237,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "ウェブスクレイピング"
+        "scraping": "ウェブスクレイピング",
+        "llm": "AI（LLM）"
       },
       "status": {
         "active": "有効",
@@ -407,7 +408,8 @@
         "settings": "設定",
         "noConfig": "設定は不要です。",
         "fields": {
-          "api_key": "APIキー"
+          "api_key": "APIキー",
+          "prompt": "プロンプト"
         }
       },
       "pluginOrdering": {

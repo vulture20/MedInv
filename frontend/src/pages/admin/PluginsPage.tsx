@@ -8,9 +8,15 @@ import { describeError } from './adminErrors'
 
 interface ConfigField {
   key: string
-  /** 'password' is rendered as a masked input, for secrets like an API key. */
-  type: 'text' | 'password'
+  /**
+   * 'password' is rendered as a masked input, for secrets like an API key.
+   * 'textarea' (GitHub issue #59) is rendered as a multi-line <textarea>,
+   * for a longer, free-form value like an LLM provider's grounding prompt.
+   */
+  type: 'text' | 'password' | 'textarea'
   required: boolean
+  /** Pre-fills the field when a plugin has no own value for it yet (GitHub issue #59's addendum) — e.g. ClaudeMetadataProvider's default grounding prompt. */
+  default: string | null
 }
 
 interface Plugin {
@@ -25,8 +31,8 @@ interface Plugin {
   config_fields: ConfigField[]
   /** Declared by the matching backend provider class (GitHub issue #44) — not stored, computed per request; null for a provider_key with no matching registered class. */
   version: string | null
-  /** Declared by the matching backend provider class (GitHub issue #55) — not stored, computed per request; null for a provider_key with no matching registered class, same as `version`. */
-  source_type: 'api' | 'scraping' | null
+  /** Declared by the matching backend provider class (GitHub issue #55, extended for #59) — not stored, computed per request; null for a provider_key with no matching registered class, same as `version`. */
+  source_type: 'api' | 'scraping' | 'llm' | null
 }
 
 /**
@@ -140,11 +146,13 @@ function SortableRow({ id, children }: { id: number; children: (handle: { attrib
  * actually changes — not something this page edits or that ever changed
  * `metadata_plugins` itself.
  *
- * Each row's `source_type` badge (GitHub issue #55, 'api'|'scraping') makes
- * explicit what used to be documented only in source/GitHub issues — a
- * real, safety/reliability-relevant difference for an operator deciding
- * whether to enable a plugin (see AmazonScraping's docblock, #50: ToS risk,
- * no success guarantee, higher chance of silently breaking).
+ * Each row's `source_type` badge (GitHub issue #55, 'api'|'scraping', joined
+ * by 'llm' in #59) makes explicit what used to be documented only in
+ * source/GitHub issues — a real, safety/reliability-relevant difference for
+ * an operator deciding whether to enable a plugin (see AmazonScraping's
+ * docblock, #50: ToS risk, no success guarantee, higher chance of silently
+ * breaking; ClaudeMetadataProvider's docblock, #59: hallucination risk, real
+ * per-call cost).
  *
  * Card layout matches UsersPage.tsx's (.panel-page/.panel-card, see
  * index.css's shared docblock) — one card per media type, the same
@@ -228,7 +236,10 @@ export function PluginsPage() {
 
   function openSettings(plugin: Plugin) {
     setEditingPluginId(plugin.id)
-    setFormValues(Object.fromEntries(plugin.config_fields.map((f) => [f.key, String(plugin.config?.[f.key] ?? '')])))
+    // A field with no own value yet in `config` falls back to its declared
+    // `default` (GitHub issue #59's addendum: the prompt field should
+    // already show a sensible pre-filled value, not an empty box).
+    setFormValues(Object.fromEntries(plugin.config_fields.map((f) => [f.key, String(plugin.config?.[f.key] ?? f.default ?? '')])))
     dialogRef.current?.showModal()
   }
 
@@ -321,7 +332,7 @@ export function PluginsPage() {
                             <td>{p.version ?? '—'}</td>
                             <td>
                               {p.source_type ? (
-                                <span className={`source-type-badge${p.source_type === 'scraping' ? ' source-type-badge--scraping' : ''}`}>
+                                <span className={`source-type-badge${p.source_type !== 'api' ? ` source-type-badge--${p.source_type}` : ''}`}>
                                   {t(`admin.sourceType.${p.source_type}`)}
                                 </span>
                               ) : (
@@ -368,12 +379,20 @@ export function PluginsPage() {
             {editingPlugin.config_fields.map((field) => (
               <label key={field.key}>
                 {fieldLabel(t, field.key)}
-                <input
-                  type={field.type}
-                  required={field.required}
-                  value={formValues[field.key] ?? ''}
-                  onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                />
+                {field.type === 'textarea' ? (
+                  <textarea
+                    required={field.required}
+                    value={formValues[field.key] ?? ''}
+                    onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  />
+                ) : (
+                  <input
+                    type={field.type}
+                    required={field.required}
+                    value={formValues[field.key] ?? ''}
+                    onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  />
+                )}
               </label>
             ))}
             <div className="plugin-config-dialog__actions">

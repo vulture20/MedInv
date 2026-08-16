@@ -47,6 +47,17 @@ class DatabaseSeederTest extends TestCase
         $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.amazon', 'enabled' => false]);
     }
 
+    /** GitHub issue #59: same reasoning as the Amazon providers above (see MetadataProviderRegistry::DEFAULT_DISABLED_PROVIDER_KEYS's docblock) — an LLM-backed source costs real money per lookup and carries a hallucination risk, so it must not be enabled just because the app was installed. */
+    public function test_seeding_creates_the_claude_providers_disabled(): void
+    {
+        $this->seed();
+
+        $table = (new MetadataPlugin)->getTable();
+        $this->assertDatabaseHas($table, ['provider_key' => 'book.claude', 'enabled' => false]);
+        $this->assertDatabaseHas($table, ['provider_key' => 'cd.claude', 'enabled' => false]);
+        $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.claude', 'enabled' => false]);
+    }
+
     public function test_seeding_twice_does_not_duplicate_metadata_plugin_rows(): void
     {
         $this->seed();

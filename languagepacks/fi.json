@@ -238,7 +238,8 @@
       },
       "sourceType": {
         "api": "API",
-        "scraping": "Verkkokaavinta"
+        "scraping": "Verkkokaavinta",
+        "llm": "Tekoäly (LLM)"
       },
       "status": {
         "active": "Aktiivinen",
@@ -426,7 +427,8 @@
         "settings": "Asetukset",
         "noConfig": "Asetuksia ei tarvita.",
         "fields": {
-          "api_key": "API-avain"
+          "api_key": "API-avain",
+          "prompt": "Prompt"
         }
       },
       "pluginOrdering": {
