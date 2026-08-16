@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\Book;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -61,8 +62,16 @@ class GoogleBooksProvider implements MetadataProviderInterface
     {
         $response = $this->request(['q' => "isbn:{$code}"]);
 
+        // Distinguished from "no volume for this ISBN" below (a genuine
+        // no-match): a failed request() (non-2xx — e.g. quota exceeded per
+        // this class's own docblock, or a bad api_key) means the request
+        // itself didn't succeed, reported as 'failed' rather than
+        // 'no_match' by MetadataImportService::collectCandidatesByCode()
+        // (GitHub issue #53). search() deliberately keeps request()'s
+        // existing "return null, don't throw" behavior — only this
+        // lookup-by-code path (the one #53 is about) distinguishes the two.
         if ($response === null) {
-            return [];
+            throw new MetadataProviderRequestException('Google Books request failed.');
         }
 
         $item = $response->json('items.0');

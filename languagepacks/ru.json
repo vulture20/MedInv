@@ -125,7 +125,13 @@
       "mergeNoCover": "Без обложки",
       "mergeConfirm": "Использовать эти значения",
       "mergeTracksCount_one": "{{count}} трек",
-      "mergeTracksCount_other": "{{count}} треков"
+      "mergeTracksCount_other": "{{count}} треков",
+      "providerStatus": {
+        "ok_one": "{{count}} результат",
+        "ok_other": "{{count}} результатов",
+        "no_match": "нет совпадений",
+        "failed": "ошибка запроса"
+      }
     },
     "search": {
       "placeholder": "Поиск…",

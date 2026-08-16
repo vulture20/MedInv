@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\DvdBluray;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Facades\Http;
 
@@ -65,16 +66,26 @@ class UpcMdbProvider implements MetadataProviderInterface
     {
         $apiKey = $this->apiKey();
 
+        // A missing required api_key (configFields() above) is exactly the
+        // "falsch konfigurierter API-Key" case GitHub issue #53 is about —
+        // reported as 'failed', not silently as 'no_match'.
         if ($apiKey === null) {
-            return [];
+            throw new MetadataProviderRequestException('UPCMDB request skipped: no api_key configured.');
         }
 
         $response = Http::withHeader('x-api-key', $apiKey)->get(self::BASE_URL.'/v1/lookup/ean/'.$code);
 
-        // 404 ("UPC not found in database") and any other failure (401/403/429,
-        // see UPCMDB's documented error codes) both just mean no candidate.
-        if ($response->failed()) {
+        // 404 ("UPC not found in database") is UPCMDB's own genuine
+        // no-match signal, unlike any other failure (401/403/429, see
+        // UPCMDB's documented error codes) — a wrong/expired key or a rate
+        // limit is the request itself not succeeding, distinct from #53's
+        // 'no_match', so only 404 stays a silent empty result.
+        if ($response->status() === 404) {
             return [];
+        }
+
+        if ($response->failed()) {
+            throw new MetadataProviderRequestException("UPCMDB request failed with status {$response->status()}.");
         }
 
         // Unlike a search, a single lookup returns one JSON object directly,

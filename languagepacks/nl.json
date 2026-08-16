@@ -125,7 +125,13 @@
       "mergeNoCover": "Geen cover",
       "mergeConfirm": "Deze waarden gebruiken",
       "mergeTracksCount_one": "{{count}} track",
-      "mergeTracksCount_other": "{{count}} tracks"
+      "mergeTracksCount_other": "{{count}} tracks",
+      "providerStatus": {
+        "ok_one": "{{count}} resultaat",
+        "ok_other": "{{count}} resultaten",
+        "no_match": "geen resultaat",
+        "failed": "aanvraag mislukt"
+      }
     },
     "search": {
       "placeholder": "Zoeken…",

@@ -27,7 +27,7 @@ class BulkImportService
         private readonly MediaItemService $mediaItemService,
     ) {}
 
-    /** @return array{status: string, ean: string, candidates?: array, merged?: array} */
+    /** @return array{status: string, ean: string, candidates?: array, merged?: array, provider_statuses?: array} */
     public function resolveOne(Library $library, string $ean): array
     {
         if ($this->eanExistsInLibrary($library, $ean)) {
@@ -41,6 +41,10 @@ class BulkImportService
             'ean' => $ean,
             'candidates' => $result['candidates'],
             'merged' => $result['merged'],
+            // GitHub issue #53: per-provider ok/no_match/failed, so a
+            // misconfigured/blocked provider shows up here instead of only
+            // in the server log.
+            'provider_statuses' => $result['provider_statuses'],
         ];
     }
 

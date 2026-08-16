@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\Book;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -125,8 +126,15 @@ class HardcoverProvider implements MetadataProviderInterface
             }
             GRAPHQL, ['code' => $code]);
 
+        // query() returns null both for a missing/invalid api_key and for an
+        // actual request/GraphQL-level failure — either way the request
+        // itself didn't succeed, distinct from "no edition for this ISBN"
+        // below, reported as 'failed' rather than 'no_match' (GitHub issue
+        // #53). search() deliberately keeps query()'s existing "return
+        // null, don't throw" behavior — only this lookup-by-code path (the
+        // one #53 is about) distinguishes the two.
         if ($response === null) {
-            return [];
+            throw new MetadataProviderRequestException('Hardcover request failed (missing/invalid api_key or a GraphQL-level error).');
         }
 
         $edition = $response->json('data.editions.0');

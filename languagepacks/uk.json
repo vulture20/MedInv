@@ -125,7 +125,13 @@
       "mergeNoCover": "Без обкладинки",
       "mergeConfirm": "Використати ці значення",
       "mergeTracksCount_one": "{{count}} трек",
-      "mergeTracksCount_other": "{{count}} треків"
+      "mergeTracksCount_other": "{{count}} треків",
+      "providerStatus": {
+        "ok_one": "{{count}} результат",
+        "ok_other": "{{count}} результатів",
+        "no_match": "немає збігів",
+        "failed": "помилка запиту"
+      }
     },
     "search": {
       "placeholder": "Пошук…",

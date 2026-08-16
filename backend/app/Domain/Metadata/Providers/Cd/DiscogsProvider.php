@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\Cd;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -123,8 +124,16 @@ class DiscogsProvider implements MetadataProviderInterface
     {
         $response = $this->request('/database/search', ['barcode' => $code, 'type' => 'release']);
 
+        // Distinguished from "no results for this barcode" below (a genuine
+        // no-match): a failed request() (non-2xx, e.g. rate-limited) means
+        // the request itself didn't succeed, reported as 'failed' rather
+        // than 'no_match' by
+        // MetadataImportService::collectCandidatesByCode() (GitHub issue
+        // #53). search() deliberately keeps request()'s existing "return
+        // null, don't throw" behavior — only this lookup-by-code path (the
+        // one #53 is about) distinguishes the two.
         if ($response === null) {
-            return [];
+            throw new MetadataProviderRequestException('Discogs request failed.');
         }
 
         $results = $response->json('results', []);

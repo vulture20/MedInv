@@ -125,7 +125,13 @@
       "mergeNoCover": "Brak okładki",
       "mergeConfirm": "Użyj tych wartości",
       "mergeTracksCount_one": "{{count}} utwór",
-      "mergeTracksCount_other": "{{count}} utworów"
+      "mergeTracksCount_other": "{{count}} utworów",
+      "providerStatus": {
+        "ok_one": "{{count}} wynik",
+        "ok_other": "{{count}} wyników",
+        "no_match": "brak wyniku",
+        "failed": "żądanie nieudane"
+      }
     },
     "search": {
       "placeholder": "Szukaj…",

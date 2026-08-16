@@ -14,6 +14,9 @@
   --color-accent: #2f6fed;
   --color-danger: #c62828;
   --color-danger-bg: #fdecea;
+  /* GitHub issue #53: per-provider status list ('ok'/'failed') — no
+     existing token for a positive/success state before this. */
+  --color-success: #2e7d32;
 
   color-scheme: light;
 }
@@ -27,6 +30,7 @@
   --color-accent: #6a9bff;
   --color-danger: #ff6b6b;
   --color-danger-bg: #3a1f1f;
+  --color-success: #6fcf77;
 
   color-scheme: dark;
 }
@@ -920,4 +924,40 @@ td {
   display: flex;
   gap: 0.5rem;
   margin-top: 0.75rem;
+}
+
+/*
+ * GitHub issue #53: per-provider request status ('ok'/'no_match'/'failed'),
+ * shown alongside a scan/refresh result — including for a 'no_match'
+ * overall result, where it's most useful (tells apart "no provider found
+ * anything" from "a provider's request actually failed").
+ */
+.provider-status-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  margin: 0.35rem 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.provider-status-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  color: var(--color-text-muted);
+}
+
+.provider-status-list__status--ok {
+  color: var(--color-success);
+}
+
+.provider-status-list__status--no_match {
+  color: var(--color-text-muted);
+}
+
+.provider-status-list__status--failed {
+  color: var(--color-danger);
+  font-weight: 600;
 }

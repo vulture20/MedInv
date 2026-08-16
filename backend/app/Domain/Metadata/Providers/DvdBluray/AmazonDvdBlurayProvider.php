@@ -4,6 +4,7 @@ namespace App\Domain\Metadata\Providers\DvdBluray;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
 
 /**
@@ -47,6 +48,12 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
     public function lookupByCode(string $code): array
     {
         $results = $this->amazonSearch($code);
+
+        // See AmazonBookProvider::lookupByCode()'s matching comment (GitHub issue #53).
+        if ($results === null) {
+            throw new MetadataProviderRequestException('Amazon scrape request failed.');
+        }
+
         $first = $results[0] ?? null;
 
         if ($first === null) {
@@ -65,7 +72,7 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
         // Stays search-result-level only — see AmazonBookProvider::search()'s matching comment.
         return array_map(
             fn (array $result) => $this->mapSearchResultToCandidate($result, null),
-            $this->amazonSearch($query),
+            $this->amazonSearch($query) ?? [],
         );
     }
 

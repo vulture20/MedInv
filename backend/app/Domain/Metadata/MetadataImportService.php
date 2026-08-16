@@ -24,7 +24,7 @@ class MetadataImportService
     /** @return array<int, array> Flattened MetadataCandidate::toArray() results from all enabled providers. */
     public function lookup(Library $library, string $code): array
     {
-        return array_map(fn (MetadataCandidate $c) => $c->toArray(), $this->collectCandidatesByCode($library, $code));
+        return array_map(fn (MetadataCandidate $c) => $c->toArray(), $this->collectCandidatesByCode($library, $code)['candidates']);
     }
 
     /**
@@ -36,15 +36,24 @@ class MetadataImportService
      * provider actually said what — even though CapturePage.tsx's UI is
      * driven by `merged`, not this raw list.
      *
-     * @return array{candidates: array<int, array>, merged: array}
+     * `provider_statuses` (GitHub issue #53) surfaces, per enabled provider,
+     * whether its request actually succeeded rather than only logging a
+     * failure server-side (Log::warning below) — without it, a user cannot
+     * tell "this provider genuinely has no match" apart from "this
+     * provider's request failed" (wrong API key, rate limit, a blocked
+     * scraper like the Amazon ones from #50), both of which look identical
+     * from the merged result alone.
+     *
+     * @return array{candidates: array<int, array>, merged: array, provider_statuses: array<int, array{provider_key: string, status: string, candidate_count: int}>}
      */
     public function lookupMerged(Library $library, string $code): array
     {
-        $candidates = $this->collectCandidatesByCode($library, $code);
+        $result = $this->collectCandidatesByCode($library, $code);
 
         return [
-            'candidates' => array_map(fn (MetadataCandidate $c) => $c->toArray(), $candidates),
-            'merged' => $this->merger->merge($candidates),
+            'candidates' => array_map(fn (MetadataCandidate $c) => $c->toArray(), $result['candidates']),
+            'merged' => $this->merger->merge($result['candidates']),
+            'provider_statuses' => $result['provider_statuses'],
         ];
     }
 
@@ -66,22 +75,34 @@ class MetadataImportService
         return array_map(fn (MetadataCandidate $c) => $c->toArray(), $candidates);
     }
 
-    /** @return MetadataCandidate[] */
+    /**
+     * @return array{candidates: MetadataCandidate[], provider_statuses: array<int, array{provider_key: string, status: string, candidate_count: int}>}
+     */
     private function collectCandidatesByCode(Library $library, string $code): array
     {
         $candidates = [];
+        $statuses = [];
 
         foreach ($this->registry->enabledProvidersFor($library->media_type) as $provider) {
             try {
-                foreach ($provider->lookupByCode($code) as $candidate) {
+                $found = $provider->lookupByCode($code);
+                foreach ($found as $candidate) {
                     $candidates[] = $candidate;
                 }
+                $statuses[] = [
+                    'provider_key' => $provider->key(),
+                    'status' => count($found) > 0 ? 'ok' : 'no_match',
+                    'candidate_count' => count($found),
+                ];
             } catch (\Throwable $e) {
                 // A single failing provider must not block the others (8.3) — log and continue.
+                // The failure itself is still reported below, not just logged (#53) — this is
+                // the only place that distinguishes "no match" from "the request itself failed".
                 Log::warning("Metadata provider {$provider->key()} failed for code {$code}: {$e->getMessage()}");
+                $statuses[] = ['provider_key' => $provider->key(), 'status' => 'failed', 'candidate_count' => 0];
             }
         }
 
-        return $candidates;
+        return ['candidates' => $candidates, 'provider_statuses' => $statuses];
     }
 }

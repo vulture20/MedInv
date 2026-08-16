@@ -125,7 +125,13 @@
       "mergeNoCover": "Sin portada",
       "mergeConfirm": "Usar estos valores",
       "mergeTracksCount_one": "{{count}} pista",
-      "mergeTracksCount_other": "{{count}} pistas"
+      "mergeTracksCount_other": "{{count}} pistas",
+      "providerStatus": {
+        "ok_one": "{{count}} resultado",
+        "ok_other": "{{count}} resultados",
+        "no_match": "sin resultados",
+        "failed": "solicitud fallida"
+      }
     },
     "search": {
       "placeholder": "Buscar…",

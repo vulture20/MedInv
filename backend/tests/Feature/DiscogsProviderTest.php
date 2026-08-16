@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -173,13 +174,13 @@ class DiscogsProviderTest extends TestCase
         $this->assertSame([], $candidates);
     }
 
-    public function test_no_candidates_when_the_search_request_fails(): void
+    /** GitHub issue #53: a failed request is reported as 'failed', not silently as 'no_match'. */
+    public function test_lookup_by_code_throws_when_the_search_request_fails(): void
     {
         Http::fake([self::SEARCH_API => Http::response(['message' => 'error'], 500)]);
 
-        $candidates = app(DiscogsProvider::class)->lookupByCode('724385522925');
-
-        $this->assertSame([], $candidates);
+        $this->expectException(MetadataProviderRequestException::class);
+        app(DiscogsProvider::class)->lookupByCode('724385522925');
     }
 
     /** The search hit's own data is still usable if the extra detail fetch fails — no cover/description, but not an empty result either. */

@@ -126,8 +126,8 @@ class MetadataController extends Controller
      * issue #56) — e.g. a provider failed on the original import, a new
      * plugin was enabled since, or the source data improved. Reuses
      * lookupMerged() (#48) keyed off the item's own stored EAN, so the
-     * frontend gets back the exact same {candidates, merged} shape
-     * BulkImportService::resolveOne() already produces and can drive it
+     * frontend gets back the exact same {candidates, merged, provider_statuses}
+     * shape BulkImportService::resolveOne() already produces (#53) and can drive it
      * through the same MetadataMergeReview component the initial capture
      * flow uses, per explicit user instruction that this should offer the
      * same per-field picking rather than a blind overwrite.
@@ -143,6 +143,8 @@ class MetadataController extends Controller
             'status' => empty($result['candidates']) ? 'no_match' : 'candidates',
             'candidates' => $result['candidates'],
             'merged' => $result['merged'],
+            // GitHub issue #53.
+            'provider_statuses' => $result['provider_statuses'],
         ]);
     }
 

@@ -119,6 +119,12 @@
     "mergeConfirm": "Diese Werte übernehmen",
     "mergeTracksCount_one": "{{count}} Titel",
     "mergeTracksCount_other": "{{count}} Titel",
+    "providerStatus": {
+      "ok_one": "{{count}} Treffer",
+      "ok_other": "{{count}} Treffer",
+      "no_match": "kein Treffer",
+      "failed": "Anfrage fehlgeschlagen"
+    },
     "cameraScan": "Mit Kamera scannen",
     "cameraClose": "Kamera schließen",
     "cameraHint": "Barcode vor die Kamera halten.",
