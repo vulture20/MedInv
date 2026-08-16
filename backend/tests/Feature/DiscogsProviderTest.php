@@ -186,6 +186,89 @@ class DiscogsProviderTest extends TestCase
         $this->assertSame('Untitled Release', $candidate->attributes['title']);
     }
 
+    /**
+     * Regression test for a real cover-import bug report (barcode
+     * 039841615609, "Igorrr - Amen"): the barcode matched two releases —
+     * an "Unofficial Release" first, with a completely empty `images`
+     * array on its full release record, and the official release second,
+     * with a real cover. lookupByCode() used to fetch only the first
+     * result's release unconditionally and so silently returned no cover
+     * at all, despite one being one search result away. See this
+     * provider's docblock and fetchReleaseWithCover().
+     */
+    public function test_lookup_by_code_skips_a_barcode_match_with_no_images_in_favor_of_one_that_has_them(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response([
+                'results' => [
+                    ['id' => 36046780, 'title' => 'Igorrr - Amen', 'format' => ['CD']],
+                    ['id' => 35122298, 'title' => 'Igorrr - Amen', 'format' => ['CD']],
+                ],
+            ], 200),
+            'https://api.discogs.com/releases/36046780' => Http::response([
+                'id' => 36046780,
+                'title' => 'Amen',
+                'artists_sort' => 'Igorrr',
+                'formats' => [['name' => 'CD', 'qty' => '1']],
+                'images' => [],
+            ], 200),
+            'https://api.discogs.com/releases/35122298' => Http::response([
+                'id' => 35122298,
+                'title' => 'Amen',
+                'artists_sort' => 'Igorrr',
+                'formats' => [['name' => 'CD', 'qty' => '1']],
+                'images' => [
+                    ['type' => 'primary', 'uri' => 'https://i.discogs.com/the-real-cover.jpeg'],
+                ],
+            ], 200),
+        ]);
+
+        $candidate = app(DiscogsProvider::class)->lookupByCode('039841615609')[0];
+
+        $this->assertSame(['https://i.discogs.com/the-real-cover.jpeg'], $candidate->coverUrls);
+    }
+
+    /** When none of the checked barcode matches have a cover, the first result's release still wins — same outcome as before fetchReleaseWithCover() existed. */
+    public function test_lookup_by_code_falls_back_to_the_first_match_when_none_of_the_checked_ones_have_a_cover(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response([
+                'results' => [
+                    ['id' => 1, 'title' => 'Artist - First Pressing', 'format' => ['CD']],
+                    ['id' => 2, 'title' => 'Artist - Second Pressing', 'format' => ['CD']],
+                ],
+            ], 200),
+            'https://api.discogs.com/releases/1' => Http::response([
+                'id' => 1, 'title' => 'First Pressing', 'artists_sort' => 'Artist', 'images' => [],
+            ], 200),
+            'https://api.discogs.com/releases/2' => Http::response([
+                'id' => 2, 'title' => 'Second Pressing', 'artists_sort' => 'Artist', 'images' => [],
+            ], 200),
+        ]);
+
+        $candidate = app(DiscogsProvider::class)->lookupByCode('039841615609')[0];
+
+        $this->assertSame('First Pressing', $candidate->attributes['title']);
+        $this->assertSame([], $candidate->coverUrls);
+    }
+
+    /** Bounds the number of extra /releases/{id} calls a single lookupByCode() can make — a widely-reissued barcode shouldn't burn through the unauthenticated rate limit on one capture. */
+    public function test_lookup_by_code_does_not_check_more_than_the_configured_maximum_of_barcode_matches(): void
+    {
+        $manyResults = collect(range(1, 8))->map(fn (int $id) => ['id' => $id, 'title' => "Artist - Pressing {$id}", 'format' => ['CD']])->all();
+        Http::fake([
+            self::SEARCH_API => Http::response(['results' => $manyResults], 200),
+            self::RELEASE_API => Http::response(['id' => 0, 'title' => 'Pressing', 'artists_sort' => 'Artist', 'images' => []], 200),
+        ]);
+
+        app(DiscogsProvider::class)->lookupByCode('039841615609');
+
+        $releaseRequestCount = collect(Http::recorded())
+            ->filter(fn ($pair) => str_contains($pair[0]->url(), '/releases/'))
+            ->count();
+        $this->assertSame(5, $releaseRequestCount);
+    }
+
     public function test_configured_api_key_is_sent_as_a_discogs_authorization_header(): void
     {
         MetadataPlugin::query()->create([

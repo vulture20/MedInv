@@ -47,6 +47,23 @@ use Illuminate\Support\Facades\Http;
  * CurlImageFetcher's docblock for the fix). A real cover-import bug
  * report turned out to be that, not a wrong URL from here.
  *
+ * A second, distinct cover-loss cause, also confirmed live (barcode
+ * 039841615609, "Igorrr - Amen"): a single barcode can match *multiple*
+ * releases — Discogs allows independent listings (regional/unofficial
+ * pressings, bootlegs, etc.) to carry the same barcode — and the search
+ * endpoint's own ranking is not "the one with a cover art first"; for
+ * this barcode the top hit was an "Unofficial Release" release with a
+ * completely empty `images` array on its full release record, while the
+ * very next result was the official release with a proper cover.
+ * lookupByCode() used to fetch only `results[0]`'s full release
+ * unconditionally, so it silently produced a cover-less candidate despite
+ * a perfectly good cover being one search result away.
+ * fetchReleaseWithCover() now checks a handful of the barcode's search
+ * results (not just the first) and returns the first one whose full
+ * release record actually has images, falling back to the very first
+ * result — same as the old unconditional behavior — only if none of the
+ * checked results have one.
+ *
  * `released` (the full release record's date field) is free-form and
  * inconsistently populated — confirmed live across real releases: a full
  * ISO date ("1997-07-01"), a bare year ("1974"), a year with an unknown
@@ -62,6 +79,17 @@ class DiscogsProvider implements MetadataProviderInterface
     private const BASE_URL = 'https://api.discogs.com';
 
     private const USER_AGENT = 'MedInv (https://github.com/vulture20/MedInv)';
+
+    /**
+     * How many of a barcode's search results fetchReleaseWithCover() will
+     * fetch the full release record for while looking for one with a
+     * cover — a barcode reused across many pressings could otherwise burn
+     * through a large chunk of Discogs' unauthenticated 25/min quota for a
+     * single capture. lookupByCode() is a single-item lookup (the user
+     * just scanned/typed one EAN), unlike search(), which deliberately
+     * stays single-call for the same quota reason across up to 10 results.
+     */
+    private const MAX_BARCODE_MATCHES_CHECKED = 5;
 
     public function key(): string
     {
@@ -93,17 +121,54 @@ class DiscogsProvider implements MetadataProviderInterface
             return [];
         }
 
-        $result = $response->json('results.0');
+        $results = $response->json('results', []);
+        $firstResult = $results[0] ?? null;
 
-        if (! $result) {
+        if (! $firstResult) {
             return [];
         }
 
-        $release = isset($result['id']) ? $this->fetchRelease($result['id']) : null;
+        $release = $this->fetchReleaseWithCover($results);
 
         return [$release !== null
             ? $this->mapReleaseToCandidate($release, $code)
-            : $this->mapSearchResultToCandidate($result, $code)];
+            : $this->mapSearchResultToCandidate($firstResult, $code)];
+    }
+
+    /**
+     * See this class's docblock for the "multiple releases share a
+     * barcode, only some have a cover" problem this solves. Checks up to
+     * MAX_BARCODE_MATCHES_CHECKED search results' full release records (in
+     * the order Discogs itself ranked them) and returns the first with a
+     * non-empty `images` array; if none of the checked results have one,
+     * falls back to the very first result's release — same outcome as
+     * before this method existed — or null if even that single fetch
+     * failed (lookupByCode() then falls back further, to the bare search
+     * result).
+     */
+    private function fetchReleaseWithCover(array $results): ?array
+    {
+        $fallback = null;
+
+        foreach (array_slice($results, 0, self::MAX_BARCODE_MATCHES_CHECKED) as $result) {
+            if (! isset($result['id'])) {
+                continue;
+            }
+
+            $release = $this->fetchRelease($result['id']);
+
+            if ($release === null) {
+                continue;
+            }
+
+            $fallback ??= $release;
+
+            if (! empty($release['images'])) {
+                return $release;
+            }
+        }
+
+        return $fallback;
     }
 
     public function search(string $query): array
