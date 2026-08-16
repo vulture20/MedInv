@@ -20,11 +20,29 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 # --- Stage 3: application image ---------------------------------------------
 FROM php:8.4-fpm-alpine AS app
 
+# GitHub issue #47: the GD extension (imagecreatefromstring() and friends,
+# CoverDownloadService::generateThumbnail()) used to be entirely missing
+# from this image — every single thumbnail-generation attempt, in every
+# Docker deployment, failed with "Call to undefined function ...
+# imagecreatefromstring()", silently caught and merely logged, with the app
+# falling back to serving the full-size cover instead. libjpeg-turbo-dev/
+# libpng-dev/freetype-dev/libwebp-dev are GD's build-time dependencies
+# (dev packages needed only while compiling the extension, hence still
+# covered by `apk del $PHPIZE_DEPS` below removing the whole build
+# toolchain afterwards); the shared libraries GD actually links against at
+# runtime come along as those packages' automatic non-dev dependencies and
+# stay installed. `php -m` after install is a build-time sanity check, not
+# a no-op — a future edit to this block that drops `gd` again fails the
+# image build immediately instead of shipping a silently broken image
+# again.
 RUN apk add --no-cache \
     nginx supervisor gettext sqlite-libs sqlite-dev libzip-dev icu-dev postgresql-dev \
+    libjpeg-turbo-dev libpng-dev freetype-dev libwebp-dev \
     $PHPIZE_DEPS \
-    && docker-php-ext-install pdo_sqlite pdo_mysql pdo_pgsql bcmath zip intl opcache \
-    && apk del $PHPIZE_DEPS
+    && docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp \
+    && docker-php-ext-install pdo_sqlite pdo_mysql pdo_pgsql bcmath zip intl opcache gd \
+    && apk del $PHPIZE_DEPS \
+    && php -m | grep -qx gd
 
 WORKDIR /var/www/backend
 

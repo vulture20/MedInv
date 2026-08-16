@@ -135,6 +135,19 @@ class CoverDownloadService
      * cover was already stored above, and MediaItemController::
      * coverThumbnail() falls back to serving the full image when no
      * thumbnail file exists.
+     *
+     * This tolerance is also what let a real, systemic bug (GitHub issue
+     * #47) go unnoticed for a while rather than surfacing as an obvious
+     * failure: the GD extension was missing from docker/Dockerfile
+     * entirely, so `imagecreatefromstring()` below threw "Call to
+     * undefined function" — an \Error, still a \Throwable — on every
+     * single thumbnail attempt in every Docker deployment, caught right
+     * here and merely logged at INFO. The app kept working (covers still
+     * displayed, just always full-size), which is exactly why nobody
+     * noticed thumbnails specifically had never once actually been
+     * generated. Fixed in the Dockerfile itself now, not here — this
+     * method's job is still to be tolerant of a genuinely bad/huge image,
+     * not to detect a missing extension.
      */
     private function generateThumbnail(string $body, array $imageInfo, string $thumbnailPath): void
     {
