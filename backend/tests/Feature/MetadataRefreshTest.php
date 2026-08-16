@@ -56,6 +56,16 @@ class MetadataRefreshTest extends TestCase
             'https://openlibrary.org/api/books*' => Http::response([
                 'ISBN:9780000000001' => ['title' => 'Dune (revised)', 'authors' => [['name' => 'Frank Herbert']]],
             ], 200),
+            // GitHub issue #71: OpenLibraryProvider::mapToCandidate() always
+            // fetches this second endpoint too (see its own docblock for
+            // why) — left unfaked, it fell through to a genuine outbound
+            // request that reliably failed once this sandbox lost
+            // reachability to openlibrary.org, surfacing here as a
+            // confusing 'no_match'/'failed' instead of the expected
+            // 'candidates', with no indication a stray real request was
+            // even involved. OpenLibraryProviderTest.php already faked this
+            // correctly; this file just never had to before.
+            'https://openlibrary.org/isbn/*.json' => Http::response([], 200),
         ]);
 
         $response = $this->getJson("/api/libraries/{$library->id}/items/{$item->id}/metadata/refresh");
