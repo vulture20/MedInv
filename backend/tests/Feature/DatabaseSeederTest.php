@@ -55,6 +55,33 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame(count(MetadataProviderRegistry::defaultProviders()), MetadataPlugin::query()->count());
     }
 
+    /**
+     * Regression test: a real install's metadata_plugins.name for the
+     * Amazon providers stayed "Amazon (Beta)" even after AmazonBookProvider
+     * etc.'s name() was fixed to drop that suffix, because syncToDatabase()
+     * used to be firstOrCreate()-only — it never touched a row that already
+     * existed from before the code change. Simulates exactly that: a stale
+     * row inserted with the pre-fix name, as if seeded by an older version
+     * of this app, then re-synced (docker/entrypoint.sh's db:seed --force
+     * runs on every boot) and asserted to have caught up with the current
+     * provider name.
+     */
+    public function test_seeding_corrects_a_stale_provider_name_from_before_a_code_change(): void
+    {
+        MetadataPlugin::query()->create([
+            'provider_key' => 'book.amazon',
+            'name' => 'Amazon (Beta)',
+            'media_type' => 'book',
+            'enabled' => false,
+        ]);
+
+        $this->seed();
+
+        $table = (new MetadataPlugin)->getTable();
+        $this->assertDatabaseHas($table, ['provider_key' => 'book.amazon', 'name' => 'Amazon']);
+        $this->assertDatabaseMissing($table, ['provider_key' => 'book.amazon', 'name' => 'Amazon (Beta)']);
+    }
+
     public function test_a_freshly_seeded_install_actually_has_an_enabled_dvd_bluray_provider(): void
     {
         $this->seed();

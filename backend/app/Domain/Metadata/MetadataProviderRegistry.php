@@ -58,6 +58,18 @@ class MetadataProviderRegistry
      * Ensures every default provider has a corresponding metadata_plugins
      * row — enabled by default, except DEFAULT_DISABLED_PROVIDER_KEYS
      * (GitHub issue #50), which an admin must explicitly opt into.
+     *
+     * `name`/`media_type` are kept in sync with the provider class on every
+     * call, not just at row-creation time: unlike `enabled`/`priority`/
+     * `config` (admin-controlled via PUT /admin/metadata/plugins/{id},
+     * PluginsPage.tsx never sends `name` or `media_type`), these two are
+     * entirely code-derived, so a provider's name() changing in code (e.g.
+     * the Amazon providers' "(Beta)" suffix removal — name() itself was
+     * already fixed, but `firstOrCreate()` alone never touches a row that
+     * already existed from before that fix, since `db:seed --force` runs
+     * on every container boot per docker/entrypoint.sh) should reach every
+     * existing install's stored row on its next boot too, not just a fresh
+     * one's.
      */
     public function syncToDatabase(): void
     {
@@ -65,7 +77,7 @@ class MetadataProviderRegistry
             /** @var MetadataProviderInterface $provider */
             $provider = app($class);
 
-            MetadataPlugin::query()->firstOrCreate(
+            $plugin = MetadataPlugin::query()->firstOrCreate(
                 ['provider_key' => $provider->key()],
                 [
                     'name' => $provider->name(),
@@ -73,6 +85,13 @@ class MetadataProviderRegistry
                     'enabled' => ! in_array($provider->key(), self::DEFAULT_DISABLED_PROVIDER_KEYS, true),
                 ],
             );
+
+            if ($plugin->name !== $provider->name() || $plugin->media_type !== $provider->mediaType()) {
+                $plugin->update([
+                    'name' => $provider->name(),
+                    'media_type' => $provider->mediaType(),
+                ]);
+            }
         }
     }
 
