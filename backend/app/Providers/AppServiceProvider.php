@@ -64,7 +64,12 @@ class AppServiceProvider extends ServiceProvider
      * provider too). Previously these calls were completely invisible in
      * the log, which is exactly what made GitHub issue #17 (a fresh install
      * silently returning "no_match" for every capture, root-caused to zero
-     * enabled providers) hard to diagnose from the log alone.
+     * enabled providers) hard to diagnose from the log alone. The one
+     * outgoing-HTTP path this deliberately does *not* cover is
+     * CoverDownloadService's cover-image downloads
+     * (App\Domain\Metadata\CurlImageFetcher) — that class bypasses the
+     * `Http` facade entirely (see its own docblock for why), so it logs
+     * itself, separately, in the same shape as here.
      *
      * Uses Guzzle's `on_stats` option (set for every request via
      * Http::globalOptions(), applied before any provider-specific
@@ -80,6 +85,15 @@ class AppServiceProvider extends ServiceProvider
      * and Laravel's Http\Client\Response::body() also reads via
      * __toString() — same safety net either read happens first.
      *
+     * The log message itself is "...request/response...", not just
+     * "...request..." (GitHub issue #46): a real report mistook the
+     * *name* alone for evidence that only the request half was logged and
+     * the response wasn't — it always was, embedded in this same single
+     * line's `status`/`duration_ms`/`response_body` fields (request and
+     * response are deliberately merged into one on_stats-driven line, not
+     * two separate ones the way a classic access log pairs them) — but the
+     * name itself invited exactly that misreading.
+     *
      * Deliberately Log::debug() with no extra gating, same reasoning as
      * LogFrontendAccess: AppServiceProvider::applyLogLevel() already applies
      * the admin-configured loglevel to the channel itself, so this is a
@@ -91,7 +105,7 @@ class AppServiceProvider extends ServiceProvider
             'on_stats' => function (TransferStats $stats) {
                 $response = $stats->getResponse();
 
-                Log::debug('Outgoing HTTP request (metadata provider)', [
+                Log::debug('Outgoing HTTP request/response (metadata provider)', [
                     'method' => $stats->getRequest()->getMethod(),
                     'url' => $this->redactSensitiveQueryParams((string) $stats->getEffectiveUri()),
                     'status' => $response?->getStatusCode(),

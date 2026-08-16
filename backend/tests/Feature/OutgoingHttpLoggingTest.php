@@ -17,6 +17,14 @@ use Tests\TestCase;
  * per application bootstrap (including in these tests), so Http::fake() +
  * a plain Http::get() call here exercises the exact same global on_stats
  * hook a real provider request would.
+ *
+ * The log message is "...request/response..." (GitHub issue #46) — a real
+ * report mistook the message *name* alone for evidence the response wasn't
+ * logged, when it always was, embedded in this same line's own
+ * status/duration_ms/response_body fields (see logOutgoingHttpRequests()'s
+ * docblock). The one outgoing-HTTP path this really didn't cover — cover
+ * image downloads, which bypass `Http` entirely — is covered separately by
+ * CurlImageFetcherTest.
  */
 class OutgoingHttpLoggingTest extends TestCase
 {
@@ -26,7 +34,7 @@ class OutgoingHttpLoggingTest extends TestCase
     {
         Http::fake(['https://example.com/api/lookup*' => Http::response(['title' => 'Dune'], 200)]);
 
-        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request (metadata provider)', Mockery::on(function (array $context) {
+        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request/response (metadata provider)', Mockery::on(function (array $context) {
             return $context['method'] === 'GET'
                 && $context['url'] === 'https://example.com/api/lookup'
                 && $context['status'] === 200
@@ -41,7 +49,7 @@ class OutgoingHttpLoggingTest extends TestCase
     {
         Http::fake(['https://example.com/api/lookup*' => Http::response(['error' => 'not found'], 404)]);
 
-        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request (metadata provider)', Mockery::on(function (array $context) {
+        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request/response (metadata provider)', Mockery::on(function (array $context) {
             return $context['status'] === 404;
         }));
 
@@ -53,7 +61,7 @@ class OutgoingHttpLoggingTest extends TestCase
     {
         Http::fake(['https://example.com/*' => Http::response([], 200)]);
 
-        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request (metadata provider)', Mockery::on(function (array $context) {
+        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request/response (metadata provider)', Mockery::on(function (array $context) {
             return $context['url'] === 'https://example.com/api/lookup?key=%5BREDACTED%5D&q=dune';
         }));
 
@@ -65,7 +73,7 @@ class OutgoingHttpLoggingTest extends TestCase
     {
         Http::fake(['https://example.com/*' => Http::response([], 200)]);
 
-        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request (metadata provider)', Mockery::on(function (array $context) use ($paramName) {
+        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request/response (metadata provider)', Mockery::on(function (array $context) use ($paramName) {
             return ! str_contains($context['url'], 'TOTALLY-SECRET-VALUE')
                 && str_contains($context['url'], "{$paramName}=%5BREDACTED%5D");
         }));
@@ -82,7 +90,7 @@ class OutgoingHttpLoggingTest extends TestCase
     {
         Http::fake(['https://example.com/api/lookup' => Http::response([], 200)]);
 
-        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request (metadata provider)', Mockery::on(function (array $context) {
+        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request/response (metadata provider)', Mockery::on(function (array $context) {
             return $context['url'] === 'https://example.com/api/lookup';
         }));
 
@@ -93,7 +101,7 @@ class OutgoingHttpLoggingTest extends TestCase
     {
         Http::fake(['https://example.com/*' => Http::response([], 200)]);
 
-        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request (metadata provider)', Mockery::on(function (array $context) {
+        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request/response (metadata provider)', Mockery::on(function (array $context) {
             return $context['url'] === 'https://example.com/api/lookup?q=dune';
         }));
 
@@ -106,7 +114,7 @@ class OutgoingHttpLoggingTest extends TestCase
         $largeBody = str_repeat('x', 5000);
         Http::fake(['https://example.com/*' => Http::response($largeBody, 200)]);
 
-        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request (metadata provider)', Mockery::on(function (array $context) {
+        Log::shouldReceive('debug')->once()->with('Outgoing HTTP request/response (metadata provider)', Mockery::on(function (array $context) {
             return strlen($context['response_body']) < 5000;
         }));
 

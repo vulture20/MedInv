@@ -32,6 +32,14 @@ use Illuminate\Support\Facades\Log;
  * directly — Http::fake() cannot intercept a raw curl_exec() call at all,
  * so there would otherwise be no way to unit-test CoverDownloadService's
  * download() without a real network call on every test run.
+ *
+ * GitHub issue #46: because this bypasses the `Http` facade, it also
+ * bypasses AppServiceProvider::logOutgoingHttpRequests()'s global Guzzle
+ * hook — cover downloads used to be the one outgoing-HTTP path in this app
+ * with no DEBUG visibility at all, success or failure. fetch() now logs
+ * every attempt itself, in the same shape (method/url/status/duration_ms)
+ * that hook already uses for every other outgoing call, so a cover
+ * download shows up in the log the same way a metadata lookup does.
  */
 class CurlImageFetcher
 {
@@ -48,10 +56,29 @@ class CurlImageFetcher
             CURLOPT_MAXREDIRS => 5,
         ]);
 
+        $startedAt = microtime(true);
         $body = curl_exec($ch);
+        $durationMs = (microtime(true) - $startedAt) * 1000;
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
         $error = curl_error($ch);
         curl_close($ch);
+
+        // Logged unconditionally, success or failure — mirrors
+        // logOutgoingHttpRequests()'s on_stats hook firing for every
+        // request regardless of outcome. Unlike that hook's
+        // `response_body` (truncated JSON/text a human can actually read),
+        // this logs the image's size/declared content type instead of its
+        // raw bytes — a cover's body isn't text, and dumping it into a log
+        // line would be both useless and needlessly large.
+        Log::debug('Outgoing HTTP request/response (cover download)', [
+            'method' => 'GET',
+            'url' => $url,
+            'status' => $body !== false ? $status : null,
+            'duration_ms' => round($durationMs),
+            'content_type' => $body !== false ? ($contentType ?: null) : null,
+            'bytes' => $body !== false ? strlen($body) : null,
+        ]);
 
         if ($body === false) {
             Log::info('Cover download failed.', ['url' => $url, 'error' => $error]);
