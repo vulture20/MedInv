@@ -203,26 +203,55 @@ class OidcAuthController extends Controller
         $emailVerified = $emailVerifiedClaim === null ? true : filter_var($emailVerifiedClaim, FILTER_VALIDATE_BOOLEAN);
 
         $user = User::query()->where('oidc_subject', $subject)->first();
+        $matchedBy = $user ? 'oidc_subject' : null;
 
         if (! $user && $email && $emailVerified) {
             $user = User::query()->where('email', $email)->first();
-            if ($user && ! $user->oidc_subject) {
-                $user->oidc_subject = $subject;
-                $user->save();
+            if ($user) {
+                $matchedBy = 'email';
+                if (! $user->oidc_subject) {
+                    $user->oidc_subject = $subject;
+                    $user->save();
+                }
             }
         }
 
         if ($user) {
             $this->syncFromClaims($user, $claims);
 
+            // The INFO-level "User logged in via OIDC" line in callback() is
+            // deliberately the only OIDC line at that level — enough for an
+            // ordinary audit trail ("who logged in, when"). Everything that
+            // explains *how* that resolution happened (which lookup matched,
+            // what the medinv_name/medinv_level custom claims actually
+            // contained) is only useful while diagnosing a misconfigured
+            // provider/claim mapping, so it belongs at DEBUG instead of
+            // adding noise to every ordinary login.
+            Log::debug('OIDC login: resolved to an existing account', [
+                'user_id' => $user->id,
+                'subject' => $subject,
+                'issuer' => $claims->iss ?? null,
+                'matched_by' => $matchedBy,
+                'name_claim' => $this->nameFromClaims($claims),
+                'level_claim' => $this->levelFromClaims($claims),
+            ]);
+
             return $user;
         }
 
         if (! SystemSetting::get('oidc.auto_provision', false) || ! $email || ! $emailVerified) {
+            Log::debug('OIDC login: no matching account and not auto-provisioning', [
+                'subject' => $subject,
+                'issuer' => $claims->iss ?? null,
+                'auto_provision' => SystemSetting::get('oidc.auto_provision', false),
+                'email' => $email,
+                'email_verified' => $emailVerified,
+            ]);
+
             return null;
         }
 
-        return User::query()->create([
+        $user = User::query()->create([
             'name' => $this->nameFromClaims($claims) ?? explode('@', $email)[0],
             'email' => $email,
             // Unguessable and never used — an OIDC-provisioned account has
@@ -241,6 +270,17 @@ class OidcAuthController extends Controller
             'is_active' => true,
             'oidc_subject' => $subject,
         ]);
+
+        Log::debug('OIDC login: auto-provisioned a new account', [
+            'user_id' => $user->id,
+            'subject' => $subject,
+            'issuer' => $claims->iss ?? null,
+            'level' => $user->level,
+            'name_claim' => $this->nameFromClaims($claims),
+            'level_claim' => $this->levelFromClaims($claims),
+        ]);
+
+        return $user;
     }
 
     /**
