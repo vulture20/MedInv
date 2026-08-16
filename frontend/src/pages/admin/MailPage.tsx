@@ -22,6 +22,13 @@ interface MailSettings {
  * it), so the password field here starts empty and is only included in the
  * save request when the admin actually types a new one — otherwise it's
  * left untouched server-side.
+ *
+ * Card layout matches SystemSettingsPage.tsx's/LanguagesPage.tsx's
+ * (.panel-page/.panel-card/.panel-select/.panel-confirmation, see
+ * index.css's shared docblock) — one card for the server config, one for
+ * the test-mail form. No .panel-page__header: see SystemSettingsPage.tsx's
+ * docblock for why; the config card's own <h2> reuses the admin.mail nav
+ * label as its heading instead.
  */
 export function MailPage() {
   const { t } = useTranslation()
@@ -107,80 +114,101 @@ export function MailPage() {
   if (!settings) return null
 
   return (
-    <section>
-      <h2>{t('admin.mail')}</h2>
-      <p>{settings.healthy ? t('admin.mailSettings.healthy') : t('admin.mailSettings.unhealthy')}</p>
-      <form onSubmit={save}>
-        <label>
-          {t('admin.mailSettings.host')}
-          <input value={settings.host} onChange={(e) => setSettings({ ...settings, host: e.target.value })} required />
-        </label>
-        <label>
-          {t('admin.mailSettings.port')}
-          <input
-            type="number"
-            value={settings.port}
-            onChange={(e) => setSettings({ ...settings, port: Number(e.target.value) })}
-            required
-          />
-        </label>
-        <label>
-          {t('admin.mailSettings.username')}
-          <input
-            value={settings.username ?? ''}
-            onChange={(e) => setSettings({ ...settings, username: e.target.value })}
-          />
-        </label>
-        <label>
-          {t('admin.mailSettings.password')}
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </label>
-        <p>{t('admin.mailSettings.passwordHint')}</p>
-        <label>
-          {t('admin.mailSettings.encryption')}
-          <select
-            value={settings.encryption}
-            onChange={(e) => setSettings({ ...settings, encryption: e.target.value as MailSettings['encryption'] })}
-          >
-            <option value="starttls">{t('admin.mailSettings.encryptionOptions.starttls')}</option>
-            <option value="ssl_tls">{t('admin.mailSettings.encryptionOptions.ssl_tls')}</option>
-            <option value="none">{t('admin.mailSettings.encryptionOptions.none')}</option>
-          </select>
-        </label>
-        <label>
-          {t('admin.mailSettings.fromAddress')}
-          <input
-            type="email"
-            value={settings.from_address}
-            onChange={(e) => setSettings({ ...settings, from_address: e.target.value })}
-            required
-          />
-        </label>
-        <label>
-          {t('admin.mailSettings.fromName')}
-          <input
-            value={settings.from_name}
-            onChange={(e) => setSettings({ ...settings, from_name: e.target.value })}
-            required
-          />
-        </label>
-        <button type="submit">{t('admin.actions.save')}</button>
-        {saved && <p role="status">{t('admin.mailSettings.saved')}</p>}
-        {error && <p role="alert">{error}</p>}
-      </form>
+    <div className="panel-page">
+      <section className="panel-card">
+        <h2>{t('admin.mail')}</h2>
+        {settings.healthy ? (
+          <p className="hint">{t('admin.mailSettings.healthy')}</p>
+        ) : (
+          <p className="warning warning--danger">{t('admin.mailSettings.unhealthy')}</p>
+        )}
+        <form onSubmit={save}>
+          <label>
+            {t('admin.mailSettings.host')}
+            <input className="panel-select" value={settings.host} onChange={(e) => setSettings({ ...settings, host: e.target.value })} required />
+          </label>
+          <label>
+            {t('admin.mailSettings.port')}
+            <input
+              className="panel-select"
+              type="number"
+              value={settings.port}
+              onChange={(e) => setSettings({ ...settings, port: Number(e.target.value) })}
+              required
+            />
+          </label>
+          <label>
+            {t('admin.mailSettings.username')}
+            <input
+              className="panel-select"
+              value={settings.username ?? ''}
+              onChange={(e) => setSettings({ ...settings, username: e.target.value })}
+            />
+          </label>
+          <label>
+            {t('admin.mailSettings.password')}
+            <input className="panel-select" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+          <p className="hint">{t('admin.mailSettings.passwordHint')}</p>
+          <label>
+            {t('admin.mailSettings.encryption')}
+            <select
+              className="panel-select"
+              value={settings.encryption}
+              onChange={(e) => setSettings({ ...settings, encryption: e.target.value as MailSettings['encryption'] })}
+            >
+              <option value="starttls">{t('admin.mailSettings.encryptionOptions.starttls')}</option>
+              <option value="ssl_tls">{t('admin.mailSettings.encryptionOptions.ssl_tls')}</option>
+              <option value="none">{t('admin.mailSettings.encryptionOptions.none')}</option>
+            </select>
+          </label>
+          <label>
+            {t('admin.mailSettings.fromAddress')}
+            <input
+              className="panel-select"
+              type="email"
+              value={settings.from_address}
+              onChange={(e) => setSettings({ ...settings, from_address: e.target.value })}
+              required
+            />
+          </label>
+          <label>
+            {t('admin.mailSettings.fromName')}
+            <input
+              className="panel-select"
+              value={settings.from_name}
+              onChange={(e) => setSettings({ ...settings, from_name: e.target.value })}
+              required
+            />
+          </label>
+          <button type="submit">{t('admin.actions.save')}</button>
+          {saved && (
+            <p role="status" className="panel-confirmation">
+              {t('admin.mailSettings.saved')}
+            </p>
+          )}
+          {error && <p role="alert">{error}</p>}
+        </form>
+      </section>
 
-      <h3>{t('admin.mailSettings.testMail')}</h3>
-      <form onSubmit={sendTestMail}>
-        <label>
-          {t('admin.mailSettings.testMailTo')}
-          <input type="email" value={testTo} onChange={(e) => setTestTo(e.target.value)} required />
-        </label>
-        <button type="submit" disabled={testSending}>
-          {t('admin.mailSettings.testMailSend')}
-        </button>
-        {testResult && <p role="status">{testResult}</p>}
-        {testError && <p role="alert">{testError}</p>}
-      </form>
-    </section>
+      <section className="panel-card">
+        <h2>{t('admin.mailSettings.testMail')}</h2>
+        <form onSubmit={sendTestMail}>
+          <label>
+            {t('admin.mailSettings.testMailTo')}
+            <input className="panel-select" type="email" value={testTo} onChange={(e) => setTestTo(e.target.value)} required />
+          </label>
+          <button type="submit" disabled={testSending}>
+            {t('admin.mailSettings.testMailSend')}
+          </button>
+          {testResult && (
+            <p role="status" className="panel-confirmation">
+              {testResult}
+            </p>
+          )}
+          {testError && <p role="alert">{testError}</p>}
+        </form>
+      </section>
+    </div>
   )
 }
