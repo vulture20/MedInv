@@ -12,6 +12,30 @@ interface ImportResult {
 }
 
 /**
+ * Extracts the filename from a Content-Disposition header value. A plain-
+ * ASCII filename (e.g. "medinv-export-all-....zip", GitHub issues #31/#43)
+ * comes back as a *bare, unquoted* `filename=...` — confirmed live against
+ * this app's own real response — so a regex that only matches the quoted
+ * `filename="..."` form (what this used to be) never matches at all for
+ * the overwhelmingly common ASCII case, silently falling through to the
+ * generic default every single time. A non-ASCII filename (e.g. a library
+ * named "Bücher") additionally gets an RFC 5987 `filename*=UTF-8''...`
+ * (percent-encoded, the real name) alongside an ASCII-transliterated
+ * `filename=` fallback ("Bucher") — the starred form must be preferred
+ * when present, or the download would silently lose the non-ASCII
+ * characters it was specifically added to preserve.
+ */
+function filenameFromContentDisposition(disposition: string | undefined): string | null {
+  if (!disposition) return null
+
+  const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition)
+  if (utf8Match) return decodeURIComponent(utf8Match[1])
+
+  const plainMatch = /filename="?([^";]+)"?/i.exec(disposition)
+  return plainMatch ? plainMatch[1] : null
+}
+
+/**
  * Instance-to-instance export/import of individual, several, or all
  * libraries (briefing 9.1). Admin-only (routes/api.php), since
  * ExportImportController::export() deliberately bypasses per-library share
@@ -66,13 +90,14 @@ export function ExportImportPage() {
         selected.size > 0 ? { library_ids: [...selected] } : {},
         { responseType: 'blob' },
       )
-      // Content-Disposition carries the server-computed, timezone-aware
-      // filename (ExportImportController::export(), GitHub issue #31) —
-      // config/cors.php explicitly exposes it for cross-origin dev, since a
-      // POST download can't rely on the browser handling it natively the
-      // way a plain <a href> GET (BackupsPage's download link) does.
+      // Content-Disposition carries the server-computed, timezone-aware,
+      // library-name-or-"all" filename (ExportImportController::export(),
+      // GitHub issues #31/#43) — config/cors.php explicitly exposes it for
+      // cross-origin dev, since a POST download can't rely on the browser
+      // handling it natively the way a plain <a href> GET (BackupsPage's
+      // download link) does.
       const disposition = response.headers['content-disposition'] as string | undefined
-      const filename = /filename="([^"]+)"/.exec(disposition ?? '')?.[1] ?? 'medinv-export.zip'
+      const filename = filenameFromContentDisposition(disposition) ?? 'medinv-export.zip'
       const url = URL.createObjectURL(response.data as Blob)
       const a = document.createElement('a')
       a.href = url

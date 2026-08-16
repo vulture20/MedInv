@@ -59,10 +59,52 @@ class ExportImportController extends Controller
         // SystemSetting::localNow(), not now() — GitHub issue #31: this filename
         // is what the admin actually sees in their downloads, so it should
         // reflect their configured display timezone, not always UTC.
-        $filename = 'medinv-export-'.SystemSetting::localNow()->format('Ymd-His').'.zip';
+        $filename = 'medinv-export-'.$this->filenameLabel($libraryIds, $export['libraries']).'-'.SystemSetting::localNow()->format('Ymd-His').'.zip';
 
         return Response::download($tmpZip, $filename, ['Content-Type' => 'application/zip'])
             ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * The library-identifying segment of the export filename (GitHub issue
+     * #43): the literal word "all" for an "alle" export — $libraryIds ===
+     * null, briefing 9.1's "keine Auswahl" meaning (deliberately not
+     * translated, unlike ordinary user-facing text, per explicit product
+     * decision: generating it server-side already avoids a client-side
+     * filename-construction security concern, and a second, request-derived
+     * locale lookup for a single word wasn't judged worth it) — or the
+     * exported library name(s) otherwise, several joined with underscores.
+     * Checked against $libraryIds, not merely whether $libraries came back
+     * empty: those are different things — a specific (but invalid/matching
+     * nothing) selection must not be mislabeled "all".
+     */
+    private function filenameLabel(?array $libraryIds, array $libraries): string
+    {
+        if ($libraryIds === null) {
+            return 'all';
+        }
+
+        if (empty($libraries)) {
+            return 'export';
+        }
+
+        return collect($libraries)->pluck('name')->map($this->sanitizeForFilename(...))->implode('_');
+    }
+
+    /**
+     * Strips everything that isn't filesystem-safe across every OS this
+     * could be downloaded to, collapsing runs of it into a single "-" (e.g.
+     * "Sample Library – CDs" -> "Sample-Library-CDs"). Keeps any Unicode
+     * letter/number (`\p{L}`/`\p{N}`, not just ASCII `A-Za-z0-9`) — library
+     * names are free text in whatever script an admin chose (this app is
+     * translated into a dozen languages, briefing 10./11.4), and letters
+     * like "ü" or "Ω" or non-Latin scripts are just as filesystem-safe as
+     * ASCII ones; only punctuation/symbols (the actually unsafe part, e.g.
+     * `/`, `:`, `*`) needs stripping.
+     */
+    private function sanitizeForFilename(string $name): string
+    {
+        return trim(preg_replace('/[^\p{L}\p{N}]+/u', '-', $name) ?? '', '-') ?: 'library';
     }
 
     /**
