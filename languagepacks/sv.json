@@ -161,6 +161,7 @@
       "title": "Statistik",
       "itemCount": "Antal poster",
       "totalValue": "Totalt värde",
+      "currencyMismatchWarning": "Innehåller poster i en annan valuta än den konfigurerade standarden — denna summa kanske inte är meningsfull.",
       "dimension": {
         "genre": "Genre",
         "language": "Språk",
@@ -384,6 +385,12 @@
         "hint": "Används för filnamn på säkerhetskopior och exporter, så att de matchar din lokala klocka i stället för att alltid visa UTC.",
         "timezone": "Tidszon",
         "saved": "Tidszon sparad."
+      },
+      "statisticsSettings": {
+        "title": "Statistik",
+        "hint": "Valutan du förväntar dig att priserna är i. Lämna tomt för att inaktivera detta — inget pris konverteras någonsin, detta markerar bara ett bibliotek vars poster har en annan valuta, bredvid dess totala värde på statistiksidan.",
+        "defaultCurrency": "Standardvaluta",
+        "saved": "Standardvaluta sparad."
       },
       "logLevel": {
         "title": "Loggnivå",

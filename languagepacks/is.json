@@ -161,6 +161,7 @@
       "title": "Tölfræði",
       "itemCount": "Fjöldi færslna",
       "totalValue": "Heildarverðmæti",
+      "currencyMismatchWarning": "Inniheldur færslur í öðrum gjaldmiðli en þeim sjálfgefna sem stilltur er — þessi heildartala er ef til vill ekki marktæk.",
       "dimension": {
         "genre": "Tegund",
         "language": "Tungumál",
@@ -384,6 +385,12 @@
         "hint": "Notað fyrir skráarnöfn öryggisafrita og útflutnings, svo þau samræmist staðartíma þínum í stað þess að sýna alltaf UTC.",
         "timezone": "Tímabelti",
         "saved": "Tímabelti vistað."
+      },
+      "statisticsSettings": {
+        "title": "Tölfræði",
+        "hint": "Gjaldmiðillinn sem þú gerir ráð fyrir að verð séu í. Skildu eftir autt til að slökkva á þessu — ekkert verð er nokkurn tímann umbreytt, þetta merkir aðeins safn þar sem færslur hafa annan gjaldmiðil, við hlið heildarverðmætis þess á tölfræðisíðunni.",
+        "defaultCurrency": "Sjálfgefinn gjaldmiðill",
+        "saved": "Sjálfgefinn gjaldmiðill vistaður."
       },
       "logLevel": {
         "title": "Skráningarstig",

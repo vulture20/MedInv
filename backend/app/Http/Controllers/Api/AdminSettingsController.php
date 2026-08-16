@@ -55,6 +55,9 @@ class AdminSettingsController extends Controller
                 'default_language' => SystemSetting::get('locale.default_language', 'en'),
             ],
             'timezone' => SystemSetting::get('timezone', SystemSetting::defaultTimezone()),
+            'statistics' => [
+                'default_currency' => SystemSetting::get('statistics.default_currency'),
+            ],
             'oidc' => [
                 'enabled' => SystemSetting::get('oidc.enabled', false),
                 'issuer' => SystemSetting::get('oidc.issuer'),
@@ -248,6 +251,29 @@ class AdminSettingsController extends Controller
         $this->logSettingsChange($request, 'locale', $data);
 
         return response()->json(['default_language' => $data['default_language']]);
+    }
+
+    /**
+     * GitHub issue #62 (a scoped-down alternative to a real per-currency
+     * total, see StatisticsService::overviewFor()'s docblock): an ISO 4217
+     * code (e.g. "USD"/"EUR") an admin declares as this instance's
+     * expected currency, purely so a price/currency (#58) that disagrees
+     * with it can be flagged — same "not validated against an actual
+     * currency list" stance MediaItemController::rulesFor()'s own
+     * `currency` rule already takes. `null` (the default, nothing saved
+     * yet) deliberately means "not configured" rather than falling back to
+     * some hardcoded currency — there's no universally sensible default,
+     * and no mismatch should ever be flagged before an admin has actually
+     * opted into this.
+     */
+    public function updateStatistics(Request $request)
+    {
+        $data = $request->validate(['default_currency' => ['nullable', 'string', 'max:3']]);
+
+        SystemSetting::set('statistics.default_currency', $data['default_currency']);
+        $this->logSettingsChange($request, 'statistics', $data);
+
+        return response()->json(['default_currency' => $data['default_currency']]);
     }
 
     /**

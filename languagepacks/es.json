@@ -161,6 +161,7 @@
       "title": "Estadísticas",
       "itemCount": "Número de elementos",
       "totalValue": "Valor total",
+      "currencyMismatchWarning": "Contiene elementos en una divisa distinta a la predeterminada configurada — este total puede no ser significativo.",
       "dimension": {
         "genre": "Género",
         "language": "Idioma",
@@ -365,6 +366,12 @@
         "hint": "Se usa para los nombres de archivo de copias de seguridad y exportaciones, de modo que coincidan con tu hora local en lugar de mostrar siempre UTC.",
         "timezone": "Zona horaria",
         "saved": "Zona horaria guardada."
+      },
+      "statisticsSettings": {
+        "title": "Estadísticas",
+        "hint": "La divisa en la que se espera que estén los precios. Déjalo en blanco para desactivar esto — ningún precio se convierte nunca, esto solo marca una biblioteca cuyos elementos tienen una divisa distinta, junto a su valor total en la página de Estadísticas.",
+        "defaultCurrency": "Divisa predeterminada",
+        "saved": "Divisa predeterminada guardada."
       },
       "logLevel": {
         "title": "Nivel de registro",

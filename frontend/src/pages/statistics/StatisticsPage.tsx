@@ -8,6 +8,8 @@ interface LibraryStats {
   media_type: string
   item_count: number
   total_value: number
+  /** GitHub issue #62: true when this library has an item whose `currency` (#58) disagrees with the admin-configured default (SystemSettingsPage.tsx) — total_value itself is still a plain currency-less sum either way, see StatisticsService::overviewFor()'s docblock. */
+  currency_mismatch: boolean
   /** Which keys are present depends on media_type — only book libraries have `genre`, for instance (briefing 6./14.). */
   distributions: Record<string, Record<string, number>>
 }
@@ -219,6 +221,7 @@ export function StatisticsPage() {
             <p>
               {t('statistics.itemCount')}: {s.item_count} — {t('statistics.totalValue')}: {s.total_value}
             </p>
+            {s.currency_mismatch && <p className="warning warning--danger">{t('statistics.currencyMismatchWarning')}</p>}
             {libraryHistory && (
               <ValueHistoryChart title={t('statistics.valueHistory.title')} points={libraryHistory.series} cutoverDate={history?.cutover_date ?? null} />
             )}

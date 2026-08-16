@@ -161,6 +161,7 @@
       "title": "Statystyki",
       "itemCount": "Liczba pozycji",
       "totalValue": "Wartość całkowita",
+      "currencyMismatchWarning": "Zawiera pozycje w innej walucie niż skonfigurowana domyślna — ta suma może nie być miarodajna.",
       "dimension": {
         "genre": "Gatunek",
         "language": "Język",
@@ -365,6 +366,12 @@
         "hint": "Używana w nazwach plików kopii zapasowych i eksportu, aby odpowiadały Twojemu czasowi lokalnemu zamiast zawsze pokazywać UTC.",
         "timezone": "Strefa czasowa",
         "saved": "Strefa czasowa zapisana."
+      },
+      "statisticsSettings": {
+        "title": "Statystyki",
+        "hint": "Waluta, w której powinny być podawane ceny. Pozostaw puste, aby to wyłączyć — żadna cena nigdy nie jest przeliczana, to jedynie oznacza bibliotekę, której pozycje mają inną walutę, obok jej wartości całkowitej na stronie Statystyki.",
+        "defaultCurrency": "Domyślna waluta",
+        "saved": "Domyślna waluta zapisana."
       },
       "logLevel": {
         "title": "Poziom logowania",

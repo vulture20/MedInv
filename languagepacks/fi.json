@@ -161,6 +161,7 @@
       "title": "Tilastot",
       "itemCount": "Kohteiden määrä",
       "totalValue": "Kokonaisarvo",
+      "currencyMismatchWarning": "Sisältää kohteita, joiden valuutta poikkeaa asetetusta oletuksesta — tämä summa ei välttämättä ole merkityksellinen.",
       "dimension": {
         "genre": "Genre",
         "language": "Kieli",
@@ -384,6 +385,12 @@
         "hint": "Käytetään varmuuskopioiden ja vientien tiedostonimissä, jotta ne vastaavat paikallista kelloasi eivätkä aina näytä UTC-aikaa.",
         "timezone": "Aikavyöhyke",
         "saved": "Aikavyöhyke tallennettu."
+      },
+      "statisticsSettings": {
+        "title": "Tilastot",
+        "hint": "Valuutta, jossa hintojen odotetaan olevan. Jätä tyhjäksi poistaaksesi tämän käytöstä — mitään hintaa ei koskaan muunneta, tämä vain merkitsee kirjaston, jonka kohteilla on eri valuutta, sen kokonaisarvon vieressä Tilastot-sivulla.",
+        "defaultCurrency": "Oletusvaluutta",
+        "saved": "Oletusvaluutta tallennettu."
       },
       "logLevel": {
         "title": "Lokitaso",

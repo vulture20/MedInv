@@ -200,6 +200,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         Route::put('/settings/loglevel', [AdminSettingsController::class, 'updateLoglevel']);
         Route::put('/settings/locale', [AdminSettingsController::class, 'updateLocale']);
         Route::put('/settings/timezone', [AdminSettingsController::class, 'updateTimezone']);
+        Route::put('/settings/statistics', [AdminSettingsController::class, 'updateStatistics']);
         Route::put('/settings/oidc', [AdminSettingsController::class, 'updateOidc']);
 
         // Actual "only admins may add a language pack" enforcement (briefing

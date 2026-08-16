@@ -161,6 +161,7 @@
       "title": "Statistieken",
       "itemCount": "Aantal items",
       "totalValue": "Totale waarde",
+      "currencyMismatchWarning": "Bevat items in een andere valuta dan de ingestelde standaardvaluta — dit totaal is mogelijk niet betekenisvol.",
       "dimension": {
         "genre": "Genre",
         "language": "Taal",
@@ -365,6 +366,12 @@
         "hint": "Wordt gebruikt voor bestandsnamen van back-ups en exports, zodat deze overeenkomen met uw lokale tijd in plaats van altijd UTC te tonen.",
         "timezone": "Tijdzone",
         "saved": "Tijdzone opgeslagen."
+      },
+      "statisticsSettings": {
+        "title": "Statistieken",
+        "hint": "De valuta waarin u verwacht dat prijzen zijn. Laat leeg om dit uit te schakelen — er wordt nooit een prijs omgerekend, dit markeert alleen een bibliotheek waarvan items een afwijkende valuta hebben, naast de totale waarde op de statistiekenpagina.",
+        "defaultCurrency": "Standaardvaluta",
+        "saved": "Standaardvaluta opgeslagen."
       },
       "logLevel": {
         "title": "Logniveau",

@@ -158,6 +158,7 @@
     "title": "Statistics",
     "itemCount": "Item count",
     "totalValue": "Total value",
+    "currencyMismatchWarning": "Contains items in a currency other than the configured default — this total may not be meaningful.",
     "dimension": {
       "genre": "Genre",
       "language": "Language",
@@ -381,6 +382,12 @@
       "hint": "Used for backup and export filenames, so they match your local clock instead of always showing UTC.",
       "timezone": "Timezone",
       "saved": "Timezone saved."
+    },
+    "statisticsSettings": {
+      "title": "Statistics",
+      "hint": "The currency you expect prices to be in. Leave blank to disable this — no item's price is ever converted, this only flags a library whose items' currency doesn't match, next to its total value on the Statistics page.",
+      "defaultCurrency": "Default currency",
+      "saved": "Default currency saved."
     },
     "logLevel": {
       "title": "Log level",

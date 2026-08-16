@@ -158,6 +158,7 @@
     "title": "Statistiken",
     "itemCount": "Bestand",
     "totalValue": "Gesamtwert",
+    "currencyMismatchWarning": "Enthält Einträge in einer anderen Währung als der eingestellten Standardwährung — dieser Gesamtwert ist möglicherweise nicht aussagekräftig.",
     "dimension": {
       "genre": "Genre",
       "language": "Sprache",
@@ -381,6 +382,12 @@
       "hint": "Wird für Backup- und Export-Dateinamen verwendet, damit diese Ihrer Ortszeit entsprechen statt immer UTC anzuzeigen.",
       "timezone": "Zeitzone",
       "saved": "Zeitzone gespeichert."
+    },
+    "statisticsSettings": {
+      "title": "Statistik",
+      "hint": "Die Währung, in der Preise erwartet werden. Leer lassen, um dies zu deaktivieren — kein Preis wird umgerechnet, es wird lediglich eine Bibliothek markiert, deren Einträge davon abweichende Währungen haben, neben ihrem Gesamtwert auf der Statistik-Seite.",
+      "defaultCurrency": "Standardwährung",
+      "saved": "Standardwährung gespeichert."
     },
     "logLevel": {
       "title": "Log-Level",

@@ -161,6 +161,7 @@
       "title": "统计",
       "itemCount": "项目数量",
       "totalValue": "总价值",
+      "currencyMismatchWarning": "包含与所设默认货币不同的条目——此总计可能没有意义。",
       "dimension": {
         "genre": "类型",
         "language": "语言",
@@ -365,6 +366,12 @@
         "hint": "用于备份和导出文件名，使其与您的本地时间一致，而不是始终显示 UTC。",
         "timezone": "时区",
         "saved": "时区已保存。"
+      },
+      "statisticsSettings": {
+        "title": "统计",
+        "hint": "您预期价格所使用的货币。留空可禁用此功能——任何价格都不会被转换，这只会在统计页面的总价值旁标记出条目货币不一致的媒体库。",
+        "defaultCurrency": "默认货币",
+        "saved": "默认货币已保存。"
       },
       "logLevel": {
         "title": "日志级别",

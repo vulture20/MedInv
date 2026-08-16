@@ -63,6 +63,14 @@ export function SystemSettingsPage() {
   const [timezone, setTimezone] = useState<string | null>(null)
   const [timezoneSaved, setTimezoneSaved] = useState(false)
   const [timezoneError, setTimezoneError] = useState<string | null>(null)
+  // GitHub issue #62 (alternative 3). `undefined` is "not loaded yet" (the
+  // section below stays hidden, same as every other setting here); once
+  // loaded, `null` is the legitimate "not configured" value — the two
+  // must stay distinguishable, unlike e.g. `timezone` above, which always
+  // has *some* value (a real default) by the time load() resolves.
+  const [defaultCurrency, setDefaultCurrency] = useState<string | null | undefined>(undefined)
+  const [defaultCurrencySaved, setDefaultCurrencySaved] = useState(false)
+  const [defaultCurrencyError, setDefaultCurrencyError] = useState<string | null>(null)
   // Same reasoning as SettingsPage.tsx's runtimePacks: main.tsx's
   // loadRuntimeLanguagePacks() may still be in flight when this page
   // mounts, hence the snapshot-plus-subscription pair rather than a single read.
@@ -75,12 +83,14 @@ export function SystemSettingsPage() {
       locale: { default_language: DefaultLanguage }
       covers: CoverCleanupSettings
       timezone: string
+      statistics: { default_currency: string | null }
     }>('/admin/settings')
     setSecurity(data.security)
     setLoglevel(data.loglevel)
     setDefaultLanguage(data.locale.default_language)
     setCoverCleanup(data.covers)
     setTimezone(data.timezone)
+    setDefaultCurrency(data.statistics.default_currency)
   }
 
   useEffect(() => {
@@ -144,6 +154,22 @@ export function SystemSettingsPage() {
       setTimezoneSaved(true)
     } catch (err) {
       setTimezoneError(describeError(err, t))
+    }
+  }
+
+  /** GitHub issue #62 (alternative 3) — see StatisticsPage.tsx's currency_mismatch badge for what this setting actually drives. */
+  async function saveDefaultCurrency(e: React.FormEvent) {
+    e.preventDefault()
+    setDefaultCurrencyError(null)
+    setDefaultCurrencySaved(false)
+    try {
+      const { data } = await apiClient.put<{ default_currency: string | null }>('/admin/settings/statistics', {
+        default_currency: defaultCurrency?.trim() || null,
+      })
+      setDefaultCurrency(data.default_currency)
+      setDefaultCurrencySaved(true)
+    } catch (err) {
+      setDefaultCurrencyError(describeError(err, t))
     }
   }
 
@@ -274,6 +300,27 @@ export function SystemSettingsPage() {
             <button type="submit">{t('admin.actions.save')}</button>
             {timezoneSaved && <p role="status">{t('admin.timezoneSettings.saved')}</p>}
             {timezoneError && <p role="alert">{timezoneError}</p>}
+          </form>
+        </section>
+      )}
+
+      {defaultCurrency !== undefined && (
+        <section>
+          <h2>{t('admin.statisticsSettings.title')}</h2>
+          <p className="hint">{t('admin.statisticsSettings.hint')}</p>
+          <form onSubmit={saveDefaultCurrency}>
+            <label>
+              {t('admin.statisticsSettings.defaultCurrency')}
+              <input
+                value={defaultCurrency ?? ''}
+                onChange={(e) => setDefaultCurrency(e.target.value)}
+                placeholder="EUR"
+                maxLength={3}
+              />
+            </label>
+            <button type="submit">{t('admin.actions.save')}</button>
+            {defaultCurrencySaved && <p role="status">{t('admin.statisticsSettings.saved')}</p>}
+            {defaultCurrencyError && <p role="alert">{defaultCurrencyError}</p>}
           </form>
         </section>
       )}

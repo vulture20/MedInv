@@ -161,6 +161,7 @@
       "title": "Estatísticas",
       "itemCount": "Número de itens",
       "totalValue": "Valor total",
+      "currencyMismatchWarning": "Contém itens em uma moeda diferente da padrão configurada — este total pode não ser significativo.",
       "dimension": {
         "genre": "Gênero",
         "language": "Idioma",
@@ -365,6 +366,12 @@
         "hint": "Usado para os nomes de arquivos de backup e exportação, para que correspondam ao seu horário local em vez de sempre mostrar UTC.",
         "timezone": "Fuso horário",
         "saved": "Fuso horário salvo."
+      },
+      "statisticsSettings": {
+        "title": "Estatísticas",
+        "hint": "A moeda em que se espera que os preços estejam. Deixe em branco para desativar isso — nenhum preço é convertido, isso apenas sinaliza uma biblioteca cujos itens têm uma moeda diferente, ao lado do seu valor total na página de Estatísticas.",
+        "defaultCurrency": "Moeda padrão",
+        "saved": "Moeda padrão salva."
       },
       "logLevel": {
         "title": "Nível de log",

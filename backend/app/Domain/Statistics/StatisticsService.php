@@ -5,6 +5,7 @@ namespace App\Domain\Statistics;
 use App\Domain\Libraries\LibraryAccessService;
 use App\Models\Library;
 use App\Models\LibraryValueSnapshot;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -28,6 +29,18 @@ class StatisticsService
             'mediaBooks', 'mediaCds', 'mediaDvdBlurays',
         ])->get();
 
+        // GitHub issue #62: `total_value` still sums `price` as a bare
+        // number regardless of `currency` (#58) — a real gap this doesn't
+        // actually close (a library with genuinely mixed currencies still
+        // gets a meaningless sum), only makes visible: `currency_mismatch`
+        // flags a library as having at least one item whose currency
+        // disagrees with the admin-configured default
+        // (AdminSettingsController::updateStatistics()), so a total that
+        // might be wrong is at least distinguishable from one that
+        // definitely isn't. Never true when no default is configured at
+        // all — there's nothing to compare against yet.
+        $defaultCurrency = SystemSetting::get('statistics.default_currency');
+
         return $libraries->map(fn (Library $library) => [
             'library_id' => $library->id,
             'library_name' => $library->name,
@@ -38,6 +51,8 @@ class StatisticsService
                 'dvd_bluray' => $library->media_dvd_blurays_count,
             },
             'total_value' => $library->mediaItems()->sum('price'),
+            'currency_mismatch' => $defaultCurrency !== null
+                && $library->mediaItems()->whereNotNull('currency')->where('currency', '!=', $defaultCurrency)->exists(),
             'distributions' => $this->distributionsFor($library),
         ])->all();
     }

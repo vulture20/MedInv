@@ -161,6 +161,7 @@
       "title": "Statistikk",
       "itemCount": "Antall oppføringer",
       "totalValue": "Total verdi",
+      "currencyMismatchWarning": "Inneholder oppføringer i en annen valuta enn den konfigurerte standarden — denne totalen er kanskje ikke meningsfull.",
       "dimension": {
         "genre": "Sjanger",
         "language": "Språk",
@@ -384,6 +385,12 @@
         "hint": "Brukes for filnavn på sikkerhetskopier og eksporter, slik at de samsvarer med din lokale klokke i stedet for alltid å vise UTC.",
         "timezone": "Tidssone",
         "saved": "Tidssone lagret."
+      },
+      "statisticsSettings": {
+        "title": "Statistikk",
+        "hint": "Valutaen du forventer at prisene er i. La stå tomt for å deaktivere dette — ingen pris blir noensinne konvertert, dette markerer bare et bibliotek hvis oppføringer har en annen valuta, ved siden av totalverdien på statistikksiden.",
+        "defaultCurrency": "Standardvaluta",
+        "saved": "Standardvaluta lagret."
       },
       "logLevel": {
         "title": "Loggnivå",

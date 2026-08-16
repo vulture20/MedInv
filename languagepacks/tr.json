@@ -161,6 +161,7 @@
       "title": "İstatistikler",
       "itemCount": "Öğe sayısı",
       "totalValue": "Toplam değer",
+      "currencyMismatchWarning": "Yapılandırılan varsayılandan farklı bir para biriminde öğeler içeriyor — bu toplam anlamlı olmayabilir.",
       "dimension": {
         "genre": "Tür",
         "language": "Dil",
@@ -365,6 +366,12 @@
         "hint": "Her zaman UTC göstermek yerine yerel saatinizle eşleşmesi için yedekleme ve dışa aktarma dosya adlarında kullanılır.",
         "timezone": "Saat dilimi",
         "saved": "Saat dilimi kaydedildi."
+      },
+      "statisticsSettings": {
+        "title": "İstatistikler",
+        "hint": "Fiyatların hangi para biriminde olmasını beklediğiniz. Bunu devre dışı bırakmak için boş bırakın — hiçbir fiyat asla dönüştürülmez, bu yalnızca öğeleri farklı para birimine sahip bir kitaplığı, İstatistikler sayfasındaki toplam değerinin yanında işaretler.",
+        "defaultCurrency": "Varsayılan para birimi",
+        "saved": "Varsayılan para birimi kaydedildi."
       },
       "logLevel": {
         "title": "Günlük seviyesi",
