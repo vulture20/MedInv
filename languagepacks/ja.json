@@ -99,8 +99,11 @@
         "cast": "出演者",
         "director": "監督",
         "production_year": "制作年",
-        "runtime_minutes": "上映時間（分）"
-      }
+        "runtime_minutes": "上映時間（分）",
+        "runtime_seconds": "再生時間（秒）"
+      },
+      "tracklist": "トラックリスト",
+      "computedHint": "（計算値）"
     },
     "capture": {
       "title": "登録",
@@ -118,7 +121,9 @@
       "cameraAccessError": "カメラにアクセスできませんでした。アクセスを許可するか、EAN/ISBNを手動で入力してください。",
       "mergeCover": "カバー",
       "mergeNoCover": "カバーなし",
-      "mergeConfirm": "この値を使用"
+      "mergeConfirm": "この値を使用",
+      "mergeTracksCount_one": "{{count}}曲",
+      "mergeTracksCount_other": "{{count}}曲"
     },
     "search": {
       "placeholder": "検索…",

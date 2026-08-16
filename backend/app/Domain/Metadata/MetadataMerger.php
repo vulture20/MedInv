@@ -83,11 +83,18 @@ final class MetadataMerger
             if (is_string($value)) {
                 $value = trim($value);
             }
-            if ($value === '') {
+            if ($value === '' || $value === []) {
                 continue;
             }
 
-            $normalized = trim((string) $value);
+            // A structured value (e.g. a CD's `tracks` array, GitHub issue
+            // #48) can't be cast to string directly — PHP would emit an
+            // "Array to string conversion" warning and collapse every
+            // distinct track list to the same literal "Array", wrongly
+            // treating any two different candidates' track lists as
+            // identical. JSON-encode it for comparison purposes only; the
+            // group's actual `value` stays the real array below.
+            $normalized = is_array($value) ? json_encode($value) : trim((string) $value);
             $groups[$normalized] ??= ['value' => $value, 'provider_keys' => []];
             $groups[$normalized]['provider_keys'][] = $candidate->providerKey;
         }

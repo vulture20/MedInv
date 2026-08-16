@@ -257,6 +257,16 @@ class MediaItemController extends Controller
                 'medium' => ['nullable', 'string'],
                 'asin' => ['nullable', 'string'],
                 'disc_count' => ['nullable', 'integer', 'min:1'],
+                // No nested 'tracks.*.title' etc. rules — a bare 'array' rule
+                // already passes the whole submitted array through unchanged
+                // (see MetadataController::import()'s docblock for why adding
+                // nested rules under the same top-level key is a trap
+                // elsewhere in this file — not applicable here since there's
+                // no sibling data under 'tracks' itself to accidentally drop,
+                // but simplest to just not need to reason about it at all).
+                'tracks' => ['nullable', 'array'],
+                'runtime_seconds' => ['nullable', 'integer', 'min:0'],
+                'runtime_computed' => ['nullable', 'boolean'],
                 'release_date' => ['nullable', 'date'],
                 'price' => ['nullable', 'numeric'],
             ],

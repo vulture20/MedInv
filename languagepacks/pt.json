@@ -99,8 +99,11 @@
         "cast": "Elenco",
         "director": "Diretor",
         "production_year": "Ano de produção",
-        "runtime_minutes": "Duração (minutos)"
-      }
+        "runtime_minutes": "Duração (minutos)",
+        "runtime_seconds": "Duração (segundos)"
+      },
+      "tracklist": "Lista de faixas",
+      "computedHint": "(calculado)"
     },
     "capture": {
       "title": "Captura",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Não foi possível acessar a câmera. Conceda a permissão ou insira um EAN/ISBN manualmente.",
       "mergeCover": "Capa",
       "mergeNoCover": "Sem capa",
-      "mergeConfirm": "Usar estes valores"
+      "mergeConfirm": "Usar estes valores",
+      "mergeTracksCount_one": "{{count}} faixa",
+      "mergeTracksCount_other": "{{count}} faixas"
     },
     "search": {
       "placeholder": "Pesquisar…",

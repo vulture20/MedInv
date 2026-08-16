@@ -393,6 +393,25 @@ td {
   display: contents;
 }
 
+/* CD track listing (GitHub issue #48). */
+.media-item-dialog__tracklist {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.media-item-dialog__tracklist li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.15rem 0;
+}
+
+.media-item-dialog__track-duration {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .media-item-dialog label {
   display: flex;
   flex-direction: column;

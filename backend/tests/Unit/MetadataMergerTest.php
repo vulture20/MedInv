@@ -61,6 +61,47 @@ class MetadataMergerTest extends TestCase
         ], $field['options']);
     }
 
+    /** GitHub issue #48: a structured (array) attribute value, e.g. a CD's `tracks` list, must not crash or collapse every distinct list into one "Array" bucket. */
+    public function test_array_valued_fields_that_agree_are_merged_automatically(): void
+    {
+        $tracks = [['position' => 1, 'title' => 'Airbag', 'duration_seconds' => 284]];
+
+        $result = (new MetadataMerger)->merge([
+            $this->candidate('a', ['tracks' => $tracks]),
+            $this->candidate('b', ['tracks' => $tracks]),
+        ]);
+
+        $this->assertTrue($result['fields']['tracks']['agreed']);
+        $this->assertSame($tracks, $result['fields']['tracks']['value']);
+    }
+
+    public function test_array_valued_fields_that_differ_are_offered_as_separate_options(): void
+    {
+        $musicBrainzTracks = [['position' => 1, 'title' => 'Airbag', 'duration_seconds' => 284]];
+        $discogsTracks = [['position' => 1, 'title' => 'Airbag (Remaster)', 'duration_seconds' => 290]];
+
+        $result = (new MetadataMerger)->merge([
+            $this->candidate('musicbrainz', ['tracks' => $musicBrainzTracks]),
+            $this->candidate('discogs', ['tracks' => $discogsTracks]),
+        ]);
+
+        $field = $result['fields']['tracks'];
+        $this->assertFalse($field['agreed']);
+        $this->assertSame([
+            ['value' => $musicBrainzTracks, 'provider_keys' => ['musicbrainz']],
+            ['value' => $discogsTracks, 'provider_keys' => ['discogs']],
+        ], $field['options']);
+    }
+
+    public function test_an_empty_tracks_array_is_treated_as_no_value_same_as_null(): void
+    {
+        $result = (new MetadataMerger)->merge([
+            $this->candidate('a', ['tracks' => []]),
+        ]);
+
+        $this->assertArrayNotHasKey('tracks', $result['fields']);
+    }
+
     public function test_a_field_no_provider_reported_a_usable_value_for_is_omitted_entirely(): void
     {
         $result = (new MetadataMerger)->merge([

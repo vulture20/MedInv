@@ -205,11 +205,56 @@ class DiscogsProvider implements MetadataProviderInterface
                 'description' => $release['notes'] ?? null,
                 'medium' => $format['name'] ?? null,
                 'disc_count' => isset($format['qty']) ? (int) $format['qty'] : null,
+                // No 'runtime_seconds'/'runtime_computed' here on purpose —
+                // Discogs' release record has no field of its own for total
+                // runtime, only per-track durations, so a runtime can only
+                // ever be *derived* from whichever `tracks` value ends up
+                // actually chosen (see MediaItemService::create()). Setting
+                // it here too, as its own independently mergeable/pickable
+                // attribute, would risk a user ending up with one
+                // provider's tracks paired with a *different* provider's
+                // runtime number if they picked them independently in the
+                // merge review UI (GitHub issue #48) — deriving it once,
+                // centrally, from the final chosen `tracks` sidesteps that
+                // entirely.
+                'tracks' => $this->mapTracklist($release['tracklist'] ?? []),
                 'release_date' => $this->normalizeReleaseDate($release['released'] ?? null),
                 'ean' => $code,
             ],
             coverUrls: collect($release['images'] ?? [])->pluck('uri')->filter()->values()->all(),
         );
+    }
+
+    /**
+     * `tracklist` entries can also be section headings/indexes (`type_`
+     * other than `"track"`, e.g. multi-disc sets label each disc as its own
+     * heading entry) — confirmed live against a real multi-disc release —
+     * those aren't real tracks and are filtered out rather than showing up
+     * as a bogus track with no duration.
+     *
+     * @return array<int, array{position: string|null, title: string|null, duration_seconds: int|null}>
+     */
+    private function mapTracklist(array $tracklist): array
+    {
+        return collect($tracklist)
+            ->filter(fn (array $entry) => ($entry['type_'] ?? 'track') === 'track')
+            ->map(fn (array $entry) => [
+                'position' => $entry['position'] ?? null,
+                'title' => $entry['title'] ?? null,
+                'duration_seconds' => $this->parseTrackDuration($entry['duration'] ?? null),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /** Discogs formats a track's duration as free-form "M:SS" text (confirmed live) — blank/missing for a good number of real tracks, never assumed present. */
+    private function parseTrackDuration(?string $duration): ?int
+    {
+        if (! $duration || ! preg_match('/^(\d+):(\d{2})$/', trim($duration), $matches)) {
+            return null;
+        }
+
+        return ((int) $matches[1]) * 60 + (int) $matches[2];
     }
 
     /**

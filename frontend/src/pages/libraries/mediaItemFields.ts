@@ -1,5 +1,12 @@
 export type MediaType = 'book' | 'cd' | 'dvd_bluray'
 
+/** One row of a CD's track listing (GitHub issue #48) — matches the shape App\Domain\Metadata\TrackListRuntimeCalculator/the `tracks` JSON column expect. */
+export interface Track {
+  position: string | number | null
+  title: string | null
+  duration_seconds: number | null
+}
+
 export interface LibraryRef {
   id: number
   name: string
@@ -29,6 +36,16 @@ export interface MediaItem {
   artist?: string | null
   asin?: string | null
   disc_count?: number | null
+  /**
+   * GitHub issue #48 — a deliberate extension beyond briefing 6.2's fixed
+   * CD attribute set, not part of the generic FIELD_SPECS-driven edit form
+   * (a track list isn't a single scalar value a plain text/number input
+   * can represent) — MediaItemDetailDialog renders it separately, read-only.
+   */
+  tracks?: Track[] | null
+  runtime_seconds?: number | null
+  /** Whether `runtime_seconds` was summed from `tracks` rather than reported directly by a provider (GitHub issue #48) — shown as a "(computed)" hint next to the field. */
+  runtime_computed?: boolean
   // dvd_bluray
   medium?: string | null
   runtime_minutes?: number | null
@@ -74,6 +91,7 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'medium', type: 'text' },
     { key: 'asin', type: 'text' },
     { key: 'disc_count', type: 'number' },
+    { key: 'runtime_seconds', type: 'number' },
     { key: 'release_date', type: 'date' },
     { key: 'price', type: 'number' },
     { key: 'description', type: 'textarea' },
@@ -96,6 +114,16 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
 /** Backend serializes `date`-cast columns as full ISO datetimes (e.g. "2021-05-04T00:00:00.000000Z") — trim to the plain date both an <input type="date"> and the read view want. */
 export function dateOnly(value: unknown): string {
   return typeof value === 'string' ? value.slice(0, 10) : ''
+}
+
+/** Formats a duration in seconds as "M:SS" (or "H:MM:SS" past an hour) — used for a CD's `runtime_seconds` and each track's `duration_seconds` (GitHub issue #48). Raw seconds (e.g. "2652") isn't something a person reads at a glance the way "44:12" is. */
+export function formatDuration(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  const paddedSeconds = String(seconds).padStart(2, '0')
+
+  return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${paddedSeconds}` : `${minutes}:${paddedSeconds}`
 }
 
 export function valuesFromItem(item: MediaItem, specs: FieldSpec[]): Record<string, string> {

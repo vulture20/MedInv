@@ -19,9 +19,24 @@ use Illuminate\Support\Facades\Http;
  * returned zero candidates for every CD lookup, indefinitely, with nothing
  * in the log to suggest why — MusicBrainz itself was never actually
  * queried.
+ *
+ * Track listings (GitHub issue #48) are *not* part of a plain search
+ * response — confirmed live: even with `inc=recordings` on the search
+ * endpoint, `releases[].media` only ever carries a bare `track-count`, not
+ * the actual titles/durations. Those only come back from a *direct* lookup
+ * of one specific release by its MBID with `inc=recordings` (`media[].
+ * tracks[].title`/`.length` in milliseconds) — the same two-call shape
+ * DiscogsProvider already uses for its own cover/tracklist data. That
+ * second call is deliberately capped to MAX_RELEASES_WITH_TRACKS_FETCHED
+ * releases per lookupByCode() call: MusicBrainz's unauthenticated rate
+ * limit is a strict 1 request/second (far tighter than Discogs' 25/min),
+ * and a popular barcode's search can return upwards of ten releases.
  */
 class MusicBrainzProvider implements MetadataProviderInterface
 {
+    /** See this class's docblock for why this is capped at all. */
+    private const MAX_RELEASES_WITH_TRACKS_FETCHED = 3;
+
     public function key(): string
     {
         return 'cd.musicbrainz';
@@ -53,7 +68,13 @@ class MusicBrainzProvider implements MetadataProviderInterface
         }
 
         return collect($response->json('releases', []))
-            ->map(fn (array $release) => $this->mapToCandidate($release, $code))
+            ->map(function (array $release, int $index) use ($code) {
+                $tracks = $index < self::MAX_RELEASES_WITH_TRACKS_FETCHED && isset($release['id'])
+                    ? $this->fetchTracks($release['id'])
+                    : null;
+
+                return $this->mapToCandidate($release, $code, $tracks);
+            })
             ->all();
     }
 
@@ -67,11 +88,12 @@ class MusicBrainzProvider implements MetadataProviderInterface
         }
 
         return collect($response->json('releases', []))
-            ->map(fn (array $release) => $this->mapToCandidate($release, null))
+            ->map(fn (array $release) => $this->mapToCandidate($release, null, null))
             ->all();
     }
 
-    private function mapToCandidate(array $release, ?string $ean): MetadataCandidate
+    /** @param  array<int, array{position: string|null, title: string|null, duration_seconds: int|null}>|null  $tracks  Null when not fetched at all (see MAX_RELEASES_WITH_TRACKS_FETCHED) — distinct from an empty array (fetched, but the release genuinely has none/unusable data). */
+    private function mapToCandidate(array $release, ?string $ean, ?array $tracks): MetadataCandidate
     {
         return new MetadataCandidate(
             providerKey: $this->key(),
@@ -81,7 +103,42 @@ class MusicBrainzProvider implements MetadataProviderInterface
                 'artist' => collect($release['artist-credit'] ?? [])->pluck('name')->implode(', '),
                 'release_date' => $release['date'] ?? null,
                 'ean' => $ean ?? $release['barcode'] ?? null,
+                // No 'runtime_seconds'/'runtime_computed' here on purpose —
+                // see DiscogsProvider::mapReleaseToCandidate()'s matching
+                // comment: a runtime can only be *derived* from whichever
+                // `tracks` value is ultimately chosen, never set
+                // independently of it.
+                'tracks' => $tracks,
             ],
         );
+    }
+
+    /**
+     * Direct lookup of one release by MBID with `inc=recordings` — the only
+     * MusicBrainz call that actually returns track titles/durations, see
+     * this class's docblock. Best-effort: a failure here must not fail the
+     * whole candidate, the same trade-off DiscogsProvider's own extra
+     * detail fetch makes.
+     *
+     * @return array<int, array{position: string|null, title: string|null, duration_seconds: int|null}>
+     */
+    private function fetchTracks(string $releaseId): array
+    {
+        $response = Http::withHeaders(['User-Agent' => 'MedInv/1.0'])
+            ->get("https://musicbrainz.org/ws/2/release/{$releaseId}", ['fmt' => 'json', 'inc' => 'recordings']);
+
+        if ($response->failed()) {
+            return [];
+        }
+
+        return collect($response->json('media', []))
+            ->flatMap(fn (array $medium) => $medium['tracks'] ?? [])
+            ->map(fn (array $track) => [
+                'position' => isset($track['number']) ? (string) $track['number'] : null,
+                'title' => $track['title'] ?? null,
+                'duration_seconds' => isset($track['length']) ? intdiv((int) $track['length'], 1000) : null,
+            ])
+            ->values()
+            ->all();
     }
 }

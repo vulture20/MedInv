@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
-import { FIELD_SPECS, dateOnly, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem } from './mediaItemFields'
+import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem } from './mediaItemFields'
 
 export type { MediaItem } from './mediaItemFields'
 
@@ -211,10 +211,43 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                 .map((field) => (
                   <div key={field.key} className="media-item-dialog__row">
                     <dt>{t(`mediaItem.fields.${field.key}`)}</dt>
-                    <dd>{field.type === 'date' ? dateOnly(item[field.key]) || '—' : String(item[field.key] ?? '') || '—'}</dd>
+                    <dd>
+                      {field.key === 'runtime_seconds' ? (
+                        typeof item.runtime_seconds === 'number' ? (
+                          <>
+                            {formatDuration(item.runtime_seconds)}
+                            {/* GitHub issue #48: flags a runtime summed from the track list rather than reported directly by a metadata source. */}
+                            {item.runtime_computed && <span className="hint"> {t('mediaItem.computedHint')}</span>}
+                          </>
+                        ) : (
+                          '—'
+                        )
+                      ) : field.type === 'date' ? (
+                        dateOnly(item[field.key]) || '—'
+                      ) : (
+                        String(item[field.key] ?? '') || '—'
+                      )}
+                    </dd>
                   </div>
                 ))}
             </dl>
+          )}
+
+          {/* GitHub issue #48: a CD's track listing, read-only — not part of the FIELD_SPECS-driven edit form above, since it isn't a single scalar value a plain input can represent. */}
+          {!editing && library.media_type === 'cd' && item.tracks && item.tracks.length > 0 && (
+            <>
+              <h4>{t('mediaItem.tracklist')}</h4>
+              <ol className="media-item-dialog__tracklist">
+                {item.tracks.map((track, index) => (
+                  <li key={track.position ?? index}>
+                    <span className="media-item-dialog__track-title">{track.title || '—'}</span>
+                    {typeof track.duration_seconds === 'number' && (
+                      <span className="media-item-dialog__track-duration">{formatDuration(track.duration_seconds)}</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </>
           )}
 
           {!editing && (

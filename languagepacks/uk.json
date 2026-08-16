@@ -99,8 +99,11 @@
         "cast": "У ролях",
         "director": "Режисер",
         "production_year": "Рік випуску",
-        "runtime_minutes": "Тривалість (хвилини)"
-      }
+        "runtime_minutes": "Тривалість (хвилини)",
+        "runtime_seconds": "Тривалість (секунди)"
+      },
+      "tracklist": "Список треків",
+      "computedHint": "(обчислено)"
     },
     "capture": {
       "title": "Реєстрація",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Не вдалося отримати доступ до камери. Надайте дозвіл або введіть EAN/ISBN вручну.",
       "mergeCover": "Обкладинка",
       "mergeNoCover": "Без обкладинки",
-      "mergeConfirm": "Використати ці значення"
+      "mergeConfirm": "Використати ці значення",
+      "mergeTracksCount_one": "{{count}} трек",
+      "mergeTracksCount_other": "{{count}} треків"
     },
     "search": {
       "placeholder": "Пошук…",

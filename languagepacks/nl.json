@@ -99,8 +99,11 @@
         "cast": "Cast",
         "director": "Regisseur",
         "production_year": "Productiejaar",
-        "runtime_minutes": "Speelduur (minuten)"
-      }
+        "runtime_minutes": "Speelduur (minuten)",
+        "runtime_seconds": "Speelduur (seconden)"
+      },
+      "tracklist": "Tracklist",
+      "computedHint": "(berekend)"
     },
     "capture": {
       "title": "Registratie",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Geen toegang tot de camera. Verleen toestemming of voer handmatig een EAN/ISBN in.",
       "mergeCover": "Cover",
       "mergeNoCover": "Geen cover",
-      "mergeConfirm": "Deze waarden gebruiken"
+      "mergeConfirm": "Deze waarden gebruiken",
+      "mergeTracksCount_one": "{{count}} track",
+      "mergeTracksCount_other": "{{count}} tracks"
     },
     "search": {
       "placeholder": "Zoeken…",

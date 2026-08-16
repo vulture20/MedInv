@@ -83,6 +83,52 @@ class DiscogsProviderTest extends TestCase
         ], $candidate->coverUrls);
     }
 
+    /**
+     * GitHub issue #48. `runtime_seconds`/`runtime_computed` are
+     * deliberately *not* set here — see this provider's docblock: a
+     * runtime is only ever derived centrally (MediaItemService::create())
+     * from whichever `tracks` value is finally chosen, not reported
+     * independently by a provider.
+     */
+    public function test_lookup_by_code_maps_the_tracklist(): void
+    {
+        $release = $this->releaseResponse();
+        $release['tracklist'] = [
+            ['position' => '1', 'type_' => 'track', 'title' => 'Airbag', 'duration' => '4:44'],
+            // A multi-disc/section heading — not a real track, must be filtered out.
+            ['position' => '', 'type_' => 'heading', 'title' => 'Disc 2'],
+            ['position' => '2', 'type_' => 'track', 'title' => 'Paranoid Android', 'duration' => '6:23'],
+            // A real track with no known duration — kept, but with a null duration.
+            ['position' => '3', 'type_' => 'track', 'title' => 'Subterranean Homesick Alien', 'duration' => ''],
+        ];
+        Http::fake([
+            self::RELEASE_API => Http::response($release, 200),
+            self::SEARCH_API => Http::response($this->searchResponse(), 200),
+        ]);
+
+        $candidate = app(DiscogsProvider::class)->lookupByCode('724385522925')[0];
+
+        $this->assertSame([
+            ['position' => '1', 'title' => 'Airbag', 'duration_seconds' => 284],
+            ['position' => '2', 'title' => 'Paranoid Android', 'duration_seconds' => 383],
+            ['position' => '3', 'title' => 'Subterranean Homesick Alien', 'duration_seconds' => null],
+        ], $candidate->attributes['tracks']);
+        $this->assertArrayNotHasKey('runtime_seconds', $candidate->attributes);
+        $this->assertArrayNotHasKey('runtime_computed', $candidate->attributes);
+    }
+
+    public function test_lookup_by_code_returns_an_empty_tracks_array_when_the_release_has_no_tracklist(): void
+    {
+        Http::fake([
+            self::RELEASE_API => Http::response($this->releaseResponse(), 200),
+            self::SEARCH_API => Http::response($this->searchResponse(), 200),
+        ]);
+
+        $candidate = app(DiscogsProvider::class)->lookupByCode('724385522925')[0];
+
+        $this->assertSame([], $candidate->attributes['tracks']);
+    }
+
     /** @return array<string, array{0: ?string, 1: ?string}> [released, expected release_date] */
     public static function releasedDateCases(): array
     {

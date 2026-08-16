@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FIELD_SPECS, type MediaType } from '../libraries/mediaItemFields'
+import { FIELD_SPECS, formatDuration, type MediaType, type Track } from '../libraries/mediaItemFields'
 
 interface MergedFieldOption {
   value: string | number
@@ -11,6 +11,18 @@ export interface MergedField {
   value: string | number | null
   agreed: boolean
   options: MergedFieldOption[]
+}
+
+/** A CD's `tracks` field (GitHub issue #48) is shaped like MergedField, but each option's `value` is a whole track list rather than a scalar — kept as its own type instead of widening MergedField's `value`/`options[].value`, which would force every ordinary scalar field to deal with an array case it can never actually have. */
+export interface MergedTracksFieldOption {
+  value: Track[]
+  provider_keys: string[]
+}
+
+export interface MergedTracksField {
+  value: Track[] | null
+  agreed: boolean
+  options: MergedTracksFieldOption[]
 }
 
 export interface MergedCover {
@@ -40,6 +52,13 @@ function formatProviderKey(key: string): string {
     .join(' ')
 }
 
+/** Total duration of a track list, formatted, only when every track's duration is known — mirrors the backend's TrackListRuntimeCalculator (a confidently-wrong partial sum is worse than no total at all), used here purely to help the user tell two same-length-looking track list options apart at a glance. */
+function totalTracksDuration(tracks: Track[]): string | null {
+  if (tracks.some((t) => typeof t.duration_seconds !== 'number')) return null
+  const total = tracks.reduce((sum, t) => sum + (t.duration_seconds ?? 0), 0)
+  return formatDuration(total)
+}
+
 /**
  * Field-by-field review of a merged metadata lookup (see MetadataMerger's
  * docblock — this refines briefing 8.3 steps 3-5 per explicit user
@@ -50,10 +69,24 @@ function formatProviderKey(key: string): string {
  * the assembled result to the same POST .../metadata/import call the
  * previous whole-candidate picker already used, so nothing downstream of
  * this component changes.
+ *
+ * A CD's `tracks` (GitHub issue #48) gets its own picker below the
+ * ordinary fields rather than going through the generic FIELD_SPECS loop:
+ * it isn't a single scalar value a plain text/number input represents (see
+ * mediaItemFields.ts), and — critically — `runtime_seconds` is never
+ * chosen independently of it (MediaItemService::create() derives the
+ * runtime from whichever `tracks` ends up submitted here), so `tracks`
+ * itself is the only thing this component needs to let the user pick.
  */
 export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onReject }: Props) {
   const { t } = useTranslation()
   const specs = FIELD_SPECS[mediaType]
+  // `merged.fields.tracks` (GitHub issue #48) has a genuinely different
+  // option-value shape (a whole track list, not a scalar) than every other
+  // entry in `fields` — this cast is the one place that difference is
+  // acknowledged; the generic per-field loop below never touches 'tracks'
+  // at all (it isn't in FIELD_SPECS), so it never needs to know about it.
+  const tracksField = merged.fields.tracks as unknown as MergedTracksField | undefined
 
   // Undecided fields default to their first (provider-ranked) option, so
   // clicking "confirm" without touching anything still produces a complete,
@@ -70,6 +103,9 @@ export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onRejec
     return initial
   })
   const [selectedCoverUrl, setSelectedCoverUrl] = useState<string | null>(merged.covers[0]?.url ?? null)
+  const [selectedTracks, setSelectedTracks] = useState<Track[] | null>(
+    tracksField && !tracksField.agreed && tracksField.options.length > 0 ? tracksField.options[0].value : null
+  )
 
   function confirm() {
     const attributes: Record<string, unknown> = { ean }
@@ -77,6 +113,9 @@ export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onRejec
       const field = merged.fields[spec.key]
       if (!field) continue
       attributes[spec.key] = field.agreed ? field.value : (selectedValues[spec.key] ?? null)
+    }
+    if (tracksField) {
+      attributes.tracks = tracksField.agreed ? tracksField.value : selectedTracks
     }
     onConfirm(attributes, selectedCoverUrl)
   }
@@ -113,6 +152,38 @@ export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onRejec
           </div>
         )
       })}
+
+      {tracksField && (
+        <div className="metadata-merge__field">
+          <span className="metadata-merge__field-label">{t('mediaItem.tracklist')}</span>
+          {tracksField.agreed ? (
+            <span className="metadata-merge__agreed-value">
+              {t('capture.mergeTracksCount', { count: tracksField.value?.length ?? 0 })}
+            </span>
+          ) : (
+            <div className="metadata-merge__options" role="radiogroup" aria-label={t('mediaItem.tracklist')}>
+              {tracksField.options.map((option, index) => {
+                const duration = totalTracksDuration(option.value)
+                return (
+                  <label key={index} className="metadata-merge__option">
+                    <input
+                      type="radio"
+                      name={`${ean}-tracks`}
+                      checked={selectedTracks === option.value}
+                      onChange={() => setSelectedTracks(option.value)}
+                    />
+                    <span>
+                      {t('capture.mergeTracksCount', { count: option.value.length })}
+                      {duration ? ` (${duration})` : ''}
+                    </span>
+                    <span className="metadata-merge__option-source">{option.provider_keys.map(formatProviderKey).join(', ')}</span>
+                  </label>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {merged.covers.length > 0 && (
         <div className="metadata-merge__field">

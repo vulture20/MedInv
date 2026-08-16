@@ -99,8 +99,11 @@
         "cast": "Oyuncular",
         "director": "Yönetmen",
         "production_year": "Yapım yılı",
-        "runtime_minutes": "Süre (dakika)"
-      }
+        "runtime_minutes": "Süre (dakika)",
+        "runtime_seconds": "Süre (saniye)"
+      },
+      "tracklist": "Parça listesi",
+      "computedHint": "(hesaplandı)"
     },
     "capture": {
       "title": "Kayıt",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Kameraya erişilemedi. İzin verin veya EAN/ISBN'i elle girin.",
       "mergeCover": "Kapak",
       "mergeNoCover": "Kapak yok",
-      "mergeConfirm": "Bu değerleri kullan"
+      "mergeConfirm": "Bu değerleri kullan",
+      "mergeTracksCount_one": "{{count}} parça",
+      "mergeTracksCount_other": "{{count}} parça"
     },
     "search": {
       "placeholder": "Ara…",

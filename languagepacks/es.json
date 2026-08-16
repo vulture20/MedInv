@@ -99,8 +99,11 @@
         "cast": "Reparto",
         "director": "Director",
         "production_year": "Año de producción",
-        "runtime_minutes": "Duración (minutos)"
-      }
+        "runtime_minutes": "Duración (minutos)",
+        "runtime_seconds": "Duración (segundos)"
+      },
+      "tracklist": "Lista de pistas",
+      "computedHint": "(calculado)"
     },
     "capture": {
       "title": "Captura",
@@ -118,7 +121,9 @@
       "cameraAccessError": "No se pudo acceder a la cámara. Concede el permiso o introduce un EAN/ISBN manualmente.",
       "mergeCover": "Portada",
       "mergeNoCover": "Sin portada",
-      "mergeConfirm": "Usar estos valores"
+      "mergeConfirm": "Usar estos valores",
+      "mergeTracksCount_one": "{{count}} pista",
+      "mergeTracksCount_other": "{{count}} pistas"
     },
     "search": {
       "placeholder": "Buscar…",

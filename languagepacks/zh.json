@@ -99,8 +99,11 @@
         "cast": "演员表",
         "director": "导演",
         "production_year": "制作年份",
-        "runtime_minutes": "时长（分钟）"
-      }
+        "runtime_minutes": "时长（分钟）",
+        "runtime_seconds": "时长（秒）"
+      },
+      "tracklist": "曲目列表",
+      "computedHint": "（已计算）"
     },
     "capture": {
       "title": "采集",
@@ -118,7 +121,9 @@
       "cameraAccessError": "无法访问摄像头。请授予权限，或手动输入 EAN/ISBN。",
       "mergeCover": "封面",
       "mergeNoCover": "无封面",
-      "mergeConfirm": "使用这些值"
+      "mergeConfirm": "使用这些值",
+      "mergeTracksCount_one": "{{count}} 首",
+      "mergeTracksCount_other": "{{count}} 首"
     },
     "search": {
       "placeholder": "搜索…",

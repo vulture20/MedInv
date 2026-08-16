@@ -99,8 +99,11 @@
         "cast": "Obsada",
         "director": "Reżyser",
         "production_year": "Rok produkcji",
-        "runtime_minutes": "Czas trwania (minuty)"
-      }
+        "runtime_minutes": "Czas trwania (minuty)",
+        "runtime_seconds": "Czas trwania (sekundy)"
+      },
+      "tracklist": "Lista utworów",
+      "computedHint": "(obliczone)"
     },
     "capture": {
       "title": "Rejestracja",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Nie można uzyskać dostępu do aparatu. Przyznaj uprawnienia lub wprowadź EAN/ISBN ręcznie.",
       "mergeCover": "Okładka",
       "mergeNoCover": "Brak okładki",
-      "mergeConfirm": "Użyj tych wartości"
+      "mergeConfirm": "Użyj tych wartości",
+      "mergeTracksCount_one": "{{count}} utwór",
+      "mergeTracksCount_other": "{{count}} utworów"
     },
     "search": {
       "placeholder": "Szukaj…",

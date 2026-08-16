@@ -2,6 +2,7 @@
 
 namespace App\Domain\Libraries;
 
+use App\Domain\Metadata\TrackListRuntimeCalculator;
 use App\Models\Library;
 use App\Models\MediaBook;
 use App\Models\MediaCd;
@@ -20,12 +21,57 @@ class MediaItemService
     public function create(Library $library, array $attributes): Model
     {
         $modelClass = $this->modelClassFor($library->media_type);
+        $attributes = $this->withDerivedRuntime($attributes);
 
         if ($modelClass::query()->where('library_id', $library->id)->where('ean', $attributes['ean'])->exists()) {
             throw new DuplicateEanException($attributes['ean']);
         }
 
         return $modelClass::query()->create([...$attributes, 'library_id' => $library->id]);
+    }
+
+    /**
+     * Derives a CD's `runtime_seconds`/`runtime_computed` from its `tracks`
+     * (GitHub issue #48) — the single, central point every creation path
+     * (manual entry, bulk capture, metadata import, backup/export restore)
+     * funnels through, so this needs no per-caller wiring. A no-op for
+     * book/dvd_bluray items and for any CD whose `attributes` doesn't
+     * contain a `tracks` key at all — driven entirely by the shape of
+     * `$attributes` itself, not a `$library->media_type === 'cd'` check,
+     * the same "resolve via data, not an ad hoc type branch" spirit
+     * CLAUDE.md documents for modelClassFor() callers elsewhere.
+     *
+     * Deliberately never overwrites an already-present, non-null
+     * `runtime_seconds` — a provider that reports a genuine direct total
+     * runtime of its own (none of the two CD providers implemented so far
+     * do; see DiscogsProvider/MusicBrainzProvider's matching comments)
+     * should have that value win over a derived one. And deriving it here,
+     * once, from whichever `tracks` value is *actually* in `$attributes* by
+     * the time this runs — after any merge-review picking already
+     * happened client-side — is what guarantees the two numbers can never
+     * end up mismatched (e.g. one provider's tracks paired with a
+     * different provider's runtime), rather than each being independently
+     * merge-picked upstream.
+     */
+    private function withDerivedRuntime(array $attributes): array
+    {
+        $tracks = $attributes['tracks'] ?? null;
+
+        if (! is_array($tracks) || $tracks === []) {
+            return $attributes;
+        }
+
+        if (array_key_exists('runtime_seconds', $attributes) && $attributes['runtime_seconds'] !== null) {
+            return $attributes;
+        }
+
+        $runtimeSeconds = TrackListRuntimeCalculator::totalSeconds($tracks);
+
+        if ($runtimeSeconds === null) {
+            return $attributes;
+        }
+
+        return [...$attributes, 'runtime_seconds' => $runtimeSeconds, 'runtime_computed' => true];
     }
 
     /** @return class-string<Model> */

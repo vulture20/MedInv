@@ -99,8 +99,11 @@
         "cast": "Cast",
         "director": "Regista",
         "production_year": "Anno di produzione",
-        "runtime_minutes": "Durata (minuti)"
-      }
+        "runtime_minutes": "Durata (minuti)",
+        "runtime_seconds": "Durata (secondi)"
+      },
+      "tracklist": "Elenco tracce",
+      "computedHint": "(calcolato)"
     },
     "capture": {
       "title": "Acquisizione",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Impossibile accedere alla fotocamera. Concedi l'autorizzazione oppure inserisci manualmente un EAN/ISBN.",
       "mergeCover": "Copertina",
       "mergeNoCover": "Nessuna copertina",
-      "mergeConfirm": "Usa questi valori"
+      "mergeConfirm": "Usa questi valori",
+      "mergeTracksCount_one": "{{count}} traccia",
+      "mergeTracksCount_other": "{{count}} tracce"
     },
     "search": {
       "placeholder": "Cerca…",

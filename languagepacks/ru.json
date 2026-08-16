@@ -99,8 +99,11 @@
         "cast": "В ролях",
         "director": "Режиссёр",
         "production_year": "Год выпуска",
-        "runtime_minutes": "Продолжительность (минуты)"
-      }
+        "runtime_minutes": "Продолжительность (минуты)",
+        "runtime_seconds": "Продолжительность (секунды)"
+      },
+      "tracklist": "Список треков",
+      "computedHint": "(вычислено)"
     },
     "capture": {
       "title": "Регистрация",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Не удалось получить доступ к камере. Разрешите доступ или введите EAN/ISBN вручную.",
       "mergeCover": "Обложка",
       "mergeNoCover": "Без обложки",
-      "mergeConfirm": "Использовать эти значения"
+      "mergeConfirm": "Использовать эти значения",
+      "mergeTracksCount_one": "{{count}} трек",
+      "mergeTracksCount_other": "{{count}} треков"
     },
     "search": {
       "placeholder": "Поиск…",

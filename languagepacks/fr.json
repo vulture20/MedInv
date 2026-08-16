@@ -99,8 +99,11 @@
         "cast": "Distribution",
         "director": "Réalisateur",
         "production_year": "Année de production",
-        "runtime_minutes": "Durée (minutes)"
-      }
+        "runtime_minutes": "Durée (minutes)",
+        "runtime_seconds": "Durée (secondes)"
+      },
+      "tracklist": "Liste des pistes",
+      "computedHint": "(calculé)"
     },
     "capture": {
       "title": "Saisie",
@@ -118,7 +121,9 @@
       "cameraAccessError": "Impossible d'accéder à la caméra. Veuillez autoriser l'accès ou saisir un EAN/ISBN manuellement.",
       "mergeCover": "Pochette",
       "mergeNoCover": "Aucune pochette",
-      "mergeConfirm": "Utiliser ces valeurs"
+      "mergeConfirm": "Utiliser ces valeurs",
+      "mergeTracksCount_one": "{{count}} piste",
+      "mergeTracksCount_other": "{{count}} pistes"
     },
     "search": {
       "placeholder": "Rechercher…",
