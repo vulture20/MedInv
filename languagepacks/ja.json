@@ -103,7 +103,8 @@
         "runtime_seconds": "再生時間（秒）"
       },
       "tracklist": "トラックリスト",
-      "computedHint": "（計算値）"
+      "computedHint": "（計算値）",
+      "viewCoverFullscreen": "カバー画像を全画面で表示"
     },
     "capture": {
       "title": "登録",

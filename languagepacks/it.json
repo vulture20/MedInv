@@ -103,7 +103,8 @@
         "runtime_seconds": "Durata (secondi)"
       },
       "tracklist": "Elenco tracce",
-      "computedHint": "(calcolato)"
+      "computedHint": "(calcolato)",
+      "viewCoverFullscreen": "Visualizza copertina a schermo intero"
     },
     "capture": {
       "title": "Acquisizione",

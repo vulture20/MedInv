@@ -103,7 +103,8 @@
         "runtime_seconds": "Продолжительность (секунды)"
       },
       "tracklist": "Список треков",
-      "computedHint": "(вычислено)"
+      "computedHint": "(вычислено)",
+      "viewCoverFullscreen": "Просмотреть обложку на весь экран"
     },
     "capture": {
       "title": "Регистрация",

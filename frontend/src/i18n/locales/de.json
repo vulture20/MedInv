@@ -71,6 +71,7 @@
     "move": "Verschieben",
     "uploadCover": "Cover hochladen",
     "removeCover": "Cover entfernen",
+    "viewCoverFullscreen": "Cover in Vollbildansicht anzeigen",
     "confirmRemoveCover": "Cover entfernen? Dies kann nicht rückgängig gemacht werden.",
     "addManually": "Manuell hinzufügen",
     "createTitle": "Medium hinzufügen",

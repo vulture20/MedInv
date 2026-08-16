@@ -103,7 +103,8 @@
         "runtime_seconds": "Тривалість (секунди)"
       },
       "tracklist": "Список треків",
-      "computedHint": "(обчислено)"
+      "computedHint": "(обчислено)",
+      "viewCoverFullscreen": "Переглянути обкладинку на весь екран"
     },
     "capture": {
       "title": "Реєстрація",

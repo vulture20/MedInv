@@ -103,7 +103,8 @@
         "runtime_seconds": "Speelduur (seconden)"
       },
       "tracklist": "Tracklist",
-      "computedHint": "(berekend)"
+      "computedHint": "(berekend)",
+      "viewCoverFullscreen": "Cover op volledig scherm bekijken"
     },
     "capture": {
       "title": "Registratie",

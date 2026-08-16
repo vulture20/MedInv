@@ -103,7 +103,8 @@
         "runtime_seconds": "Durée (secondes)"
       },
       "tracklist": "Liste des pistes",
-      "computedHint": "(calculé)"
+      "computedHint": "(calculé)",
+      "viewCoverFullscreen": "Afficher la couverture en plein écran"
     },
     "capture": {
       "title": "Saisie",

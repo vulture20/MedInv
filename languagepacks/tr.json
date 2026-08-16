@@ -103,7 +103,8 @@
         "runtime_seconds": "Süre (saniye)"
       },
       "tracklist": "Parça listesi",
-      "computedHint": "(hesaplandı)"
+      "computedHint": "(hesaplandı)",
+      "viewCoverFullscreen": "Kapağı tam ekran görüntüle"
     },
     "capture": {
       "title": "Kayıt",

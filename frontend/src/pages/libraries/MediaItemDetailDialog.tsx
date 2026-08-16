@@ -28,6 +28,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   const { t } = useTranslation()
   const { user } = useAuth()
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const coverDialogRef = useRef<HTMLDialogElement>(null)
   const [editing, setEditing] = useState(false)
   const [values, setValues] = useState<Record<string, string>>({})
   const [targetLibraryId, setTargetLibraryId] = useState<number | ''>('')
@@ -37,6 +38,9 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   // that caused it, instead of at the top of the dialog where it read as
   // unrelated to the edit form/cover controls shown above it.
   const [moveError, setMoveError] = useState<string | null>(null)
+  // GitHub issue #45: a fullscreen view of the cover, opened by clicking
+  // the small one in the details view below.
+  const [coverFullscreen, setCoverFullscreen] = useState(false)
 
   const specs = FIELD_SPECS[library.media_type]
 
@@ -45,6 +49,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       setEditing(false)
       setError(null)
       setMoveError(null)
+      setCoverFullscreen(false)
       setValues(valuesFromItem(item, specs))
       dialogRef.current?.showModal()
     } else {
@@ -52,6 +57,22 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item])
+
+  // A nested <dialog> (native <dialog> elements stack correctly — opening
+  // one while another is already modal simply makes it the new topmost
+  // one, and closing it returns interaction to the one underneath) rather
+  // than a bespoke overlay, specifically so Esc-to-close comes for free
+  // from the browser instead of needing its own keydown listener (see
+  // this component's own top-level docblock precedent: PluginsPage's
+  // settings dialog and this dialog itself already rely on native <dialog>
+  // behavior the same way).
+  useEffect(() => {
+    if (coverFullscreen) {
+      coverDialogRef.current?.showModal()
+    } else {
+      coverDialogRef.current?.close()
+    }
+  }, [coverFullscreen])
 
   // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
   const canWrite = user?.level === 'admin' || library.owner.id === user?.id
@@ -127,6 +148,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   }
 
   return (
+    <>
     <dialog
       ref={dialogRef}
       onClose={onClose}
@@ -145,12 +167,19 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
           {error && <p role="alert">{error}</p>}
 
           {item.cover_path && (
-            <img
-              className="media-item-dialog__cover"
-              src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
-              crossOrigin="use-credentials"
-              alt=""
-            />
+            <button
+              type="button"
+              className="media-item-dialog__cover-button"
+              onClick={() => setCoverFullscreen(true)}
+              aria-label={t('mediaItem.viewCoverFullscreen')}
+            >
+              <img
+                className="media-item-dialog__cover"
+                src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
+                crossOrigin="use-credentials"
+                alt=""
+              />
+            </button>
           )}
 
           {editing && canWrite && (
@@ -300,5 +329,31 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
         </>
       )}
     </dialog>
+
+    {/*
+      GitHub issue #45: a separate, sibling <dialog> rather than nesting it
+      inside the one above — showModal()'s browser-managed stacking
+      ("top layer") doesn't require DOM nesting to stack correctly, and a
+      sibling avoids any inherited stacking-context/CSS-containment
+      surprises from living inside an already-open modal. Any click
+      anywhere in this dialog closes it — both the backdrop *and* the
+      enlarged cover itself (per the issue: "ein weiterer Klick auf das
+      vergrößerte Cover... schließt") — unlike the backdrop-click-only
+      pattern the dialog above uses, there's no other interactive content
+      in here a click could ever need to *not* close on. Esc closes it too,
+      for free, via native <dialog> behavior (fires onClose, kept in sync
+      with `coverFullscreen` the same way the outer dialog already is).
+    */}
+    {item?.cover_path && (
+      <dialog ref={coverDialogRef} className="media-item-cover-dialog" onClose={() => setCoverFullscreen(false)} onClick={() => setCoverFullscreen(false)}>
+        <img
+          className="media-item-cover-dialog__image"
+          src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
+          crossOrigin="use-credentials"
+          alt=""
+        />
+      </dialog>
+    )}
+    </>
   )
 }

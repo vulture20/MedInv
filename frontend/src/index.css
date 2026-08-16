@@ -359,6 +359,49 @@ td {
   margin-bottom: 1rem;
 }
 
+/* Wraps .media-item-dialog__cover (GitHub issue #45) — a plain <button>
+ * reset back to looking exactly like the bare <img> it wraps, just with a
+ * pointer cursor as the click affordance; the actual interaction is
+ * announced to assistive tech via aria-label instead of visible text. */
+.media-item-dialog__cover-button {
+  display: block;
+  padding: 0;
+  margin: 0 0 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.media-item-dialog__cover-button .media-item-dialog__cover {
+  margin-bottom: 0;
+}
+
+/* Fullscreen cover view (GitHub issue #45) — deliberately not themed like
+ * .media-item-dialog above (no surface background/border/padding): the
+ * point is the image filling as much of the screen as possible, not
+ * another framed panel. */
+.media-item-cover-dialog {
+  width: 95vw;
+  height: 95vh;
+  max-width: 95vw;
+  max-height: 95vh;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.media-item-cover-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.media-item-cover-dialog__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Cover upload/remove controls, shown in edit mode (MediaItemDetailDialog.tsx). */
 .media-item-dialog__cover-actions {
   display: flex;

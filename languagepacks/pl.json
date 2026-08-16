@@ -103,7 +103,8 @@
         "runtime_seconds": "Czas trwania (sekundy)"
       },
       "tracklist": "Lista utworów",
-      "computedHint": "(obliczone)"
+      "computedHint": "(obliczone)",
+      "viewCoverFullscreen": "Wyświetl okładkę na pełnym ekranie"
     },
     "capture": {
       "title": "Rejestracja",

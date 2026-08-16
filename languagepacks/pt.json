@@ -103,7 +103,8 @@
         "runtime_seconds": "Duração (segundos)"
       },
       "tracklist": "Lista de faixas",
-      "computedHint": "(calculado)"
+      "computedHint": "(calculado)",
+      "viewCoverFullscreen": "Ver capa em tela cheia"
     },
     "capture": {
       "title": "Captura",

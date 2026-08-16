@@ -71,6 +71,7 @@
     "move": "Move",
     "uploadCover": "Upload cover",
     "removeCover": "Remove cover",
+    "viewCoverFullscreen": "View cover fullscreen",
     "confirmRemoveCover": "Remove the cover? This cannot be undone.",
     "addManually": "Add manually",
     "createTitle": "Add media item",
