@@ -109,11 +109,12 @@ class AmazonCdProviderTest extends TestCase
         app(AmazonCdProvider::class)->lookupByCode('000000000000');
     }
 
-    public function test_name_and_version_flag_this_as_beta(): void
+    /** No "(Beta)" suffix in the name (removed per explicit user request) — version()'s "-beta" suffix already conveys this. */
+    public function test_version_flags_this_as_beta_without_a_redundant_name_suffix(): void
     {
         $provider = app(AmazonCdProvider::class);
 
-        $this->assertStringContainsString('Beta', $provider->name());
+        $this->assertSame('Amazon', $provider->name());
         $this->assertSame('v0.1-beta', $provider->version());
     }
 }

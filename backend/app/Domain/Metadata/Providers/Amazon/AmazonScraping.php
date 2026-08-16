@@ -15,8 +15,10 @@ use Illuminate\Support\Facades\Log;
  * usable by a self-hosted project without an active affiliate/sales
  * relationship (unlike every other source in this app), so this scrapes
  * the same product/search pages a browser would load — **explicitly a
- * Beta feature** (see each provider's own `version()`/`name()`), for
- * reasons laid out in full below and in the issue itself.
+ * Beta feature** (see each provider's own `version()`, "-beta"-suffixed;
+ * no longer echoed in `name()` too, removed per explicit user request as
+ * redundant with the plugin list's own Version column), for reasons laid
+ * out in full below and in the issue itself.
  *
  * ## Why this is fundamentally different from every other provider here
  *

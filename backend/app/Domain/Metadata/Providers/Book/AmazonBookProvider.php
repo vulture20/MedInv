@@ -22,10 +22,16 @@ class AmazonBookProvider implements MetadataProviderInterface
         return 'book.amazon';
     }
 
-    /** "(Beta)" suffix kept in the name itself, not just version() — visible in the plugin list's Name column without an admin needing to notice a separate Version column (see MetadataProviderRegistry's default-disabled handling for the other half of making this opt-in, not just visible). */
+    /**
+     * No "(Beta)" suffix here (removed per explicit user request) — that's
+     * already conveyed by version()'s "-beta" suffix in the plugin list's
+     * own Version column, so keeping it in both places was redundant.
+     * MetadataProviderRegistry's default-disabled handling is what
+     * actually keeps this opt-in, independent of either label.
+     */
     public function name(): string
     {
-        return 'Amazon (Beta)';
+        return 'Amazon';
     }
 
     public function mediaType(): string

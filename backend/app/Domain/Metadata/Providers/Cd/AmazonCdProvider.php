@@ -28,10 +28,10 @@ class AmazonCdProvider implements MetadataProviderInterface
         return 'cd.amazon';
     }
 
-    /** See AmazonBookProvider::name()'s docblock for why "(Beta)" lives here too, not just in version(). */
+    /** See AmazonBookProvider::name()'s docblock for why there's no "(Beta)" suffix here. */
     public function name(): string
     {
-        return 'Amazon (Beta)';
+        return 'Amazon';
     }
 
     public function mediaType(): string

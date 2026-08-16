@@ -88,8 +88,8 @@ interface MetadataProviderInterface
      * risk, no success guarantee, and a much higher chance of silently
      * breaking on an undocumented markup change (see
      * AmazonScraping's docblock, GitHub issue #50) — which is exactly why
-     * this needs to be visible, not just version()/name()'s "(Beta)"
-     * suffix on its own.
+     * this needs to be visible, not just version()'s "-beta" suffix on its
+     * own.
      */
     public function sourceType(): string;
 }
