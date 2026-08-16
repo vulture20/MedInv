@@ -31,6 +31,26 @@ class MediaItemService
     }
 
     /**
+     * Applies a re-run metadata lookup's user-picked fields onto an
+     * *existing* item (GitHub issue #56) — the update-path counterpart to
+     * create(). EAN is deliberately dropped rather than validated for a
+     * duplicate: MetadataMergeReview.tsx always includes `ean` in its
+     * assembled `attributes` (it's shared with the create-path confirm
+     * flow, see MetadataController::import()), but this item's EAN cannot
+     * legitimately change via a metadata refresh — same restriction
+     * MediaItemController::update() already applies to a manual edit.
+     * Shares withDerivedRuntime() with create() so a CD reimport that picks
+     * a new `tracks` selection gets its `runtime_seconds` re-derived from
+     * that selection the same way the original capture did, rather than
+     * leaving a stale value from the old tracklist in place.
+     */
+    public function updateFromMetadata(Model $item, array $attributes): void
+    {
+        unset($attributes['ean']);
+        $item->update($this->withDerivedRuntime($attributes));
+    }
+
+    /**
      * Derives a CD's `runtime_seconds`/`runtime_computed` from its `tracks`
      * (GitHub issue #48) — the single, central point every creation path
      * (manual entry, bulk capture, metadata import, backup/export restore)

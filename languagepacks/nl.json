@@ -104,6 +104,7 @@
       },
       "tracklist": "Tracklist",
       "computedHint": "(berekend)",
+      "refreshMetadata": "Metadata vernieuwen",
       "viewCoverFullscreen": "Cover op volledig scherm bekijken"
     },
     "capture": {

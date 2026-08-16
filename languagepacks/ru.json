@@ -104,6 +104,7 @@
       },
       "tracklist": "Список треков",
       "computedHint": "(вычислено)",
+      "refreshMetadata": "Обновить метаданные",
       "viewCoverFullscreen": "Просмотреть обложку на весь экран"
     },
     "capture": {

@@ -152,6 +152,12 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
         Route::get('/libraries/{library}/metadata/search', [MetadataController::class, 'search']);
         Route::post('/libraries/{library}/metadata/import', [MetadataController::class, 'import']);
+        // GitHub issue #56: re-query metadata for an *existing* item (GET returns
+        // the same {candidates, merged} shape resolveOne()/lookupMerged() already
+        // produce, for MetadataMergeReview.tsx reuse; POST applies the user's
+        // per-field picks to that item instead of creating a new one).
+        Route::get('/libraries/{library}/items/{item}/metadata/refresh', [MetadataController::class, 'refresh']);
+        Route::post('/libraries/{library}/items/{item}/metadata/refresh', [MetadataController::class, 'reimport']);
     });
 
     // Administration (briefing 15.) — admin only.

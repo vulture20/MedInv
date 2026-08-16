@@ -104,6 +104,7 @@
       },
       "tracklist": "Lista de faixas",
       "computedHint": "(calculado)",
+      "refreshMetadata": "Atualizar metadados",
       "viewCoverFullscreen": "Ver capa em tela cheia"
     },
     "capture": {

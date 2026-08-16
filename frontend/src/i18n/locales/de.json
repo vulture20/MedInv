@@ -77,6 +77,7 @@
     "createTitle": "Medium hinzufügen",
     "tracklist": "Titelliste",
     "computedHint": "(berechnet)",
+    "refreshMetadata": "Metadaten erneut abfragen",
     "fields": {
       "title": "Titel",
       "ean": "EAN",

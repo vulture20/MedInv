@@ -104,6 +104,7 @@
       },
       "tracklist": "トラックリスト",
       "computedHint": "（計算値）",
+      "refreshMetadata": "メタデータを再取得",
       "viewCoverFullscreen": "カバー画像を全画面で表示"
     },
     "capture": {
