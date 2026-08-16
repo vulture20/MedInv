@@ -7,8 +7,10 @@ use App\Domain\ExportImport\InvalidImportFileException;
 use App\Http\Controllers\Controller;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
+use ZipArchive;
 
 /**
  * Instance-to-instance export/import (briefing 9.1), selectable by single,
@@ -20,7 +22,16 @@ class ExportImportController extends Controller
 {
     public function __construct(private readonly ExportImportService $service) {}
 
-    /** `library_ids` omitted or empty means "alle" (briefing 9.1). */
+    /**
+     * `library_ids` omitted or empty means "alle" (briefing 9.1). Exported as
+     * a zip (manifest.json + every referenced cover image under `covers/`),
+     * the same shape BackupService produces — GitHub issue #26 fixed this
+     * for backups, but an ordinary library export still shipped bare
+     * manifest JSON with every cover silently lost on the receiving end,
+     * since cover_path only resolves relative to *this* instance's `local`
+     * disk (see CoverDownloadService). import() below only accepts this zip
+     * format now — a bare JSON file is rejected, see readImportPayload().
+     */
     public function export(Request $request)
     {
         $data = $request->validate(['library_ids' => ['sometimes', 'array'], 'library_ids.*' => ['integer']]);
@@ -34,11 +45,24 @@ class ExportImportController extends Controller
             'library_count' => count($export['libraries'] ?? []),
         ]);
 
+        $tmpJson = tempnam(sys_get_temp_dir(), 'medinv-export');
+        file_put_contents($tmpJson, json_encode($export, JSON_PRETTY_PRINT));
+
+        $tmpZip = tempnam(sys_get_temp_dir(), 'medinv-export-zip');
+        $zip = new ZipArchive;
+        $zip->open($tmpZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFile($tmpJson, 'manifest.json');
+        $this->service->addCoverFilesToZip($zip, $export);
+        $zip->close();
+        unlink($tmpJson);
+
         // SystemSetting::localNow(), not now() — GitHub issue #31: this filename
         // is what the admin actually sees in their downloads, so it should
         // reflect their configured display timezone, not always UTC.
-        return Response::json($export)
-            ->header('Content-Disposition', 'attachment; filename="medinv-export-'.SystemSetting::localNow()->format('Ymd-His').'.json"');
+        $filename = 'medinv-export-'.SystemSetting::localNow()->format('Ymd-His').'.zip';
+
+        return Response::download($tmpZip, $filename, ['Content-Type' => 'application/zip'])
+            ->deleteFileAfterSend(true);
     }
 
     /**
@@ -63,8 +87,8 @@ class ExportImportController extends Controller
             'restore_settings' => ['sometimes', 'boolean'],
         ]);
 
-        $payload = json_decode($data['file']->get(), true);
-        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($payload)) {
+        $payload = $this->readImportPayload($data['file']);
+        if ($payload === null) {
             return $this->invalidImportResponse($request, 'import_invalid_json');
         }
 
@@ -92,6 +116,47 @@ class ExportImportController extends Controller
         ]);
 
         return response()->json($result);
+    }
+
+    /**
+     * Only the zip format export() produces (manifest.json + every
+     * referenced cover under `covers/`) is accepted — a bare JSON file, the
+     * only format this endpoint used to accept, is rejected outright, since
+     * it can never carry covers at all (cover_path only resolves relative
+     * to the *exporting* instance's own `local` disk, see
+     * CoverDownloadService) and silently produced imports with every cover
+     * missing. A cover found in the zip is written to disk immediately,
+     * before importLibraries() (re-)creates the items that reference it —
+     * same ordering as BackupService::restore(), see
+     * ExportImportService::restoreCoverFilesFromZip()'s docblock. Returns
+     * null for anything that isn't a well-formed zip with a valid
+     * manifest.json inside.
+     */
+    private function readImportPayload(UploadedFile $file): ?array
+    {
+        $zip = new ZipArchive;
+        if ($zip->open($file->getRealPath()) !== true) {
+            return null;
+        }
+
+        $manifest = $zip->getFromName('manifest.json');
+        if ($manifest === false) {
+            $zip->close();
+
+            return null;
+        }
+
+        $payload = json_decode($manifest, true);
+        if (! is_array($payload)) {
+            $zip->close();
+
+            return null;
+        }
+
+        $this->service->restoreCoverFilesFromZip($zip);
+        $zip->close();
+
+        return $payload;
     }
 
     /**

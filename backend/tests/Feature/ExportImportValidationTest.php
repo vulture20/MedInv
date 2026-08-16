@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
+use ZipArchive;
 
 /**
  * Covers the investigation prompting InvalidImportFileException: before this,
@@ -18,6 +19,13 @@ use Tests\TestCase;
  * turned out missing — neither gave the admin anything actionable. See
  * BackupRestoreLoggingTest for the happy-path import/export coverage this
  * complements.
+ *
+ * Only the zip format export() produces (manifest.json + covers/, see
+ * ExportImportCoverTest) is a valid upload at all — upload() below wraps
+ * every payload in one, so what's actually under test here is
+ * ExportImportService::assertValidPayload()'s validation of the *decoded*
+ * manifest, not the outer file format (that rejection is its own test,
+ * below).
  */
 class ExportImportValidationTest extends TestCase
 {
@@ -34,30 +42,68 @@ class ExportImportValidationTest extends TestCase
     private function upload(array|string $payload): array
     {
         $content = is_string($payload) ? $payload : json_encode($payload);
-        $file = UploadedFile::fake()->createWithContent('import.json', $content);
 
-        return $this->postJson('/api/admin/import', ['file' => $file])->json();
+        return $this->postJson('/api/admin/import', ['file' => $this->zipWithManifest($content)])->json();
     }
 
-    public function test_rejects_a_file_that_is_not_valid_json(): void
+    private function zipWithManifest(string $manifestContent): UploadedFile
+    {
+        $tmpZip = tempnam(sys_get_temp_dir(), 'import-validation-test');
+        $zip = new ZipArchive;
+        $zip->open($tmpZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFromString('manifest.json', $manifestContent);
+        $zip->close();
+
+        return new UploadedFile($tmpZip, 'import.zip', 'application/zip', null, true);
+    }
+
+    public function test_rejects_a_file_that_is_not_a_valid_zip_archive_at_all(): void
     {
         $this->actingAsAdmin();
 
         $response = $this->postJson('/api/admin/import', [
-            'file' => UploadedFile::fake()->createWithContent('import.json', '{not valid json'),
+            'file' => UploadedFile::fake()->createWithContent('import.json', json_encode(['libraries' => []])),
         ]);
 
         $response->assertStatus(422)->assertJson(['error_code' => 'import_invalid_json']);
     }
 
-    public function test_rejects_a_file_that_is_valid_json_but_not_an_object_or_array_of_libraries(): void
+    public function test_rejects_a_zip_archive_with_no_manifest_json_inside(): void
+    {
+        $this->actingAsAdmin();
+
+        $tmpZip = tempnam(sys_get_temp_dir(), 'import-validation-test');
+        $zip = new ZipArchive;
+        $zip->open($tmpZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFromString('not-a-manifest.json', json_encode(['libraries' => []]));
+        $zip->close();
+
+        $response = $this->postJson('/api/admin/import', [
+            'file' => new UploadedFile($tmpZip, 'import.zip', 'application/zip', null, true),
+        ]);
+
+        $response->assertStatus(422)->assertJson(['error_code' => 'import_invalid_json']);
+    }
+
+    public function test_rejects_a_manifest_json_that_is_not_valid_json(): void
+    {
+        $this->actingAsAdmin();
+
+        $response = $this->postJson('/api/admin/import', [
+            'file' => $this->zipWithManifest('{not valid json'),
+        ]);
+
+        $response->assertStatus(422)->assertJson(['error_code' => 'import_invalid_json']);
+    }
+
+    public function test_rejects_a_manifest_json_that_is_valid_json_but_not_an_object_or_array_of_libraries(): void
     {
         $this->actingAsAdmin();
 
         // A syntactically valid JSON scalar — decodes fine, but isn't the
         // array shape importLibraries() expects at all.
         $response = $this->postJson('/api/admin/import', [
-            'file' => UploadedFile::fake()->createWithContent('import.json', '"just a string"'),
+            'file' => $this->zipWithManifest('"just a string"'),
         ]);
 
         $response->assertStatus(422)->assertJson(['error_code' => 'import_invalid_json']);
@@ -115,7 +161,7 @@ class ExportImportValidationTest extends TestCase
         $admin = $this->actingAsAdmin();
         Library::query()->create(['name' => 'Real Library', 'media_type' => 'book', 'owner_id' => $admin->id]);
         $export = app(ExportImportService::class)->exportLibraries(null);
-        $file = UploadedFile::fake()->createWithContent('import.json', json_encode($export));
+        $file = $this->zipWithManifest(json_encode($export));
 
         // Re-importing an export of the instance's own current state hits the
         // default "skip" conflict resolution (the library already exists) —

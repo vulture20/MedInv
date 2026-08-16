@@ -212,7 +212,7 @@
       },
       "exportImportPage": {
         "exportTitle": "Exporteren",
-        "exportHint": "Niets selecteren exporteert alle bibliotheken.",
+        "exportHint": "Niets selecteren exporteert alle bibliotheken. De download is een zip-bestand met de bibliotheekgegevens en alle covers.",
         "exportSubmit": "Exporteren",
         "exportError": "Exporteren mislukt.",
         "importTitle": "Importeren",
@@ -245,7 +245,7 @@
         "failed": "De gebruiker is aangemaakt, maar de uitnodigingsmail kon niet worden verzonden."
       },
       "errors": {
-        "import_invalid_json": "Dit bestand heeft geen geldig MedInv-exportformaat (JSON niet leesbaar).",
+        "import_invalid_json": "Dit bestand heeft geen geldig MedInv-exportformaat (geen leesbaar .zip-exportbestand).",
         "import_missing_libraries": "Dit bestand bevat geen bibliotheken — waarschijnlijk geen geldig MedInv-exportbestand.",
         "import_invalid_library": "Bibliotheek nr. {{number}} in het bestand heeft geen geldig veld \"{{field}}\".",
         "import_invalid_item": "Een item (nr. {{number}}) in bibliotheek \"{{library}}\" heeft geen geldige titel of EAN.",

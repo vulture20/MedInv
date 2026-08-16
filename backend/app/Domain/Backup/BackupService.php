@@ -31,9 +31,6 @@ class BackupService
 
     private const DIR = 'backups';
 
-    /** Must match CoverDownloadService::DIR — the prefix every item's cover_path is stored under on the `local` disk. */
-    private const COVERS_DIR = 'covers';
-
     public function __construct(private readonly ExportImportService $exportImportService) {}
 
     /**
@@ -64,7 +61,7 @@ class BackupService
         Storage::disk(self::DISK)->makeDirectory(self::DIR);
         $zip->open($absolutePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         $zip->addFile($tmpJson, 'manifest.json');
-        $this->addCoverFiles($zip, $data);
+        $this->exportImportService->addCoverFilesToZip($zip, $data);
         $zip->close();
         unlink($tmpJson);
 
@@ -111,59 +108,6 @@ class BackupService
         $this->prune();
 
         return $backup;
-    }
-
-    /**
-     * Adds every cover image referenced anywhere in the export under its own
-     * cover_path (already relative to the `local` disk, e.g.
-     * `covers/book/1234-AbCdEfGh.jpg`, see CoverDownloadService) — using that
-     * same relative path as the zip entry name so restoreCoverFiles() can
-     * write it straight back without any translation table. Best-effort per
-     * file: a cover_path whose file is already gone (e.g. deleted by hand
-     * outside the app) is skipped rather than failing the whole backup, the
-     * same trade-off CoverDownloadService itself makes for a failed download.
-     */
-    private function addCoverFiles(ZipArchive $zip, array $data): void
-    {
-        $coverPaths = collect($data['libraries'] ?? [])
-            ->flatMap(fn (array $library) => collect($library['items'] ?? [])->pluck('cover_path'))
-            ->filter()
-            ->unique();
-
-        foreach ($coverPaths as $coverPath) {
-            if (Storage::disk(self::DISK)->exists($coverPath)) {
-                $zip->addFile(Storage::disk(self::DISK)->path($coverPath), $coverPath);
-            }
-        }
-    }
-
-    /**
-     * Writes every `covers/...` entry in the archive back onto the `local`
-     * disk at its original relative path, before importLibraries() recreates
-     * the items that reference them (restore() calls this first) — so a
-     * cover is already in place by the time an item pointing at it exists,
-     * and MediaItemController::cover() doesn't 404 for it post-restore.
-     * Restores every cover present in the zip regardless of which items
-     * conflict-resolution ends up actually (re-)creating — simpler and more
-     * robust than correlating the two, at the cost of occasionally leaving
-     * an unreferenced file behind for a library that was skipped, no worse
-     * than any other orphaned-cover case.
-     */
-    private function restoreCoverFiles(ZipArchive $zip): void
-    {
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $name = $zip->getNameIndex($i);
-
-            if ($name === false || ! str_starts_with($name, self::COVERS_DIR.'/')) {
-                continue;
-            }
-
-            $contents = $zip->getFromIndex($i);
-
-            if ($contents !== false) {
-                Storage::disk(self::DISK)->put($name, $contents);
-            }
-        }
     }
 
     /**
@@ -296,8 +240,8 @@ class BackupService
         }
 
         // Before the items that reference them are (re-)created below — see
-        // restoreCoverFiles()'s docblock.
-        $this->restoreCoverFiles($zip);
+        // ExportImportService::restoreCoverFilesFromZip()'s docblock.
+        $this->exportImportService->restoreCoverFilesFromZip($zip);
         $zip->close();
 
         $result = $this->exportImportService->importLibraries($data, $importingAs, $conflictResolutions, $restoreSettings);

@@ -210,7 +210,7 @@
     },
     "exportImportPage": {
       "exportTitle": "Export",
-      "exportHint": "Keine Auswahl exportiert alle Bibliotheken.",
+      "exportHint": "Keine Auswahl exportiert alle Bibliotheken. Der Download ist eine ZIP-Datei mit den Bibliotheksdaten sowie allen Cover-Bildern.",
       "exportSubmit": "Exportieren",
       "exportError": "Export fehlgeschlagen.",
       "importTitle": "Import",
@@ -264,7 +264,7 @@
       "protected_account": "Dies ist das vordefinierte Administrator-Konto und kann nicht bearbeitet, deaktiviert oder gelöscht werden.",
       "passwordPolicy": "Das Passwort muss mindestens 10 Zeichen lang sein und einen Großbuchstaben, einen Kleinbuchstaben, eine Ziffer und ein Sonderzeichen enthalten.",
       "ownsLibraries": "Dieses Konto besitzt noch folgende Bibliotheken und kann erst gelöscht werden, wenn diese übertragen oder gelöscht wurden: {{libraries}}",
-      "import_invalid_json": "Diese Datei ist kein gültiges MedInv-Exportformat (kein lesbares JSON).",
+      "import_invalid_json": "Diese Datei ist kein gültiges MedInv-Exportformat (keine lesbare .zip-Exportdatei).",
       "import_missing_libraries": "Diese Datei enthält keine Bibliotheken — vermutlich keine gültige MedInv-Exportdatei.",
       "import_invalid_library": "Bibliothek Nr. {{number}} in der Datei hat kein gültiges Feld „{{field}}“.",
       "import_invalid_item": "Ein Medium (Eintrag Nr. {{number}}) in Bibliothek „{{library}}“ hat keinen gültigen Titel oder keine gültige EAN."

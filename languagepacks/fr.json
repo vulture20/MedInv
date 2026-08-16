@@ -212,7 +212,7 @@
       },
       "exportImportPage": {
         "exportTitle": "Export",
-        "exportHint": "Ne rien sélectionner exporte toutes les bibliothèques.",
+        "exportHint": "Ne rien sélectionner exporte toutes les bibliothèques. Le téléchargement est un fichier zip contenant les données des bibliothèques ainsi que toutes les images de couverture.",
         "exportSubmit": "Exporter",
         "exportError": "Échec de l'export.",
         "importTitle": "Import",
@@ -245,7 +245,7 @@
         "failed": "L'utilisateur a été créé, mais l'e-mail d'invitation n'a pas pu être envoyé."
       },
       "errors": {
-        "import_invalid_json": "Ce fichier n'est pas un format d'export MedInv valide (JSON illisible).",
+        "import_invalid_json": "Ce fichier n'est pas un format d'export MedInv valide (fichier .zip d'export illisible).",
         "import_missing_libraries": "Ce fichier ne contient aucune bibliothèque — il ne s'agit probablement pas d'un fichier d'export MedInv valide.",
         "import_invalid_library": "La bibliothèque n° {{number}} du fichier n'a pas de champ « {{field}} » valide.",
         "import_invalid_item": "Un élément (entrée n° {{number}}) de la bibliothèque « {{library}} » n'a pas de titre ou d'EAN valide.",

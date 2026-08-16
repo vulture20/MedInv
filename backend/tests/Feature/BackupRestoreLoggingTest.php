@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Tests\TestCase;
+use ZipArchive;
 
 /**
  * Backup/restore/prune/export/import audit trail — all of these previously
@@ -142,7 +143,12 @@ class BackupRestoreLoggingTest extends TestCase
     {
         $admin = $this->actingAsAdmin();
         $export = app(ExportImportService::class)->exportLibraries(null);
-        $file = UploadedFile::fake()->createWithContent('export.json', json_encode($export));
+        $tmpZip = tempnam(sys_get_temp_dir(), 'import-logging-test');
+        $zip = new ZipArchive;
+        $zip->open($tmpZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFromString('manifest.json', json_encode($export));
+        $zip->close();
+        $file = new UploadedFile($tmpZip, 'export.zip', 'application/zip', null, true);
 
         Log::shouldReceive('debug')->zeroOrMoreTimes();
         Log::shouldReceive('info')->once()->with('Libraries imported', Mockery::on(function ($context) use ($admin) {

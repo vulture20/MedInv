@@ -212,7 +212,7 @@
       },
       "exportImportPage": {
         "exportTitle": "Dışa aktar",
-        "exportHint": "Hiçbir şey seçmemek tüm kitaplıkları dışa aktarır.",
+        "exportHint": "Hiçbir şey seçmemek tüm kitaplıkları dışa aktarır. İndirilen dosya, kitaplık verilerini ve tüm kapak görsellerini içeren bir zip dosyasıdır.",
         "exportSubmit": "Dışa aktar",
         "exportError": "Dışa aktarma başarısız oldu.",
         "importTitle": "İçe aktar",
@@ -245,7 +245,7 @@
         "failed": "Kullanıcı oluşturuldu, ancak davet e-postası gönderilemedi."
       },
       "errors": {
-        "import_invalid_json": "Bu dosya geçerli bir MedInv dışa aktarma biçiminde değil (JSON okunamıyor).",
+        "import_invalid_json": "Bu dosya geçerli bir MedInv dışa aktarma biçiminde değil (okunabilir bir .zip dışa aktarma dosyası değil).",
         "import_missing_libraries": "Bu dosya hiçbir kitaplık içermiyor — muhtemelen geçerli bir MedInv dışa aktarma dosyası değil.",
         "import_invalid_library": "Dosyadaki {{number}} numaralı kitaplığın geçerli bir \"{{field}}\" alanı yok.",
         "import_invalid_item": "\"{{library}}\" kitaplığındaki bir öğenin ({{number}} numaralı kayıt) geçerli bir başlığı veya EAN'ı yok.",

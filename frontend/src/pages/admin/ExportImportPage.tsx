@@ -72,7 +72,7 @@ export function ExportImportPage() {
       // POST download can't rely on the browser handling it natively the
       // way a plain <a href> GET (BackupsPage's download link) does.
       const disposition = response.headers['content-disposition'] as string | undefined
-      const filename = /filename="([^"]+)"/.exec(disposition ?? '')?.[1] ?? 'medinv-export.json'
+      const filename = /filename="([^"]+)"/.exec(disposition ?? '')?.[1] ?? 'medinv-export.zip'
       const url = URL.createObjectURL(response.data as Blob)
       const a = document.createElement('a')
       a.href = url
@@ -143,7 +143,7 @@ export function ExportImportPage() {
             {t('admin.exportImportPage.importFile')}
             <input
               type="file"
-              accept="application/json"
+              accept=".zip,application/zip"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               required
             />

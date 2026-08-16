@@ -212,7 +212,7 @@
       },
       "exportImportPage": {
         "exportTitle": "エクスポート",
-        "exportHint": "何も選択しない場合、すべてのライブラリがエクスポートされます。",
+        "exportHint": "何も選択しない場合、すべてのライブラリがエクスポートされます。ダウンロードされるのは、ライブラリデータとすべてのカバー画像を含む zip ファイルです。",
         "exportSubmit": "エクスポート",
         "exportError": "エクスポートに失敗しました。",
         "importTitle": "インポート",
@@ -245,7 +245,7 @@
         "failed": "ユーザーは作成されましたが、招待メールを送信できませんでした。"
       },
       "errors": {
-        "import_invalid_json": "このファイルは有効なMedInvエクスポート形式ではありません（JSONとして読み取れません）。",
+        "import_invalid_json": "このファイルは有効なMedInvエクスポート形式ではありません(読み取り可能な.zipエクスポートファイルではありません)。",
         "import_missing_libraries": "このファイルにはライブラリが含まれていません — 有効なMedInvエクスポートファイルではない可能性があります。",
         "import_invalid_library": "ファイル内のライブラリ #{{number}} に有効な「{{field}}」フィールドがありません。",
         "import_invalid_item": "ライブラリ「{{library}}」内のアイテム（項目 #{{number}}）に有効なタイトルまたはEANがありません。",
