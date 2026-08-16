@@ -116,6 +116,12 @@
         "confirm_one": "選択した{{count}}件を削除しますか? この操作は元に戻せません。",
         "confirm_other": "選択した{{count}}件を削除しますか? この操作は元に戻せません。"
       },
+      "bulkUpdate": {
+        "apply_one": "選択した{{count}}件に適用",
+        "apply_other": "選択した{{count}}件に適用",
+        "confirm_one": "選択した{{count}}件にこの値を設定しますか?",
+        "confirm_other": "選択した{{count}}件にこの値を設定しますか?"
+      },
       "viewCoverFullscreen": "カバー画像を全画面で表示"
     },
     "capture": {

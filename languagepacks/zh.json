@@ -116,6 +116,12 @@
         "confirm_one": "删除已选择的 {{count}} 项？此操作无法撤销。",
         "confirm_other": "删除已选择的 {{count}} 项？此操作无法撤销。"
       },
+      "bulkUpdate": {
+        "apply_one": "应用于已选择的 {{count}} 项",
+        "apply_other": "应用于已选择的 {{count}} 项",
+        "confirm_one": "为已选择的 {{count}} 项设置此值？",
+        "confirm_other": "为已选择的 {{count}} 项设置此值？"
+      },
       "viewCoverFullscreen": "全屏查看封面"
     },
     "capture": {

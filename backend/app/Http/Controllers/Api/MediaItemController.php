@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Library;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 /**
  * Media item CRUD, scoped to a single library and its fixed media_type
@@ -226,6 +227,58 @@ class MediaItemController extends Controller
         }
 
         return response()->json(['deleted_ids' => $records->pluck('id')->values()]);
+    }
+
+    /**
+     * Bulk-update (GitHub issue #63, the general follow-up #54's own
+     * proposal text named as a possible next step) — sets exactly one
+     * field to one shared value across every selected item, e.g. changing
+     * "Genre" for a dozen selected books at once. Same write-access check
+     * and same cross-library containment via `$library->mediaItems()` as
+     * bulkDestroy() above.
+     *
+     * `field` is validated against rulesFor() — the same medium-type-
+     * dependent field list update() already uses for a single item — minus
+     * `ean` (unchangeable here for the same reason update() already
+     * excludes it) and minus `tracks`/`runtime_seconds`/`runtime_computed`
+     * (CD, GitHub issue #48): `tracks` isn't a single scalar value a bulk
+     * "set this field to this value" operation can represent, and
+     * `runtime_seconds` is only ever *derived* from whichever `tracks` a
+     * record actually has (MediaItemService::withDerivedRuntime()) rather
+     * than chosen independently — setting it here directly would risk it
+     * silently disagreeing with the record's own `tracks`.
+     *
+     * `value` is validated against that one field's *own* rule, unmodified
+     * — unlike update()'s "make everything optional, drop 'required'"
+     * rewrite (which exists because a PUT payload is partial and an absent
+     * key means "leave untouched"), a bulk-update request always supplies
+     * `value` for the one field it names, so `title`'s `required` rule is
+     * deliberately kept intact: bulk-clearing every selected item's title
+     * to empty would violate the same invariant a single edit already
+     * enforces.
+     */
+    public function bulkUpdate(Request $request, Library $library)
+    {
+        abort_unless($this->access->canWrite($request->user(), $library), 403);
+
+        $rules = $this->rulesFor($library->media_type);
+        unset($rules['ean'], $rules['tracks'], $rules['runtime_seconds'], $rules['runtime_computed']);
+
+        $selection = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'field' => ['required', 'string', Rule::in(array_keys($rules))],
+        ]);
+
+        $value = $request->validate(['value' => $rules[$selection['field']]])['value'];
+
+        $records = $library->mediaItems()->whereIn('id', $selection['ids'])->get();
+
+        foreach ($records as $record) {
+            $record->update([$selection['field'] => $value]);
+        }
+
+        return response()->json(['updated_ids' => $records->pluck('id')->values()]);
     }
 
     /**

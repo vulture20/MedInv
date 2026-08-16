@@ -91,6 +91,12 @@
         "confirm_one": "Poistetaanko {{count}} valittu kohde? Tätä ei voi perua.",
         "confirm_other": "Poistetaanko {{count}} valittua kohdetta? Tätä ei voi perua."
       },
+      "bulkUpdate": {
+        "apply_one": "Käytä {{count}} valittuun kohteeseen",
+        "apply_other": "Käytä {{count}} valittuun kohteeseen",
+        "confirm_one": "Asetetaanko tämä arvo {{count}} valittuun kohteeseen?",
+        "confirm_other": "Asetetaanko tämä arvo {{count}} valittuun kohteeseen?"
+      },
       "fields": {
         "title": "Nimike",
         "ean": "EAN",

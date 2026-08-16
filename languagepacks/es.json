@@ -116,6 +116,12 @@
         "confirm_one": "¿Eliminar {{count}} elemento seleccionado? Esta acción no se puede deshacer.",
         "confirm_other": "¿Eliminar {{count}} elementos seleccionados? Esta acción no se puede deshacer."
       },
+      "bulkUpdate": {
+        "apply_one": "Aplicar a {{count}} elemento seleccionado",
+        "apply_other": "Aplicar a {{count}} elementos seleccionados",
+        "confirm_one": "¿Establecer este valor en {{count}} elemento seleccionado?",
+        "confirm_other": "¿Establecer este valor en {{count}} elementos seleccionados?"
+      },
       "viewCoverFullscreen": "Ver portada a pantalla completa"
     },
     "capture": {

@@ -6,6 +6,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
 import { CreateMediaItemDialog } from './CreateMediaItemDialog'
+import { FIELD_SPECS, payloadFromValues } from './mediaItemFields'
 
 /** One row of App\Models\LibraryShare, as returned by LibraryController::show()'s `shares.user:id,name,email` eager load (briefing 4.3). */
 interface Share {
@@ -81,6 +82,16 @@ export function LibraryDetailPage() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null)
 
+  // Bulk field update (GitHub issue #63) — the general follow-up #54 itself
+  // proposed: set one field to one shared value across every selected item.
+  // `bulkEditField` defaults to the first bulk-editable field once a library
+  // loads (see the effect below), so the value input always has a concrete
+  // field/type to render against rather than needing its own "nothing
+  // selected yet" placeholder state.
+  const [bulkEditField, setBulkEditField] = useState<string>('')
+  const [bulkEditValue, setBulkEditValue] = useState('')
+  const [bulkUpdateError, setBulkUpdateError] = useState<string | null>(null)
+
   // Library sharing (briefing 4.3, GitHub issue #32) — editable local state,
   // synced from `library.shares` whenever a fresh library loads (below),
   // submitted as one combined array to PUT /libraries/{id}/shares on save
@@ -138,6 +149,8 @@ export function LibraryDetailPage() {
     void load()
     setSelectedIds(new Set())
     setBulkDeleteError(null)
+    setBulkEditValue('')
+    setBulkUpdateError(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, page])
 
@@ -264,12 +277,45 @@ export function LibraryDetailPage() {
     }
   }
 
+  /**
+   * POST .../items/bulk-update (GitHub issue #63) — sets `bulkEditField` to
+   * `bulkEditValue` across every selected item. `payloadFromValues()` does
+   * the same string -> typed-value conversion (empty string -> null,
+   * `type: 'number'` -> Number(...)) the single-item edit form already
+   * uses, called here with just the one active field's spec so a bulk
+   * "clear this field" (an empty value input) round-trips to the backend
+   * as an explicit null exactly like a single-item edit's does, not an
+   * accidentally-omitted key.
+   */
+  async function updateSelected() {
+    if (selectedIds.size === 0 || !bulkEditFieldSpec) return
+    if (!window.confirm(t('mediaItem.bulkUpdate.confirm', { count: selectedIds.size }))) return
+    setBulkUpdateError(null)
+    try {
+      const value = payloadFromValues({ [bulkEditFieldSpec.key]: bulkEditValue }, [bulkEditFieldSpec])[bulkEditFieldSpec.key]
+      await apiClient.post(`/libraries/${id}/items/bulk-update`, { ids: Array.from(selectedIds), field: bulkEditFieldSpec.key, value })
+      setSelectedIds(new Set())
+      setBulkEditValue('')
+      await load()
+    } catch (err) {
+      setBulkUpdateError(describeError(err, t))
+    }
+  }
+
   if (loading || !library) return <p>…</p>
 
   // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
   // Shared by the edit-info, sharing and ownership sections below — all three are owner/admin-only.
   const canManage = user?.level === 'admin' || library.owner.id === user?.id
   const usersAvailableToAdd = shareableUsers.filter((u) => !userShares.some((s) => s.user_id === u.id))
+
+  // GitHub issue #63: mirrors MediaItemController::bulkUpdate()'s own field
+  // exclusion — `runtime_seconds` (CD, #48) is only ever derived from
+  // `tracks`, which itself was never part of FIELD_SPECS to begin with (not
+  // a single scalar value a plain input can represent), so this is the one
+  // FIELD_SPECS entry that still needs filtering out here.
+  const bulkEditableFields = FIELD_SPECS[library.media_type].filter((f) => f.key !== 'runtime_seconds')
+  const bulkEditFieldSpec = bulkEditableFields.find((f) => f.key === bulkEditField)
 
   return (
     <div>
@@ -402,6 +448,9 @@ export function LibraryDetailPage() {
                 setBulkMode((prev) => !prev)
                 setSelectedIds(new Set())
                 setBulkDeleteError(null)
+                setBulkEditField(bulkEditableFields[0]?.key ?? '')
+                setBulkEditValue('')
+                setBulkUpdateError(null)
               }}
             >
               {t(bulkMode ? 'mediaItem.bulkDelete.exit' : 'mediaItem.bulkDelete.enter')}
@@ -424,6 +473,33 @@ export function LibraryDetailPage() {
             {t('mediaItem.bulkDelete.deleteSelected', { count: selectedIds.size })}
           </button>
           {bulkDeleteError && <span role="alert"> {bulkDeleteError}</span>}
+        </p>
+      )}
+
+      {/* GitHub issue #63: sets one field to one shared value across every selected item, alongside the delete bar above. */}
+      {bulkMode && items && items.data.length > 0 && (
+        <p className="media-item-list__bulk-bar">
+          <select value={bulkEditField} onChange={(e) => { setBulkEditField(e.target.value); setBulkEditValue('') }}>
+            {bulkEditableFields.map((f) => (
+              <option key={f.key} value={f.key}>
+                {t(`mediaItem.fields.${f.key}`)}
+              </option>
+            ))}
+          </select>
+          {bulkEditFieldSpec?.type === 'textarea' ? (
+            <textarea value={bulkEditValue} onChange={(e) => setBulkEditValue(e.target.value)} />
+          ) : (
+            <input
+              type={bulkEditFieldSpec?.type ?? 'text'}
+              step={bulkEditFieldSpec?.type === 'number' ? 'any' : undefined}
+              value={bulkEditValue}
+              onChange={(e) => setBulkEditValue(e.target.value)}
+            />
+          )}
+          <button type="button" disabled={selectedIds.size === 0} onClick={() => void updateSelected()}>
+            {t('mediaItem.bulkUpdate.apply', { count: selectedIds.size })}
+          </button>
+          {bulkUpdateError && <span role="alert"> {bulkUpdateError}</span>}
         </p>
       )}
 

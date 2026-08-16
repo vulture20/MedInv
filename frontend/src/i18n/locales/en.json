@@ -88,6 +88,12 @@
       "confirm_one": "Delete {{count}} selected item? This cannot be undone.",
       "confirm_other": "Delete {{count}} selected items? This cannot be undone."
     },
+    "bulkUpdate": {
+      "apply_one": "Apply to {{count}} selected item",
+      "apply_other": "Apply to {{count}} selected items",
+      "confirm_one": "Set this value on {{count}} selected item?",
+      "confirm_other": "Set this value on {{count}} selected items?"
+    },
     "fields": {
       "title": "Title",
       "ean": "EAN",

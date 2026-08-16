@@ -116,6 +116,12 @@
         "confirm_one": "Eliminare {{count}} elemento selezionato? Questa azione non può essere annullata.",
         "confirm_other": "Eliminare {{count}} elementi selezionati? Questa azione non può essere annullata."
       },
+      "bulkUpdate": {
+        "apply_one": "Applica a {{count}} elemento selezionato",
+        "apply_other": "Applica a {{count}} elementi selezionati",
+        "confirm_one": "Impostare questo valore su {{count}} elemento selezionato?",
+        "confirm_other": "Impostare questo valore su {{count}} elementi selezionati?"
+      },
       "viewCoverFullscreen": "Visualizza copertina a schermo intero"
     },
     "capture": {

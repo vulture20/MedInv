@@ -88,6 +88,12 @@
       "confirm_one": "{{count}} ausgewählten Eintrag löschen? Dies kann nicht rückgängig gemacht werden.",
       "confirm_other": "{{count}} ausgewählte Einträge löschen? Dies kann nicht rückgängig gemacht werden."
     },
+    "bulkUpdate": {
+      "apply_one": "Auf {{count}} ausgewählten Eintrag anwenden",
+      "apply_other": "Auf {{count}} ausgewählte Einträge anwenden",
+      "confirm_one": "Diesen Wert bei {{count}} ausgewähltem Eintrag setzen?",
+      "confirm_other": "Diesen Wert bei {{count}} ausgewählten Einträgen setzen?"
+    },
     "fields": {
       "title": "Titel",
       "ean": "EAN",

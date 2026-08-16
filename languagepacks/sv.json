@@ -91,6 +91,12 @@
         "confirm_one": "Ta bort {{count}} vald post? Detta kan inte ångras.",
         "confirm_other": "Ta bort {{count}} valda poster? Detta kan inte ångras."
       },
+      "bulkUpdate": {
+        "apply_one": "Tillämpa på {{count}} vald post",
+        "apply_other": "Tillämpa på {{count}} valda poster",
+        "confirm_one": "Ange detta värde på {{count}} vald post?",
+        "confirm_other": "Ange detta värde på {{count}} valda poster?"
+      },
       "fields": {
         "title": "Titel",
         "ean": "EAN",

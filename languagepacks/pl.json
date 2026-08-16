@@ -116,6 +116,12 @@
         "confirm_one": "Usunąć {{count}} zaznaczony element? Tej operacji nie można cofnąć.",
         "confirm_other": "Usunąć {{count}} zaznaczonych elementów? Tej operacji nie można cofnąć."
       },
+      "bulkUpdate": {
+        "apply_one": "Zastosuj do {{count}} zaznaczonego elementu",
+        "apply_other": "Zastosuj do {{count}} zaznaczonych elementów",
+        "confirm_one": "Ustawić tę wartość dla {{count}} zaznaczonego elementu?",
+        "confirm_other": "Ustawić tę wartość dla {{count}} zaznaczonych elementów?"
+      },
       "viewCoverFullscreen": "Wyświetl okładkę na pełnym ekranie"
     },
     "capture": {

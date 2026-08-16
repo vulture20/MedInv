@@ -116,6 +116,12 @@
         "confirm_one": "Excluir {{count}} item selecionado? Esta ação não pode ser desfeita.",
         "confirm_other": "Excluir {{count}} itens selecionados? Esta ação não pode ser desfeita."
       },
+      "bulkUpdate": {
+        "apply_one": "Aplicar a {{count}} item selecionado",
+        "apply_other": "Aplicar a {{count}} itens selecionados",
+        "confirm_one": "Definir este valor em {{count}} item selecionado?",
+        "confirm_other": "Definir este valor em {{count}} itens selecionados?"
+      },
       "viewCoverFullscreen": "Ver capa em tela cheia"
     },
     "capture": {

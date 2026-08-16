@@ -116,6 +116,12 @@
         "confirm_one": "{{count}} geselecteerd item verwijderen? Dit kan niet ongedaan worden gemaakt.",
         "confirm_other": "{{count}} geselecteerde items verwijderen? Dit kan niet ongedaan worden gemaakt."
       },
+      "bulkUpdate": {
+        "apply_one": "Toepassen op {{count}} geselecteerd item",
+        "apply_other": "Toepassen op {{count}} geselecteerde items",
+        "confirm_one": "Deze waarde instellen voor {{count}} geselecteerd item?",
+        "confirm_other": "Deze waarde instellen voor {{count}} geselecteerde items?"
+      },
       "viewCoverFullscreen": "Cover op volledig scherm bekijken"
     },
     "capture": {

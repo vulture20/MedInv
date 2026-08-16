@@ -116,6 +116,12 @@
         "confirm_one": "{{count}} seçili öğe silinsin mi? Bu işlem geri alınamaz.",
         "confirm_other": "{{count}} seçili öğe silinsin mi? Bu işlem geri alınamaz."
       },
+      "bulkUpdate": {
+        "apply_one": "{{count}} seçili öğeye uygula",
+        "apply_other": "{{count}} seçili öğeye uygula",
+        "confirm_one": "Bu değer {{count}} seçili öğeye ayarlansın mı?",
+        "confirm_other": "Bu değer {{count}} seçili öğeye ayarlansın mı?"
+      },
       "viewCoverFullscreen": "Kapağı tam ekran görüntüle"
     },
     "capture": {

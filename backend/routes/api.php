@@ -147,6 +147,8 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         // below (a static "bulk-delete" segment could otherwise be matched
         // as {item} by a less specific route ordering).
         Route::post('/libraries/{library}/items/bulk-delete', [MediaItemController::class, 'bulkDestroy']);
+        // GitHub issue #63 — same reasoning as bulk-delete above about declaring this before the {item}-parameterized routes.
+        Route::post('/libraries/{library}/items/bulk-update', [MediaItemController::class, 'bulkUpdate']);
         Route::put('/libraries/{library}/items/{item}', [MediaItemController::class, 'update']);
         Route::delete('/libraries/{library}/items/{item}', [MediaItemController::class, 'destroy']);
         Route::post('/libraries/{library}/items/{item}/move', [MediaItemController::class, 'move']);

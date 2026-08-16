@@ -91,6 +91,12 @@
         "confirm_one": "Slette {{count}} valgt oppføring? Dette kan ikke angres.",
         "confirm_other": "Slette {{count}} valgte oppføringer? Dette kan ikke angres."
       },
+      "bulkUpdate": {
+        "apply_one": "Bruk på {{count}} valgt oppføring",
+        "apply_other": "Bruk på {{count}} valgte oppføringer",
+        "confirm_one": "Sette denne verdien på {{count}} valgt oppføring?",
+        "confirm_other": "Sette denne verdien på {{count}} valgte oppføringer?"
+      },
       "fields": {
         "title": "Tittel",
         "ean": "EAN",

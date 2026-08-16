@@ -116,6 +116,12 @@
         "confirm_one": "Supprimer {{count}} élément sélectionné ? Cette action est irréversible.",
         "confirm_other": "Supprimer {{count}} éléments sélectionnés ? Cette action est irréversible."
       },
+      "bulkUpdate": {
+        "apply_one": "Appliquer à {{count}} élément sélectionné",
+        "apply_other": "Appliquer à {{count}} éléments sélectionnés",
+        "confirm_one": "Définir cette valeur pour {{count}} élément sélectionné ?",
+        "confirm_other": "Définir cette valeur pour {{count}} éléments sélectionnés ?"
+      },
       "viewCoverFullscreen": "Afficher la couverture en plein écran"
     },
     "capture": {

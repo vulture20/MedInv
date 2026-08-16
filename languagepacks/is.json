@@ -91,6 +91,12 @@
         "confirm_one": "Eyða {{count}} valinni færslu? Þessu er ekki hægt að afturkalla.",
         "confirm_other": "Eyða {{count}} völdum færslum? Þessu er ekki hægt að afturkalla."
       },
+      "bulkUpdate": {
+        "apply_one": "Beita á {{count}} valda færslu",
+        "apply_other": "Beita á {{count}} valdar færslur",
+        "confirm_one": "Setja þetta gildi á {{count}} valda færslu?",
+        "confirm_other": "Setja þetta gildi á {{count}} valdar færslur?"
+      },
       "fields": {
         "title": "Titill",
         "ean": "EAN",
