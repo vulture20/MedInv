@@ -87,6 +87,12 @@ class HardcoverProvider implements MetadataProviderInterface
         return 'v1.0';
     }
 
+    /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — a real, documented (GraphQL) API. */
+    public function sourceType(): string
+    {
+        return 'api';
+    }
+
     /**
      * Hardcover's `editions` table has both isbn_10 and isbn_13 as plain,
      * independently-filterable columns (see the official "Get Edition

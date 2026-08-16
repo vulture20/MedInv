@@ -194,7 +194,12 @@
         "enabled": "Увімкнено",
         "priority": "Пріоритет",
         "mediaType": "Тип носія",
-        "version": "Версія"
+        "version": "Версія",
+        "sourceType": "Джерело"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Веб-скрапінг"
       },
       "status": {
         "active": "Активний",

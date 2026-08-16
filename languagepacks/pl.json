@@ -194,7 +194,12 @@
         "enabled": "Włączone",
         "priority": "Priorytet",
         "mediaType": "Typ multimediów",
-        "version": "Wersja"
+        "version": "Wersja",
+        "sourceType": "Źródło"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Scrapowanie"
       },
       "status": {
         "active": "Aktywne",

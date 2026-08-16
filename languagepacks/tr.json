@@ -194,7 +194,12 @@
         "enabled": "Etkin",
         "priority": "Öncelik",
         "mediaType": "Medya türü",
-        "version": "Sürüm"
+        "version": "Sürüm",
+        "sourceType": "Kaynak"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Web kazıma"
       },
       "status": {
         "active": "Etkin",

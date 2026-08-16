@@ -194,7 +194,12 @@
         "enabled": "Ativado",
         "priority": "Prioridade",
         "mediaType": "Tipo de mídia",
-        "version": "Versão"
+        "version": "Versão",
+        "sourceType": "Fonte"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Web scraping"
       },
       "status": {
         "active": "Ativo",

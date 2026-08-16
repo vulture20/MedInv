@@ -114,6 +114,24 @@ class MetadataProviderRegistry
     }
 
     /**
+     * Every registered provider's declared source type ('api'|'scraping',
+     * GitHub issue #55), keyed by provider_key — same "attach live per
+     * request, don't store in the database" shape versionsByProviderKey()
+     * already established, for the same reason: this is intrinsic to how
+     * the class is implemented, not admin-configurable state.
+     *
+     * @return Collection<string, string>
+     */
+    public function sourceTypesByProviderKey(): Collection
+    {
+        return collect(static::defaultProviders())
+            ->map(fn (string $class) => app($class))
+            ->mapWithKeys(fn (MetadataProviderInterface $provider) => [
+                $provider->key() => $provider->sourceType(),
+            ]);
+    }
+
+    /**
      * Enabled provider instances for the given media type, ordered by
      * admin-configured priority. `orderBy('id')` after `priority` is the
      * same deterministic-tie-breaker fix as MetadataController::plugins()'s

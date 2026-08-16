@@ -73,4 +73,23 @@ interface MetadataProviderInterface
      * (see GitHub issue #50) without the interface getting in the way.
      */
     public function version(): string;
+
+    /**
+     * Whether this provider talks to a real, documented API ('api') or
+     * scrapes a page not meant to be machine-read ('scraping') — shown in
+     * the admin plugin list (briefing 15., GitHub issue #55) so an operator
+     * can see the difference themselves instead of it only being
+     * documented in source/GitHub issues. Same "attach live per request,
+     * don't store in the database" pattern version() already established
+     * (see MetadataProviderRegistry::sourceTypesByProviderKey()) — this is
+     * an intrinsic property of how the class is implemented, not something
+     * that changes at runtime. Scraping carries real, additional
+     * downsides an API-based provider doesn't have — a documented ToS
+     * risk, no success guarantee, and a much higher chance of silently
+     * breaking on an undocumented markup change (see
+     * AmazonScraping's docblock, GitHub issue #50) — which is exactly why
+     * this needs to be visible, not just version()/name()'s "(Beta)"
+     * suffix on its own.
+     */
+    public function sourceType(): string;
 }

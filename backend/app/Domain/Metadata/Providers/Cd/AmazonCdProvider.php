@@ -51,6 +51,12 @@ class AmazonCdProvider implements MetadataProviderInterface
         return 'v0.1-beta';
     }
 
+    /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes amazon.com's pages, see AmazonScraping's docblock. */
+    public function sourceType(): string
+    {
+        return 'scraping';
+    }
+
     public function lookupByCode(string $code): array
     {
         $results = $this->amazonSearch($code);

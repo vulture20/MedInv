@@ -194,7 +194,12 @@
         "enabled": "有効",
         "priority": "優先度",
         "mediaType": "メディア種別",
-        "version": "バージョン"
+        "version": "バージョン",
+        "sourceType": "ソース"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "ウェブスクレイピング"
       },
       "status": {
         "active": "有効",

@@ -194,7 +194,12 @@
         "enabled": "Включено",
         "priority": "Приоритет",
         "mediaType": "Тип носителя",
-        "version": "Версия"
+        "version": "Версия",
+        "sourceType": "Источник"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Веб-скрапинг"
       },
       "status": {
         "active": "Активен",

@@ -34,10 +34,12 @@ class MetadataController extends Controller
     /**
      * All admin-visible plugins, or only those enabled for a media type
      * (briefing 15.). Each row carries a `config_fields` attribute (GitHub
-     * issue #29) and a `version` attribute (GitHub issue #44) — both
-     * declared by the matching provider class, not stored in the database
-     * — so PluginsPage.tsx can render a settings form and show a version
-     * per plugin without either needing its own migration/sync step.
+     * issue #29), a `version` attribute (GitHub issue #44) and a
+     * `source_type` attribute (GitHub issue #55, 'api'|'scraping') — all
+     * three declared by the matching provider class, not stored in the
+     * database — so PluginsPage.tsx can render a settings form and show a
+     * version/source type per plugin without any of them needing their own
+     * migration/sync step.
      *
      * `orderBy('id')` as a tie-breaker after `priority` matters more than it
      * looks: MetadataProviderRegistry::syncToDatabase() never sets an
@@ -60,10 +62,13 @@ class MetadataController extends Controller
 
         $configFields = $this->registry->configFieldsByProviderKey();
         $versions = $this->registry->versionsByProviderKey();
+        $sourceTypes = $this->registry->sourceTypesByProviderKey();
 
-        return $query->orderBy('priority')->orderBy('id')->get()->map(function (MetadataPlugin $plugin) use ($configFields, $versions) {
+        return $query->orderBy('priority')->orderBy('id')->get()->map(function (MetadataPlugin $plugin) use ($configFields, $versions, $sourceTypes) {
             $plugin->setAttribute('config_fields', $configFields->get($plugin->provider_key, []));
             $plugin->setAttribute('version', $versions->get($plugin->provider_key));
+            // GitHub issue #55.
+            $plugin->setAttribute('source_type', $sourceTypes->get($plugin->provider_key));
 
             return $plugin;
         });

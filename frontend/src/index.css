@@ -746,7 +746,8 @@ td {
  * ratio, scaled up to absorb the space handle+name gave up. version
  * (GitHub issue #44) took its 12% out of name/settings proportionally
  * when it was added, keeping every other column's ratio to each other
- * unchanged.
+ * unchanged. source-type (GitHub issue #55) took its 12% out of settings
+ * alone (33% -> 21%) the same way.
  */
 .plugin-table__col--handle {
   width: 4%;
@@ -760,6 +761,10 @@ td {
   width: 12%;
 }
 
+.plugin-table__col--source-type {
+  width: 12%;
+}
+
 .plugin-table__col--priority {
   width: 18%;
 }
@@ -769,7 +774,7 @@ td {
 }
 
 .plugin-table__col--settings {
-  width: 33%;
+  width: 21%;
 }
 
 /* Drag handle cell (dnd-kit, PluginsPage.tsx) — dnd-kit's own `attributes`
@@ -788,6 +793,26 @@ td {
 
 .plugin-drag-handle:active {
   cursor: grabbing;
+}
+
+/*
+ * GitHub issue #55: makes explicit whether a plugin talks to a real,
+ * documented API or scrapes a page not meant to be machine-read — a
+ * safety/reliability-relevant difference (ToS risk, no success guarantee,
+ * higher chance of silently breaking, see AmazonScraping's docblock, #50)
+ * previously only documented in source/GitHub issues. 'scraping' is
+ * flagged with --color-danger (same token PluginsPage already has no
+ * other use for here) specifically to stand out against the plain-text
+ * 'api' badge, not because scraping is an error state.
+ */
+.source-type-badge {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.source-type-badge--scraping {
+  color: var(--color-danger);
+  font-weight: 600;
 }
 
 /* Per-plugin settings dialog (briefing 8.1/15., PluginsPage.tsx, GitHub

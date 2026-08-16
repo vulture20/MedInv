@@ -194,7 +194,12 @@
         "enabled": "Ingeschakeld",
         "priority": "Prioriteit",
         "mediaType": "Mediatype",
-        "version": "Versie"
+        "version": "Versie",
+        "sourceType": "Bron"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Web scraping"
       },
       "status": {
         "active": "Actief",
