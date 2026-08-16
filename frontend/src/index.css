@@ -1197,6 +1197,22 @@ td {
   font: inherit;
 }
 
+/*
+ * A label wrapping a lone checkbox (OidcPage.tsx's "enabled"/
+ * "auto_provision" toggles) has only inline children, unlike every other
+ * field <label> here, whose block-level .panel-select child incidentally
+ * forces it onto its own line by splitting the label out of inline flow.
+ * Without this, a checkbox-only label doesn't get that same free line
+ * break and can end up sharing a line with whatever <label> follows it —
+ * e.g. "OIDC-Anmeldung aktivieren" running straight into "Anbietername"
+ * with no visual gap. display: block makes the row break explicit instead
+ * of relying on that incidental side effect.
+ */
+.panel-checkbox {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
 /* Transient save confirmation (SettingsPage.tsx's flashSaved()) — auto-hides itself again, see the JS timeout. */
 .panel-confirmation {
   display: inline-flex;
