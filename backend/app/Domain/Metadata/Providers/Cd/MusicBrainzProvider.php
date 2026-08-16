@@ -10,6 +10,15 @@ use Illuminate\Support\Facades\Http;
  * CD metadata plugin using the free MusicBrainz API (briefing 8.2 — CD).
  * Amazon and Discogs, the other two listed CD sources, follow the same
  * shape under this namespace.
+ *
+ * The base URL is `/ws/2/release` (a slash between `ws` and `2`) — GitHub
+ * issue #48's investigation found this had been `/ws2/release` (no slash)
+ * ever since this provider was written, live-confirmed to 404 on every
+ * single request. lookupByCode()/search() treat a failed response as
+ * simply "no results" rather than an error, so this provider silently
+ * returned zero candidates for every CD lookup, indefinitely, with nothing
+ * in the log to suggest why — MusicBrainz itself was never actually
+ * queried.
  */
 class MusicBrainzProvider implements MetadataProviderInterface
 {
@@ -37,7 +46,7 @@ class MusicBrainzProvider implements MetadataProviderInterface
     public function lookupByCode(string $code): array
     {
         $response = Http::withHeaders(['User-Agent' => 'MedInv/1.0'])
-            ->get('https://musicbrainz.org/ws2/release', ['query' => "barcode:{$code}", 'fmt' => 'json']);
+            ->get('https://musicbrainz.org/ws/2/release', ['query' => "barcode:{$code}", 'fmt' => 'json']);
 
         if ($response->failed()) {
             return [];
@@ -51,7 +60,7 @@ class MusicBrainzProvider implements MetadataProviderInterface
     public function search(string $query): array
     {
         $response = Http::withHeaders(['User-Agent' => 'MedInv/1.0'])
-            ->get('https://musicbrainz.org/ws2/release', ['query' => $query, 'fmt' => 'json']);
+            ->get('https://musicbrainz.org/ws/2/release', ['query' => $query, 'fmt' => 'json']);
 
         if ($response->failed()) {
             return [];

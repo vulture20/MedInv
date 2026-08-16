@@ -39,14 +39,14 @@ class BulkImportServiceTest extends TestCase
 
     private function fakeMusicBrainz(array $releases): void
     {
-        Http::fake(['https://musicbrainz.org/ws2/release*' => Http::response(['releases' => $releases], 200)]);
+        Http::fake(['https://musicbrainz.org/ws/2/release*' => Http::response(['releases' => $releases], 200)]);
     }
 
     /** Merges Http::fake() setups for both providers — Http::fake() calls replace each other, so both must be registered in one call. */
     private function fakeBothProviders(array $musicBrainzReleases, array $discogsSearchResult, array $discogsRelease): void
     {
         Http::fake([
-            'https://musicbrainz.org/ws2/release*' => Http::response(['releases' => $musicBrainzReleases], 200),
+            'https://musicbrainz.org/ws/2/release*' => Http::response(['releases' => $musicBrainzReleases], 200),
             'https://api.discogs.com/database/search*' => Http::response(['results' => [$discogsSearchResult]], 200),
             'https://api.discogs.com/releases/*' => Http::response($discogsRelease, 200),
         ]);
@@ -114,7 +114,7 @@ class BulkImportServiceTest extends TestCase
         $library = Library::query()->create(['name' => 'CDs', 'media_type' => 'cd', 'owner_id' => $owner->id]);
         $this->enableCdProviders();
         Http::fake([
-            'https://musicbrainz.org/ws2/release*' => Http::response(['releases' => []], 200),
+            'https://musicbrainz.org/ws/2/release*' => Http::response(['releases' => []], 200),
             'https://api.discogs.com/database/search*' => Http::response(['results' => []], 200),
         ]);
 
