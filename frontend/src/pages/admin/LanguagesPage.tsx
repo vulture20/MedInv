@@ -47,6 +47,18 @@ const emptyNewPack = { code: '', name: '', translationsText: '' }
  * download-only — they're compiled into the frontend build
  * (i18n/index.ts's BUNDLED_TRANSLATIONS), not database rows, so there's
  * nothing to send a PUT/DELETE for in the first place.
+ *
+ * Card layout matches SystemSettingsPage.tsx's/MailPage.tsx's (.panel-page/
+ * .panel-card/.panel-select, see index.css's shared docblock) — one card
+ * per concern (bundled packs, the installed-packs table, the create form).
+ * No .panel-page__header: see SystemSettingsPage.tsx's docblock for why
+ * (AdminLayout.tsx's <Outlet/> already supplies the page title/tab strip);
+ * each card's own <h2> carries the section's heading instead, reusing the
+ * admin.languages nav label for the table card the way MailPage.tsx reuses
+ * admin.mail for its own main card. The installed-packs table itself stays
+ * a plain, dense table (same "compare magnitude"-adjacent reasoning as
+ * LibraryDetailPage.tsx's media-item list, see its docblock) rather than a
+ * card per row.
  */
 export function LanguagesPage() {
   const { t } = useTranslation()
@@ -221,135 +233,144 @@ export function LanguagesPage() {
   }
 
   return (
-    <section>
-      <h2>{t('admin.languages')}</h2>
+    <div className="panel-page">
+      <section className="panel-card">
+        <h2>{t('admin.languagesPage.bundledTitle')}</h2>
+        <ul className="bundled-language-list">
+          {bundled.map((pack) => (
+            <li key={pack.code} className="bundled-language-list__row">
+              <span>
+                {pack.name} <span className="hint">({pack.code})</span>
+                {pack.installed && <span className="hint"> — {t('admin.languagesPage.bundledInstalled')}</span>}
+              </span>
+              <button onClick={() => void installBundled(pack)} disabled={installingCode === pack.code}>
+                {pack.installed ? t('admin.languagesPage.bundledReinstall') : t('admin.languagesPage.bundledInstall')}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {installError && <p role="alert">{installError}</p>}
+      </section>
 
-      <h3>{t('admin.languagesPage.bundledTitle')}</h3>
-      <ul className="bundled-language-list">
-        {bundled.map((pack) => (
-          <li key={pack.code}>
-            {pack.name} ({pack.code})
-            {pack.installed && ` — ${t('admin.languagesPage.bundledInstalled')}`}{' '}
-            <button onClick={() => void installBundled(pack)} disabled={installingCode === pack.code}>
-              {pack.installed ? t('admin.languagesPage.bundledReinstall') : t('admin.languagesPage.bundledInstall')}
-            </button>
-          </li>
-        ))}
-      </ul>
-      {installError && <p role="alert">{installError}</p>}
+      <section className="panel-card">
+        <h2>{t('admin.languages')}</h2>
+        <p className="hint">{t('admin.languagesPage.builtInHint')}</p>
 
-      <p className="hint">{t('admin.languagesPage.builtInHint')}</p>
-
-      {loading ? (
-        <p>…</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>{t('admin.languagesPage.code')}</th>
-              <th>{t('common.name')}</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {AVAILABLE_LANGUAGES.map((code) =>
-              viewingBuiltIn === code ? (
-                <tr key={code}>
-                  <td>{code}</td>
-                  <td>
-                    <textarea rows={10} readOnly value={JSON.stringify(BUNDLED_TRANSLATIONS[code], null, 2)} />
-                  </td>
-                  <td>
-                    <button onClick={() => setViewingBuiltIn(null)}>{t('admin.actions.close')}</button>
-                  </td>
-                </tr>
-              ) : (
-                <tr key={code}>
-                  <td>{code}</td>
-                  <td>{t(`settings.language.${code}`)}</td>
-                  <td>
-                    <button onClick={() => setViewingBuiltIn(code)}>{t('admin.actions.view')}</button>
-                    <button onClick={() => downloadBuiltIn(code)}>{t('admin.actions.download')}</button>
-                  </td>
-                </tr>
-              ),
-            )}
-            {packs.length === 0 && (
+        {loading ? (
+          <p className="hint">…</p>
+        ) : (
+          <table>
+            <thead>
               <tr>
-                <td colSpan={3}>{t('admin.languagesPage.none')}</td>
+                <th>{t('admin.languagesPage.code')}</th>
+                <th>{t('common.name')}</th>
+                <th />
               </tr>
-            )}
-            {packs.map((pack) =>
-              editingCode === pack.code ? (
-                <tr key={pack.code}>
-                  <td>{pack.code}</td>
-                  <td>
-                    <input value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                    <label>
-                      {t('admin.languagesPage.translations')}
-                      <input
-                        type="file"
-                        accept=".json,application/json"
-                        onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setEditTranslationsText(text))}
-                      />
-                    </label>
-                    <p className="hint">{t('admin.languagesPage.editFileHint')}</p>
-                  </td>
-                  <td>
-                    <button onClick={() => void saveEdit(pack.code)}>{t('admin.actions.save')}</button>
-                    <button onClick={cancelEdit}>{t('admin.actions.cancel')}</button>
-                    {editError && <p role="alert">{editError}</p>}
-                  </td>
+            </thead>
+            <tbody>
+              {AVAILABLE_LANGUAGES.map((code) =>
+                viewingBuiltIn === code ? (
+                  <tr key={code}>
+                    <td>{code}</td>
+                    <td>
+                      <textarea rows={10} readOnly value={JSON.stringify(BUNDLED_TRANSLATIONS[code], null, 2)} />
+                    </td>
+                    <td>
+                      <button onClick={() => setViewingBuiltIn(null)}>{t('admin.actions.close')}</button>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={code}>
+                    <td>{code}</td>
+                    <td>{t(`settings.language.${code}`)}</td>
+                    <td>
+                      <button onClick={() => setViewingBuiltIn(code)}>{t('admin.actions.view')}</button>
+                      <button onClick={() => downloadBuiltIn(code)}>{t('admin.actions.download')}</button>
+                    </td>
+                  </tr>
+                ),
+              )}
+              {packs.length === 0 && (
+                <tr>
+                  <td colSpan={3}>{t('admin.languagesPage.none')}</td>
                 </tr>
-              ) : (
-                <tr key={pack.code}>
-                  <td>{pack.code}</td>
-                  <td>{pack.name}</td>
-                  <td>
-                    <button onClick={() => void startEdit(pack)}>{t('admin.actions.edit')}</button>
-                    <button onClick={() => void deletePack(pack)}>{t('admin.actions.delete')}</button>
-                  </td>
-                </tr>
-              ),
-            )}
-          </tbody>
-        </table>
-      )}
+              )}
+              {packs.map((pack) =>
+                editingCode === pack.code ? (
+                  <tr key={pack.code}>
+                    <td>{pack.code}</td>
+                    <td>
+                      <input className="panel-select" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                      <label>
+                        {t('admin.languagesPage.translations')}
+                        <input
+                          type="file"
+                          accept=".json,application/json"
+                          onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setEditTranslationsText(text))}
+                        />
+                      </label>
+                      <p className="hint">{t('admin.languagesPage.editFileHint')}</p>
+                    </td>
+                    <td>
+                      <button onClick={() => void saveEdit(pack.code)}>{t('admin.actions.save')}</button>
+                      <button onClick={cancelEdit}>{t('admin.actions.cancel')}</button>
+                      {editError && <p role="alert">{editError}</p>}
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={pack.code}>
+                    <td>{pack.code}</td>
+                    <td>{pack.name}</td>
+                    <td>
+                      <button onClick={() => void startEdit(pack)}>{t('admin.actions.edit')}</button>
+                      <button onClick={() => void deletePack(pack)}>{t('admin.actions.delete')}</button>
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
+        )}
+      </section>
 
-      <h3>{t('admin.languagesPage.create')}</h3>
-      <form onSubmit={createPack}>
-        <label>
-          {t('admin.languagesPage.code')}
-          <input
-            value={newPack.code}
-            onChange={(e) => setNewPack({ ...newPack, code: e.target.value })}
-            placeholder="fr"
-            maxLength={10}
-            required
-          />
-        </label>
-        <label>
-          {t('common.name')}
-          <input
-            value={newPack.name}
-            onChange={(e) => setNewPack({ ...newPack, name: e.target.value })}
-            placeholder="Français"
-            required
-          />
-        </label>
-        <p className="hint">{t('admin.languagesPage.translationsHint')}</p>
-        <label>
-          {t('admin.languagesPage.translations')}
-          <input
-            type="file"
-            accept=".json,application/json"
-            onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setNewPack({ ...newPack, translationsText: text }))}
-            required
-          />
-        </label>
-        <button type="submit">{t('admin.languagesPage.create')}</button>
-        {createError && <p role="alert">{createError}</p>}
-      </form>
-    </section>
+      <section className="panel-card">
+        <h2>{t('admin.languagesPage.create')}</h2>
+        <form onSubmit={createPack}>
+          <label>
+            {t('admin.languagesPage.code')}
+            <input
+              className="panel-select"
+              value={newPack.code}
+              onChange={(e) => setNewPack({ ...newPack, code: e.target.value })}
+              placeholder="fr"
+              maxLength={10}
+              required
+            />
+          </label>
+          <label>
+            {t('common.name')}
+            <input
+              className="panel-select"
+              value={newPack.name}
+              onChange={(e) => setNewPack({ ...newPack, name: e.target.value })}
+              placeholder="Français"
+              required
+            />
+          </label>
+          <p className="hint">{t('admin.languagesPage.translationsHint')}</p>
+          <label>
+            {t('admin.languagesPage.translations')}
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={(e) => void readUploadedFile(e).then((text) => text !== null && setNewPack({ ...newPack, translationsText: text }))}
+              required
+            />
+          </label>
+          <button type="submit">{t('admin.languagesPage.create')}</button>
+          {createError && <p role="alert">{createError}</p>}
+        </form>
+      </section>
+    </div>
   )
 }

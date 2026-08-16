@@ -1064,6 +1064,11 @@ td {
   border-radius: 10px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
+  /* A card can contain a plain <table> (LanguagesPage.tsx's installed-packs
+     list) too wide for a narrow viewport — scope the scrollbar to the card
+     itself rather than letting the table force the whole page to scroll
+     horizontally on mobile. */
+  overflow-x: auto;
 }
 
 .panel-card h2 {
@@ -1442,4 +1447,30 @@ td {
 
 .library-list__name {
   font-weight: 600;
+}
+
+/*
+ * LanguagesPage.tsx's bundled-language-pack list — the same row shape as
+ * .library-list__row above (name/status on the left, an action on the
+ * right), but kept as its own class rather than reused directly since this
+ * row's action is a <button> that installs/reinstalls in place, not a
+ * <Link> to somewhere else.
+ */
+.bundled-language-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bundled-language-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bundled-language-list__row:last-child {
+  border-bottom: none;
 }
