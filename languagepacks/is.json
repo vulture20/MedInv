@@ -1,0 +1,435 @@
+{
+  "code": "is",
+  "name": "Íslenska",
+  "translations": {
+    "common": {
+      "name": "Nafn",
+      "email": "Tölvupóstur",
+      "loading": "Hleð…"
+    },
+    "nav": {
+      "home": "Heim",
+      "capture": "Skráning",
+      "libraries": "Söfn",
+      "statistics": "Tölfræði",
+      "administration": "Stjórnun",
+      "toggleMenu": "Víxla valmynd"
+    },
+    "dashboard": {
+      "noLibraries": "Engin söfn eru sýnileg þér ennþá.",
+      "allLibraries": "Sýna öll {{count}} söfn"
+    },
+    "login": {
+      "title": "Skrá inn",
+      "email": "Netfang",
+      "password": "Lykilorð",
+      "submit": "Skrá inn",
+      "mailServerWarning": "Pósturinn er ekki tiltækur eða ranglega stilltur. Endurstilling lykilorðs er óvirk.",
+      "forgotPassword": "Gleymdir þú lykilorðinu?",
+      "sessionExpired": "Lotan þín er útrunnin. Vinsamlegast skráðu þig inn aftur.",
+      "ssoButton": "Skrá inn með {{provider}}"
+    },
+    "userMenu": {
+      "settings": "Sérsniðnar stillingar",
+      "logout": "Skrá út"
+    },
+    "libraries": {
+      "title": "Söfn",
+      "create": "Búa til safn",
+      "view": "Skoða",
+      "delete": "Eyða",
+      "noItems": "Þetta safn inniheldur engar færslur ennþá.",
+      "confirmDelete": "Eyða safninu „{{name}}“? Þessu er ekki hægt að afturkalla.",
+      "descriptionLabel": "Lýsing",
+      "mediaTypeLabel": "Efnistegund",
+      "mediaType": {
+        "book": "Bók",
+        "cd": "Diskur",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Deiling",
+        "hint": "Stjórnar því hverjir aðrir geta séð þetta safn, auk þín. Aðeins er hægt að veita lesaðgang hér.",
+        "guests": "Deila með gestum",
+        "allUsers": "Deila með öllum notendum",
+        "specificUsers": "Tilteknir notendur",
+        "noSpecificUsers": "Ekki deilt með neinum tilteknum notanda.",
+        "selectUser": "Veldu notanda…",
+        "add": "Bæta við",
+        "remove": "Fjarlægja",
+        "saved": "Deilingarstillingar vistaðar."
+      },
+      "ownership": {
+        "title": "Eignarhald",
+        "hint": "Flytur þetta safn, ásamt allri deilingu, til annars notanda.",
+        "selectUser": "Veldu nýjan eiganda…",
+        "transfer": "Flytja",
+        "confirm": "Flytja eignarhald þessa safns til „{{name}}“? Þú gætir misst aðgang að því eftir á."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "Eyða „{{title}}“? Þessu er ekki hægt að afturkalla.",
+      "moveToLibrary": "Flytja í safn",
+      "selectLibrary": "Veldu safn…",
+      "move": "Flytja",
+      "uploadCover": "Hlaða upp kápu",
+      "removeCover": "Fjarlægja kápu",
+      "viewCoverFullscreen": "Skoða kápu í fullum skjá",
+      "confirmRemoveCover": "Fjarlægja kápuna? Þessu er ekki hægt að afturkalla.",
+      "addManually": "Bæta við handvirkt",
+      "createTitle": "Bæta við miðli",
+      "tracklist": "Lagalisti",
+      "computedHint": "(reiknað)",
+      "refreshMetadata": "Uppfæra lýsigögn",
+      "bulkDelete": {
+        "enter": "Velja",
+        "exit": "Hætta við val",
+        "selectAll": "Velja allt á þessari síðu",
+        "deselectAll": "Afvelja allt",
+        "deleteSelected_one": "Eyða {{count}} valinni færslu",
+        "deleteSelected_other": "Eyða {{count}} völdum færslum",
+        "confirm_one": "Eyða {{count}} valinni færslu? Þessu er ekki hægt að afturkalla.",
+        "confirm_other": "Eyða {{count}} völdum færslum? Þessu er ekki hægt að afturkalla."
+      },
+      "fields": {
+        "title": "Titill",
+        "ean": "EAN",
+        "description": "Lýsing",
+        "release_date": "Útgáfudagur",
+        "price": "Verð",
+        "currency": "Gjaldmiðill",
+        "authors": "Höfundur/-ar",
+        "format": "Snið",
+        "genre": "Tegund",
+        "page_count": "Blaðsíðufjöldi",
+        "language": "Tungumál",
+        "publisher": "Útgefandi",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Flytjandi",
+        "medium": "Miðill",
+        "asin": "ASIN",
+        "disc_count": "Fjöldi diska",
+        "runtime_seconds": "Lengd (sekúndur)",
+        "languages": "Tungumál",
+        "cast": "Leikarar",
+        "director": "Leikstjóri",
+        "production_year": "Framleiðsluár",
+        "runtime_minutes": "Lengd (mínútur)"
+      }
+    },
+    "capture": {
+      "title": "Skráning",
+      "single": "Stök skráning",
+      "scan": "Skanna",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Innflutningur úr textaskrá",
+      "duplicate": "Þessi færsla er þegar til í þessu safni.",
+      "noMatch": "Engin lýsigögn fundust — bæta við handvirkt.",
+      "chooseCandidate": "Gildi sem allar heimildir eru sammála um eru fyllt út sjálfkrafa. Þar sem þau eru ólík, veldu gildi hér að neðan.",
+      "rejectAll": "Hafna öllum niðurstöðum",
+      "mergeCover": "Kápa",
+      "mergeNoCover": "Engin kápa",
+      "mergeConfirm": "Nota þessi gildi",
+      "mergeTracksCount_one": "{{count}} lag",
+      "mergeTracksCount_other": "{{count}} lög",
+      "providerStatus": {
+        "ok_one": "{{count}} niðurstaða",
+        "ok_other": "{{count}} niðurstöður",
+        "no_match": "engin niðurstaða",
+        "failed": "beiðni mistókst"
+      },
+      "cameraScan": "Skanna með myndavél",
+      "cameraClose": "Loka myndavél",
+      "cameraHint": "Haltu strikamerki fyrir framan myndavélina.",
+      "cameraAccessError": "Ekki tókst að nálgast myndavélina. Veittu heimild eða sláðu inn EAN/ISBN handvirkt."
+    },
+    "search": {
+      "placeholder": "Leita…",
+      "resultsFor": "Leit: „{{query}}“",
+      "submit": "Leita",
+      "fuzzy": "Óskörp leit",
+      "error": "Leit mistókst. Reyndu aftur."
+    },
+    "statistics": {
+      "title": "Tölfræði",
+      "itemCount": "Fjöldi færslna",
+      "totalValue": "Heildarverðmæti",
+      "dimension": {
+        "genre": "Tegund",
+        "language": "Tungumál",
+        "publisher": "Útgefandi",
+        "artist": "Flytjandi",
+        "director": "Leikstjóri",
+        "year": "Útgáfuár"
+      },
+      "moreCount": "+{{count}} til viðbótar",
+      "noDistributions": "Engin dreifingargögn tiltæk.",
+      "valueHistory": {
+        "title": "Verðmæti í tímans rás",
+        "accumulatedTitle": "Heildarverðmæti í tímans rás (öll söfnin þín)",
+        "current": "Núverandi verðmæti: {{value}} (þann {{date}})",
+        "noData": "Ekki nægjanleg gögn ennþá fyrir verðmætasögu.",
+        "estimatedNoteUntil": "Saga fyrir {{date}} er áætluð út frá skráningardögum færslna og endurspeglar ef til vill ekki síðari eyðingar eða verðbreytingar.",
+        "estimatedNoteAll": "Öll þessi saga er áætluð út frá skráningardögum færslna — engin dagleg mynd hefur enn verið tekin."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Þema",
+        "light": "Ljóst",
+        "dark": "Dökkt"
+      },
+      "language": {
+        "label": "Tungumál",
+        "de": "Þýska",
+        "en": "Enska"
+      }
+    },
+    "admin": {
+      "title": "Stjórnun",
+      "users": "Notendur",
+      "plugins": "Lýsigagnaviðbætur",
+      "backups": "Öryggisafrit",
+      "exportImport": "Útflutningur/Innflutningur",
+      "mail": "Póstur",
+      "oidc": "Einskráning (SSO)",
+      "languages": "Tungumálapakkar",
+      "templates": "Þemu",
+      "settings": "Kerfisstillingar",
+      "confirmDeleteUser": "Eyða notandanum „{{name}}“? Þessu er ekki hægt að afturkalla.",
+      "confirmDeleteBackup": "Eyða öryggisafritinu „{{filename}}“? Þessu er ekki hægt að afturkalla.",
+      "passwordHint": "Að minnsta kosti 10 stafir, með að minnsta kosti einum hástaf, einum lágstaf, einum tölustaf og einu sérstöku tákni.",
+      "table": {
+        "level": "Stig",
+        "status": "Staða",
+        "enabled": "Virkt",
+        "priority": "Forgangur",
+        "mediaType": "Efnistegund",
+        "version": "Útgáfa",
+        "sourceType": "Heimild"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Vefskröpun"
+      },
+      "status": {
+        "active": "Virkt",
+        "deactivated": "Óvirkjað"
+      },
+      "actions": {
+        "deactivate": "Óvirkja",
+        "reactivate": "Endurvirkja",
+        "createBackupNow": "Búa til öryggisafrit núna",
+        "download": "Sækja",
+        "createUser": "Búa til notanda",
+        "edit": "Breyta",
+        "save": "Vista",
+        "cancel": "Hætta við",
+        "delete": "Eyða",
+        "sendInvite": "Senda boðspóst",
+        "restore": "Endurheimta",
+        "view": "Skoða",
+        "close": "Loka"
+      },
+      "backupReason": {
+        "scheduled": "Áætlun",
+        "pre_update": "Uppfærsla"
+      },
+      "backupRestore": {
+        "warning": "Sjálfgefið er sleppt (og ekkert breytt) söfnum sem þegar eru til með sama nafni, nema þú veljir „Skrifa yfir“ hér að neðan.",
+        "overwriteExisting": "Skrifa yfir söfn sem þegar eru til með sama nafni í stað þess að sleppa þeim",
+        "restoreSettings": "Einnig endurheimta kerfisstillingar og notandareikninga",
+        "submit": "Staðfesta endurheimt",
+        "confirm": "Endurheimta öryggisafritið „{{filename}}“? Þessu er ekki hægt að afturkalla.",
+        "success": "Endurheimt lokið: {{created}} búin til, {{overwritten}} yfirskrifuð, {{merged}} sameinuð, {{skipped}} sleppt."
+      },
+      "exportImportPage": {
+        "exportTitle": "Útflutningur",
+        "exportHint": "Ef ekkert er valið eru öll söfn flutt út. Niðurhalið er zip-skrá sem inniheldur safngögnin ásamt öllum kápumyndum.",
+        "exportSubmit": "Flytja út",
+        "exportError": "Útflutningur mistókst.",
+        "importTitle": "Innflutningur",
+        "importFile": "Útflutningsskrá",
+        "importSubmit": "Flytja inn",
+        "importSuccess": "Innflutningi lokið: {{created}} búin til, {{overwritten}} yfirskrifuð, {{merged}} sameinuð, {{skipped}} sleppt."
+      },
+      "languagesPage": {
+        "code": "Kóði",
+        "none": "Engir viðbótar tungumálapakkar ennþá.",
+        "create": "Bæta við tungumálapakka",
+        "translations": "Þýðingar (JSON)",
+        "translationsHint": "Sama lykil-gildi uppbygging og innbyggðu tungumálaskrárnar (briefing 11.4) — sæktu eina af innbyggðu þýsku/ensku röðunum hér að ofan sem upphafspunkt, breyttu henni í textaritli og hlaðið síðan skránni sem verður til hér að neðan.",
+        "editFileHint": "Veldu skrá til að skipta út núverandi þýðingum, eða skildu þetta eftir autt til að halda þeim og breyta aðeins nafninu.",
+        "confirmDelete": "Eyða tungumálapakkanum „{{name}}“? Þessu er ekki hægt að afturkalla.",
+        "bundledTitle": "Innbyggðir tungumálapakkar",
+        "bundledInstalled": "uppsett",
+        "bundledInstall": "Setja upp",
+        "bundledReinstall": "Setja upp aftur",
+        "confirmReinstall": "Setja tungumálapakkann „{{name}}“ upp aftur? Allar sérsniðnar breytingar á honum tapast og verða skiptar út fyrir innbyggðu útgáfuna.",
+        "builtInHint": "Þýska og enska eru innbyggð í forritið sjálft, þannig að þau birtast aðeins í listanum til að skoða og sækja — ekki er hægt að breyta þeim eða eyða.",
+        "errors": {
+          "invalidJson": "Þetta er ekki gilt JSON.",
+          "codeInvalid": "Þessi kóði er þegar í notkun eða frátekinn (de/en eru frátekin)."
+        }
+      },
+      "templatesPage": {
+        "none": "Engin viðbótar þemu ennþá.",
+        "create": "Bæta við þema",
+        "confirmDelete": "Eyða þemanu „{{name}}“? Þessu er ekki hægt að afturkalla.",
+        "bundledTitle": "Innbyggð þemu",
+        "bundledNone": "Engin viðbótar þemu eru innbyggð eins og er.",
+        "bundledInstalled": "uppsett",
+        "bundledInstall": "Setja upp",
+        "bundledReinstall": "Setja upp aftur",
+        "confirmReinstall": "Setja þemað „{{name}}“ upp aftur? Allar sérsniðnar breytingar á því tapast og verða skiptar út fyrir innbyggðu útgáfuna.",
+        "builtInHint": "Ljóst og dökkt eru innbyggð í forritið sjálft, þannig að þau birtast aðeins í listanum til að skoða og sækja — ekki er hægt að breyta þeim eða eyða.",
+        "css": "CSS",
+        "cssHint": "Bókstaflegt innihald CSS-skráar, sem notað er á meðan þetta þema er valið. Að endurskilgreina sömu sérsniðnu eigindin sem ljóst/dökkt nota — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, auk color-scheme — nægir til að endurhanna útlit alls forritsins á samræmdan hátt, t.d.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Allt annað sem stílblað getur gert er líka leyfilegt. Hlaðið upp .css-skrá hér að neðan — að sækja CSS ljósa eða dökka þemans hér að ofan er góður upphafspunktur til að breyta og hlaða upp aftur.",
+        "editFileHint": "Veldu skrá til að skipta út núverandi CSS, eða skildu þetta eftir autt til að halda því og breyta aðeins nafninu.",
+        "errors": {
+          "codeInvalid": "Þessi kóði er þegar í notkun eða frátekinn (light/dark eru frátekin)."
+        }
+      },
+      "userInvite": {
+        "hint": "Pósturinn er ekki stilltur — ekki er hægt að senda boðspóst núna.",
+        "sent": "Boðspóstur sendur.",
+        "failed": "Notandinn var búinn til, en ekki tókst að senda boðspóstinn."
+      },
+      "errors": {
+        "import_invalid_json": "Þessi skrá er ekki gilt MedInv-útflutningssnið (ekki læsileg .zip-útflutningsskrá).",
+        "import_missing_libraries": "Þessi skrá inniheldur engin söfn — líklega ekki gild MedInv-útflutningsskrá.",
+        "import_invalid_library": "Safn #{{number}} í skránni er ekki með gilt „{{field}}“-svæði.",
+        "import_invalid_item": "Færsla (færsla #{{number}}) í safninu „{{library}}“ er ekki með gildan titil eða EAN.",
+        "protected_account": "Þetta er fyrirfram skilgreindur stjórnandareikningur og ekki er hægt að breyta honum, óvirkja hann eða eyða honum.",
+        "passwordPolicy": "Lykilorðið verður að vera að minnsta kosti 10 stafir og innihalda hástaf, lágstaf, tölustaf og sérstakt tákn.",
+        "ownsLibraries": "Þessi reikningur á enn eftirfarandi söfn og ekki er hægt að eyða honum fyrr en þau hafa verið flutt til annars eiganda eða þeim eytt: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "SMTP-þjónn",
+        "port": "Gátt",
+        "username": "Notandanafn",
+        "password": "Lykilorð",
+        "passwordHint": "Skildu eftir autt til að halda núverandi lykilorði.",
+        "encryption": "Dulkóðun",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Engin dulkóðun"
+        },
+        "fromAddress": "Sendanda-netfang",
+        "fromName": "Sendanda-nafn",
+        "healthy": "Pósturinn er tiltækur og rétt stilltur.",
+        "unhealthy": "Pósturinn er ekki tiltækur eða ekki fullstilltur. Endurstilling lykilorðs er óvirk.",
+        "saved": "Póststillingar vistaðar.",
+        "testMail": "Senda prófpóst",
+        "testMailTo": "Netfang viðtakanda",
+        "testMailSend": "Senda prófpóst",
+        "testMailSent": "Prófpóstur sendur.",
+        "testMailNotConfigured": "Pósturinn er ekki stilltur ennþá.",
+        "testMailFailed": "Ekki tókst að senda prófpóstinn: {{message}}"
+      },
+      "oidcSettings": {
+        "intro": "Leyfðu notendum að skrá sig inn með utanaðkomandi OpenID Connect auðkennisveitanda (t.d. Pocket ID) til viðbótar við lykilorðseyðublaðið — sérhver staðlasamhæfur veitandi virkar, með því að fylgja eigin uppgötvunarskjali sínu frekar en einhverju veitandasértæku.",
+        "enabled": "Virkja OIDC-innskráningu",
+        "providerName": "Nafn veitanda",
+        "issuer": "Útgáfu-URL",
+        "issuerHint": "Grunn-URL veitandans, án lokandi skástriks — búist er við að OpenID uppgötvunarskjal hans sé á „<issuer>/.well-known/openid-configuration“.",
+        "clientId": "Biðlaraauðkenni (Client ID)",
+        "clientSecret": "Biðlaraleyndarmál",
+        "clientSecretHint": "Skildu eftir autt til að halda núverandi leyndarmáli.",
+        "autoProvision": "Búa sjálfkrafa til reikning við fyrstu innskráningu",
+        "autoProvisionHint": "Þegar óvirkt (sjálfgefið) getur aðeins netfang sem stjórnandi hefur þegar búið til reikning fyrir skráð sig inn með OIDC. Þegar virkt býr fyrsta innskráning til nýjan reikning á stiginu hér að neðan.",
+        "defaultLevel": "Stig fyrir nýstofnaða reikninga",
+        "levelClaimHint": "Nafn og stig reiknings er einnig samstillt við veitandann við hverja innskráningu, óháð stillingunni hér að ofan: nafnið kemur frá sérsniðinni „medinv_name“-fullyrðingu ef hún er til staðar, annars frá staðal „name“-fullyrðingunni; stigið kemur frá sérsniðinni „medinv_level“-fullyrðingu með gildinu „guest“, „user“ eða „admin“ — admin þar með talið. Í Pocket ID skaltu bæta við sérsniðinni fullyrðingu með nákvæmlega þeim lykli sem þú þarft fyrir notanda eða hóp undir Admin → Users/User Groups → Custom Claims. Ef einhverja af þessum fullyrðingum vantar er samsvarandi reit skilinn eftir óbreyttur.",
+        "saved": "OIDC-stillingar vistaðar."
+      },
+      "backupSettings": {
+        "title": "Áætlun öryggisafritunar",
+        "intervalMode": "Millibil",
+        "interval": {
+          "daily": "Daglega",
+          "weekly": "Vikulega",
+          "monthly": "Mánaðarlega",
+          "cron": "Sérsniðið (cron-segð)"
+        },
+        "cronExpression": "Cron-segð",
+        "retentionHint": "Á aðeins við um sjálfvirk öryggisafrit. Handvirkt búin til öryggisafrit teljast ekki með og er aldrei eytt sjálfkrafa. Aðeins önnur af reglunum tveimur hér að neðan er virk í einu — veldu hvora.",
+        "retentionMode": "Eyða gömlum öryggisafritum eftir",
+        "retentionCount": "Halda í mesta lagi þessum fjölda öryggisafrita",
+        "retentionMaxAgeDays": "Eyða öryggisafritum eldri en (daga)",
+        "saved": "Áætlun öryggisafritunar vistuð."
+      },
+      "securitySettings": {
+        "title": "Vörn gegn gróflegum innskráningartilraunum",
+        "maxAttempts": "Hámarksfjöldi misheppnaðra tilrauna",
+        "windowMinutes": "Tímagluggi (mínútur)",
+        "lockMinutes": "Lengd lokunar (mínútur)",
+        "saved": "Öryggisstillingar vistaðar."
+      },
+      "coverCleanup": {
+        "title": "Hreinsun kápa",
+        "hint": "Einu sinni á dag eru kápu-/smámyndaskrár á diski sem engin miðlafærsla vísar lengur í eyddar.",
+        "enabled": "Hreinsa munaðarlausar kápuskrár sjálfkrafa",
+        "saved": "Stilling fyrir hreinsun kápa vistuð."
+      },
+      "timezoneSettings": {
+        "title": "Tímabelti",
+        "hint": "Notað fyrir skráarnöfn öryggisafrita og útflutnings, svo þau samræmist staðartíma þínum í stað þess að sýna alltaf UTC.",
+        "timezone": "Tímabelti",
+        "saved": "Tímabelti vistað."
+      },
+      "logLevel": {
+        "title": "Skráningarstig",
+        "saved": "Skráningarstig vistað."
+      },
+      "localeSettings": {
+        "title": "Sjálfgefið tungumál",
+        "hint": "Notað þegar tungumál gests er hvorki þýska né enska.",
+        "defaultLanguage": "Sjálfgefið tungumál",
+        "saved": "Sjálfgefið tungumál vistað."
+      },
+      "pluginConfig": {
+        "settings": "Stillingar",
+        "noConfig": "Engar stillingar nauðsynlegar.",
+        "fields": {
+          "api_key": "API-lykill"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Dragðu til að endurraða {{name}} (eða ýttu á bilslá og notaðu síðan örvatakkana)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Gleymt lykilorð",
+      "forgotIntro": "Sláðu inn netfangið þitt. Ef reikningur er til fyrir það færðu tengil til að endurstilla lykilorðið þitt.",
+      "sendLink": "Óska eftir tengli",
+      "linkSent": "Ef það netfang er til hefur póstur með endurstillingartengli verið sendur.",
+      "resetTitle": "Settu nýtt lykilorð",
+      "newPassword": "Nýtt lykilorð",
+      "confirmPassword": "Staðfestu lykilorð",
+      "resetSubmit": "Endurstilla lykilorð",
+      "resetSuccess": "Lykilorðið þitt hefur verið endurstillt. Þú getur nú skráð þig inn.",
+      "backToLogin": "Til baka í innskráningu",
+      "errors": {
+        "invalid_token": "Þessi tengill er ógildur eða útrunninn. Vinsamlegast óskaðu eftir nýjum.",
+        "invalid_user": "Enginn reikningur er til fyrir þetta netfang.",
+        "throttled": "Vinsamlegast bíddu augnablik áður en þú reynir aftur.",
+        "reset_failed": "Ekki tókst að endurstilla lykilorðið.",
+        "mail_unavailable": "Pósturinn er ekki stilltur eða ekki tiltækur. Vinsamlegast hafðu samband við stjórnanda.",
+        "generic": "Þetta virkaði ekki. Vinsamlegast reyndu aftur síðar."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Rangar innskráningarupplýsingar.",
+      "account_locked": "Of margar misheppnaðar tilraunir. Þessi reikningur er tímabundið læstur.",
+      "account_deactivated": "Þessi reikningur hefur verið óvirkjaður.",
+      "generic": "Innskráning mistókst. Reyndu aftur síðar eða hafðu samband við stjórnanda.",
+      "oidc_provider_error": "Hætt var við eða hafnað var einskráningu af auðkennisveitandanum.",
+      "oidc_state_mismatch": "Ekki tókst að sannreyna einskráningarbeiðnina. Vinsamlegast reyndu aftur.",
+      "oidc_failed": "Einskráning mistókst. Reyndu aftur eða notaðu lykilorðið þitt í staðinn.",
+      "oidc_no_account": "Enginn reikningur er til fyrir þetta auðkenni ennþá. Vinsamlegast hafðu samband við stjórnanda.",
+      "oidc_account_deactivated": "Þessi reikningur hefur verið óvirkjaður."
+    }
+  }
+}

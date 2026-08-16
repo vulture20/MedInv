@@ -1,0 +1,435 @@
+{
+  "code": "no",
+  "name": "Norsk bokmål",
+  "translations": {
+    "common": {
+      "name": "Navn",
+      "email": "E-post",
+      "loading": "Laster…"
+    },
+    "nav": {
+      "home": "Hjem",
+      "capture": "Registrering",
+      "libraries": "Biblioteker",
+      "statistics": "Statistikk",
+      "administration": "Administrasjon",
+      "toggleMenu": "Veksle meny"
+    },
+    "dashboard": {
+      "noLibraries": "Ingen biblioteker er synlige for deg ennå.",
+      "allLibraries": "Vis alle {{count}} biblioteker"
+    },
+    "login": {
+      "title": "Logg inn",
+      "email": "E-postadresse",
+      "password": "Passord",
+      "submit": "Logg inn",
+      "mailServerWarning": "E-postserveren er utilgjengelig eller feilkonfigurert. Tilbakestilling av passord er deaktivert.",
+      "forgotPassword": "Glemt passordet?",
+      "sessionExpired": "Økten din er utløpt. Vennligst logg inn igjen.",
+      "ssoButton": "Logg inn med {{provider}}"
+    },
+    "userMenu": {
+      "settings": "Egendefinerte innstillinger",
+      "logout": "Logg ut"
+    },
+    "libraries": {
+      "title": "Biblioteker",
+      "create": "Opprett bibliotek",
+      "view": "Vis",
+      "delete": "Slett",
+      "noItems": "Dette biblioteket inneholder ingen oppføringer ennå.",
+      "confirmDelete": "Slette biblioteket «{{name}}»? Dette kan ikke angres.",
+      "descriptionLabel": "Beskrivelse",
+      "mediaTypeLabel": "Medietype",
+      "mediaType": {
+        "book": "Bok",
+        "cd": "CD",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Deling",
+        "hint": "Bestemmer hvem andre som kan se dette biblioteket, i tillegg til deg. Bare lesetilgang kan gis her.",
+        "guests": "Del med gjester",
+        "allUsers": "Del med alle brukere",
+        "specificUsers": "Bestemte brukere",
+        "noSpecificUsers": "Ikke delt med noen bestemt bruker.",
+        "selectUser": "Velg en bruker…",
+        "add": "Legg til",
+        "remove": "Fjern",
+        "saved": "Delingsinnstillinger lagret."
+      },
+      "ownership": {
+        "title": "Eierskap",
+        "hint": "Overfører dette biblioteket, inkludert alle delinger, til en annen bruker.",
+        "selectUser": "Velg ny eier…",
+        "transfer": "Overfør",
+        "confirm": "Overføre eierskap av dette biblioteket til «{{name}}»? Du kan miste tilgangen til det etterpå."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "Slette «{{title}}»? Dette kan ikke angres.",
+      "moveToLibrary": "Flytt til bibliotek",
+      "selectLibrary": "Velg et bibliotek…",
+      "move": "Flytt",
+      "uploadCover": "Last opp omslag",
+      "removeCover": "Fjern omslag",
+      "viewCoverFullscreen": "Vis omslag i fullskjerm",
+      "confirmRemoveCover": "Fjerne omslaget? Dette kan ikke angres.",
+      "addManually": "Legg til manuelt",
+      "createTitle": "Legg til medium",
+      "tracklist": "Sporliste",
+      "computedHint": "(beregnet)",
+      "refreshMetadata": "Oppdater metadata",
+      "bulkDelete": {
+        "enter": "Velg",
+        "exit": "Avbryt valg",
+        "selectAll": "Velg alle på denne siden",
+        "deselectAll": "Fjern alt valg",
+        "deleteSelected_one": "Slett {{count}} valgt oppføring",
+        "deleteSelected_other": "Slett {{count}} valgte oppføringer",
+        "confirm_one": "Slette {{count}} valgt oppføring? Dette kan ikke angres.",
+        "confirm_other": "Slette {{count}} valgte oppføringer? Dette kan ikke angres."
+      },
+      "fields": {
+        "title": "Tittel",
+        "ean": "EAN",
+        "description": "Beskrivelse",
+        "release_date": "Utgivelsesdato",
+        "price": "Pris",
+        "currency": "Valuta",
+        "authors": "Forfatter(e)",
+        "format": "Format",
+        "genre": "Sjanger",
+        "page_count": "Antall sider",
+        "language": "Språk",
+        "publisher": "Forlag",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Artist",
+        "medium": "Medium",
+        "asin": "ASIN",
+        "disc_count": "Antall plater",
+        "runtime_seconds": "Spilletid (sekunder)",
+        "languages": "Språk",
+        "cast": "Skuespillere",
+        "director": "Regissør",
+        "production_year": "Produksjonsår",
+        "runtime_minutes": "Spilletid (minutter)"
+      }
+    },
+    "capture": {
+      "title": "Registrering",
+      "single": "Enkel registrering",
+      "scan": "Skann",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Import fra tekstfil",
+      "duplicate": "Denne oppføringen finnes allerede i dette biblioteket.",
+      "noMatch": "Ingen metadatatreff — legg til manuelt.",
+      "chooseCandidate": "Verdier alle kildene er enige om, fylles inn automatisk. Der de er uenige, velg en verdi nedenfor.",
+      "rejectAll": "Avvis alle treff",
+      "mergeCover": "Omslag",
+      "mergeNoCover": "Ikke noe omslag",
+      "mergeConfirm": "Bruk disse verdiene",
+      "mergeTracksCount_one": "{{count}} spor",
+      "mergeTracksCount_other": "{{count}} spor",
+      "providerStatus": {
+        "ok_one": "{{count}} treff",
+        "ok_other": "{{count}} treff",
+        "no_match": "ingen treff",
+        "failed": "forespørsel mislyktes"
+      },
+      "cameraScan": "Skann med kamera",
+      "cameraClose": "Lukk kamera",
+      "cameraHint": "Hold en strekkode foran kameraet.",
+      "cameraAccessError": "Fikk ikke tilgang til kameraet. Gi tillatelse eller angi en EAN/ISBN manuelt."
+    },
+    "search": {
+      "placeholder": "Søk…",
+      "resultsFor": "Søk: «{{query}}»",
+      "submit": "Søk",
+      "fuzzy": "Uklart søk",
+      "error": "Søket mislyktes. Prøv igjen."
+    },
+    "statistics": {
+      "title": "Statistikk",
+      "itemCount": "Antall oppføringer",
+      "totalValue": "Total verdi",
+      "dimension": {
+        "genre": "Sjanger",
+        "language": "Språk",
+        "publisher": "Forlag",
+        "artist": "Artist",
+        "director": "Regissør",
+        "year": "Utgivelsesår"
+      },
+      "moreCount": "+{{count}} til",
+      "noDistributions": "Ingen fordelingsdata tilgjengelig.",
+      "valueHistory": {
+        "title": "Verdi over tid",
+        "accumulatedTitle": "Total verdi over tid (alle dine biblioteker)",
+        "current": "Nåværende verdi: {{value}} (per {{date}})",
+        "noData": "Ikke nok data ennå for en verdihistorikk.",
+        "estimatedNoteUntil": "Historikk før {{date}} er estimert ut fra registreringsdatoer for oppføringer og gjenspeiler kanskje ikke senere slettinger eller prisendringer.",
+        "estimatedNoteAll": "Hele denne historikken er estimert ut fra registreringsdatoer for oppføringer — ingen daglig øyeblikksbilde er kjørt ennå."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Utseende",
+        "light": "Lyst",
+        "dark": "Mørkt"
+      },
+      "language": {
+        "label": "Språk",
+        "de": "Tysk",
+        "en": "Engelsk"
+      }
+    },
+    "admin": {
+      "title": "Administrasjon",
+      "users": "Brukere",
+      "plugins": "Metadata-programtillegg",
+      "backups": "Sikkerhetskopier",
+      "exportImport": "Eksport/Import",
+      "mail": "E-post",
+      "oidc": "Enkel pålogging (SSO)",
+      "languages": "Språkpakker",
+      "templates": "Maler",
+      "settings": "Systeminnstillinger",
+      "confirmDeleteUser": "Slette bruker «{{name}}»? Dette kan ikke angres.",
+      "confirmDeleteBackup": "Slette sikkerhetskopi «{{filename}}»? Dette kan ikke angres.",
+      "passwordHint": "Minst 10 tegn, med minst én stor bokstav, én liten bokstav, ett tall og ett spesialtegn.",
+      "table": {
+        "level": "Nivå",
+        "status": "Status",
+        "enabled": "Aktivert",
+        "priority": "Prioritet",
+        "mediaType": "Medietype",
+        "version": "Versjon",
+        "sourceType": "Kilde"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Web-skraping"
+      },
+      "status": {
+        "active": "Aktiv",
+        "deactivated": "Deaktivert"
+      },
+      "actions": {
+        "deactivate": "Deaktiver",
+        "reactivate": "Reaktiver",
+        "createBackupNow": "Opprett sikkerhetskopi nå",
+        "download": "Last ned",
+        "createUser": "Opprett bruker",
+        "edit": "Rediger",
+        "save": "Lagre",
+        "cancel": "Avbryt",
+        "delete": "Slett",
+        "sendInvite": "Send invitasjons-e-post",
+        "restore": "Gjenopprett",
+        "view": "Vis",
+        "close": "Lukk"
+      },
+      "backupReason": {
+        "scheduled": "Tidsplan",
+        "pre_update": "Migrering"
+      },
+      "backupRestore": {
+        "warning": "Eksisterende biblioteker med samme navn hoppes over (forblir uendret) som standard, med mindre du velger \"Overskriv\" nedenfor.",
+        "overwriteExisting": "Overskriv eksisterende biblioteker med samme navn i stedet for å hoppe over dem",
+        "restoreSettings": "Gjenopprett også systeminnstillinger og brukerkontoer",
+        "submit": "Bekreft gjenoppretting",
+        "confirm": "Gjenopprette sikkerhetskopi \"{{filename}}\"? Dette kan ikke angres.",
+        "success": "Gjenoppretting fullført: {{created}} opprettet, {{overwritten}} overskrevet, {{merged}} slått sammen, {{skipped}} hoppet over."
+      },
+      "exportImportPage": {
+        "exportTitle": "Eksport",
+        "exportHint": "Hvis ingenting velges, eksporteres alle biblioteker. Nedlastingen er en zip-fil som inneholder bibliotekdataene pluss alle omslagsbilder.",
+        "exportSubmit": "Eksporter",
+        "exportError": "Eksport mislyktes.",
+        "importTitle": "Import",
+        "importFile": "Eksportfil",
+        "importSubmit": "Importer",
+        "importSuccess": "Import fullført: {{created}} opprettet, {{overwritten}} overskrevet, {{merged}} slått sammen, {{skipped}} hoppet over."
+      },
+      "languagesPage": {
+        "code": "Kode",
+        "none": "Ingen ekstra språkpakker ennå.",
+        "create": "Legg til språkpakke",
+        "translations": "Oversettelser (JSON)",
+        "translationsHint": "Samme nøkkel-verdi-struktur som de innebygde språkfilene (briefing 11.4) — last ned en av de innebygde tysk-/engelsk-radene ovenfor som utgangspunkt, rediger den i en tekstredigerer, og last deretter opp den resulterende filen nedenfor.",
+        "editFileHint": "Velg en fil for å erstatte gjeldende oversettelser, eller la dette stå tomt for å beholde dem og bare endre navnet.",
+        "confirmDelete": "Slette språkpakken \"{{name}}\"? Dette kan ikke angres.",
+        "bundledTitle": "Innebygde språkpakker",
+        "bundledInstalled": "installert",
+        "bundledInstall": "Installer",
+        "bundledReinstall": "Installer på nytt",
+        "confirmReinstall": "Installere språkpakken \"{{name}}\" på nytt? Eventuelle egne endringer i den går tapt og erstattes med den innebygde versjonen.",
+        "builtInHint": "Tysk og engelsk er innebygd i selve applikasjonen, så de vises kun i listen for visning og nedlasting — de kan ikke redigeres eller slettes.",
+        "errors": {
+          "invalidJson": "Dette er ikke gyldig JSON.",
+          "codeInvalid": "Denne koden er allerede i bruk eller reservert (de/en er reservert)."
+        }
+      },
+      "templatesPage": {
+        "none": "Ingen ekstra maler ennå.",
+        "create": "Legg til mal",
+        "confirmDelete": "Slette malen \"{{name}}\"? Dette kan ikke angres.",
+        "bundledTitle": "Innebygde maler",
+        "bundledNone": "Ingen ekstra maler er for øyeblikket innebygd.",
+        "bundledInstalled": "installert",
+        "bundledInstall": "Installer",
+        "bundledReinstall": "Installer på nytt",
+        "confirmReinstall": "Installere malen \"{{name}}\" på nytt? Eventuelle egne endringer i den går tapt og erstattes med den innebygde versjonen.",
+        "builtInHint": "Lyst og mørkt er innebygd i selve applikasjonen, så de vises kun i listen for visning og nedlasting — de kan ikke redigeres eller slettes.",
+        "css": "CSS",
+        "cssHint": "Det bokstavelige innholdet i en CSS-fil, brukt når denne malen er valgt. Å redefinere de samme egendefinerte egenskapene som lyst/mørkt bruker — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, pluss color-scheme — er nok til å style om hele appen konsekvent, f.eks.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Alt annet et stilark kan gjøre, er også tillatt. Last opp en .css-fil nedenfor — å laste ned CSS-en for lyst eller mørkt ovenfor er et godt utgangspunkt å redigere og laste opp på nytt.",
+        "editFileHint": "Velg en fil for å erstatte gjeldende CSS, eller la dette stå tomt for å beholde den og bare endre navnet.",
+        "errors": {
+          "codeInvalid": "Denne koden er allerede i bruk eller reservert (light/dark er reservert)."
+        }
+      },
+      "userInvite": {
+        "hint": "E-postserveren er ikke konfigurert — en invitasjons-e-post kan ikke sendes akkurat nå.",
+        "sent": "Invitasjons-e-post sendt.",
+        "failed": "Brukeren ble opprettet, men invitasjons-e-posten kunne ikke sendes."
+      },
+      "errors": {
+        "import_invalid_json": "Denne filen er ikke et gyldig MedInv-eksportformat (ikke en lesbar .zip-eksportfil).",
+        "import_missing_libraries": "Denne filen inneholder ingen biblioteker — sannsynligvis ikke en gyldig MedInv-eksportfil.",
+        "import_invalid_library": "Bibliotek #{{number}} i filen har ikke et gyldig \"{{field}}\"-felt.",
+        "import_invalid_item": "En oppføring (post #{{number}}) i biblioteket \"{{library}}\" har ingen gyldig tittel eller EAN.",
+        "protected_account": "Dette er den forhåndsdefinerte administratorkontoen og kan ikke redigeres, deaktiveres eller slettes.",
+        "passwordPolicy": "Passordet må være minst 10 tegn langt og inneholde en stor bokstav, en liten bokstav, ett tall og ett spesialtegn.",
+        "ownsLibraries": "Denne kontoen eier fortsatt følgende biblioteker og kan ikke slettes før de overføres til en annen eier eller slettes: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "SMTP-vert",
+        "port": "Port",
+        "username": "Brukernavn",
+        "password": "Passord",
+        "passwordHint": "La stå tomt for å beholde gjeldende passord.",
+        "encryption": "Kryptering",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Ingen kryptering"
+        },
+        "fromAddress": "Fra-adresse",
+        "fromName": "Fra-navn",
+        "healthy": "E-postserveren er tilgjengelig og riktig konfigurert.",
+        "unhealthy": "E-postserveren er utilgjengelig eller ikke fullstendig konfigurert. Tilbakestilling av passord er deaktivert.",
+        "saved": "E-postinnstillinger lagret.",
+        "testMail": "Send test-e-post",
+        "testMailTo": "Mottakeradresse",
+        "testMailSend": "Send test-e-post",
+        "testMailSent": "Test-e-post sendt.",
+        "testMailNotConfigured": "E-postserveren er ikke konfigurert ennå.",
+        "testMailFailed": "Test-e-posten kunne ikke sendes: {{message}}"
+      },
+      "oidcSettings": {
+        "intro": "La brukere logge inn via en ekstern OpenID Connect-identitetsleverandør (f.eks. Pocket ID) i tillegg til passordskjemaet — enhver standardkompatibel leverandør fungerer, ved å følge sitt eget discovery-dokument i stedet for noe leverandørspesifikt.",
+        "enabled": "Aktiver OIDC-innlogging",
+        "providerName": "Leverandørnavn",
+        "issuer": "Utsteder-URL",
+        "issuerHint": "Leverandørens grunn-URL, uten avsluttende skråstrek — dens OpenID discovery-dokument forventes å ligge på \"<issuer>/.well-known/openid-configuration\".",
+        "clientId": "Klient-ID",
+        "clientSecret": "Klienthemmelighet",
+        "clientSecretHint": "La stå tomt for å beholde gjeldende hemmelighet.",
+        "autoProvision": "Opprett konto automatisk ved første pålogging",
+        "autoProvisionHint": "Når deaktivert (standard), kan bare en e-postadresse en admin allerede har opprettet en konto for, logge inn via OIDC. Når aktivert, oppretter en førstegangspålogging en ny konto på nivået nedenfor.",
+        "defaultLevel": "Nivå for nyopprettede kontoer",
+        "levelClaimHint": "Navnet og nivået til en konto holdes også synkronisert med leverandøren ved hver pålogging, uavhengig av innstillingen ovenfor: navnet kommer fra en egendefinert \"medinv_name\"-claim hvis den finnes, ellers fra standard \"name\"-claimen; nivået kommer fra en egendefinert \"medinv_level\"-claim med verdien \"guest\", \"user\" eller \"admin\" — admin inkludert. I Pocket ID, legg til en egendefinert claim med nøyaktig nøkkelen du trenger til en bruker eller gruppe under Admin → Users/User Groups → Custom Claims. Hvis noen av disse claimene mangler, forblir det tilsvarende feltet uendret.",
+        "saved": "OIDC-innstillinger lagret."
+      },
+      "backupSettings": {
+        "title": "Sikkerhetskopieringsplan",
+        "intervalMode": "Intervall",
+        "interval": {
+          "daily": "Daglig",
+          "weekly": "Ukentlig",
+          "monthly": "Månedlig",
+          "cron": "Egendefinert (cron-uttrykk)"
+        },
+        "cronExpression": "Cron-uttrykk",
+        "retentionHint": "Gjelder bare automatiske sikkerhetskopier. Manuelt opprettede sikkerhetskopier telles ikke med og slettes aldri automatisk. Bare én av de to reglene nedenfor er aktiv om gangen — velg hvilken.",
+        "retentionMode": "Slett gamle sikkerhetskopier etter",
+        "retentionCount": "Behold høyst dette antallet sikkerhetskopier",
+        "retentionMaxAgeDays": "Slett sikkerhetskopier eldre enn (dager)",
+        "saved": "Sikkerhetskopieringsplan lagret."
+      },
+      "securitySettings": {
+        "title": "Beskyttelse mot brute force",
+        "maxAttempts": "Maks. mislykkede forsøk",
+        "windowMinutes": "Tidsvindu (minutter)",
+        "lockMinutes": "Utestengningsvarighet (minutter)",
+        "saved": "Sikkerhetsinnstillinger lagret."
+      },
+      "coverCleanup": {
+        "title": "Opprydding av omslag",
+        "hint": "En gang om dagen slettes omslags-/miniatyrbildefiler på disk som ingen medieoppføring lenger refererer til.",
+        "enabled": "Rydd automatisk opp foreldreløse omslagsfiler",
+        "saved": "Innstilling for opprydding av omslag lagret."
+      },
+      "timezoneSettings": {
+        "title": "Tidssone",
+        "hint": "Brukes for filnavn på sikkerhetskopier og eksporter, slik at de samsvarer med din lokale klokke i stedet for alltid å vise UTC.",
+        "timezone": "Tidssone",
+        "saved": "Tidssone lagret."
+      },
+      "logLevel": {
+        "title": "Loggnivå",
+        "saved": "Loggnivå lagret."
+      },
+      "localeSettings": {
+        "title": "Standardspråk",
+        "hint": "Brukes når en besøkendes språk verken er tysk eller engelsk.",
+        "defaultLanguage": "Standardspråk",
+        "saved": "Standardspråk lagret."
+      },
+      "pluginConfig": {
+        "settings": "Innstillinger",
+        "noConfig": "Ingen innstillinger nødvendig.",
+        "fields": {
+          "api_key": "API-nøkkel"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Dra for å endre rekkefølge på {{name}} (eller trykk mellomrom, bruk deretter piltastene)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Glemt passord",
+      "forgotIntro": "Skriv inn e-postadressen din. Hvis det finnes en konto for den, vil du motta en lenke for å tilbakestille passordet.",
+      "sendLink": "Be om lenke",
+      "linkSent": "Hvis den adressen finnes, er en e-post med en tilbakestillingslenke sendt.",
+      "resetTitle": "Angi et nytt passord",
+      "newPassword": "Nytt passord",
+      "confirmPassword": "Bekreft passord",
+      "resetSubmit": "Tilbakestill passord",
+      "resetSuccess": "Passordet ditt er tilbakestilt. Du kan nå logge inn.",
+      "backToLogin": "Tilbake til innlogging",
+      "errors": {
+        "invalid_token": "Denne lenken er ugyldig eller har utløpt. Vennligst be om en ny.",
+        "invalid_user": "Det finnes ingen konto for denne e-postadressen.",
+        "throttled": "Vennligst vent litt før du prøver igjen.",
+        "reset_failed": "Passordet kunne ikke tilbakestilles.",
+        "mail_unavailable": "E-postserveren er ikke konfigurert eller utilgjengelig. Vennligst kontakt en administrator.",
+        "generic": "Det fungerte ikke. Vennligst prøv igjen senere."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Ugyldig brukernavn eller passord.",
+      "account_locked": "For mange mislykkede forsøk. Denne kontoen er midlertidig låst.",
+      "account_deactivated": "Denne kontoen er deaktivert.",
+      "generic": "Innlogging mislyktes. Prøv igjen senere eller kontakt en administrator.",
+      "oidc_provider_error": "Enkel pålogging ble avbrutt eller avvist av identitetsleverandøren.",
+      "oidc_state_mismatch": "Forespørselen om enkel pålogging kunne ikke bekreftes. Vennligst prøv igjen.",
+      "oidc_failed": "Enkel pålogging mislyktes. Prøv igjen eller bruk passordet ditt i stedet.",
+      "oidc_no_account": "Det finnes ingen konto for denne identiteten ennå. Vennligst kontakt en administrator.",
+      "oidc_account_deactivated": "Denne kontoen er deaktivert."
+    }
+  }
+}

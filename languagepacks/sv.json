@@ -1,0 +1,435 @@
+{
+  "code": "sv",
+  "name": "Svenska",
+  "translations": {
+    "common": {
+      "name": "Namn",
+      "email": "E-post",
+      "loading": "Laddar…"
+    },
+    "nav": {
+      "home": "Hem",
+      "capture": "Registrering",
+      "libraries": "Bibliotek",
+      "statistics": "Statistik",
+      "administration": "Administration",
+      "toggleMenu": "Växla meny"
+    },
+    "dashboard": {
+      "noLibraries": "Inga bibliotek är synliga för dig ännu.",
+      "allLibraries": "Visa alla {{count}} bibliotek"
+    },
+    "login": {
+      "title": "Logga in",
+      "email": "E-postadress",
+      "password": "Lösenord",
+      "submit": "Logga in",
+      "mailServerWarning": "E-postservern är otillgänglig eller felkonfigurerad. Återställning av lösenord är inaktiverad.",
+      "forgotPassword": "Glömt lösenordet?",
+      "sessionExpired": "Din session har gått ut. Logga in igen.",
+      "ssoButton": "Logga in med {{provider}}"
+    },
+    "userMenu": {
+      "settings": "Anpassade inställningar",
+      "logout": "Logga ut"
+    },
+    "libraries": {
+      "title": "Bibliotek",
+      "create": "Skapa bibliotek",
+      "view": "Visa",
+      "delete": "Ta bort",
+      "noItems": "Det här biblioteket innehåller inga poster ännu.",
+      "confirmDelete": "Ta bort biblioteket ”{{name}}”? Detta kan inte ångras.",
+      "descriptionLabel": "Beskrivning",
+      "mediaTypeLabel": "Medietyp",
+      "mediaType": {
+        "book": "Bok",
+        "cd": "CD",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Delning",
+        "hint": "Styr vem mer som kan se detta bibliotek, förutom du. Endast läsåtkomst kan beviljas här.",
+        "guests": "Dela med gäster",
+        "allUsers": "Dela med alla användare",
+        "specificUsers": "Specifika användare",
+        "noSpecificUsers": "Inte delat med någon specifik användare.",
+        "selectUser": "Välj en användare…",
+        "add": "Lägg till",
+        "remove": "Ta bort",
+        "saved": "Delningsinställningar sparade."
+      },
+      "ownership": {
+        "title": "Ägarskap",
+        "hint": "Överför detta bibliotek, inklusive alla delningar, till en annan användare.",
+        "selectUser": "Välj en ny ägare…",
+        "transfer": "Överför",
+        "confirm": "Överföra ägarskapet av detta bibliotek till ”{{name}}”? Du kan förlora åtkomsten till det efteråt."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "Ta bort ”{{title}}”? Detta kan inte ångras.",
+      "moveToLibrary": "Flytta till bibliotek",
+      "selectLibrary": "Välj ett bibliotek…",
+      "move": "Flytta",
+      "uploadCover": "Ladda upp omslag",
+      "removeCover": "Ta bort omslag",
+      "viewCoverFullscreen": "Visa omslag i helskärm",
+      "confirmRemoveCover": "Ta bort omslaget? Detta kan inte ångras.",
+      "addManually": "Lägg till manuellt",
+      "createTitle": "Lägg till media",
+      "tracklist": "Spårlista",
+      "computedHint": "(beräknad)",
+      "refreshMetadata": "Uppdatera metadata",
+      "bulkDelete": {
+        "enter": "Välj",
+        "exit": "Avbryt val",
+        "selectAll": "Välj alla på denna sida",
+        "deselectAll": "Avmarkera alla",
+        "deleteSelected_one": "Ta bort {{count}} vald post",
+        "deleteSelected_other": "Ta bort {{count}} valda poster",
+        "confirm_one": "Ta bort {{count}} vald post? Detta kan inte ångras.",
+        "confirm_other": "Ta bort {{count}} valda poster? Detta kan inte ångras."
+      },
+      "fields": {
+        "title": "Titel",
+        "ean": "EAN",
+        "description": "Beskrivning",
+        "release_date": "Utgivningsdatum",
+        "price": "Pris",
+        "currency": "Valuta",
+        "authors": "Författare",
+        "format": "Format",
+        "genre": "Genre",
+        "page_count": "Antal sidor",
+        "language": "Språk",
+        "publisher": "Förlag",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Artist",
+        "medium": "Medium",
+        "asin": "ASIN",
+        "disc_count": "Antal skivor",
+        "runtime_seconds": "Speltid (sekunder)",
+        "languages": "Språk",
+        "cast": "Skådespelare",
+        "director": "Regissör",
+        "production_year": "Produktionsår",
+        "runtime_minutes": "Speltid (minuter)"
+      }
+    },
+    "capture": {
+      "title": "Registrering",
+      "single": "Enskild registrering",
+      "scan": "Skanna",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Import från textfil",
+      "duplicate": "Den här posten finns redan i det här biblioteket.",
+      "noMatch": "Ingen metadataträff — lägg till manuellt.",
+      "chooseCandidate": "Värden som alla källor är överens om fylls i automatiskt. Där de skiljer sig åt, välj ett värde nedan.",
+      "rejectAll": "Avvisa alla träffar",
+      "mergeCover": "Omslag",
+      "mergeNoCover": "Inget omslag",
+      "mergeConfirm": "Använd dessa värden",
+      "mergeTracksCount_one": "{{count}} spår",
+      "mergeTracksCount_other": "{{count}} spår",
+      "providerStatus": {
+        "ok_one": "{{count}} träff",
+        "ok_other": "{{count}} träffar",
+        "no_match": "ingen träff",
+        "failed": "förfrågan misslyckades"
+      },
+      "cameraScan": "Skanna med kamera",
+      "cameraClose": "Stäng kamera",
+      "cameraHint": "Håll en streckkod framför kameran.",
+      "cameraAccessError": "Kunde inte komma åt kameran. Ge behörighet eller ange en EAN/ISBN manuellt."
+    },
+    "search": {
+      "placeholder": "Sök…",
+      "resultsFor": "Sök: ”{{query}}”",
+      "submit": "Sök",
+      "fuzzy": "Fuzzy-sökning",
+      "error": "Sökningen misslyckades. Försök igen."
+    },
+    "statistics": {
+      "title": "Statistik",
+      "itemCount": "Antal poster",
+      "totalValue": "Totalt värde",
+      "dimension": {
+        "genre": "Genre",
+        "language": "Språk",
+        "publisher": "Förlag",
+        "artist": "Artist",
+        "director": "Regissör",
+        "year": "Utgivningsår"
+      },
+      "moreCount": "+{{count}} till",
+      "noDistributions": "Ingen fördelningsdata tillgänglig.",
+      "valueHistory": {
+        "title": "Värde över tid",
+        "accumulatedTitle": "Totalt värde över tid (alla dina bibliotek)",
+        "current": "Nuvarande värde: {{value}} (per {{date}})",
+        "noData": "Inte tillräckligt med data ännu för en värdehistorik.",
+        "estimatedNoteUntil": "Historik före {{date}} är uppskattad utifrån posters registreringsdatum och kanske inte återspeglar senare borttagningar eller prisändringar.",
+        "estimatedNoteAll": "Hela denna historik är uppskattad utifrån posters registreringsdatum — ingen daglig ögonblicksbild har körts ännu."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Tema",
+        "light": "Ljust",
+        "dark": "Mörkt"
+      },
+      "language": {
+        "label": "Språk",
+        "de": "Tyska",
+        "en": "Engelska"
+      }
+    },
+    "admin": {
+      "title": "Administration",
+      "users": "Användare",
+      "plugins": "Metadata-tillägg",
+      "backups": "Säkerhetskopior",
+      "exportImport": "Export/Import",
+      "mail": "E-post",
+      "oidc": "Enkel inloggning (SSO)",
+      "languages": "Språkpaket",
+      "templates": "Teman",
+      "settings": "Systeminställningar",
+      "confirmDeleteUser": "Ta bort användaren ”{{name}}”? Detta kan inte ångras.",
+      "confirmDeleteBackup": "Ta bort säkerhetskopian ”{{filename}}”? Detta kan inte ångras.",
+      "passwordHint": "Minst 10 tecken, med minst en stor bokstav, en liten bokstav, en siffra och ett specialtecken.",
+      "table": {
+        "level": "Nivå",
+        "status": "Status",
+        "enabled": "Aktiverad",
+        "priority": "Prioritet",
+        "mediaType": "Medietyp",
+        "version": "Version",
+        "sourceType": "Källa"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Webbskrapning"
+      },
+      "status": {
+        "active": "Aktiv",
+        "deactivated": "Inaktiverad"
+      },
+      "actions": {
+        "deactivate": "Inaktivera",
+        "reactivate": "Återaktivera",
+        "createBackupNow": "Skapa säkerhetskopia nu",
+        "download": "Ladda ner",
+        "createUser": "Skapa användare",
+        "edit": "Redigera",
+        "save": "Spara",
+        "cancel": "Avbryt",
+        "delete": "Ta bort",
+        "sendInvite": "Skicka inbjudningsmejl",
+        "restore": "Återställ",
+        "view": "Visa",
+        "close": "Stäng"
+      },
+      "backupReason": {
+        "scheduled": "Schema",
+        "pre_update": "Migrering"
+      },
+      "backupRestore": {
+        "warning": "Befintliga bibliotek med samma namn hoppas som standard över (lämnas orörda) om du inte väljer \"Skriv över\" nedan.",
+        "overwriteExisting": "Skriv över befintliga bibliotek med samma namn i stället för att hoppa över dem",
+        "restoreSettings": "Återställ även systeminställningar och användarkonton",
+        "submit": "Bekräfta återställning",
+        "confirm": "Återställa säkerhetskopian \"{{filename}}\"? Detta kan inte ångras.",
+        "success": "Återställning klar: {{created}} skapade, {{overwritten}} överskrivna, {{merged}} sammanslagna, {{skipped}} överhoppade."
+      },
+      "exportImportPage": {
+        "exportTitle": "Export",
+        "exportHint": "Om inget väljs exporteras alla bibliotek. Nedladdningen är en zip-fil som innehåller bibliotekdata plus alla omslagsbilder.",
+        "exportSubmit": "Exportera",
+        "exportError": "Export misslyckades.",
+        "importTitle": "Import",
+        "importFile": "Exportfil",
+        "importSubmit": "Importera",
+        "importSuccess": "Import klar: {{created}} skapade, {{overwritten}} överskrivna, {{merged}} sammanslagna, {{skipped}} överhoppade."
+      },
+      "languagesPage": {
+        "code": "Kod",
+        "none": "Inga ytterligare språkpaket ännu.",
+        "create": "Lägg till språkpaket",
+        "translations": "Översättningar (JSON)",
+        "translationsHint": "Samma nyckel-värde-struktur som de inbyggda språkfilerna (briefing 11.4) — ladda ner en av de inbyggda tysk-/engelska-raderna ovan som utgångspunkt, redigera den i en textredigerare och ladda sedan upp den resulterande filen nedan.",
+        "editFileHint": "Välj en fil för att ersätta nuvarande översättningar, eller lämna detta tomt för att behålla dem och bara ändra namnet.",
+        "confirmDelete": "Ta bort språkpaketet \"{{name}}\"? Detta kan inte ångras.",
+        "bundledTitle": "Inbyggda språkpaket",
+        "bundledInstalled": "installerat",
+        "bundledInstall": "Installera",
+        "bundledReinstall": "Installera om",
+        "confirmReinstall": "Installera om språkpaketet \"{{name}}\"? Eventuella egna ändringar i det går förlorade och ersätts med den inbyggda versionen.",
+        "builtInHint": "Tyska och engelska är inbyggda i själva applikationen, så de visas endast i listan för visning och nedladdning — de kan inte redigeras eller tas bort.",
+        "errors": {
+          "invalidJson": "Det är inte giltig JSON.",
+          "codeInvalid": "Den här koden är redan upptagen eller reserverad (de/en är reserverade)."
+        }
+      },
+      "templatesPage": {
+        "none": "Inga ytterligare teman ännu.",
+        "create": "Lägg till tema",
+        "confirmDelete": "Ta bort temat \"{{name}}\"? Detta kan inte ångras.",
+        "bundledTitle": "Inbyggda teman",
+        "bundledNone": "Inga ytterligare teman är för närvarande inbyggda.",
+        "bundledInstalled": "installerat",
+        "bundledInstall": "Installera",
+        "bundledReinstall": "Installera om",
+        "confirmReinstall": "Installera om temat \"{{name}}\"? Eventuella egna ändringar i det går förlorade och ersätts med den inbyggda versionen.",
+        "builtInHint": "Ljust och mörkt är inbyggda i själva applikationen, så de visas endast i listan för visning och nedladdning — de kan inte redigeras eller tas bort.",
+        "css": "CSS",
+        "cssHint": "Det bokstavliga innehållet i en CSS-fil, tillämpat medan detta tema är valt. Att omdefiniera samma anpassade egenskaper som ljust/mörkt använder — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, plus color-scheme — räcker för att skina om hela appen konsekvent, t.ex.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Allt annat en stilmall kan göra är också tillåtet. Ladda upp en .css-fil nedan — att ladda ner CSS:en för ljust eller mörkt ovan är en bra utgångspunkt att redigera och ladda upp igen.",
+        "editFileHint": "Välj en fil för att ersätta nuvarande CSS, eller lämna detta tomt för att behålla den och bara ändra namnet.",
+        "errors": {
+          "codeInvalid": "Den här koden är redan upptagen eller reserverad (light/dark är reserverade)."
+        }
+      },
+      "userInvite": {
+        "hint": "E-postservern är inte konfigurerad — ett inbjudningsmejl kan inte skickas just nu.",
+        "sent": "Inbjudningsmejl skickat.",
+        "failed": "Användaren skapades, men inbjudningsmejlet kunde inte skickas."
+      },
+      "errors": {
+        "import_invalid_json": "Den här filen är inte ett giltigt MedInv-exportformat (inte en läsbar .zip-exportfil).",
+        "import_missing_libraries": "Den här filen innehåller inga bibliotek — troligen inte en giltig MedInv-exportfil.",
+        "import_invalid_library": "Bibliotek #{{number}} i filen har inget giltigt \"{{field}}\"-fält.",
+        "import_invalid_item": "En post (post #{{number}}) i biblioteket \"{{library}}\" har ingen giltig titel eller EAN.",
+        "protected_account": "Det här är det fördefinierade administratörskontot och kan inte redigeras, inaktiveras eller tas bort.",
+        "passwordPolicy": "Lösenordet måste vara minst 10 tecken långt och innehålla en stor bokstav, en liten bokstav, en siffra och ett specialtecken.",
+        "ownsLibraries": "Det här kontot äger fortfarande följande bibliotek och kan inte tas bort förrän de överförs till en annan ägare eller tas bort: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "SMTP-värd",
+        "port": "Port",
+        "username": "Användarnamn",
+        "password": "Lösenord",
+        "passwordHint": "Lämna tomt för att behålla nuvarande lösenord.",
+        "encryption": "Kryptering",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Ingen kryptering"
+        },
+        "fromAddress": "Från-adress",
+        "fromName": "Från-namn",
+        "healthy": "E-postservern är tillgänglig och korrekt konfigurerad.",
+        "unhealthy": "E-postservern är otillgänglig eller inte fullständigt konfigurerad. Återställning av lösenord är inaktiverad.",
+        "saved": "E-postinställningar sparade.",
+        "testMail": "Skicka testmejl",
+        "testMailTo": "Mottagaradress",
+        "testMailSend": "Skicka testmejl",
+        "testMailSent": "Testmejl skickat.",
+        "testMailNotConfigured": "E-postservern är inte konfigurerad ännu.",
+        "testMailFailed": "Testmejlet kunde inte skickas: {{message}}"
+      },
+      "oidcSettings": {
+        "intro": "Låt användare logga in via en extern OpenID Connect-identitetsleverantör (t.ex. Pocket ID) utöver lösenordsformuläret — vilken standardkompatibel leverantör som helst fungerar, genom att följa sitt eget discovery-dokument i stället för något leverantörsspecifikt.",
+        "enabled": "Aktivera OIDC-inloggning",
+        "providerName": "Leverantörsnamn",
+        "issuer": "Utfärdar-URL",
+        "issuerHint": "Leverantörens bas-URL, utan avslutande snedstreck — dess OpenID discovery-dokument förväntas finnas på \"<issuer>/.well-known/openid-configuration\".",
+        "clientId": "Klient-ID",
+        "clientSecret": "Klienthemlighet",
+        "clientSecretHint": "Lämna tomt för att behålla nuvarande hemlighet.",
+        "autoProvision": "Skapa konto automatiskt vid första inloggningen",
+        "autoProvisionHint": "När det är inaktiverat (standard) kan bara en e-postadress som en admin redan har skapat ett konto för logga in via OIDC. När det är aktiverat skapar en första inloggning ett nytt konto på nivån nedan.",
+        "defaultLevel": "Nivå för nyskapade konton",
+        "levelClaimHint": "Ett kontos namn och nivå hålls också synkroniserade med leverantören vid varje inloggning, oberoende av inställningen ovan: namnet kommer från ett anpassat \"medinv_name\"-anspråk om det finns, annars från standardanspråket \"name\"; nivån kommer från ett anpassat \"medinv_level\"-anspråk med värdet \"guest\", \"user\" eller \"admin\" — admin inkluderat. I Pocket ID, lägg till ett anpassat anspråk med exakt den nyckel du behöver för en användare eller grupp under Admin → Users/User Groups → Custom Claims. Om något av dessa anspråk saknas lämnas motsvarande fält oförändrat.",
+        "saved": "OIDC-inställningar sparade."
+      },
+      "backupSettings": {
+        "title": "Schema för säkerhetskopiering",
+        "intervalMode": "Intervall",
+        "interval": {
+          "daily": "Dagligen",
+          "weekly": "Veckovis",
+          "monthly": "Månadsvis",
+          "cron": "Anpassat (cron-uttryck)"
+        },
+        "cronExpression": "Cron-uttryck",
+        "retentionHint": "Gäller endast automatiska säkerhetskopior. Manuellt skapade säkerhetskopior räknas inte och tas aldrig bort automatiskt. Endast en av de två reglerna nedan är aktiv åt gången — välj vilken.",
+        "retentionMode": "Ta bort gamla säkerhetskopior efter",
+        "retentionCount": "Behåll som mest detta antal säkerhetskopior",
+        "retentionMaxAgeDays": "Ta bort säkerhetskopior äldre än (dagar)",
+        "saved": "Schema för säkerhetskopiering sparat."
+      },
+      "securitySettings": {
+        "title": "Skydd mot brute force",
+        "maxAttempts": "Max. misslyckade försök",
+        "windowMinutes": "Tidsfönster (minuter)",
+        "lockMinutes": "Låsningstid (minuter)",
+        "saved": "Säkerhetsinställningar sparade."
+      },
+      "coverCleanup": {
+        "title": "Rensning av omslag",
+        "hint": "En gång om dagen tas omslags-/miniatyrbildfiler bort på disk som ingen mediepost längre refererar till.",
+        "enabled": "Rensa automatiskt bort övergivna omslagsfiler",
+        "saved": "Inställning för rensning av omslag sparad."
+      },
+      "timezoneSettings": {
+        "title": "Tidszon",
+        "hint": "Används för filnamn på säkerhetskopior och exporter, så att de matchar din lokala klocka i stället för att alltid visa UTC.",
+        "timezone": "Tidszon",
+        "saved": "Tidszon sparad."
+      },
+      "logLevel": {
+        "title": "Loggnivå",
+        "saved": "Loggnivå sparad."
+      },
+      "localeSettings": {
+        "title": "Standardspråk",
+        "hint": "Används när en besökares språk varken är tyska eller engelska.",
+        "defaultLanguage": "Standardspråk",
+        "saved": "Standardspråk sparat."
+      },
+      "pluginConfig": {
+        "settings": "Inställningar",
+        "noConfig": "Inga inställningar krävs.",
+        "fields": {
+          "api_key": "API-nyckel"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Dra för att ändra ordning på {{name}} (eller tryck på mellanslag och använd sedan piltangenterna)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Glömt lösenord",
+      "forgotIntro": "Ange din e-postadress. Om det finns ett konto för den får du en länk för att återställa ditt lösenord.",
+      "sendLink": "Begär länk",
+      "linkSent": "Om den adressen finns har ett mejl med en återställningslänk skickats.",
+      "resetTitle": "Ange ett nytt lösenord",
+      "newPassword": "Nytt lösenord",
+      "confirmPassword": "Bekräfta lösenord",
+      "resetSubmit": "Återställ lösenord",
+      "resetSuccess": "Ditt lösenord har återställts. Du kan nu logga in.",
+      "backToLogin": "Tillbaka till inloggning",
+      "errors": {
+        "invalid_token": "Den här länken är ogiltig eller har gått ut. Vänligen begär en ny.",
+        "invalid_user": "Det finns inget konto för den här e-postadressen.",
+        "throttled": "Vänta en stund innan du försöker igen.",
+        "reset_failed": "Lösenordet kunde inte återställas.",
+        "mail_unavailable": "E-postservern är inte konfigurerad eller är otillgänglig. Kontakta en administratör.",
+        "generic": "Det fungerade inte. Försök igen senare."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Ogiltiga inloggningsuppgifter.",
+      "account_locked": "För många misslyckade försök. Det här kontot är tillfälligt låst.",
+      "account_deactivated": "Det här kontot har inaktiverats.",
+      "generic": "Inloggningen misslyckades. Försök igen senare eller kontakta en administratör.",
+      "oidc_provider_error": "Enkel inloggning avbröts eller nekades av identitetsleverantören.",
+      "oidc_state_mismatch": "Begäran om enkel inloggning kunde inte verifieras. Försök igen.",
+      "oidc_failed": "Enkel inloggning misslyckades. Försök igen eller använd ditt lösenord i stället.",
+      "oidc_no_account": "Det finns inget konto för den här identiteten ännu. Kontakta en administratör.",
+      "oidc_account_deactivated": "Det här kontot har inaktiverats."
+    }
+  }
+}

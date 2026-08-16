@@ -1,0 +1,435 @@
+{
+  "code": "fi",
+  "name": "Suomi",
+  "translations": {
+    "common": {
+      "name": "Nimi",
+      "email": "Sähköposti",
+      "loading": "Ladataan…"
+    },
+    "nav": {
+      "home": "Koti",
+      "capture": "Tallennus",
+      "libraries": "Kirjastot",
+      "statistics": "Tilastot",
+      "administration": "Hallinta",
+      "toggleMenu": "Vaihda valikko"
+    },
+    "dashboard": {
+      "noLibraries": "Sinulle ei ole vielä näkyvissä kirjastoja.",
+      "allLibraries": "Näytä kaikki {{count}} kirjastoa"
+    },
+    "login": {
+      "title": "Kirjaudu sisään",
+      "email": "Sähköpostiosoite",
+      "password": "Salasana",
+      "submit": "Kirjaudu sisään",
+      "mailServerWarning": "Sähköpostipalvelin ei ole tavoitettavissa tai on väärin määritetty. Salasanan palautus on poistettu käytöstä.",
+      "forgotPassword": "Unohditko salasanasi?",
+      "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
+      "ssoButton": "Kirjaudu sisään palvelulla {{provider}}"
+    },
+    "userMenu": {
+      "settings": "Mukautetut asetukset",
+      "logout": "Kirjaudu ulos"
+    },
+    "libraries": {
+      "title": "Kirjastot",
+      "create": "Luo kirjasto",
+      "view": "Näytä",
+      "delete": "Poista",
+      "noItems": "Tässä kirjastossa ei ole vielä yhtään kohdetta.",
+      "confirmDelete": "Poistetaanko kirjasto ”{{name}}”? Tätä ei voi perua.",
+      "descriptionLabel": "Kuvaus",
+      "mediaTypeLabel": "Mediatyyppi",
+      "mediaType": {
+        "book": "Kirja",
+        "cd": "CD",
+        "dvd_bluray": "DVD/Blu-ray"
+      },
+      "sharing": {
+        "title": "Jakaminen",
+        "hint": "Määrittää, ketkä muut voivat nähdä tämän kirjaston sinun lisäksesi. Täällä voi myöntää vain lukuoikeuden.",
+        "guests": "Jaa vierailijoille",
+        "allUsers": "Jaa kaikille käyttäjille",
+        "specificUsers": "Tietyt käyttäjät",
+        "noSpecificUsers": "Ei jaettu millekään tietylle käyttäjälle.",
+        "selectUser": "Valitse käyttäjä…",
+        "add": "Lisää",
+        "remove": "Poista",
+        "saved": "Jakoasetukset tallennettu."
+      },
+      "ownership": {
+        "title": "Omistajuus",
+        "hint": "Siirtää tämän kirjaston, mukaan lukien kaikki sen jaot, toiselle käyttäjälle.",
+        "selectUser": "Valitse uusi omistaja…",
+        "transfer": "Siirrä",
+        "confirm": "Siirretäänkö tämän kirjaston omistajuus käyttäjälle ”{{name}}”? Saatat menettää pääsyn siihen sen jälkeen."
+      }
+    },
+    "mediaItem": {
+      "confirmDelete": "Poistetaanko ”{{title}}”? Tätä ei voi perua.",
+      "moveToLibrary": "Siirrä kirjastoon",
+      "selectLibrary": "Valitse kirjasto…",
+      "move": "Siirrä",
+      "uploadCover": "Lataa kansikuva",
+      "removeCover": "Poista kansikuva",
+      "viewCoverFullscreen": "Näytä kansikuva koko näytöllä",
+      "confirmRemoveCover": "Poistetaanko kansikuva? Tätä ei voi perua.",
+      "addManually": "Lisää manuaalisesti",
+      "createTitle": "Lisää media",
+      "tracklist": "Kappaleluettelo",
+      "computedHint": "(laskettu)",
+      "refreshMetadata": "Päivitä metatiedot",
+      "bulkDelete": {
+        "enter": "Valitse",
+        "exit": "Peru valinta",
+        "selectAll": "Valitse kaikki tällä sivulla",
+        "deselectAll": "Poista kaikki valinnat",
+        "deleteSelected_one": "Poista {{count}} valittu kohde",
+        "deleteSelected_other": "Poista {{count}} valittua kohdetta",
+        "confirm_one": "Poistetaanko {{count}} valittu kohde? Tätä ei voi perua.",
+        "confirm_other": "Poistetaanko {{count}} valittua kohdetta? Tätä ei voi perua."
+      },
+      "fields": {
+        "title": "Nimike",
+        "ean": "EAN",
+        "description": "Kuvaus",
+        "release_date": "Julkaisupäivä",
+        "price": "Hinta",
+        "currency": "Valuutta",
+        "authors": "Tekijä(t)",
+        "format": "Muoto",
+        "genre": "Genre",
+        "page_count": "Sivumäärä",
+        "language": "Kieli",
+        "publisher": "Kustantaja",
+        "isbn10": "ISBN-10",
+        "isbn13": "ISBN-13",
+        "artist": "Esittäjä",
+        "medium": "Formaatti",
+        "asin": "ASIN",
+        "disc_count": "Levyjen määrä",
+        "runtime_seconds": "Kesto (sekuntia)",
+        "languages": "Kieli/kielet",
+        "cast": "Näyttelijät",
+        "director": "Ohjaaja",
+        "production_year": "Tuotantovuosi",
+        "runtime_minutes": "Kesto (minuuttia)"
+      }
+    },
+    "capture": {
+      "title": "Tallennus",
+      "single": "Yksittäinen tallennus",
+      "scan": "Skannaa",
+      "eanIsbnPlaceholder": "EAN / ISBN",
+      "textFileImport": "Tuonti tekstitiedostosta",
+      "duplicate": "Tämä kohde on jo tässä kirjastossa.",
+      "noMatch": "Ei metatietoja — lisää manuaalisesti.",
+      "chooseCandidate": "Arvot, joista kaikki lähteet ovat samaa mieltä, täytetään automaattisesti. Kun ne poikkeavat, valitse arvo alta.",
+      "rejectAll": "Hylkää kaikki osumat",
+      "mergeCover": "Kansikuva",
+      "mergeNoCover": "Ei kansikuvaa",
+      "mergeConfirm": "Käytä näitä arvoja",
+      "mergeTracksCount_one": "{{count}} kappale",
+      "mergeTracksCount_other": "{{count}} kappaletta",
+      "providerStatus": {
+        "ok_one": "{{count}} osuma",
+        "ok_other": "{{count}} osumaa",
+        "no_match": "ei osumaa",
+        "failed": "pyyntö epäonnistui"
+      },
+      "cameraScan": "Skannaa kameralla",
+      "cameraClose": "Sulje kamera",
+      "cameraHint": "Pidä viivakoodia kameran edessä.",
+      "cameraAccessError": "Kameraa ei voitu käyttää. Myönnä käyttöoikeus tai anna EAN/ISBN manuaalisesti."
+    },
+    "search": {
+      "placeholder": "Haku…",
+      "resultsFor": "Haku: ”{{query}}”",
+      "submit": "Hae",
+      "fuzzy": "Sumea haku",
+      "error": "Haku epäonnistui. Yritä uudelleen."
+    },
+    "statistics": {
+      "title": "Tilastot",
+      "itemCount": "Kohteiden määrä",
+      "totalValue": "Kokonaisarvo",
+      "dimension": {
+        "genre": "Genre",
+        "language": "Kieli",
+        "publisher": "Kustantaja",
+        "artist": "Esittäjä",
+        "director": "Ohjaaja",
+        "year": "Julkaisuvuosi"
+      },
+      "moreCount": "+{{count}} lisää",
+      "noDistributions": "Jakaumatietoja ei ole saatavilla.",
+      "valueHistory": {
+        "title": "Arvo ajan mittaan",
+        "accumulatedTitle": "Kokonaisarvo ajan mittaan (kaikki kirjastosi)",
+        "current": "Nykyinen arvo: {{value}} ({{date}})",
+        "noData": "Arvohistoriaa varten ei ole vielä tarpeeksi tietoa.",
+        "estimatedNoteUntil": "Historia ennen päivämäärää {{date}} on arvioitu kohteiden tallennuspäivien perusteella, eikä se välttämättä huomioi myöhempiä poistoja tai hintamuutoksia.",
+        "estimatedNoteAll": "Koko tämä historia on arvioitu kohteiden tallennuspäivien perusteella — päivittäistä tilannevedosta ei ole vielä suoritettu."
+      }
+    },
+    "settings": {
+      "template": {
+        "label": "Teema",
+        "light": "Vaalea",
+        "dark": "Tumma"
+      },
+      "language": {
+        "label": "Kieli",
+        "de": "Saksa",
+        "en": "Englanti"
+      }
+    },
+    "admin": {
+      "title": "Hallinta",
+      "users": "Käyttäjät",
+      "plugins": "Metatietolaajennukset",
+      "backups": "Varmuuskopiot",
+      "exportImport": "Vienti/Tuonti",
+      "mail": "Sähköposti",
+      "oidc": "Kertakirjautuminen (SSO)",
+      "languages": "Kielipaketit",
+      "templates": "Teemat",
+      "settings": "Järjestelmäasetukset",
+      "confirmDeleteUser": "Poistetaanko käyttäjä ”{{name}}”? Tätä ei voi perua.",
+      "confirmDeleteBackup": "Poistetaanko varmuuskopio ”{{filename}}”? Tätä ei voi perua.",
+      "passwordHint": "Vähintään 10 merkkiä, ja mukana vähintään yksi iso kirjain, yksi pieni kirjain, yksi numero ja yksi erikoismerkki.",
+      "table": {
+        "level": "Taso",
+        "status": "Tila",
+        "enabled": "Käytössä",
+        "priority": "Prioriteetti",
+        "mediaType": "Mediatyyppi",
+        "version": "Versio",
+        "sourceType": "Lähde"
+      },
+      "sourceType": {
+        "api": "API",
+        "scraping": "Verkkokaavinta"
+      },
+      "status": {
+        "active": "Aktiivinen",
+        "deactivated": "Poistettu käytöstä"
+      },
+      "actions": {
+        "deactivate": "Poista käytöstä",
+        "reactivate": "Aktivoi uudelleen",
+        "createBackupNow": "Luo varmuuskopio nyt",
+        "download": "Lataa",
+        "createUser": "Luo käyttäjä",
+        "edit": "Muokkaa",
+        "save": "Tallenna",
+        "cancel": "Peruuta",
+        "delete": "Poista",
+        "sendInvite": "Lähetä kutsusähköposti",
+        "restore": "Palauta",
+        "view": "Näytä",
+        "close": "Sulje"
+      },
+      "backupReason": {
+        "scheduled": "Aikataulu",
+        "pre_update": "Päivitys"
+      },
+      "backupRestore": {
+        "warning": "Samannimiset olemassa olevat kirjastot ohitetaan (jätetään koskematta) oletuksena, ellet valitse alla olevaa \"Korvaa\"-vaihtoehtoa.",
+        "overwriteExisting": "Korvaa samannimiset olemassa olevat kirjastot niiden ohittamisen sijaan",
+        "restoreSettings": "Palauta myös järjestelmäasetukset ja käyttäjätilit",
+        "submit": "Vahvista palautus",
+        "confirm": "Palautetaanko varmuuskopio \"{{filename}}\"? Tätä ei voi perua.",
+        "success": "Palautus valmis: {{created}} luotu, {{overwritten}} korvattu, {{merged}} yhdistetty, {{skipped}} ohitettu."
+      },
+      "exportImportPage": {
+        "exportTitle": "Vienti",
+        "exportHint": "Jos mitään ei valita, kaikki kirjastot viedään. Lataus on zip-tiedosto, joka sisältää kirjastotiedot sekä kaikki kansikuvat.",
+        "exportSubmit": "Vie",
+        "exportError": "Vienti epäonnistui.",
+        "importTitle": "Tuonti",
+        "importFile": "Vientitiedosto",
+        "importSubmit": "Tuo",
+        "importSuccess": "Tuonti valmis: {{created}} luotu, {{overwritten}} korvattu, {{merged}} yhdistetty, {{skipped}} ohitettu."
+      },
+      "languagesPage": {
+        "code": "Koodi",
+        "none": "Ei vielä muita kielipaketteja.",
+        "create": "Lisää kielipaketti",
+        "translations": "Käännökset (JSON)",
+        "translationsHint": "Sama avain-arvo-rakenne kuin sisäänrakennetuissa kielitiedostoissa (briefing 11.4) — lataa yllä oleva sisäänrakennettu saksa- tai englantirivi lähtökohdaksi, muokkaa sitä tekstieditorissa ja lataa sitten tuloksena syntynyt tiedosto alle.",
+        "editFileHint": "Valitse tiedosto, joka korvaa nykyiset käännökset, tai jätä tämä tyhjäksi säilyttääksesi ne ja muuttaaksesi vain nimeä.",
+        "confirmDelete": "Poistetaanko kielipaketti \"{{name}}\"? Tätä ei voi perua.",
+        "bundledTitle": "Sisäänrakennetut kielipaketit",
+        "bundledInstalled": "asennettu",
+        "bundledInstall": "Asenna",
+        "bundledReinstall": "Asenna uudelleen",
+        "confirmReinstall": "Asennetaanko kielipaketti \"{{name}}\" uudelleen? Kaikki siihen tehdyt mukautukset menetetään ja korvataan sisäänrakennetulla versiolla.",
+        "builtInHint": "Saksa ja englanti ovat sisäänrakennettuja itse sovellukseen, joten ne näkyvät listassa vain katseltavina ja ladattavina — niitä ei voi muokata tai poistaa.",
+        "errors": {
+          "invalidJson": "Tämä ei ole kelvollista JSON-muotoa.",
+          "codeInvalid": "Tämä koodi on jo käytössä tai varattu (de/en on varattu)."
+        }
+      },
+      "templatesPage": {
+        "none": "Ei vielä muita teemoja.",
+        "create": "Lisää teema",
+        "confirmDelete": "Poistetaanko teema \"{{name}}\"? Tätä ei voi perua.",
+        "bundledTitle": "Sisäänrakennetut teemat",
+        "bundledNone": "Ei tällä hetkellä muita sisäänrakennettuja teemoja.",
+        "bundledInstalled": "asennettu",
+        "bundledInstall": "Asenna",
+        "bundledReinstall": "Asenna uudelleen",
+        "confirmReinstall": "Asennetaanko teema \"{{name}}\" uudelleen? Kaikki siihen tehdyt mukautukset menetetään ja korvataan sisäänrakennetulla versiolla.",
+        "builtInHint": "Vaalea ja tumma ovat sisäänrakennettuja itse sovellukseen, joten ne näkyvät listassa vain katseltavina ja ladattavina — niitä ei voi muokata tai poistaa.",
+        "css": "CSS",
+        "cssHint": "CSS-tiedoston kirjaimellinen sisältö, jota käytetään tämän teeman ollessa valittuna. Samojen mukautettujen ominaisuuksien uudelleenmäärittely, joita vaalea/tumma käyttävät — --color-bg, --color-surface, --color-text, --color-text-muted, --color-border, --color-accent, --color-danger, --color-danger-bg, sekä color-scheme — riittää koko sovelluksen ulkoasun johdonmukaiseen muuttamiseen, esim.: :root { --color-bg: #fdf6e3; --color-text: #073642; color-scheme: light; }. Myös kaikki muu, mitä tyylitiedosto voi tehdä, on sallittua. Lataa .css-tiedosto alle — yllä olevan vaalean tai tumman CSS:n lataaminen on hyvä lähtökohta muokattavaksi ja uudelleen ladattavaksi.",
+        "editFileHint": "Valitse tiedosto, joka korvaa nykyisen CSS:n, tai jätä tämä tyhjäksi säilyttääksesi sen ja muuttaaksesi vain nimeä.",
+        "errors": {
+          "codeInvalid": "Tämä koodi on jo käytössä tai varattu (light/dark on varattu)."
+        }
+      },
+      "userInvite": {
+        "hint": "Sähköpostipalvelinta ei ole määritetty — kutsusähköpostia ei voida lähettää juuri nyt.",
+        "sent": "Kutsusähköposti lähetetty.",
+        "failed": "Käyttäjä luotiin, mutta kutsusähköpostia ei voitu lähettää."
+      },
+      "errors": {
+        "import_invalid_json": "Tämä tiedosto ei ole kelvollinen MedInv-vientimuoto (ei luettavissa oleva .zip-vientitiedosto).",
+        "import_missing_libraries": "Tämä tiedosto ei sisällä yhtään kirjastoa — todennäköisesti se ei ole kelvollinen MedInv-vientitiedosto.",
+        "import_invalid_library": "Tiedoston kirjastolla #{{number}} ei ole kelvollista \"{{field}}\"-kenttää.",
+        "import_invalid_item": "Kirjaston \"{{library}}\" kohteella (tietue #{{number}}) ei ole kelvollista nimikettä tai EAN-koodia.",
+        "protected_account": "Tämä on ennalta määritetty pääkäyttäjätili, eikä sitä voi muokata, poistaa käytöstä tai poistaa.",
+        "passwordPolicy": "Salasanan on oltava vähintään 10 merkkiä pitkä ja sisällettävä iso kirjain, pieni kirjain, numero ja erikoismerkki.",
+        "ownsLibraries": "Tällä tilillä on edelleen seuraavat kirjastot, eikä sitä voi poistaa ennen kuin ne siirretään toiselle omistajalle tai poistetaan: {{libraries}}"
+      },
+      "mailSettings": {
+        "host": "SMTP-palvelin",
+        "port": "Portti",
+        "username": "Käyttäjätunnus",
+        "password": "Salasana",
+        "passwordHint": "Jätä tyhjäksi säilyttääksesi nykyisen salasanan.",
+        "encryption": "Salaus",
+        "encryptionOptions": {
+          "ssl_tls": "SSL/TLS",
+          "starttls": "STARTTLS",
+          "none": "Ei salausta"
+        },
+        "fromAddress": "Lähettäjän osoite",
+        "fromName": "Lähettäjän nimi",
+        "healthy": "Sähköpostipalvelin on tavoitettavissa ja oikein määritetty.",
+        "unhealthy": "Sähköpostipalvelin ei ole tavoitettavissa tai sitä ei ole täysin määritetty. Salasanan palautus on poistettu käytöstä.",
+        "saved": "Sähköpostiasetukset tallennettu.",
+        "testMail": "Lähetä testisähköposti",
+        "testMailTo": "Vastaanottajan osoite",
+        "testMailSend": "Lähetä testisähköposti",
+        "testMailSent": "Testisähköposti lähetetty.",
+        "testMailNotConfigured": "Sähköpostipalvelinta ei ole vielä määritetty.",
+        "testMailFailed": "Testisähköpostia ei voitu lähettää: {{message}}"
+      },
+      "oidcSettings": {
+        "intro": "Anna käyttäjien kirjautua sisään ulkoisen OpenID Connect -identiteetintarjoajan (esim. Pocket ID) kautta salasanalomakkeen lisäksi — mikä tahansa standardinmukainen tarjoaja toimii, koska se noudattaa omaa discovery-asiakirjaansa tarjoajakohtaisen ratkaisun sijaan.",
+        "enabled": "Ota OIDC-kirjautuminen käyttöön",
+        "providerName": "Tarjoajan nimi",
+        "issuer": "Myöntäjän URL-osoite",
+        "issuerHint": "Tarjoajan perus-URL, ilman päättävää kauttaviivaa — sen OpenID discovery -asiakirjan odotetaan olevan osoitteessa \"<issuer>/.well-known/openid-configuration\".",
+        "clientId": "Asiakastunnus",
+        "clientSecret": "Asiakassalaisuus",
+        "clientSecretHint": "Jätä tyhjäksi säilyttääksesi nykyisen salaisuuden.",
+        "autoProvision": "Luo tili automaattisesti ensimmäisellä kirjautumisella",
+        "autoProvisionHint": "Kun poistettu käytöstä (oletus), vain sähköpostiosoite, jolle ylläpitäjä on jo luonut tilin, voi kirjautua sisään OIDC:n kautta. Kun käytössä, ensimmäinen kirjautuminen luo uuden tilin alla olevalle tasolle.",
+        "defaultLevel": "Uusien tilien taso",
+        "levelClaimHint": "Tilin nimi ja taso pidetään myös synkronoituna tarjoajan kanssa jokaisella kirjautumisella riippumatta yllä olevasta asetuksesta: nimi tulee mukautetusta \"medinv_name\"-vaatimuksesta, jos se on läsnä, muuten vakiovaatimuksesta \"name\"; taso tulee mukautetusta \"medinv_level\"-vaatimuksesta, jonka arvo on \"guest\", \"user\" tai \"admin\" — myös admin mukaan lukien. Lisää Pocket ID:ssä mukautettu vaatimus tarkalla tarvitsemallasi avaimella käyttäjälle tai ryhmälle kohdassa Admin → Users/User Groups → Custom Claims. Jos jokin näistä vaatimuksista puuttuu, vastaava kenttä jätetään koskemattomaksi.",
+        "saved": "OIDC-asetukset tallennettu."
+      },
+      "backupSettings": {
+        "title": "Varmuuskopiointiaikataulu",
+        "intervalMode": "Aikaväli",
+        "interval": {
+          "daily": "Päivittäin",
+          "weekly": "Viikoittain",
+          "monthly": "Kuukausittain",
+          "cron": "Mukautettu (cron-lauseke)"
+        },
+        "cronExpression": "Cron-lauseke",
+        "retentionHint": "Koskee vain automaattisia varmuuskopioita. Manuaalisesti luodut varmuuskopiot eivät lasketa mukaan eikä niitä koskaan poisteta automaattisesti. Vain toinen alla olevista säännöistä on kerrallaan käytössä — valitse kumpi.",
+        "retentionMode": "Poista vanhat varmuuskopiot perusteella",
+        "retentionCount": "Säilytä enintään tämä määrä varmuuskopioita",
+        "retentionMaxAgeDays": "Poista tätä vanhemmat varmuuskopiot (päivää)",
+        "saved": "Varmuuskopiointiaikataulu tallennettu."
+      },
+      "securitySettings": {
+        "title": "Suojaus raa'alta voimalta (brute force)",
+        "maxAttempts": "Epäonnistuneiden yritysten enimmäismäärä",
+        "windowMinutes": "Aikaikkuna (minuuttia)",
+        "lockMinutes": "Lukituksen kesto (minuuttia)",
+        "saved": "Suojausasetukset tallennettu."
+      },
+      "coverCleanup": {
+        "title": "Kansikuvien siivous",
+        "hint": "Kerran päivässä poistaa levyllä olevat kansikuva-/pikkukuvatiedostot, joihin mikään mediakohde ei enää viittaa.",
+        "enabled": "Siivoa isännättömät kansikuvatiedostot automaattisesti",
+        "saved": "Kansikuvien siivousasetus tallennettu."
+      },
+      "timezoneSettings": {
+        "title": "Aikavyöhyke",
+        "hint": "Käytetään varmuuskopioiden ja vientien tiedostonimissä, jotta ne vastaavat paikallista kelloasi eivätkä aina näytä UTC-aikaa.",
+        "timezone": "Aikavyöhyke",
+        "saved": "Aikavyöhyke tallennettu."
+      },
+      "logLevel": {
+        "title": "Lokitaso",
+        "saved": "Lokitaso tallennettu."
+      },
+      "localeSettings": {
+        "title": "Oletuskieli",
+        "hint": "Käytetään, kun vierailijan kieli ei ole saksa eikä englanti.",
+        "defaultLanguage": "Oletuskieli",
+        "saved": "Oletuskieli tallennettu."
+      },
+      "pluginConfig": {
+        "settings": "Asetukset",
+        "noConfig": "Asetuksia ei tarvita.",
+        "fields": {
+          "api_key": "API-avain"
+        }
+      },
+      "pluginOrdering": {
+        "dragHandle": "Vedä muuttaaksesi kohteen {{name}} järjestystä (tai paina väli, käytä sitten nuolinäppäimiä)"
+      }
+    },
+    "passwordReset": {
+      "forgotTitle": "Unohtunut salasana",
+      "forgotIntro": "Anna sähköpostiosoitteesi. Jos sille on olemassa tili, saat linkin salasanan palauttamiseksi.",
+      "sendLink": "Pyydä linkki",
+      "linkSent": "Jos tämä osoite on olemassa, salasanan palautuslinkin sisältävä sähköposti on lähetetty.",
+      "resetTitle": "Aseta uusi salasana",
+      "newPassword": "Uusi salasana",
+      "confirmPassword": "Vahvista salasana",
+      "resetSubmit": "Palauta salasana",
+      "resetSuccess": "Salasanasi on palautettu. Voit nyt kirjautua sisään.",
+      "backToLogin": "Takaisin kirjautumiseen",
+      "errors": {
+        "invalid_token": "Tämä linkki on virheellinen tai on vanhentunut. Pyydä uusi.",
+        "invalid_user": "Tälle sähköpostiosoitteelle ei ole tiliä.",
+        "throttled": "Odota hetki ennen kuin yrität uudelleen.",
+        "reset_failed": "Salasanaa ei voitu palauttaa.",
+        "mail_unavailable": "Sähköpostipalvelinta ei ole määritetty tai se ei ole tavoitettavissa. Ota yhteyttä ylläpitäjään.",
+        "generic": "Se ei toiminut. Yritä myöhemmin uudelleen."
+      }
+    },
+    "errors": {
+      "invalid_credentials": "Virheelliset kirjautumistiedot.",
+      "account_locked": "Liian monta epäonnistunutta yritystä. Tämä tili on tilapäisesti lukittu.",
+      "account_deactivated": "Tämä tili on poistettu käytöstä.",
+      "generic": "Kirjautuminen epäonnistui. Yritä myöhemmin uudelleen tai ota yhteyttä ylläpitäjään.",
+      "oidc_provider_error": "Identiteetintarjoaja peruutti tai hylkäsi kertakirjautumisen.",
+      "oidc_state_mismatch": "Kertakirjautumispyyntöä ei voitu vahvistaa. Yritä uudelleen.",
+      "oidc_failed": "Kertakirjautuminen epäonnistui. Yritä uudelleen tai käytä sen sijaan salasanaasi.",
+      "oidc_no_account": "Tälle identiteetille ei ole vielä tiliä. Ota yhteyttä ylläpitäjään.",
+      "oidc_account_deactivated": "Tämä tili on poistettu käytöstä."
+    }
+  }
+}
