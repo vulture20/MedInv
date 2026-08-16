@@ -185,7 +185,8 @@
         "status": "Статус",
         "enabled": "Увімкнено",
         "priority": "Пріоритет",
-        "mediaType": "Тип носія"
+        "mediaType": "Тип носія",
+        "version": "Версія"
       },
       "status": {
         "active": "Активний",

@@ -185,7 +185,8 @@
         "status": "Status",
         "enabled": "Ingeschakeld",
         "priority": "Prioriteit",
-        "mediaType": "Mediatype"
+        "mediaType": "Mediatype",
+        "version": "Versie"
       },
       "status": {
         "active": "Actief",

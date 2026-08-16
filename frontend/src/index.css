@@ -696,26 +696,33 @@ td {
  * the cell's 0.5rem padding either side, measured via table-layout: auto
  * before this column had any explicit width). name is half of its
  * previous 34%. priority/enabled/settings keep their previous ~1:1:2
- * ratio, scaled up to absorb the space handle+name gave up.
+ * ratio, scaled up to absorb the space handle+name gave up. version
+ * (GitHub issue #44) took its 12% out of name/settings proportionally
+ * when it was added, keeping every other column's ratio to each other
+ * unchanged.
  */
 .plugin-table__col--handle {
   width: 4%;
 }
 
 .plugin-table__col--name {
-  width: 17%;
+  width: 15%;
+}
+
+.plugin-table__col--version {
+  width: 12%;
 }
 
 .plugin-table__col--priority {
-  width: 20%;
+  width: 18%;
 }
 
 .plugin-table__col--enabled {
-  width: 20%;
+  width: 18%;
 }
 
 .plugin-table__col--settings {
-  width: 39%;
+  width: 33%;
 }
 
 /* Drag handle cell (dnd-kit, PluginsPage.tsx) — dnd-kit's own `attributes`

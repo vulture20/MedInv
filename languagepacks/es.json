@@ -185,7 +185,8 @@
         "status": "Estado",
         "enabled": "Activado",
         "priority": "Prioridad",
-        "mediaType": "Tipo de medio"
+        "mediaType": "Tipo de medio",
+        "version": "Versión"
       },
       "status": {
         "active": "Activo",

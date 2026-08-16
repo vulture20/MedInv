@@ -58,6 +58,12 @@ class MusicBrainzProvider implements MetadataProviderInterface
         return [];
     }
 
+    /** See MetadataProviderInterface::version()'s docblock (GitHub issue #44). */
+    public function version(): string
+    {
+        return 'v1.0';
+    }
+
     public function lookupByCode(string $code): array
     {
         $response = Http::withHeaders(['User-Agent' => 'MedInv/1.0'])

@@ -80,6 +80,12 @@ class HardcoverProvider implements MetadataProviderInterface
         ];
     }
 
+    /** See MetadataProviderInterface::version()'s docblock (GitHub issue #44). */
+    public function version(): string
+    {
+        return 'v1.0';
+    }
+
     /**
      * Hardcover's `editions` table has both isbn_10 and isbn_13 as plain,
      * independently-filterable columns (see the official "Get Edition

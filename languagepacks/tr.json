@@ -185,7 +185,8 @@
         "status": "Durum",
         "enabled": "Etkin",
         "priority": "Öncelik",
-        "mediaType": "Medya türü"
+        "mediaType": "Medya türü",
+        "version": "Sürüm"
       },
       "status": {
         "active": "Etkin",

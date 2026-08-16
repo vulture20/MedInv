@@ -23,6 +23,8 @@ interface Plugin {
   config: Record<string, unknown> | null
   /** Declared by the matching backend provider class (GitHub issue #29) — not stored, computed per request. */
   config_fields: ConfigField[]
+  /** Declared by the matching backend provider class (GitHub issue #44) — not stored, computed per request; null for a provider_key with no matching registered class. */
+  version: string | null
 }
 
 /**
@@ -130,6 +132,11 @@ function SortableRow({ id, children }: { id: number; children: (handle: { attrib
  * the provider declares via `configFields()` — rather than the raw JSON
  * textarea this used to be, which required knowing the exact shape of
  * `config` ahead of time.
+ *
+ * Each row's `version` (GitHub issue #44) is the matching provider class's
+ * own `version()`, declared in code and bumped by hand whenever that class
+ * actually changes — not something this page edits or that ever changed
+ * `metadata_plugins` itself.
  */
 export function PluginsPage() {
   const { t } = useTranslation()
@@ -266,6 +273,7 @@ export function PluginsPage() {
                 <colgroup>
                   <col className="plugin-table__col--handle" />
                   <col className="plugin-table__col--name" />
+                  <col className="plugin-table__col--version" />
                   <col className="plugin-table__col--priority" />
                   <col className="plugin-table__col--enabled" />
                   <col className="plugin-table__col--settings" />
@@ -274,6 +282,7 @@ export function PluginsPage() {
                   <tr>
                     <th aria-hidden="true" />
                     <th>{t('common.name')}</th>
+                    <th>{t('admin.table.version')}</th>
                     <th>{t('admin.table.priority')}</th>
                     <th>{t('admin.table.enabled')}</th>
                     <th>{t('admin.pluginConfig.settings')}</th>
@@ -294,6 +303,7 @@ export function PluginsPage() {
                               ⠿
                             </td>
                             <td>{p.name}</td>
+                            <td>{p.version ?? '—'}</td>
                             <td>{index + 1}</td>
                             <td>
                               <input type="checkbox" checked={p.enabled} onChange={(e) => void update(p, { enabled: e.target.checked })} />

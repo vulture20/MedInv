@@ -183,7 +183,8 @@
       "status": "Status",
       "enabled": "Aktiviert",
       "priority": "Priorität",
-      "mediaType": "Medientyp"
+      "mediaType": "Medientyp",
+      "version": "Version"
     },
     "status": {
       "active": "Aktiv",

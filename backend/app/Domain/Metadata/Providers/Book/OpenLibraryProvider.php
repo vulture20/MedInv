@@ -36,6 +36,12 @@ class OpenLibraryProvider implements MetadataProviderInterface
         return [];
     }
 
+    /** See MetadataProviderInterface::version()'s docblock (GitHub issue #44). */
+    public function version(): string
+    {
+        return 'v1.0';
+    }
+
     public function lookupByCode(string $code): array
     {
         $response = Http::get('https://openlibrary.org/api/books', [

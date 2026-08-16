@@ -185,7 +185,8 @@
         "status": "Статус",
         "enabled": "Включено",
         "priority": "Приоритет",
-        "mediaType": "Тип носителя"
+        "mediaType": "Тип носителя",
+        "version": "Версия"
       },
       "status": {
         "active": "Активен",

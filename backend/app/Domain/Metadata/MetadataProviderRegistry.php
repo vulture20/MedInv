@@ -69,6 +69,26 @@ class MetadataProviderRegistry
     }
 
     /**
+     * Every registered provider's declared version (GitHub issue #44),
+     * keyed by provider_key — same "attach live per request, don't store
+     * in the database" shape as configFieldsByProviderKey() above, per the
+     * issue's own explicit choice between its two proposed approaches:
+     * MetadataProviderRegistry::syncToDatabase() never touches this at
+     * all, so bumping a provider's version() is a plain code change with
+     * no migration or sync step needed to actually take effect.
+     *
+     * @return Collection<string, string>
+     */
+    public function versionsByProviderKey(): Collection
+    {
+        return collect(static::defaultProviders())
+            ->map(fn (string $class) => app($class))
+            ->mapWithKeys(fn (MetadataProviderInterface $provider) => [
+                $provider->key() => $provider->version(),
+            ]);
+    }
+
+    /**
      * Enabled provider instances for the given media type, ordered by
      * admin-configured priority. `orderBy('id')` after `priority` is the
      * same deterministic-tie-breaker fix as MetadataController::plugins()'s

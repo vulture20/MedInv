@@ -183,7 +183,8 @@
       "status": "Status",
       "enabled": "Enabled",
       "priority": "Priority",
-      "mediaType": "Media type"
+      "mediaType": "Media type",
+      "version": "Version"
     },
     "status": {
       "active": "Active",

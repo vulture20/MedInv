@@ -53,4 +53,24 @@ interface MetadataProviderInterface
      * @return MetadataProviderConfigField[]
      */
     public function configFields(): array;
+
+    /**
+     * This provider class's own version, shown in the admin plugin list
+     * (briefing 15., GitHub issue #44) — not stored in `metadata_plugins`,
+     * computed fresh per request straight from the class, same pattern
+     * configFields() already uses (see MetadataProviderRegistry::
+     * versionsByProviderKey()). Every provider starts at "v1.0" as of this
+     * feature's introduction, regardless of how long it already existed —
+     * there is no prior version history to reconstruct. From then on, a
+     * developer bumps this by hand whenever they change what the class
+     * actually does (a newly-mapped field, a changed API endpoint, a
+     * behavior fix) — usually the minor part (v1.0 -> v1.1); a
+     * larger/breaking change bumps further. There's no reasonable way to
+     * derive "how big a change was" automatically from a diff, so this is
+     * a plain, human-maintained string, not a computed value — free-form
+     * on purpose (not required to be strict semver), so e.g. a
+     * lower-confidence/experimental provider can mark itself "v0.1-beta"
+     * (see GitHub issue #50) without the interface getting in the way.
+     */
+    public function version(): string;
 }

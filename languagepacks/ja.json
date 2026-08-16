@@ -185,7 +185,8 @@
         "status": "ステータス",
         "enabled": "有効",
         "priority": "優先度",
-        "mediaType": "メディア種別"
+        "mediaType": "メディア種別",
+        "version": "バージョン"
       },
       "status": {
         "active": "有効",
