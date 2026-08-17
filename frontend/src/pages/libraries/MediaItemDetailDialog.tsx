@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
-import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem } from './mediaItemFields'
+import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem, type Track } from './mediaItemFields'
 import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from '../capture/MetadataMergeReview'
 
 export type { MediaItem } from './mediaItemFields'
@@ -32,6 +32,10 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   const coverDialogRef = useRef<HTMLDialogElement>(null)
   const [editing, setEditing] = useState(false)
   const [values, setValues] = useState<Record<string, string>>({})
+  // GitHub issue #90: a CD's track list, kept separate from `values` above
+  // (like the read-only display it replaces while editing, it isn't a
+  // single scalar value FIELD_SPECS's generic string-keyed form can hold).
+  const [tracks, setTracks] = useState<Track[]>([])
   const [targetLibraryId, setTargetLibraryId] = useState<number | ''>('')
   const [error, setError] = useState<string | null>(null)
   // Kept separate from `error` so a "this item already exists there" (or
@@ -66,6 +70,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       setRefreshError(null)
       setRefreshProviderStatuses([])
       setValues(valuesFromItem(item, specs))
+      setTracks(item.tracks ?? [])
       dialogRef.current?.showModal()
     } else {
       dialogRef.current?.close()
@@ -104,12 +109,49 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     return t('errors.generic')
   }
 
+  // GitHub issue #90: add/remove/reorder rows in the CD track editor below.
+  function addTrack() {
+    setTracks((prev) => [...prev, { position: String(prev.length + 1), title: '', duration_seconds: null }])
+  }
+
+  function removeTrack(index: number) {
+    setTracks((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function updateTrack(index: number, patch: Partial<Track>) {
+    setTracks((prev) => prev.map((track, i) => (i === index ? { ...track, ...patch } : track)))
+  }
+
+  function moveTrack(index: number, direction: -1 | 1) {
+    setTracks((prev) => {
+      const target = index + direction
+      if (target < 0 || target >= prev.length) return prev
+      const next = [...prev]
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!item) return
     setError(null)
+    const payload: Record<string, unknown> = payloadFromValues(values, specs)
+    if (library.media_type === 'cd') {
+      payload.tracks = tracks.length > 0 ? tracks : null
+      // Only clear the runtime_seconds field (rather than always sending it
+      // as-is) when the track list actually changed: MediaItemService::
+      // withDerivedRuntime() never overwrites an explicit, non-null
+      // runtime_seconds, so leaving an untouched track list's old value in
+      // place preserves a manual/provider-reported override exactly as
+      // before, while an edited track list should have its stale runtime
+      // replaced by one freshly derived from the new tracks.
+      if (JSON.stringify(tracks) !== JSON.stringify(item.tracks ?? [])) {
+        payload.runtime_seconds = null
+      }
+    }
     try {
-      const { data } = await apiClient.put<MediaItem>(`/libraries/${library.id}/items/${item.id}`, payloadFromValues(values, specs))
+      const { data } = await apiClient.put<MediaItem>(`/libraries/${library.id}/items/${item.id}`, payload)
       onUpdated(data)
       setEditing(false)
     } catch (err) {
@@ -282,6 +324,55 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                   )}
                 </label>
               ))}
+
+              {/* GitHub issue #90: a dedicated, non-FIELD_SPECS editor for a CD's track list — mirrors the read-only <ol> below (shown only outside editing), since a track list isn't a single scalar value the generic loop above can represent. */}
+              {library.media_type === 'cd' && (
+                <div className="media-item-dialog__track-editor">
+                  <h4>{t('mediaItem.tracklist')}</h4>
+                  {tracks.map((track, index) => (
+                    <div key={index} className="media-item-dialog__track-editor-row">
+                      <input
+                        className="media-item-dialog__track-position-input"
+                        type="text"
+                        aria-label={t('mediaItem.trackPosition')}
+                        placeholder={t('mediaItem.trackPosition')}
+                        value={track.position ?? ''}
+                        onChange={(e) => updateTrack(index, { position: e.target.value })}
+                      />
+                      <input
+                        className="media-item-dialog__track-title-input"
+                        type="text"
+                        aria-label={t('mediaItem.trackTitle')}
+                        placeholder={t('mediaItem.trackTitle')}
+                        value={track.title ?? ''}
+                        onChange={(e) => updateTrack(index, { title: e.target.value })}
+                      />
+                      <input
+                        className="media-item-dialog__track-duration-input"
+                        type="number"
+                        step="any"
+                        aria-label={t('mediaItem.trackDurationSeconds')}
+                        placeholder={t('mediaItem.trackDurationSeconds')}
+                        value={track.duration_seconds ?? ''}
+                        onChange={(e) => updateTrack(index, { duration_seconds: e.target.value === '' ? null : Number(e.target.value) })}
+                      />
+                      <button type="button" onClick={() => moveTrack(index, -1)} disabled={index === 0} aria-label={t('mediaItem.moveTrackUp')}>
+                        ↑
+                      </button>
+                      <button type="button" onClick={() => moveTrack(index, 1)} disabled={index === tracks.length - 1} aria-label={t('mediaItem.moveTrackDown')}>
+                        ↓
+                      </button>
+                      <button type="button" onClick={() => removeTrack(index)} aria-label={t('mediaItem.removeTrack')}>
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={addTrack}>
+                    {t('mediaItem.addTrack')}
+                  </button>
+                </div>
+              )}
+
               <div className="media-item-dialog__actions">
                 <button type="submit">{t('admin.actions.save')}</button>
                 <button type="button" onClick={() => setEditing(false)}>

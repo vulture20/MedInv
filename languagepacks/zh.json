@@ -111,6 +111,13 @@
         "runtime_seconds": "时长（秒）"
       },
       "tracklist": "曲目列表",
+      "trackPosition": "位置",
+      "trackTitle": "标题",
+      "trackDurationSeconds": "时长（秒）",
+      "addTrack": "添加曲目",
+      "removeTrack": "删除曲目",
+      "moveTrackUp": "上移曲目",
+      "moveTrackDown": "下移曲目",
       "computedHint": "（已计算）",
       "refreshMetadata": "刷新元数据",
       "bulkDelete": {

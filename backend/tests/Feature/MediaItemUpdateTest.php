@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Library;
 use App\Models\MediaBook;
+use App\Models\MediaCd;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -93,6 +94,64 @@ class MediaItemUpdateTest extends TestCase
 
         $response->assertOk();
         $this->assertNull($item->fresh()->page_count);
+    }
+
+    /**
+     * GitHub issue #90: manually editing a CD's track list via this same
+     * endpoint (frontend/src/pages/libraries/MediaItemDetailDialog.tsx's new
+     * track editor) must re-derive runtime_seconds/runtime_computed from the
+     * edited tracks — MediaItemService::withDerivedRuntime(), previously
+     * only reached via create()/updateFromMetadata(), not a plain manual
+     * edit.
+     */
+    public function test_editing_tracks_recomputes_runtime_when_runtime_seconds_is_not_also_sent(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'CDs', 'media_type' => 'cd', 'owner_id' => $owner->id]);
+        $item = MediaCd::query()->create([
+            'library_id' => $library->id,
+            'title' => 'OK Computer',
+            'ean' => '724385522925',
+            'tracks' => [['position' => '1', 'title' => 'Airbag', 'duration_seconds' => 284]],
+            'runtime_seconds' => 284,
+            'runtime_computed' => true,
+        ]);
+
+        $response = $this->putJson("/api/libraries/{$library->id}/items/{$item->id}", [
+            'tracks' => [
+                ['position' => '1', 'title' => 'Airbag', 'duration_seconds' => 284],
+                ['position' => '2', 'title' => 'Paranoid Android', 'duration_seconds' => 383],
+            ],
+            'runtime_seconds' => null,
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(667, $item->fresh()->runtime_seconds);
+        $this->assertTrue($item->fresh()->runtime_computed);
+    }
+
+    /** A runtime_seconds explicitly sent alongside tracks (a manual override) still wins, same as create()/updateFromMetadata(). */
+    public function test_an_explicitly_sent_runtime_is_not_overwritten_even_when_tracks_are_also_edited(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'CDs', 'media_type' => 'cd', 'owner_id' => $owner->id]);
+        $item = MediaCd::query()->create([
+            'library_id' => $library->id,
+            'title' => 'OK Computer',
+            'ean' => '724385522925',
+            'tracks' => [['position' => '1', 'title' => 'Airbag', 'duration_seconds' => 284]],
+        ]);
+
+        $response = $this->putJson("/api/libraries/{$library->id}/items/{$item->id}", [
+            'tracks' => [
+                ['position' => '1', 'title' => 'Airbag', 'duration_seconds' => 284],
+                ['position' => '2', 'title' => 'Paranoid Android', 'duration_seconds' => 383],
+            ],
+            'runtime_seconds' => 9999,
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(9999, $item->fresh()->runtime_seconds);
     }
 
     public function test_users_without_write_access_cannot_update(): void

@@ -86,6 +86,13 @@
       "addManually": "Legg til manuelt",
       "createTitle": "Legg til medium",
       "tracklist": "Sporliste",
+      "trackPosition": "Posisjon",
+      "trackTitle": "Tittel",
+      "trackDurationSeconds": "Varighet (sekunder)",
+      "addTrack": "Legg til spor",
+      "removeTrack": "Fjern spor",
+      "moveTrackUp": "Flytt spor opp",
+      "moveTrackDown": "Flytt spor ned",
       "computedHint": "(beregnet)",
       "refreshMetadata": "Oppdater metadata",
       "bulkDelete": {

@@ -111,6 +111,13 @@
         "runtime_seconds": "Süre (saniye)"
       },
       "tracklist": "Parça listesi",
+      "trackPosition": "Konum",
+      "trackTitle": "Başlık",
+      "trackDurationSeconds": "Süre (saniye)",
+      "addTrack": "Parça ekle",
+      "removeTrack": "Parçayı kaldır",
+      "moveTrackUp": "Parçayı yukarı taşı",
+      "moveTrackDown": "Parçayı aşağı taşı",
       "computedHint": "(hesaplandı)",
       "refreshMetadata": "Meta verileri yenile",
       "bulkDelete": {

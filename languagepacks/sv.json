@@ -86,6 +86,13 @@
       "addManually": "Lägg till manuellt",
       "createTitle": "Lägg till media",
       "tracklist": "Spårlista",
+      "trackPosition": "Position",
+      "trackTitle": "Titel",
+      "trackDurationSeconds": "Speltid (sekunder)",
+      "addTrack": "Lägg till spår",
+      "removeTrack": "Ta bort spår",
+      "moveTrackUp": "Flytta spår uppåt",
+      "moveTrackDown": "Flytta spår nedåt",
       "computedHint": "(beräknad)",
       "refreshMetadata": "Uppdatera metadata",
       "bulkDelete": {

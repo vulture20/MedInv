@@ -111,6 +111,13 @@
         "runtime_seconds": "Speelduur (seconden)"
       },
       "tracklist": "Tracklist",
+      "trackPosition": "Positie",
+      "trackTitle": "Titel",
+      "trackDurationSeconds": "Duur (seconden)",
+      "addTrack": "Track toevoegen",
+      "removeTrack": "Track verwijderen",
+      "moveTrackUp": "Track omhoog verplaatsen",
+      "moveTrackDown": "Track omlaag verplaatsen",
       "computedHint": "(berekend)",
       "refreshMetadata": "Metadata vernieuwen",
       "bulkDelete": {

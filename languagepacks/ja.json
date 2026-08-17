@@ -111,6 +111,13 @@
         "runtime_seconds": "再生時間（秒）"
       },
       "tracklist": "トラックリスト",
+      "trackPosition": "位置",
+      "trackTitle": "タイトル",
+      "trackDurationSeconds": "再生時間（秒）",
+      "addTrack": "トラックを追加",
+      "removeTrack": "トラックを削除",
+      "moveTrackUp": "トラックを上に移動",
+      "moveTrackDown": "トラックを下に移動",
       "computedHint": "（計算値）",
       "refreshMetadata": "メタデータを再取得",
       "bulkDelete": {

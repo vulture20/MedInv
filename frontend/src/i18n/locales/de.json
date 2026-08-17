@@ -83,6 +83,13 @@
     "addManually": "Manuell hinzufügen",
     "createTitle": "Medium hinzufügen",
     "tracklist": "Titelliste",
+    "trackPosition": "Position",
+    "trackTitle": "Titel",
+    "trackDurationSeconds": "Spieldauer (Sekunden)",
+    "addTrack": "Track hinzufügen",
+    "removeTrack": "Track entfernen",
+    "moveTrackUp": "Track nach oben verschieben",
+    "moveTrackDown": "Track nach unten verschieben",
     "computedHint": "(berechnet)",
     "refreshMetadata": "Metadaten erneut abfragen",
     "bulkDelete": {

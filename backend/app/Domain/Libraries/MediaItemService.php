@@ -72,8 +72,15 @@ class MediaItemService
      * end up mismatched (e.g. one provider's tracks paired with a
      * different provider's runtime), rather than each being independently
      * merge-picked upstream.
+     *
+     * Public (not just create()/updateFromMetadata()'s private helper)
+     * because MediaItemController::update() — the manual-edit path, GitHub
+     * issue #90 — needs the exact same derivation when a user hand-edits a
+     * CD's track list: without this, a manually corrected `tracks` array
+     * would leave a stale `runtime_seconds` in place, the same problem this
+     * method already solves for capture/reimport.
      */
-    private function withDerivedRuntime(array $attributes): array
+    public function withDerivedRuntime(array $attributes): array
     {
         $tracks = $attributes['tracks'] ?? null;
 

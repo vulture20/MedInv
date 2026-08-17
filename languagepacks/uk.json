@@ -111,6 +111,13 @@
         "runtime_seconds": "Тривалість (секунди)"
       },
       "tracklist": "Список треків",
+      "trackPosition": "Позиція",
+      "trackTitle": "Назва",
+      "trackDurationSeconds": "Тривалість (секунди)",
+      "addTrack": "Додати трек",
+      "removeTrack": "Видалити трек",
+      "moveTrackUp": "Перемістити трек вгору",
+      "moveTrackDown": "Перемістити трек вниз",
       "computedHint": "(обчислено)",
       "refreshMetadata": "Оновити метадані",
       "bulkDelete": {

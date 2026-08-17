@@ -83,6 +83,13 @@
     "addManually": "Add manually",
     "createTitle": "Add media item",
     "tracklist": "Track listing",
+    "trackPosition": "Position",
+    "trackTitle": "Title",
+    "trackDurationSeconds": "Duration (seconds)",
+    "addTrack": "Add track",
+    "removeTrack": "Remove track",
+    "moveTrackUp": "Move track up",
+    "moveTrackDown": "Move track down",
     "computedHint": "(computed)",
     "refreshMetadata": "Refresh metadata",
     "bulkDelete": {

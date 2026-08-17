@@ -206,7 +206,14 @@ class MediaItemController extends Controller
             $rules
         ));
 
-        $record->update($data);
+        // GitHub issue #90: a manual edit of a CD's `tracks` (rulesFor('cd')
+        // already accepts it) needs the same runtime_seconds/runtime_computed
+        // re-derivation the capture/reimport paths get via
+        // MediaItemService::create()/updateFromMetadata() — otherwise a
+        // hand-corrected track list would leave a stale runtime in place.
+        // A no-op for every other field/media type (see withDerivedRuntime()'s
+        // own docblock).
+        $record->update($this->mediaItemService->withDerivedRuntime($data));
 
         return $record;
     }

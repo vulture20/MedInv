@@ -111,6 +111,13 @@
         "runtime_seconds": "Duração (segundos)"
       },
       "tracklist": "Lista de faixas",
+      "trackPosition": "Posição",
+      "trackTitle": "Título",
+      "trackDurationSeconds": "Duração (segundos)",
+      "addTrack": "Adicionar faixa",
+      "removeTrack": "Remover faixa",
+      "moveTrackUp": "Mover faixa para cima",
+      "moveTrackDown": "Mover faixa para baixo",
       "computedHint": "(calculado)",
       "refreshMetadata": "Atualizar metadados",
       "bulkDelete": {

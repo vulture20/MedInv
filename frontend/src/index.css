@@ -578,6 +578,38 @@ td {
   font-variant-numeric: tabular-nums;
 }
 
+/* CD track list editor (GitHub issue #90) — one row per track, shown instead of the read-only <ol> above while editing. */
+.media-item-dialog__track-editor {
+  margin-bottom: 0.75rem;
+}
+
+.media-item-dialog__track-editor-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.media-item-dialog__track-position-input {
+  width: 3.5rem;
+  flex: none;
+}
+
+.media-item-dialog__track-title-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.media-item-dialog__track-duration-input {
+  width: 5rem;
+  flex: none;
+}
+
+.media-item-dialog__track-editor-row button {
+  flex: none;
+  padding: 0.3rem 0.5rem;
+}
+
 .media-item-dialog label {
   display: flex;
   flex-direction: column;

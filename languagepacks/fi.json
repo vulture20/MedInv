@@ -86,6 +86,13 @@
       "addManually": "Lisää manuaalisesti",
       "createTitle": "Lisää media",
       "tracklist": "Kappaleluettelo",
+      "trackPosition": "Sijainti",
+      "trackTitle": "Nimi",
+      "trackDurationSeconds": "Kesto (sekuntia)",
+      "addTrack": "Lisää kappale",
+      "removeTrack": "Poista kappale",
+      "moveTrackUp": "Siirrä kappaletta ylös",
+      "moveTrackDown": "Siirrä kappaletta alas",
       "computedHint": "(laskettu)",
       "refreshMetadata": "Päivitä metatiedot",
       "bulkDelete": {

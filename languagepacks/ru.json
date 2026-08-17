@@ -111,6 +111,13 @@
         "runtime_seconds": "Продолжительность (секунды)"
       },
       "tracklist": "Список треков",
+      "trackPosition": "Позиция",
+      "trackTitle": "Название",
+      "trackDurationSeconds": "Длительность (секунды)",
+      "addTrack": "Добавить трек",
+      "removeTrack": "Удалить трек",
+      "moveTrackUp": "Переместить трек вверх",
+      "moveTrackDown": "Переместить трек вниз",
       "computedHint": "(вычислено)",
       "refreshMetadata": "Обновить метаданные",
       "bulkDelete": {

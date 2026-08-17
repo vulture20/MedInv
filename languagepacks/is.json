@@ -86,6 +86,13 @@
       "addManually": "Bæta við handvirkt",
       "createTitle": "Bæta við miðli",
       "tracklist": "Lagalisti",
+      "trackPosition": "Staða",
+      "trackTitle": "Titill",
+      "trackDurationSeconds": "Lengd (sekúndur)",
+      "addTrack": "Bæta við lagi",
+      "removeTrack": "Fjarlægja lag",
+      "moveTrackUp": "Færa lag upp",
+      "moveTrackDown": "Færa lag niður",
       "computedHint": "(reiknað)",
       "refreshMetadata": "Uppfæra lýsigögn",
       "bulkDelete": {
