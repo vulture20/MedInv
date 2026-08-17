@@ -37,16 +37,54 @@ interface Paginated<T> {
   total: number
 }
 
-/** The secondary line under a media item's title, media-type dependent (briefing 6.). */
-function subtitle(item: MediaItem, mediaType: Library['media_type']): string | null {
+/**
+ * The item table's second column, media-type dependent (briefing 6.) — the
+ * field key itself, not just its displayed value, since it doubles as the
+ * `sort_by` value sent to GET .../items (GitHub issue #77) and mirrors
+ * MediaItemController::SORTABLE_COLUMNS.
+ */
+function subtitleField(mediaType: Library['media_type']): 'authors' | 'artist' | 'director' {
   switch (mediaType) {
     case 'book':
-      return item.authors ?? null
+      return 'authors'
     case 'cd':
-      return item.artist ?? null
+      return 'artist'
     case 'dvd_bluray':
-      return item.director ?? null
+      return 'director'
   }
+}
+
+/**
+ * One clickable, sortable `<th>` in the item table (GitHub issue #77) —
+ * a plain `<button>` filling the header cell so the sort toggle stays
+ * keyboard/screen-reader operable, same reasoning as
+ * media-item-table__title-button below. `aria-sort` reflects the *current*
+ * state (not just "this column is sortable") per the WAI-ARIA table
+ * sorting pattern, so assistive tech announces which column and direction
+ * is active without relying on the visual ▲/▼ glyph alone.
+ */
+function SortableHeader({
+  column,
+  label,
+  sortBy,
+  sortDir,
+  onSort,
+}: {
+  column: string
+  label: string
+  sortBy: string | null
+  sortDir: 'asc' | 'desc'
+  onSort: (column: string) => void
+}) {
+  const active = sortBy === column
+  return (
+    <th aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+      <button type="button" className="media-item-table__sort-button" onClick={() => onSort(column)}>
+        {label}
+        {active && <span aria-hidden="true"> {sortDir === 'asc' ? '▲' : '▼'}</span>}
+      </button>
+    </th>
+  )
 }
 
 /**
@@ -70,6 +108,15 @@ export function LibraryDetailPage() {
   const [creating, setCreating] = useState(false)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+
+  // Column sorting (GitHub issue #77) — resolved server-side
+  // (MediaItemController::index()'s sort_by/sort_dir) rather than sorting
+  // just the current page client-side, since items are paginated and a
+  // client-side sort would silently only reorder whichever rows happened to
+  // already be on the current page. sortBy is null until a header is
+  // clicked, matching the previous unsorted default.
+  const [sortBy, setSortBy] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
 
   // Bulk delete (GitHub issue #54) — a selection mode over the current
   // page of items.data, entered/exited explicitly rather than always-on
@@ -123,7 +170,9 @@ export function LibraryDetailPage() {
     setLoading(true)
     const [libraryRes, itemsRes, librariesRes, shareableUsersRes] = await Promise.all([
       apiClient.get<Library>(`/libraries/${id}`),
-      apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, { params: { page } }),
+      apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, {
+        params: { page, ...(sortBy ? { sort_by: sortBy, sort_dir: sortDir } : {}) },
+      }),
       // Needed for the detail dialog's "move to another library" target list
       // (only libraries visible to this user are returned to begin with).
       apiClient.get<Library[]>('/libraries'),
@@ -152,7 +201,18 @@ export function LibraryDetailPage() {
     setBulkEditValue('')
     setBulkUpdateError(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, page])
+  }, [id, page, sortBy, sortDir])
+
+  /** Clicking a sortable column header (GitHub issue #77) — same column toggles asc/desc, a different one starts at asc, either way back to page 1 since the sort applies across the whole result set, not just this page. */
+  function handleSort(column: string) {
+    if (sortBy === column) {
+      setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortBy(column)
+      setSortDir('asc')
+    }
+    setPage(1)
+  }
 
   // Deep-links an item straight into MediaItemDetailDialog via ?item=<id>
   // (SearchPage.tsx's results link here) — fetched on its own via
@@ -261,6 +321,15 @@ export function LibraryDetailPage() {
   function toggleSelectAll() {
     if (!items) return
     setSelectedIds((prev) => (prev.size === items.data.length ? new Set() : new Set(items.data.map((i) => i.id))))
+  }
+
+  /** A row's click target (GitHub issue #77) — toggles its checkbox in bulk mode, otherwise opens MediaItemDetailDialog. Shared by the row itself and the title cell's button so both trigger the exact same action instead of two subtly different ones. */
+  function activateRow(item: MediaItem) {
+    if (bulkMode) {
+      toggleSelected(item.id)
+    } else {
+      setSelectedItem(item)
+    }
   }
 
   /** POST .../items/bulk-delete (GitHub issue #54) — mirrors MediaItemDetailDialog's single-item delete: confirm, then reload rather than splice, since a bulk delete can shift this page's remaining items/pagination in a way that's simplest to just re-fetch (same reasoning CreateMediaItemDialog's onCreated already documents). */
@@ -515,49 +584,72 @@ export function LibraryDetailPage() {
         {items && items.data.length === 0 ? (
           <p className="hint">{t('libraries.noItems')}</p>
         ) : (
-          <ul className="media-item-list">
-            {items?.data.map((item) => (
-              <li key={item.id}>
+          // A plain <table> inside .panel-card (same pattern as
+          // LanguagesPage.tsx's installed-packs table) — .panel-card's own
+          // overflow-x: auto already scopes horizontal scrolling to the
+          // card on a narrow viewport, so no extra wrapper/class is needed
+          // for the mobile behavior the issue asked for.
+          <table className="media-item-table">
+            <thead>
+              <tr>
                 {bulkMode && (
-                  <input
-                    type="checkbox"
-                    className="media-item-list__checkbox"
-                    aria-label={item.title}
-                    checked={selectedIds.has(item.id)}
-                    onChange={() => toggleSelected(item.id)}
-                  />
+                  <th className="media-item-table__col--checkbox">
+                    <input type="checkbox" checked={selectedIds.size === (items?.data.length ?? 0)} onChange={toggleSelectAll} aria-label={t('mediaItem.bulkDelete.selectAll')} />
+                  </th>
                 )}
-                {/* Opens MediaItemDetailDialog (view/edit/delete/move) below —
-                    in bulk mode, toggles this row's checkbox instead (GitHub
-                    issue #54), since offering both interactions on the same
-                    click target would fight over what a single click does. */}
-                <button
-                  type="button"
-                  className="media-item-list__row"
-                  onClick={() => (bulkMode ? toggleSelected(item.id) : setSelectedItem(item))}
-                >
-                  {/* The small generated thumbnail (MediaItemController::coverThumbnail()),
-                      not the full cover — this list can hold many rows, and CoverDownloadService
-                      already generates one alongside every stored cover for exactly this.
-                      Served through the API, not a direct storage URL — see
-                      CoverDownloadService's docblock for why — so it needs the session
-                      cookie even cross-origin in local dev. */}
-                  {item.cover_path && (
-                    <img
-                      className="media-item-list__cover"
-                      src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover/thumbnail`}
-                      crossOrigin="use-credentials"
-                      alt=""
-                    />
+                <th aria-hidden="true" />
+                <SortableHeader column="title" label={t('mediaItem.fields.title')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader column={subtitleField(library.media_type)} label={t(`mediaItem.fields.${subtitleField(library.media_type)}`)} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader column="ean" label={t('mediaItem.fields.ean')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+              </tr>
+            </thead>
+            <tbody>
+              {items?.data.map((item) => (
+                // Clicking anywhere on the row opens MediaItemDetailDialog
+                // (or toggles the checkbox in bulk mode, GitHub issue #54);
+                // the title cell additionally renders a real <button> for
+                // the same action so it stays keyboard/screen-reader
+                // operable without needing a non-interactive <tr> to carry
+                // its own key handling.
+                <tr key={item.id} className="media-item-table__row" onClick={() => activateRow(item)}>
+                  {bulkMode && (
+                    <td className="media-item-table__col--checkbox">
+                      <input
+                        type="checkbox"
+                        aria-label={item.title}
+                        checked={selectedIds.has(item.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => toggleSelected(item.id)}
+                      />
+                    </td>
                   )}
-                  <strong>{item.title}</strong>
-                  {subtitle(item, library.media_type) && <> — {subtitle(item, library.media_type)}</>}
-                  {' — '}
-                  {item.ean}
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <td>
+                    {/* The small generated thumbnail (MediaItemController::coverThumbnail()),
+                        not the full cover — this list can hold many rows, and CoverDownloadService
+                        already generates one alongside every stored cover for exactly this.
+                        Served through the API, not a direct storage URL — see
+                        CoverDownloadService's docblock for why — so it needs the session
+                        cookie even cross-origin in local dev. */}
+                    {item.cover_path && (
+                      <img
+                        className="media-item-table__cover"
+                        src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover/thumbnail`}
+                        crossOrigin="use-credentials"
+                        alt=""
+                      />
+                    )}
+                  </td>
+                  <td>
+                    <button type="button" className="media-item-table__title-button" onClick={(e) => { e.stopPropagation(); activateRow(item) }}>
+                      {item.title}
+                    </button>
+                  </td>
+                  <td>{item[subtitleField(library.media_type)] ?? ''}</td>
+                  <td>{item.ean}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
 
         {items && items.last_page > 1 && (
