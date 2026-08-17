@@ -159,6 +159,36 @@ class CoverDownloadServiceTest extends TestCase
         $this->assertNull($path);
     }
 
+    /**
+     * SSRF guard: `cover_url` reaches download() straight from a user-facing
+     * request (MetadataController::import()/reimport()) with nothing
+     * upstream restricting it to a public host. A literal loopback/link-
+     * local/RFC1918 IP — e.g. a cloud metadata endpoint — must be rejected
+     * before this server ever makes the request, not merely have its
+     * response discarded afterward.
+     */
+    public function test_rejects_a_url_targeting_a_private_or_reserved_ip_without_attempting_a_request(): void
+    {
+        Storage::fake('local');
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
+
+        foreach (['http://169.254.169.254/latest/meta-data/', 'http://127.0.0.1/x.jpg', 'http://[::1]/x.jpg', 'http://10.0.0.5/x.jpg'] as $url) {
+            $path = app(CoverDownloadService::class)->download($url, 'book', '9780000000001');
+            $this->assertNull($path, "expected {$url} to be rejected");
+        }
+    }
+
+    /** A hostname (as opposed to a literal IP) is never resolved by the guard itself — see download()'s comment for why — so an ordinary external image host still reaches the (here, mocked) fetcher. */
+    public function test_a_url_with_an_ordinary_hostname_is_not_blocked_by_the_ssrf_guard(): void
+    {
+        Storage::fake('local');
+        $this->fakeFetch($this->fakeJpegBytes());
+
+        $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
+
+        $this->assertNotNull($path);
+    }
+
     /** A transport-level failure (DNS, timeout, connection refused, ...) is exactly what CurlImageFetcher::fetch() itself turns into null — see this test's use of that same contract. */
     public function test_a_connection_failure_is_handled_gracefully(): void
     {
@@ -217,6 +247,17 @@ class CoverDownloadServiceTest extends TestCase
         app(CoverDownloadService::class)->delete(null);
 
         $this->expectNotToPerformAssertions();
+    }
+
+    /** Defense in depth — see isManagedPath()'s docblock: delete() must never touch a path outside `covers/`, however it ended up stored as a `cover_path`. */
+    public function test_delete_refuses_a_path_outside_the_covers_directory(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('backups/medinv-backup-20260101-000000.zip', 'not-actually-a-cover');
+
+        app(CoverDownloadService::class)->delete('backups/medinv-backup-20260101-000000.zip');
+
+        Storage::disk('local')->assertExists('backups/medinv-backup-20260101-000000.zip');
     }
 
     public function test_thumbnail_path_is_derived_from_the_cover_path(): void

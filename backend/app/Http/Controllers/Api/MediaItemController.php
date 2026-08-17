@@ -109,6 +109,8 @@ class MediaItemController extends Controller
     private function streamCover(?string $path)
     {
         abort_if(! $path, 404);
+        // Defense in depth — see CoverDownloadService::isManagedPath()'s docblock.
+        abort_unless($this->coverDownloadService->isManagedPath($path), 404);
 
         return Storage::disk('local')->response($path);
     }

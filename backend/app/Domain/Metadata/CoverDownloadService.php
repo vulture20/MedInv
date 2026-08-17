@@ -52,6 +52,29 @@ class CoverDownloadService
             return null;
         }
 
+        // SSRF guard: `$url` reaches here straight from admin/user-facing
+        // input (MetadataController::import()/reimport()'s `cover_url`,
+        // itself sourced from a metadata provider's response or the
+        // frontend's MetadataMergeReview picker) — nothing upstream
+        // restricts it to a public host. Blocks the direct case (a literal
+        // loopback/link-local/RFC1918 IP, e.g. the cloud metadata address
+        // 169.254.169.254, or 127.0.0.1) before this server ever makes a
+        // request to it. Deliberately checks only a *literal* IP host, not
+        // one requiring DNS resolution — resolving every hostname here would
+        // also make this method (and its test suite, which mocks the actual
+        // request but exercises this exact code path) depend on real DNS
+        // even for entirely fake test domains. This does not close a
+        // DNS-rebinding attack (a hostname resolving to a public IP at
+        // request-validation time but a private one at connect time) or a
+        // redirect-based one (CurlImageFetcher::fetch() still follows
+        // redirects without re-checking each hop's host) — both are known,
+        // accepted residual gaps for this best-effort feature, not fixed here.
+        if ($this->isDisallowedLiteralIpHost($url)) {
+            Log::info('Cover download blocked: URL host is a private/reserved IP address.', ['url' => $url]);
+
+            return null;
+        }
+
         // CurlImageFetcher, not Http::get() — see that class's docblock for why
         // (a real, live-confirmed bug: Cloudflare-fronted image CDNs, e.g.
         // Discogs', block Laravel's Guzzle-based client but not raw curl).
@@ -85,17 +108,62 @@ class CoverDownloadService
      */
     public function delete(?string $coverPath): void
     {
-        if ($coverPath === null) {
+        if ($coverPath === null || ! $this->isManagedPath($coverPath)) {
             return;
         }
 
         Storage::disk('local')->delete([$coverPath, $this->thumbnailPath($coverPath)]);
     }
 
+    /**
+     * Defense in depth against `cover_path` ever again reaching here as
+     * something other than a value this class itself generated (store()
+     * below always returns a `covers/<media_type>/<random-filename>` path)
+     * — e.g. a still-undiscovered mass-assignment gap letting a stored
+     * `cover_path` point somewhere else on the `local` disk entirely (see
+     * MetadataController::import()/reimport()'s own comment on the mass-
+     * assignment fix this pairs with). Used by both delete() above and
+     * MediaItemController::streamCover() before either ever touches the
+     * disk with a path pulled from the database, so this restriction holds
+     * regardless of how a bad cover_path got there in the first place.
+     */
+    public function isManagedPath(string $path): bool
+    {
+        return str_starts_with($path, self::DIR.'/');
+    }
+
     /** Pure path derivation, no I/O — see this class's docblock for why there's no separate `thumbnail_path` column. */
     public function thumbnailPath(string $coverPath): string
     {
         return dirname($coverPath).'/thumb_'.basename($coverPath);
+    }
+
+    /** See download()'s SSRF-guard comment for what this does and does not cover. */
+    private function isDisallowedLiteralIpHost(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! is_string($host)) {
+            return false;
+        }
+
+        // parse_url() returns a literal-IPv6 host's brackets as part of the
+        // string (`http://[::1]/...` -> `[::1]`, confirmed live), unlike
+        // every other part of the URL syntax it otherwise unwraps for you —
+        // filter_var(..., FILTER_VALIDATE_IP) rejects the bracketed form
+        // outright, so without stripping them first, an IPv6 loopback/link-
+        // local literal would silently fall through as "not a recognized
+        // IP" -> treated as a hostname -> never blocked.
+        $host = trim($host, '[]');
+
+        // filter_var() only recognizes a canonical dotted-quad/colon-hex IP
+        // string, not a hostname — so this is a no-op (never blocks) for an
+        // ordinary domain name, which is the overwhelmingly common case and
+        // exactly what lets test fixtures use a non-resolvable fake domain
+        // (e.g. https://covers.example.com/...) without this ever touching
+        // DNS.
+        return filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false
+            && filter_var($host, FILTER_VALIDATE_IP) !== false;
     }
 
     /**

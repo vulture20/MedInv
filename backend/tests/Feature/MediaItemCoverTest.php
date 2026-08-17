@@ -70,4 +70,29 @@ class MediaItemCoverTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    /**
+     * Defense in depth (pairs with MetadataImportMassAssignmentTest, which
+     * closes the actual mass-assignment hole this covers for): even if
+     * `cover_path` somehow ends up pointing outside `covers/` — e.g. at a
+     * backup archive under `backups/...` — this must refuse to serve it
+     * rather than trusting whatever the database happens to say.
+     */
+    public function test_refuses_to_serve_a_cover_path_outside_the_covers_directory(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('backups/medinv-backup-20260101-000000.zip', 'not-actually-a-cover');
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create([
+            'library_id' => $library->id,
+            'title' => 'Dune',
+            'ean' => '9780000000001',
+            'cover_path' => 'backups/medinv-backup-20260101-000000.zip',
+        ]);
+
+        $response = $this->get("/api/libraries/{$library->id}/items/{$item->id}/cover");
+
+        $response->assertNotFound();
+    }
 }

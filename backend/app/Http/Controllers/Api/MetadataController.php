@@ -112,6 +112,8 @@ class MetadataController extends Controller
             throw ValidationException::withMessages(['attributes.ean' => 'The attributes.ean field is required.']);
         }
 
+        $data['attributes'] = $this->stripInternallyManagedFields($data['attributes']);
+
         // GitHub issue #64 — see CurrencyConversionService's docblock and
         // MediaItemController::store()'s matching call.
         $data['attributes'] = $this->currencyConversion->convertToDefaultCurrency($data['attributes']);
@@ -178,7 +180,7 @@ class MetadataController extends Controller
             'cover_url' => ['nullable', 'string'],
         ]);
 
-        $this->mediaItemService->updateFromMetadata($record, $data['attributes']);
+        $this->mediaItemService->updateFromMetadata($record, $this->stripInternallyManagedFields($data['attributes']));
 
         if (! empty($data['cover_url'])) {
             $oldCoverPath = $record->cover_path;
@@ -207,6 +209,33 @@ class MetadataController extends Controller
         Log::info('Metadata plugin updated', ['actor_id' => $request->user()->id, 'provider_key' => $plugin->provider_key, 'changes' => $this->redactedChanges($plugin, $data)]);
 
         return $plugin;
+    }
+
+    /**
+     * Security fix: `attributes` (import()/reimport() above) deliberately
+     * passes through unvalidated per-key — see import()'s comment on why a
+     * per-field Laravel validation rule can't be used here — since it needs
+     * to carry every media-type-varying field a provider/the frontend's
+     * merge-review picker supplies. But `cover_path`/`library_id` are
+     * internally managed, not legitimate item data, and both are
+     * mass-assignable on every MediaBook/MediaCd/MediaDvdBluray model. Left
+     * in place, a caller could set `attributes.cover_path` to an arbitrary
+     * path on the `local` disk (e.g. a backup archive under `backups/...`,
+     * which MediaItemController::cover()/deleteCover() would then read or
+     * delete on request — CoverDownloadService::isManagedPath() is this
+     * same fix's second line of defense on that read/delete path), or
+     * `attributes.library_id` to move the created/updated item into a
+     * library the caller has no access to, bypassing
+     * MediaItemController::move()'s own ownership/media-type checks
+     * entirely. Stripped here, at the one boundary where this array stops
+     * being "whatever a trusted provider/this same request's owner
+     * supplied" and starts being persisted.
+     */
+    private function stripInternallyManagedFields(array $attributes): array
+    {
+        unset($attributes['cover_path'], $attributes['library_id']);
+
+        return $attributes;
     }
 
     /**
