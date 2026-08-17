@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 
@@ -30,6 +30,7 @@ interface Library {
 export function LibrariesPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [libraries, setLibraries] = useState<Library[]>([])
   const [name, setName] = useState('')
   const [mediaType, setMediaType] = useState<'book' | 'cd' | 'dvd_bluray'>('book')
@@ -159,9 +160,9 @@ export function LibrariesPage() {
                 <p className="hint">{lib.owner.name}</p>
                 {lib.description && <p>{lib.description}</p>}
                 <div className="library-card__actions">
-                  <Link to={`/libraries/${lib.id}`} className="button-link">
+                  <button type="button" onClick={() => navigate(`/libraries/${lib.id}`)}>
                     {t('libraries.view')}
-                  </Link>
+                  </button>
                   {canDelete(lib) && (
                     <>
                       <button type="button" onClick={() => startEdit(lib)}>
