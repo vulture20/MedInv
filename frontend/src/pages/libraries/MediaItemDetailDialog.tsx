@@ -368,6 +368,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
           )}
           {refreshStatus === 'candidates' && refreshMerged && (
             <MetadataMergeReview
+              groupId={item.id}
               ean={item.ean}
               mediaType={library.media_type}
               merged={refreshMerged}

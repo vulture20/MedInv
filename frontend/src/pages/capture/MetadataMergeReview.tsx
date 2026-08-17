@@ -36,6 +36,17 @@ export interface MergedMetadata {
 }
 
 interface Props {
+  /**
+   * Distinguishes this review's radio button groups from any other
+   * MetadataMergeReview rendered at the same time (CapturePage.PendingResult's
+   * client-side id) — using `ean` for this instead used to be the bug: two
+   * pending results for the same EAN (e.g. a hardware scanner double-firing)
+   * produced two <input type="radio" name="{ean}-..."> groups with an
+   * identical `name`, which the browser groups globally across the whole
+   * page regardless of which review dialog they're in, so picking an option
+   * in one silently cleared the "same" option in the other.
+   */
+  groupId: number
   ean: string
   mediaType: MediaType
   merged: MergedMetadata
@@ -113,7 +124,7 @@ function totalTracksDuration(tracks: Track[]): string | null {
  * runtime from whichever `tracks` ends up submitted here), so `tracks`
  * itself is the only thing this component needs to let the user pick.
  */
-export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onReject }: Props) {
+export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm, onReject }: Props) {
   const { t } = useTranslation()
   const specs = FIELD_SPECS[mediaType]
   // `merged.fields.tracks` (GitHub issue #48) has a genuinely different
@@ -174,7 +185,7 @@ export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onRejec
                   <label key={String(option.value)} className="metadata-merge__option">
                     <input
                       type="radio"
-                      name={`${ean}-${spec.key}`}
+                      name={`${groupId}-${spec.key}`}
                       checked={selectedValues[spec.key] === option.value}
                       onChange={() => setSelectedValues((prev) => ({ ...prev, [spec.key]: option.value }))}
                     />
@@ -203,7 +214,7 @@ export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onRejec
                   <label key={index} className="metadata-merge__option">
                     <input
                       type="radio"
-                      name={`${ean}-tracks`}
+                      name={`${groupId}-tracks`}
                       checked={selectedTracks === option.value}
                       onChange={() => setSelectedTracks(option.value)}
                     />
@@ -228,7 +239,7 @@ export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onRejec
               <label key={cover.url} className="metadata-merge__cover-option">
                 <input
                   type="radio"
-                  name={`${ean}-cover`}
+                  name={`${groupId}-cover`}
                   checked={selectedCoverUrl === cover.url}
                   onChange={() => setSelectedCoverUrl(cover.url)}
                 />
@@ -237,7 +248,7 @@ export function MetadataMergeReview({ ean, mediaType, merged, onConfirm, onRejec
               </label>
             ))}
             <label className="metadata-merge__cover-option">
-              <input type="radio" name={`${ean}-cover`} checked={selectedCoverUrl === null} onChange={() => setSelectedCoverUrl(null)} />
+              <input type="radio" name={`${groupId}-cover`} checked={selectedCoverUrl === null} onChange={() => setSelectedCoverUrl(null)} />
               <span>{t('capture.mergeNoCover')}</span>
             </label>
           </div>

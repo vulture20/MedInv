@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
@@ -29,10 +29,35 @@ interface ScanResult {
  * scanning is asynchronous and results accumulate in a list, so the
  * selector can easily have moved on to a different library (a different
  * media_type, even) by the time an earlier result is still pending review.
+ *
+ * `id` is a client-side-only sequence number, deliberately independent of
+ * `ean` — two results legitimately can share the same `ean` (e.g. a
+ * rescan after dismissing the first one, or a text file listing a code
+ * twice), and both React's list `key` and MetadataMergeReview's radio
+ * button `name`s need something that stays unique even then. Keying
+ * either of those off `ean` was the actual cause of a reported bug: two
+ * results for the same EAN produced two <input type="radio"> groups with
+ * the identical `name`, which the browser groups globally regardless of
+ * which dialog they're rendered in — selecting an option in one silently
+ * cleared the "same" option in the other.
  */
 interface PendingResult extends ScanResult {
   library: Library
+  id: number
 }
+
+/**
+ * How long a repeat scan of the *same* EAN is ignored. A hardware barcode
+ * scanner "types" its code and presses Enter on its own (see this
+ * component's own docblock) — some double-fire on a single trigger pull,
+ * and a nervous double-tap does the same manually. Without this, each
+ * duplicate submission produced its own PendingResult, and — before the
+ * `id`-based key/radio-name fix above — visibly corrupted the review
+ * dialog. Deliberately per-EAN, not a blanket cooldown on scanning at all:
+ * scanning several different items in quick succession (the normal bulk-
+ * capture flow, briefing 7.2) must stay unthrottled.
+ */
+const EAN_SCAN_THROTTLE_MS = 2000
 
 /**
  * Bulk capture (briefing 7.2). The hardware-scanner, manual-entry and
@@ -65,6 +90,11 @@ export function CapturePage() {
   // since a misread digit is exactly the kind of thing that causes a
   // no_match in the first place).
   const [creatingForEan, setCreatingForEan] = useState<string | null>(null)
+  // See EAN_SCAN_THROTTLE_MS above. A ref, not state — updating it must never
+  // itself trigger a re-render, and scanCode() needs its current value
+  // synchronously on every call, not just after the next render.
+  const lastScanRef = useRef<{ ean: string; at: number } | null>(null)
+  const nextResultId = useRef(0)
 
   useEffect(() => {
     void apiClient.get<Library[]>('/libraries').then(({ data }) => {
@@ -75,11 +105,16 @@ export function CapturePage() {
 
   async function scanCode(code: string) {
     const library = libraries.find((l) => l.id === libraryId)
-    if (!library || !code.trim()) return
-    const { data } = await apiClient.post<ScanResult>(`/libraries/${library.id}/capture/scan`, {
-      ean: code.trim(),
-    })
-    setResults((prev) => [{ ...data, library }, ...prev])
+    const ean = code.trim()
+    if (!library || !ean) return
+
+    const now = Date.now()
+    const last = lastScanRef.current
+    if (last && last.ean === ean && now - last.at < EAN_SCAN_THROTTLE_MS) return
+    lastScanRef.current = { ean, at: now }
+
+    const { data } = await apiClient.post<ScanResult>(`/libraries/${library.id}/capture/scan`, { ean })
+    setResults((prev) => [{ ...data, library, id: nextResultId.current++ }, ...prev])
   }
 
   async function submitCode(e: React.FormEvent) {
@@ -97,7 +132,7 @@ export function CapturePage() {
     const { data } = await apiClient.post<ScanResult[]>(`/libraries/${library.id}/capture/textfile`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
-    setResults((prev) => [...data.map((r) => ({ ...r, library })), ...prev])
+    setResults((prev) => [...data.map((r) => ({ ...r, library, id: nextResultId.current++ })), ...prev])
     setFile(null)
   }
 
@@ -106,12 +141,12 @@ export function CapturePage() {
       attributes,
       cover_url: coverUrl ?? undefined,
     })
-    setResults((prev) => prev.filter((r) => r.ean !== result.ean))
+    setResults((prev) => prev.filter((r) => r.id !== result.id))
   }
 
-  /** Removes a result the user has no other action to take on (a 'duplicate' has none at all; a 'no_match' has "add manually" but may just as well not be wanted) — 'candidates' already has its own dismissal via MetadataMergeReview's "reject all". */
-  function dismissResult(ean: string) {
-    setResults((prev) => prev.filter((r) => r.ean !== ean))
+  /** Removes a result the user has no other action to take on (a 'duplicate' has none at all; a 'no_match' has "add manually" but may just as well not be wanted) — 'candidates' already has its own dismissal via MetadataMergeReview's "reject all". Keyed by `id`, not `ean` — see PendingResult's docblock for why more than one result can share an ean. */
+  function dismissResult(id: number) {
+    setResults((prev) => prev.filter((r) => r.id !== id))
   }
 
   const activeLibrary = libraries.find((l) => l.id === libraryId)
@@ -183,7 +218,7 @@ export function CapturePage() {
 
           <ul className="capture-results">
             {results.map((result) => (
-              <li key={result.ean} className="capture-result">
+              <li key={result.id} className="capture-result">
                 <div className="capture-result__header">
                   <span className="capture-result__ean">{result.ean}</span>
                   {result.status === 'duplicate' && <span className="warning warning--danger">{t('capture.duplicate')}</span>}
@@ -192,7 +227,7 @@ export function CapturePage() {
                       type="button"
                       className="capture-result__dismiss"
                       aria-label={t('capture.dismiss')}
-                      onClick={() => dismissResult(result.ean)}
+                      onClick={() => dismissResult(result.id)}
                     >
                       ×
                     </button>
@@ -213,11 +248,12 @@ export function CapturePage() {
 
                 {result.status === 'candidates' && result.merged && (
                   <MetadataMergeReview
+                    groupId={result.id}
                     ean={result.ean}
                     mediaType={result.library.media_type}
                     merged={result.merged}
                     onConfirm={(attributes, coverUrl) => void confirmMerged(result, attributes, coverUrl)}
-                    onReject={() => dismissResult(result.ean)}
+                    onReject={() => dismissResult(result.id)}
                   />
                 )}
               </li>
