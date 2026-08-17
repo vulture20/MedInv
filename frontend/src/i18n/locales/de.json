@@ -63,7 +63,7 @@
     },
     "ownership": {
       "title": "Besitzer",
-      "hint": "Überträgt diese Bibliothek samt aller Freigaben auf einen anderen Benutzer.",
+      "hint": "Überträgt diese Bibliothek samt aller Freigaben auf einen neuen Besitzer.",
       "selectUser": "Neuen Besitzer auswählen…",
       "transfer": "Übertragen",
       "confirm": "Besitz dieser Bibliothek an „{{name}}“ übertragen? Sie könnten danach den Zugriff darauf verlieren."

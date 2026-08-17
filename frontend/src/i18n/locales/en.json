@@ -63,7 +63,7 @@
     },
     "ownership": {
       "title": "Ownership",
-      "hint": "Transfers this library, including all its shares, to another user.",
+      "hint": "Transfers this library, including all its shares, to a new owner.",
       "selectUser": "Select a new owner…",
       "transfer": "Transfer",
       "confirm": "Transfer ownership of this library to \"{{name}}\"? You may lose access to it afterwards."

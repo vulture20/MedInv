@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
+import { useAuth } from '../../auth/AuthContext'
 import { describeError } from '../admin/adminErrors'
 import type { Library, ShareableUser } from './LibraryDetailPage'
 
@@ -30,6 +31,7 @@ interface Props {
  */
 export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, onSaved }: Props) {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   const [editName, setEditName] = useState('')
@@ -79,6 +81,28 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
 
   const usersAvailableToAdd = shareableUsers.filter((u) => !userShares.some((s) => s.user_id === u.id))
 
+  // GitHub issue #78: shareableUsers (GET /users, UserController::shareable())
+  // excludes the *requesting* user — correct for usersAvailableToAdd above
+  // (sharing a library with yourself is meaningless) but wrong here: an
+  // admin managing a library they don't own (LibraryAccessService::canWrite()
+  // allows that regardless of ownership) couldn't reassign it to themselves,
+  // e.g. to reclaim it from an account before deleting it (UserController::
+  // destroy() rejects that while the account still owns libraries), even
+  // though LibraryController::transferOwnership() itself already accepts
+  // any non-guest owner_id including the requester's own. The exclusion
+  // that's actually correct for *this* picker is the current owner, not the
+  // requester: for an owner managing their own library those are the same
+  // account (no behavior change from before), but for an admin managing
+  // someone else's library they differ, and the admin now appears as a
+  // valid target. Re-sorted by name since appending the current user to the
+  // already-alphabetical shareableUsers would otherwise leave them out of
+  // order at the end.
+  const ownershipTargets = (
+    user && !shareableUsers.some((u) => u.id === user.id) ? [...shareableUsers, { id: user.id, name: user.name }] : shareableUsers
+  )
+    .filter((u) => u.id !== library.owner.id)
+    .sort((a, b) => a.name.localeCompare(b.name))
+
   async function saveInfo(e: React.FormEvent) {
     e.preventDefault()
     setInfoError(null)
@@ -121,7 +145,7 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
 
   async function transferOwnership() {
     if (newOwnerId === '') return
-    const target = shareableUsers.find((u) => u.id === newOwnerId)
+    const target = ownershipTargets.find((u) => u.id === newOwnerId)
     if (!target) return
     if (!window.confirm(t('libraries.ownership.confirm', { name: target.name }))) return
     setOwnerTransferError(null)
@@ -222,14 +246,14 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
             {sharesError && <p role="alert">{sharesError}</p>}
           </form>
 
-          {shareableUsers.length > 0 && (
+          {ownershipTargets.length > 0 && (
             <>
               <h4>{t('libraries.ownership.title')}</h4>
               <p className="hint">{t('libraries.ownership.hint')}</p>
               <p>
                 <select className="panel-select" value={newOwnerId} onChange={(e) => setNewOwnerId(e.target.value ? Number(e.target.value) : '')}>
                   <option value="">{t('libraries.ownership.selectUser')}</option>
-                  {shareableUsers.map((u) => (
+                  {ownershipTargets.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.name}
                     </option>
