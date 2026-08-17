@@ -44,6 +44,15 @@ body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
+  /* The mobile off-canvas .sidebar (position: fixed + transform:
+   * translateX(-100%), GitHub issue #13) sits fully off-screen to the left
+   * when closed, but Chromium still counts its pre-transform box toward
+   * the document's scrollable overflow — live-verified: without this, the
+   * whole page was horizontally scrollable by ~125px on every route, not
+   * just pages with a wide element like .admin-tabs. overflow-x: auto on
+   * individual elements (e.g. .admin-tabs) still scrolls normally within
+   * themselves; this only clips the page level. */
+  overflow-x: hidden;
 }
 
 a {
@@ -186,15 +195,30 @@ a {
 
 .app-shell__content {
   flex: 1;
+  /* A flex item's default min-width is auto (its content's intrinsic min
+   * width), not 0 — without this override, a wide-enough nowrap descendant
+   * (e.g. .admin-tabs' horizontally scrolling tab row) blows out this
+   * column's width instead of scrolling inside its own overflow-x: auto,
+   * dragging the whole page into horizontal scroll on narrow viewports. */
+  min-width: 0;
   padding: 1.5rem;
 }
 
 /* Admin sub-navigation (briefing 15.), one tab per admin/*Page.tsx. */
+/* overflow-x: auto rather than a fixed-width @media breakpoint: whether the nine
+ * tabs actually fit depends on the viewport AND the current translated label
+ * lengths, not a single pixel cutoff, so this scrolls whenever it genuinely
+ * doesn't fit (mobile portrait, a narrow desktop window, ...) and is a no-op
+ * everywhere else. Confines the overflow to this bar itself rather than the
+ * page — the bar's own width is already capped by .app-shell__content's normal
+ * block flow, so this can never push the page into horizontal scrolling. */
 .admin-tabs {
   display: flex;
   gap: 0.25rem;
   margin-bottom: 1rem;
   border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-tabs a {
@@ -202,6 +226,11 @@ a {
   text-decoration: none;
   color: var(--color-text);
   border-bottom: 2px solid transparent;
+  /* Without these two, a squeezed flex item wraps its label onto two lines
+   * before the row would ever start scrolling — flex-shrink: 0 keeps every
+   * tab at its natural width so the row scrolls horizontally instead. */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .admin-tabs a.active {
