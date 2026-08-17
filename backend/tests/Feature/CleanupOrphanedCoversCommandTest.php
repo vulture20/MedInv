@@ -28,10 +28,27 @@ class CleanupOrphanedCoversCommandTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * CoverCleanupService::GRACE_PERIOD_MINUTES ignores anything written too
+     * recently, comparing the file's real, on-disk mtime against
+     * Carbon::now() — but Storage::fake()'s put() always stamps a real,
+     * current OS mtime regardless of Carbon::setTestNow() faking, so a test
+     * that fakes "now" onto an unrelated fixed calendar date (below, to
+     * pin the schedule's due-check independently of whatever day this
+     * actually runs) needs the file's real mtime pushed back to match, or
+     * every deletion assertion here would spuriously fail the same way
+     * CoverCleanupServiceTest's did before it added the same travel().
+     */
+    private function backdateFile(string $relativePath): void
+    {
+        touch(Storage::disk('local')->path($relativePath), Carbon::now()->subMinutes(61)->timestamp);
+    }
+
     public function test_command_deletes_orphaned_covers_and_reports_the_count(): void
     {
         Storage::fake('local');
         Storage::disk('local')->put('covers/book/orphan.jpg', 'bytes');
+        $this->travel(61)->minutes();
 
         $exitCode = Artisan::call('medinv:cleanup-covers');
 
@@ -45,6 +62,7 @@ class CleanupOrphanedCoversCommandTest extends TestCase
         Storage::fake('local');
         Storage::disk('local')->put('covers/book/orphan.jpg', 'bytes');
         Carbon::setTestNow(Carbon::parse('2026-08-14 03:45:00'));
+        $this->backdateFile('covers/book/orphan.jpg');
 
         Artisan::call('schedule:run');
 
@@ -80,6 +98,7 @@ class CleanupOrphanedCoversCommandTest extends TestCase
         Storage::disk('local')->put('covers/book/orphan.jpg', 'bytes');
         SystemSetting::set('covers.cleanup_enabled', true);
         Carbon::setTestNow(Carbon::parse('2026-08-14 03:45:00'));
+        $this->backdateFile('covers/book/orphan.jpg');
 
         Artisan::call('schedule:run');
 
@@ -92,6 +111,7 @@ class CleanupOrphanedCoversCommandTest extends TestCase
         Storage::fake('local');
         Storage::disk('local')->put('covers/book/orphan.jpg', 'bytes');
         SystemSetting::set('covers.cleanup_enabled', false);
+        $this->travel(61)->minutes();
 
         Artisan::call('medinv:cleanup-covers');
 

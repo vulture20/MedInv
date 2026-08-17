@@ -43,6 +43,7 @@ class CoverCleanupServiceTest extends TestCase
     public function test_deletes_a_file_not_referenced_by_any_media_item(): void
     {
         Storage::disk('local')->put('covers/book/orphan.jpg', 'orphaned bytes');
+        $this->travel(61)->minutes(); // past GRACE_PERIOD_MINUTES — see its own test below for the boundary itself
 
         $deleted = app(CoverCleanupService::class)->cleanup();
 
@@ -91,6 +92,7 @@ class CoverCleanupServiceTest extends TestCase
         Storage::disk('local')->put('covers/book/gone.jpg', 'bytes');
         Storage::disk('local')->put($service->thumbnailPath('covers/book/gone.jpg'), 'thumb bytes');
         // No media item references it at all.
+        $this->travel(61)->minutes();
 
         $deleted = app(CoverCleanupService::class)->cleanup();
 
@@ -106,6 +108,7 @@ class CoverCleanupServiceTest extends TestCase
         MediaBook::query()->create(['library_id' => $this->library('book')->id, 'title' => 'B', 'ean' => '1', 'cover_path' => 'covers/book/keep-book.jpg']);
         MediaCd::query()->create(['library_id' => $this->library('cd')->id, 'title' => 'C', 'ean' => '2', 'cover_path' => 'covers/cd/keep-cd.jpg']);
         MediaDvdBluray::query()->create(['library_id' => $this->library('dvd_bluray')->id, 'title' => 'D', 'ean' => '3', 'cover_path' => 'covers/dvd_bluray/keep-dvd.jpg']);
+        $this->travel(61)->minutes();
 
         $deleted = app(CoverCleanupService::class)->cleanup();
 
@@ -114,6 +117,37 @@ class CoverCleanupServiceTest extends TestCase
         Storage::disk('local')->assertExists('covers/cd/keep-cd.jpg');
         Storage::disk('local')->assertExists('covers/dvd_bluray/keep-dvd.jpg');
         Storage::disk('local')->assertMissing('covers/book/orphan-book.jpg');
+    }
+
+    /**
+     * GitHub-reported concern: CoverDownloadService::store() writes a cover
+     * (and its thumbnail) to disk before the calling controller saves
+     * `cover_path` on the media item — a freshly written, about-to-be-
+     * referenced file must never be swept up as "orphaned" just because
+     * cleanup() happened to run in that brief window. Storage::fake()'s
+     * put() gives the file a real, current mtime, so with no time travel
+     * this file is still well within the grace period by construction.
+     */
+    public function test_keeps_a_recently_written_unreferenced_file(): void
+    {
+        Storage::disk('local')->put('covers/book/just-captured.jpg', 'bytes');
+
+        $deleted = app(CoverCleanupService::class)->cleanup();
+
+        $this->assertSame(0, $deleted);
+        Storage::disk('local')->assertExists('covers/book/just-captured.jpg');
+    }
+
+    /** Once genuinely past the grace period, an unreferenced file is still deleted as before — the grace period only defers, it doesn't exempt. */
+    public function test_deletes_an_unreferenced_file_once_past_the_grace_period(): void
+    {
+        Storage::disk('local')->put('covers/book/abandoned.jpg', 'bytes');
+        $this->travel(61)->minutes();
+
+        $deleted = app(CoverCleanupService::class)->cleanup();
+
+        $this->assertSame(1, $deleted);
+        Storage::disk('local')->assertMissing('covers/book/abandoned.jpg');
     }
 
     public function test_handles_a_missing_covers_directory_gracefully(): void
@@ -127,6 +161,7 @@ class CoverCleanupServiceTest extends TestCase
     public function test_logs_each_deleted_file_at_info_level(): void
     {
         Storage::disk('local')->put('covers/book/orphan.jpg', 'bytes');
+        $this->travel(61)->minutes();
         Log::spy();
 
         app(CoverCleanupService::class)->cleanup();
@@ -142,6 +177,7 @@ class CoverCleanupServiceTest extends TestCase
         Storage::disk('local')->put('covers/book/orphan.jpg', 'bytes');
         Storage::disk('local')->put('covers/book/kept.jpg', 'bytes');
         MediaBook::query()->create(['library_id' => $this->library()->id, 'title' => 'B', 'ean' => '1', 'cover_path' => 'covers/book/kept.jpg']);
+        $this->travel(61)->minutes();
         Log::spy();
 
         app(CoverCleanupService::class)->cleanup();
