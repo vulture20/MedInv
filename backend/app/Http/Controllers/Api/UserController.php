@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domain\Mail\MailStatusService;
+use App\Domain\Users\UserDeletionService;
 use App\Http\Controllers\Controller;
 use App\Mail\UserInvitationMail;
 use App\Models\User;
@@ -26,7 +27,10 @@ use Illuminate\Validation\Rule;
  */
 class UserController extends Controller
 {
-    public function __construct(private readonly MailStatusService $mailStatus) {}
+    public function __construct(
+        private readonly MailStatusService $mailStatus,
+        private readonly UserDeletionService $userDeletionService,
+    ) {}
 
     public function index()
     {
@@ -155,37 +159,20 @@ class UserController extends Controller
     }
 
     /**
-     * Unlike deactivate(), this actually removes the account — the
-     * predefined admin (is_protected, see DatabaseSeeder) is exempt so an
-     * install can never be left without any admin account.
-     *
-     * Also rejected while the account still owns libraries (GitHub issue
-     * #34): a library can be shared with *other* users/guests (briefing
-     * 4.3), so deleting its owner used to silently cascade-delete it —
-     * and every medium in it — out from under everyone else it was shared
-     * with, with no warning at all (libraries.owner_id was
-     * cascadeOnDelete(); a migration changed that to restrictOnDelete()
-     * so this holds at the database level too, not just here). The admin
-     * must transfer ownership first (LibraryController::
-     * transferOwnership()) or delete those libraries deliberately.
+     * Unlike deactivate(), this actually removes the account. See
+     * UserDeletionService's docblock for the two rules this enforces
+     * (predefined-admin exemption, still-owns-libraries rejection) — shared
+     * with AccountSettingsController::destroy()'s self-service counterpart
+     * (GitHub issue #86).
      */
     public function destroy(Request $request, User $user)
     {
-        if ($user->is_protected) {
-            return $this->protectedAccountResponse($request, 'deleted');
-        }
+        $blockingReason = $this->userDeletionService->blockingReasonFor($user);
 
-        $ownedLibraries = $user->ownedLibraries()->get(['id', 'name']);
+        if ($blockingReason) {
+            $this->logApiError($request, $blockingReason['error_code'], $blockingReason['message']);
 
-        if ($ownedLibraries->isNotEmpty()) {
-            $message = 'This account still owns libraries and cannot be deleted until ownership is transferred or they are deleted.';
-            $this->logApiError($request, 'owns_libraries', $message);
-
-            return response()->json([
-                'error_code' => 'owns_libraries',
-                'message' => $message,
-                'libraries' => $ownedLibraries,
-            ], 422);
+            return response()->json($blockingReason, 422);
         }
 
         Log::info('User deleted', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'email' => $user->email]);

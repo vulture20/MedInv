@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
+import { useAuth } from '../../auth/AuthContext'
 import { useTheme, type Template } from '../../theme/ThemeContext'
 import i18n, { AVAILABLE_LANGUAGES } from '../../i18n'
 import { getRuntimeLanguagePacks, onRuntimeLanguagePacksChanged, type LanguagePackSummary } from '../../i18n/languagePackEvents'
@@ -77,7 +78,10 @@ function ThemeSwatchPreview({ colors }: { colors: PreviewColors }) {
  */
 export function SettingsPage() {
   const { t } = useTranslation()
+  const { deleteAccount } = useAuth()
   const { template, setTemplate, runtimeTemplates } = useTheme()
+  const [deletingAccount, setDeletingAccount] = useState(false)
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null)
   const [language, setLanguage] = useState(i18n.language)
   // Admin-added packs beyond the bundled de/en (GitHub issues #12/#15) —
   // loaded asynchronously by main.tsx's loadRuntimeLanguagePacks(), which
@@ -135,6 +139,25 @@ export function SettingsPage() {
     } catch (err) {
       setTemplate(previous)
       setTemplateError(describeError(err, t))
+    }
+  }
+
+  /**
+   * Self-service account deletion (GitHub issue #86, briefing 4.1
+   * "benutzerdefinierte Einstellungen"). No success-path cleanup of
+   * `deletingAccount`/navigation call needed — AuthContext's
+   * deleteAccount() already clears `user`, and RequireAuth.tsx redirects to
+   * /login the moment that happens, same as an ordinary logout.
+   */
+  async function handleDeleteAccount() {
+    if (!window.confirm(t('settings.deleteAccount.confirm'))) return
+    setDeleteAccountError(null)
+    setDeletingAccount(true)
+    try {
+      await deleteAccount()
+    } catch (err) {
+      setDeleteAccountError(describeError(err, t))
+      setDeletingAccount(false)
     }
   }
 
@@ -234,6 +257,17 @@ export function SettingsPage() {
           </p>
         )}
         {languageError && <p role="alert">{languageError}</p>}
+      </section>
+
+      <section className="panel-card">
+        <h2>{t('settings.deleteAccount.title')}</h2>
+        <p className="hint">{t('settings.deleteAccount.hint')}</p>
+
+        <button type="button" disabled={deletingAccount} onClick={() => void handleDeleteAccount()}>
+          {t('settings.deleteAccount.button')}
+        </button>
+
+        {deleteAccountError && <p role="alert">{deleteAccountError}</p>}
       </section>
     </div>
   )

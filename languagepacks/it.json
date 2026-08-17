@@ -212,6 +212,12 @@
         "hint": "Scegli la lingua dell'interfaccia.",
         "de": "Tedesco",
         "en": "Inglese"
+      },
+      "deleteAccount": {
+        "title": "Elimina account",
+        "hint": "Elimina definitivamente il tuo account. Questa azione non può essere annullata.",
+        "button": "Elimina il mio account",
+        "confirm": "Eliminare definitivamente il tuo account? Questa azione non può essere annullata."
       }
     },
     "admin": {

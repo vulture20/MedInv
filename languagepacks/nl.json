@@ -212,6 +212,12 @@
         "hint": "Kies de taal van de interface.",
         "de": "Duits",
         "en": "Engels"
+      },
+      "deleteAccount": {
+        "title": "Account verwijderen",
+        "hint": "Verwijdert uw account permanent. Dit kan niet ongedaan worden gemaakt.",
+        "button": "Mijn account verwijderen",
+        "confirm": "Uw account permanent verwijderen? Dit kan niet ongedaan worden gemaakt."
       }
     },
     "admin": {

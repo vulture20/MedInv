@@ -212,6 +212,12 @@
         "hint": "Wybierz język interfejsu.",
         "de": "Niemiecki",
         "en": "Angielski"
+      },
+      "deleteAccount": {
+        "title": "Usuń konto",
+        "hint": "Trwale usuwa Twoje konto. Tej czynności nie można cofnąć.",
+        "button": "Usuń moje konto",
+        "confirm": "Trwale usunąć Twoje konto? Tej czynności nie można cofnąć."
       }
     },
     "admin": {

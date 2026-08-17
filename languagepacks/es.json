@@ -212,6 +212,12 @@
         "hint": "Elige el idioma de la interfaz.",
         "de": "Alemán",
         "en": "Inglés"
+      },
+      "deleteAccount": {
+        "title": "Eliminar cuenta",
+        "hint": "Elimina tu cuenta de forma permanente. Esta acción no se puede deshacer.",
+        "button": "Eliminar mi cuenta",
+        "confirm": "¿Eliminar tu cuenta de forma permanente? Esta acción no se puede deshacer."
       }
     },
     "admin": {

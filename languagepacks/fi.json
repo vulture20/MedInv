@@ -212,6 +212,12 @@
         "hint": "Valitse käyttöliittymän kieli.",
         "de": "Saksa",
         "en": "Englanti"
+      },
+      "deleteAccount": {
+        "title": "Poista tili",
+        "hint": "Poistaa tilisi pysyvästi. Tätä ei voi perua.",
+        "button": "Poista tilini",
+        "confirm": "Poistetaanko tilisi pysyvästi? Tätä ei voi perua."
       }
     },
     "admin": {

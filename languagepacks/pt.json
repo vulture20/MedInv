@@ -212,6 +212,12 @@
         "hint": "Escolha o idioma da interface.",
         "de": "Alemão",
         "en": "Inglês"
+      },
+      "deleteAccount": {
+        "title": "Excluir conta",
+        "hint": "Exclui sua conta permanentemente. Esta ação não pode ser desfeita.",
+        "button": "Excluir minha conta",
+        "confirm": "Excluir sua conta permanentemente? Esta ação não pode ser desfeita."
       }
     },
     "admin": {

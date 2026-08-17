@@ -212,6 +212,12 @@
         "hint": "Velg språket for grensesnittet.",
         "de": "Tysk",
         "en": "Engelsk"
+      },
+      "deleteAccount": {
+        "title": "Slett konto",
+        "hint": "Sletter kontoen din permanent. Dette kan ikke angres.",
+        "button": "Slett kontoen min",
+        "confirm": "Slette kontoen din permanent? Dette kan ikke angres."
       }
     },
     "admin": {

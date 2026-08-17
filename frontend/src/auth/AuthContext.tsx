@@ -24,6 +24,15 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   /**
+   * Permanently deletes the logged-in user's own account (GitHub issue #86,
+   * `DELETE /me`) and clears the local session state the same way logout()
+   * does. Deliberately doesn't also call `POST /logout` afterward — the
+   * backend already invalidates the session as part of the deletion itself
+   * (AccountSettingsController::destroy()), so there'd be nothing left to
+   * log out of by the time this resolves.
+   */
+  deleteAccount: () => Promise<void>
+  /**
    * Re-fetches `mail_server_healthy` from `/me` without touching `loading`/`user`
    * flow. Call this after saving mail settings or sending a test mail
    * (AdminSettingsController::updateMail/testMail) so the app-wide indicator
@@ -111,6 +120,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const deleteAccount = useCallback(async () => {
+    await apiClient.delete('/me')
+    setUser(null)
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
@@ -119,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         login,
         logout,
+        deleteAccount,
         refreshMailStatus,
         sessionEndReason,
         clearSessionEndReason,

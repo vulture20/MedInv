@@ -212,6 +212,12 @@
         "hint": "Choisissez la langue de l'interface.",
         "de": "Allemand",
         "en": "Anglais"
+      },
+      "deleteAccount": {
+        "title": "Supprimer le compte",
+        "hint": "Supprime définitivement votre compte. Cette action est irréversible.",
+        "button": "Supprimer mon compte",
+        "confirm": "Supprimer définitivement votre compte ? Cette action est irréversible."
       }
     },
     "admin": {

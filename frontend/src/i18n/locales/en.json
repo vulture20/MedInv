@@ -209,6 +209,12 @@
       "hint": "Choose the language of the interface.",
       "de": "German",
       "en": "English"
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "hint": "Permanently deletes your account. This cannot be undone.",
+      "button": "Delete my account",
+      "confirm": "Permanently delete your account? This cannot be undone."
     }
   },
   "admin": {

@@ -212,6 +212,12 @@
         "hint": "Välj språk för gränssnittet.",
         "de": "Tyska",
         "en": "Engelska"
+      },
+      "deleteAccount": {
+        "title": "Ta bort konto",
+        "hint": "Tar bort ditt konto permanent. Detta kan inte ångras.",
+        "button": "Ta bort mitt konto",
+        "confirm": "Ta bort ditt konto permanent? Detta kan inte ångras."
       }
     },
     "admin": {

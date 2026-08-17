@@ -212,6 +212,12 @@
         "hint": "Arayüz dilini seçin.",
         "de": "Almanca",
         "en": "İngilizce"
+      },
+      "deleteAccount": {
+        "title": "Hesabı sil",
+        "hint": "Hesabınızı kalıcı olarak siler. Bu işlem geri alınamaz.",
+        "button": "Hesabımı sil",
+        "confirm": "Hesabınız kalıcı olarak silinsin mi? Bu işlem geri alınamaz."
       }
     },
     "admin": {

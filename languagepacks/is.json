@@ -212,6 +212,12 @@
         "hint": "Veldu tungumál viðmótsins.",
         "de": "Þýska",
         "en": "Enska"
+      },
+      "deleteAccount": {
+        "title": "Eyða reikningi",
+        "hint": "Eyðir reikningnum þínum varanlega. Þessu er ekki hægt að afturkalla.",
+        "button": "Eyða reikningnum mínum",
+        "confirm": "Eyða reikningnum þínum varanlega? Þessu er ekki hægt að afturkalla."
       }
     },
     "admin": {

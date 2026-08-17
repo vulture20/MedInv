@@ -209,6 +209,12 @@
       "hint": "Legen Sie die Sprache der Oberfläche fest.",
       "de": "Deutsch",
       "en": "Englisch"
+    },
+    "deleteAccount": {
+      "title": "Konto löschen",
+      "hint": "Löscht Ihr Konto endgültig. Dies kann nicht rückgängig gemacht werden.",
+      "button": "Mein Konto löschen",
+      "confirm": "Ihr Konto endgültig löschen? Dies kann nicht rückgängig gemacht werden."
     }
   },
   "admin": {

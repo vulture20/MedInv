@@ -98,6 +98,9 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/me/settings', [AccountSettingsController::class, 'update']);
+    // Self-service account deletion (GitHub issue #86) — see
+    // AccountSettingsController::destroy()'s docblock.
+    Route::delete('/me', [AccountSettingsController::class, 'destroy']);
 
     // Search & statistics — available to guest/user/admin alike, each scoped
     // to what LibraryAccessService says they can read (4.3, 13., 14.).
