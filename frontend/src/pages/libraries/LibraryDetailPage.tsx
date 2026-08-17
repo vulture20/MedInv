@@ -6,6 +6,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
 import { CreateMediaItemDialog } from './CreateMediaItemDialog'
+import { LibrarySettingsDialog } from './LibrarySettingsDialog'
 import { FIELD_SPECS, payloadFromValues } from './mediaItemFields'
 
 /** One row of App\Models\LibraryShare, as returned by LibraryController::show()'s `shares.user:id,name,email` eager load (briefing 4.3). */
@@ -15,7 +16,8 @@ interface Share {
   user: { id: number; name: string } | null
 }
 
-interface Library {
+/** Exported for LibrarySettingsDialog.tsx, which edits every field here (GitHub issue #76). */
+export interface Library {
   id: number
   name: string
   description: string | null
@@ -24,8 +26,8 @@ interface Library {
   shares?: Share[]
 }
 
-/** GET /api/users (UserController::shareable()) — the share-target picker's option list. */
-interface ShareableUser {
+/** GET /api/users (UserController::shareable()) — the share-target picker's option list (LibrarySettingsDialog.tsx's sharing/ownership sections). */
+export interface ShareableUser {
   id: number
   name: string
 }
@@ -139,32 +141,17 @@ export function LibraryDetailPage() {
   const [bulkEditValue, setBulkEditValue] = useState('')
   const [bulkUpdateError, setBulkUpdateError] = useState<string | null>(null)
 
-  // Library sharing (briefing 4.3, GitHub issue #32) — editable local state,
-  // synced from `library.shares` whenever a fresh library loads (below),
-  // submitted as one combined array to PUT /libraries/{id}/shares on save
-  // (that endpoint replaces the full share list, it doesn't add/remove
-  // incrementally).
+  // GET /api/users — the share-target/new-owner picker's option list for
+  // LibrarySettingsDialog.tsx, fetched here since it's needed as soon as
+  // the dialog opens rather than only once the dialog itself mounts.
   const [shareableUsers, setShareableUsers] = useState<ShareableUser[]>([])
-  const [guestShare, setGuestShare] = useState(false)
-  const [allUsersShare, setAllUsersShare] = useState(false)
-  const [userShares, setUserShares] = useState<{ user_id: number; name: string }[]>([])
-  const [addUserId, setAddUserId] = useState<number | ''>('')
-  const [sharesSaved, setSharesSaved] = useState(false)
-  const [sharesError, setSharesError] = useState<string | null>(null)
 
-  // Ownership transfer (GitHub issue #34) — reuses the same shareable-users
-  // list as sharing above; the picker only offers non-guest, non-self
-  // accounts, matching who's actually allowed to own a library.
-  const [newOwnerId, setNewOwnerId] = useState<number | ''>('')
-  const [ownerTransferError, setOwnerTransferError] = useState<string | null>(null)
-
-  // Editing name/description (briefing 5., restricted to owner/admin like
-  // sharing and ownership above) — PUT /libraries/{id} already existed
-  // server-side (LibraryController::update()) but had no UI until now.
-  const [editingInfo, setEditingInfo] = useState(false)
-  const [editName, setEditName] = useState('')
-  const [editDescription, setEditDescription] = useState('')
-  const [infoError, setInfoError] = useState<string | null>(null)
+  // Library settings dialog (name/description, sharing briefing 4.3/GitHub
+  // issue #32, ownership transfer GitHub issue #34) — consolidated behind
+  // the single "Bearbeiten" button into LibrarySettingsDialog.tsx (GitHub
+  // issue #76) instead of an inline edit form plus two separate always-
+  // visible page sections.
+  const [editingSettings, setEditingSettings] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -182,15 +169,6 @@ export function LibraryDetailPage() {
     setItems(itemsRes.data)
     setLibraries(librariesRes.data)
     setShareableUsers(shareableUsersRes.data)
-    setGuestShare(libraryRes.data.shares?.some((s) => s.scope === 'guest') ?? false)
-    setAllUsersShare(libraryRes.data.shares?.some((s) => s.scope === 'all_users') ?? false)
-    setUserShares(
-      (libraryRes.data.shares ?? [])
-        .filter((s) => s.scope === 'user' && s.user)
-        .map((s) => ({ user_id: s.user!.id, name: s.user!.name })),
-    )
-    setSharesSaved(false)
-    setSharesError(null)
     setLoading(false)
   }
 
@@ -236,75 +214,6 @@ export function LibraryDetailPage() {
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, searchParams.get('item')])
-
-  async function saveShares(e: React.FormEvent) {
-    e.preventDefault()
-    if (!library) return
-    setSharesError(null)
-    setSharesSaved(false)
-    const shares = [
-      ...(guestShare ? [{ scope: 'guest' }] : []),
-      ...(allUsersShare ? [{ scope: 'all_users' }] : []),
-      ...userShares.map((s) => ({ scope: 'user', user_id: s.user_id })),
-    ]
-    try {
-      await apiClient.put(`/libraries/${library.id}/shares`, { shares })
-      setSharesSaved(true)
-    } catch (err) {
-      setSharesError(describeError(err, t))
-    }
-  }
-
-  function addUserShare() {
-    if (addUserId === '') return
-    const target = shareableUsers.find((u) => u.id === addUserId)
-    if (!target) return
-    setUserShares((prev) => [...prev, { user_id: target.id, name: target.name }])
-    setAddUserId('')
-  }
-
-  function startEditInfo() {
-    if (!library) return
-    setEditName(library.name)
-    setEditDescription(library.description ?? '')
-    setInfoError(null)
-    setEditingInfo(true)
-  }
-
-  async function saveInfo(e: React.FormEvent) {
-    e.preventDefault()
-    if (!library) return
-    setInfoError(null)
-    try {
-      const { data } = await apiClient.put<Library>(`/libraries/${library.id}`, {
-        name: editName,
-        description: editDescription === '' ? null : editDescription,
-      })
-      setLibrary((prev) => (prev ? { ...prev, name: data.name, description: data.description } : prev))
-      setEditingInfo(false)
-    } catch (err) {
-      setInfoError(describeError(err, t))
-    }
-  }
-
-  async function transferOwnership() {
-    if (!library || newOwnerId === '') return
-    const target = shareableUsers.find((u) => u.id === newOwnerId)
-    if (!target) return
-    if (!window.confirm(t('libraries.ownership.confirm', { name: target.name }))) return
-    setOwnerTransferError(null)
-    try {
-      await apiClient.put(`/libraries/${library.id}/owner`, { owner_id: newOwnerId })
-      setNewOwnerId('')
-      // Re-fetches the library with its new owner — canManage below
-      // depends on it, so the sharing/ownership sections (and the item
-      // list, if the current user no longer has write access at all)
-      // reflect the change immediately rather than only after a manual reload.
-      await load()
-    } catch (err) {
-      setOwnerTransferError(describeError(err, t))
-    }
-  }
 
   function toggleSelected(itemId: number) {
     setSelectedIds((prev) => {
@@ -374,9 +283,8 @@ export function LibraryDetailPage() {
   if (loading || !library) return <p>…</p>
 
   // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
-  // Shared by the edit-info, sharing and ownership sections below — all three are owner/admin-only.
+  // Gates the "Bearbeiten" button that opens LibrarySettingsDialog.tsx (GitHub issue #76) — name/description, sharing and ownership are all owner/admin-only.
   const canManage = user?.level === 'admin' || library.owner.id === user?.id
-  const usersAvailableToAdd = shareableUsers.filter((u) => !userShares.some((s) => s.user_id === u.id))
 
   // GitHub issue #63: mirrors MediaItemController::bulkUpdate()'s own field
   // exclusion — `runtime_seconds` (CD, #48) is only ever derived from
@@ -392,124 +300,23 @@ export function LibraryDetailPage() {
         <Link to="/libraries">← {t('libraries.title')}</Link>
       </p>
 
-      {editingInfo ? (
-        <section className="panel-card">
-          <h2>{t('admin.actions.edit')}</h2>
-          <form onSubmit={(e) => void saveInfo(e)}>
-            <label>
-              {t('common.name')}
-              <input className="panel-select" value={editName} onChange={(e) => setEditName(e.target.value)} required />
-            </label>
-            <label>
-              {t('libraries.descriptionLabel')}
-              <textarea className="panel-select" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-            </label>
-            <div>
-              <button type="submit">{t('admin.actions.save')}</button>{' '}
-              <button type="button" onClick={() => setEditingInfo(false)}>
-                {t('admin.actions.cancel')}
-              </button>
-            </div>
-            {infoError && <p role="alert">{infoError}</p>}
-          </form>
-        </section>
-      ) : (
-        <header className="panel-page__header">
-          <h1>{library.name}</h1>
-          <p className="library-detail__meta">
-            <span className="media-type-badge">{t(`libraries.mediaType.${library.media_type}`)}</span>
-            <span className="hint">{library.owner.name}</span>
-          </p>
-          {library.description && <p className="hint">{library.description}</p>}
-          {canManage && (
-            <button type="button" onClick={startEditInfo}>
-              {t('admin.actions.edit')}
-            </button>
-          )}
-        </header>
-      )}
-
-      {canManage && (
-        <section className="panel-card">
-          <h2>{t('libraries.sharing.title')}</h2>
-          <p className="hint">{t('libraries.sharing.hint')}</p>
-          <form onSubmit={(e) => void saveShares(e)}>
-            <label>
-              <input type="checkbox" checked={guestShare} onChange={(e) => setGuestShare(e.target.checked)} />
-              {t('libraries.sharing.guests')}
-            </label>
-            <label>
-              <input type="checkbox" checked={allUsersShare} onChange={(e) => setAllUsersShare(e.target.checked)} />
-              {t('libraries.sharing.allUsers')}
-            </label>
-
-            <div>
-              <h3>{t('libraries.sharing.specificUsers')}</h3>
-              {userShares.length === 0 ? (
-                <p className="hint">{t('libraries.sharing.noSpecificUsers')}</p>
-              ) : (
-                <ul>
-                  {userShares.map((share) => (
-                    <li key={share.user_id}>
-                      {share.name}{' '}
-                      <button
-                        type="button"
-                        onClick={() => setUserShares((prev) => prev.filter((s) => s.user_id !== share.user_id))}
-                      >
-                        {t('libraries.sharing.remove')}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {usersAvailableToAdd.length > 0 && (
-                <p>
-                  <select className="panel-select" value={addUserId} onChange={(e) => setAddUserId(e.target.value ? Number(e.target.value) : '')}>
-                    <option value="">{t('libraries.sharing.selectUser')}</option>
-                    {usersAvailableToAdd.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name}
-                      </option>
-                    ))}
-                  </select>{' '}
-                  <button type="button" disabled={addUserId === ''} onClick={addUserShare}>
-                    {t('libraries.sharing.add')}
-                  </button>
-                </p>
-              )}
-            </div>
-
-            <button type="submit">{t('admin.actions.save')}</button>
-            {sharesSaved && (
-              <p role="status" className="panel-confirmation">
-                {t('libraries.sharing.saved')}
-              </p>
-            )}
-            {sharesError && <p role="alert">{sharesError}</p>}
-          </form>
-        </section>
-      )}
-
-      {canManage && shareableUsers.length > 0 && (
-        <section className="panel-card">
-          <h2>{t('libraries.ownership.title')}</h2>
-          <p className="hint">{t('libraries.ownership.hint')}</p>
-          <p>
-            <select className="panel-select" value={newOwnerId} onChange={(e) => setNewOwnerId(e.target.value ? Number(e.target.value) : '')}>
-              <option value="">{t('libraries.ownership.selectUser')}</option>
-              {shareableUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}
-                </option>
-              ))}
-            </select>{' '}
-            <button type="button" disabled={newOwnerId === ''} onClick={() => void transferOwnership()}>
-              {t('libraries.ownership.transfer')}
-            </button>
-          </p>
-          {ownerTransferError && <p role="alert">{ownerTransferError}</p>}
-        </section>
-      )}
+      <header className="panel-page__header">
+        <h1>{library.name}</h1>
+        <p className="library-detail__meta">
+          <span className="media-type-badge">{t(`libraries.mediaType.${library.media_type}`)}</span>
+          <span className="hint">{library.owner.name}</span>
+        </p>
+        {library.description && <p className="hint">{library.description}</p>}
+        {/* Opens LibrarySettingsDialog.tsx (GitHub issue #76) — name/description
+            editing, sharing (briefing 4.3) and ownership transfer (GitHub issue
+            #34) all live behind this one button now, instead of an inline edit
+            form plus two separate always-visible page sections. */}
+        {canManage && (
+          <button type="button" onClick={() => setEditingSettings(true)}>
+            {t('admin.actions.edit')}
+          </button>
+        )}
+      </header>
 
       <section className="panel-card">
         <h2>{t('libraries.itemsTitle', { count: items?.total ?? 0 })}</h2>
@@ -666,6 +473,14 @@ export function LibraryDetailPage() {
           </div>
         )}
       </section>
+
+      <LibrarySettingsDialog
+        library={library}
+        shareableUsers={shareableUsers}
+        open={editingSettings}
+        onClose={() => setEditingSettings(false)}
+        onSaved={() => void load()}
+      />
 
       <CreateMediaItemDialog
         library={library}
