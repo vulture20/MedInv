@@ -823,8 +823,21 @@ td {
  * corresponding columns line up across all of them regardless of that
  * table's own content.
  */
+/*
+ * min-width (GitHub-reported mobile bug: table-layout: fixed's percentage
+ * columns below just squeeze every column, including this one, down to fit
+ * a narrow viewport — with six columns of real content (name, version,
+ * source-type badge, a checkbox, a settings button) that made every cell's
+ * text wrap and overlap into an unreadable mess rather than just looking a
+ * bit cramped. Below this width the table now instead scrolls horizontally
+ * within .panel-card's own overflow-x: auto (already there for exactly
+ * this — see its docblock re: LanguagesPage.tsx's table), matching this
+ * table's natural width on a normal desktop-sized .panel-card so mobile
+ * gets the same column proportions, just scrollable, instead of a
+ * different, squeezed layout of its own. */
 .plugin-table {
   table-layout: fixed;
+  min-width: 40rem;
 }
 
 /*
