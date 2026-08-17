@@ -13,6 +13,23 @@ use Illuminate\Support\Facades\Request as RequestFacade;
  */
 class BruteForceProtection
 {
+    /**
+     * GitHub issue #84: how long a failed-login row is kept before
+     * pruneOldFailures() below removes it. clearFailures() already deletes
+     * a given email's rows on its own next successful login, but a row for
+     * an email that never logs in successfully again — a typo, or a
+     * scanning/enumeration attempt against an address that may not even
+     * belong to a real account — had no other removal path at all,
+     * retaining that email address and IP indefinitely. Deliberately much
+     * longer than the throttle window/lock duration above (both a handful
+     * of minutes) — this isn't about the throttle logic, which only ever
+     * looks at recent rows anyway, but about not keeping personal data
+     * around longer than the brute-force-detection purpose requires, while
+     * still leaving a reasonable amount of history for spotting an unusual
+     * login pattern after the fact.
+     */
+    private const RETENTION_DAYS = 30;
+
     public function isLocked(string $email): bool
     {
         if ($this->requestFromTrustedIp()) {
@@ -51,6 +68,18 @@ class BruteForceProtection
     public function clearFailures(string $email): void
     {
         LoginAttempt::query()->where('email', $email)->delete();
+    }
+
+    /**
+     * Daily sweep (Console\Commands\CleanupLoginAttemptsCommand,
+     * routes/console.php), independent of clearFailures() above — see
+     * RETENTION_DAYS' docblock for why this exists at all.
+     *
+     * @return int How many rows were deleted.
+     */
+    public function pruneOldFailures(): int
+    {
+        return LoginAttempt::query()->where('attempted_at', '<', now()->subDays(self::RETENTION_DAYS))->delete();
     }
 
     /** @return array{0: int, 1: int, 2: int} [maxAttempts, windowMinutes, lockMinutes] */

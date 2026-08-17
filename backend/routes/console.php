@@ -120,3 +120,24 @@ Schedule::call(fn () => Artisan::call('medinv:snapshot-library-values'))
     ->name('medinv-library-value-snapshot')
     ->withoutOverlapping()
     ->onFailure(fn () => Log::error('Library value snapshot failed — see the exception logged above.'));
+
+/**
+ * Daily failed-login-record sweep (GitHub issue #84 — a privacy-review
+ * finding, not a feature briefing chapter: login_attempts had no removal
+ * path at all beyond clearFailures() clearing a given email's own rows on
+ * that same email's next successful login, so a row for an email that
+ * never logs in successfully again — a typo, or a scanning/enumeration
+ * attempt — retained that email address and IP indefinitely). See
+ * BruteForceProtection::RETENTION_DAYS' docblock for the retention period
+ * itself. Not admin-toggleable, same reasoning as the library value
+ * snapshot job above — there's no legitimate reason to disable pruning
+ * data past its own stated retention purpose. 03:30, between the library
+ * value snapshot's 03:15 and the cover cleanup's 03:45, so none of these
+ * jobs' own database reads race each other, though none would actually
+ * conflict if they did land in the same minute.
+ */
+Schedule::call(fn () => Artisan::call('medinv:cleanup-login-attempts'))
+    ->dailyAt('03:30')
+    ->name('medinv-login-attempt-cleanup')
+    ->withoutOverlapping()
+    ->onFailure(fn () => Log::error('Login attempt cleanup failed — see the exception logged above.'));
