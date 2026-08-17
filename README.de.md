@@ -1,22 +1,96 @@
 # MedInv
 
-**Version:** v0.5 · **Autor:** Thorsten Schröpel · [English version](README.md)
+**Autor:** Thorsten Schröpel · [🇬🇧 English version](README.md)
 
-Eine webbasierte, responsive Anwendung zur zentralen Verwaltung physischer Mediensammlungen — Bücher, CDs und DVDs/Blu-rays — über mehrere unabhängige Bibliotheken hinweg, mit bibliotheksweiser Freigabe und rollenbasiertem Zugriff.
+[![Docker Image](https://img.shields.io/badge/ghcr.io-vulture20%2Fmedinv-2496ED?logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
+[![Status](https://img.shields.io/badge/status-fr%C3%BChe%20Beta-orange)](#-projektstatus)
+
+MedInv ist eine selbst gehostete, responsive Web-App zur zentralen Verwaltung physischer Mediensammlungen — **Bücher, CDs und DVDs/Blu-rays** — über mehrere unabhängige Bibliotheken hinweg, mit bibliotheksweiser Freigabe und rollenbasiertem Zugriff. Barcode scannen, MedInv holt Metadaten und Cover automatisch – und du behältst den Überblick, was du besitzt, was es wert ist und mit wem es geteilt wird.
+
+> ⚠️ **Frühe Beta.** MedInv wird aktiv weiterentwickelt. Die Kernfunktionen laufen und sind durch eine automatisierte Testsuite abgedeckt, aber es gibt noch Ecken und Kanten – vor dem produktiven Einsatz mit echten Daten unbedingt Backups anlegen. Siehe [Projektstatus](#-projektstatus) weiter unten.
 
 Das vollständige Konzept-/Anforderungsdokument liegt unter [`docs/medinv-briefing.md`](docs/medinv-briefing.md) — es ist die maßgebliche Quelle für das Verhalten der Anwendung; dieses README beschreibt, wie die Implementierung betrieben und gebaut wird.
 
-## Über dieses Projekt
+## ✨ Funktionsumfang
 
-MedInv wurde per **Vibe-Coding** entwickelt: Das Anforderungsdokument (`docs/medinv-briefing.md`) wurde von einem Menschen verfasst, die gesamte Implementierung — Backend, Frontend, Docker-Deployment, Tests — wurde im Dialog mit diesem Konzept mittels [Claude Code](https://claude.com/claude-code) (Anthropic) generiert und iteriert, statt Zeile für Zeile von Hand geschrieben zu werden. Der Code wurde bei jedem Schritt tatsächlich ausgeführt und überprüft (Tests, Linter, laufende Container), sollte aber als KI-unterstütztes Gerüst zur Durchsicht und Weiterentwicklung verstanden werden, nicht als produktionserprobte Software.
+### 📚 Medien & Bibliotheken
+- Drei eigenständige Medientypen — Bücher, CDs, DVD/Blu-ray — jeweils mit festem, passgenauem Attributsatz (kein generisches "Extra-Feld"-Sammelsurium).
+- Beliebig viele unabhängige **Bibliotheken**, je einem Medientyp zugeordnet, mit bibliotheksweiser Freigabe an einzelne Nutzer auf Gast-/Nutzer-/Admin-Zugriffsebene.
+- Manuelle Erfassung, Massen-Feld-Updates und Massen-Löschung über ausgewählte Einträge hinweg.
 
-## Technischer Stack
+### 📷 Erfassung & Metadaten-Abgleich
+- **Kamerabasiertes Barcode-Scannen** oder manuelle Eingabe — in beiden Fällen sucht MedInv den Eintrag automatisch, statt alles per Hand eintippen zu lassen.
+- Ein steckbares Metadaten-Provider-System mit echten, funktionierenden Anbietern je Medientyp: OpenLibrary, Google Books, Hardcover und Amazon (Bücher); MusicBrainz, Discogs und Amazon (CDs); UPCMDB und Amazon (DVD/Blu-ray) — dazu optional eine **KI-gestützte Suche via Claude** für alle drei Medientypen. Ergebnisse aller aktivierten Provider werden feldweise zusammengeführt statt nur einen ganzen Datensatz zu übernehmen.
+- Cover-Bilder werden heruntergeladen und lokal gespeichert (inklusive automatisch erzeugtem Thumbnail), nie nur verlinkt.
+- "Kein Treffer" ist nie eine Sackgasse — Einträge lassen sich immer manuell anlegen, und Metadaten können später jederzeit aus der Detailansicht erneut abgerufen werden.
+
+### 🔎 Suche & Statistik
+- Volltextsuche mit echter **tippfehlertoleranter Fuzzy-Suche**, je nach Datenbank-Backend auf bestmögliche Performance abgestimmt.
+- Statistiken zur Sammlung: Genre-/Sprach-/Jahres-/Verlags-Künstler-Regisseur-Verteilungen sowie Wertzuwachs über die Zeit — mit automatischer Währungsumrechnung, damit eine Bibliothek mit gemischten Währungen trotzdem korrekt summiert wird.
+
+### 🔐 Zugriffskontrolle & Freigaben
+- Drei Konto-Ebenen (Gast/Nutzer/Admin) plus feingranulare, bibliotheksweise Freigabe obendrauf.
+- Der Besitz einer Bibliothek lässt sich übertragen; ein Nutzer, dem Bibliotheken gehören, kann nicht gelöscht werden, ohne diese vorher neu zuzuweisen.
+- Optionaler **OpenID Connect / OAuth 2.0-Login** (getestet gegen Pocket ID) zusätzlich zu klassischen E-Mail/Passwort-Konten, mit konfigurierbarem Brute-Force-Schutz und einem davon ausgenommenen vertrauenswürdigen IP-Bereich.
+
+### 💾 Backup, Export & Import
+- Geplante automatische Backups (intervall- oder cron-basiert) sowie manuelle Backups auf Abruf, mit konfigurierbarer Aufbewahrung.
+- Ein automatisches Sicherheits-Backup vor jedem Update, das das Datenbankschema ändert — ein problematisches Update hat so immer einen Wiederherstellungspunkt.
+- Vollständige Instanz-Wiederherstellung sowie bibliotheksweiser Export/Import zwischen MedInv-Instanzen — beide inklusive Cover-Bildern und über dieselbe Konfliktauflösung (umbenennen/zusammenführen/überschreiben/überspringen).
+
+### 🌍 Mehrsprachigkeit & Themes
+- 18 mitgelieferte Sprachpakete (Deutsch, Englisch, Französisch, Spanisch, Italienisch, Portugiesisch, Niederländisch, Polnisch, Russisch, Ukrainisch, Türkisch, Japanisch, Chinesisch, Norwegisch, Schwedisch, Finnisch, Isländisch) mit Admin-Oberfläche für eigene Sprachpakete.
+- Sechs mitgelieferte visuelle Themes plus ein Custom-CSS/Template-Plugin-System, je Instanz umschaltbar.
+
+## 🚧 Projektstatus
+
+MedInv wurde per **Vibe-Coding** entwickelt: Das Anforderungsdokument (`docs/medinv-briefing.md`) wurde von einem Menschen verfasst, die gesamte Implementierung — Backend, Frontend, Docker-Deployment, Tests — wurde im Dialog mit diesem Konzept mittels [Claude Code](https://claude.com/claude-code) (Anthropic) generiert und iteriert, statt Zeile für Zeile von Hand geschrieben zu werden. Der Code wurde bei jedem Schritt tatsächlich ausgeführt und überprüft (Tests, Linter, laufende Container), und Kern-CRUD, Authentifizierung sowie Berechtigungslogik sind durchgängig implementiert und getestet — einige Metadaten-Provider sind jedoch als **Beta** markiert und standardmäßig deaktiviert (insbesondere auf Web-Scraping oder LLMs basierende Abfragen; Details dazu in der Plugin-Liste im Admin-Bereich), und das Projekt sollte insgesamt noch als frühes, KI-unterstütztes Gerüst zur Durchsicht und Weiterentwicklung verstanden werden, nicht als produktionserprobte Software. Regelmäßig Backups anlegen und mit gelegentlichen Ecken und Kanten rechnen.
+
+## 🐳 Schnellstart mit Docker
+
+MedInv wird als ein einzelnes, in sich geschlossenes Docker-Image über die GitHub Container Registry veröffentlicht — kein eigener Build-Schritt nötig:
+
+```bash
+docker run -d \
+  --name medinv \
+  -p 8080:8080 \
+  -e MEDINV_ADMINUSER=admin@example.com \
+  -e MEDINV_ADMINPASS='ChangeMe123!' \
+  -v medinv-storage:/var/www/backend/storage \
+  --restart unless-stopped \
+  ghcr.io/vulture20/medinv:latest
+```
+
+Danach **http://localhost:8080** öffnen und mit dem gerade gesetzten Admin-Konto einloggen. Das war's schon — MedInv nutzt standardmäßig eine eingebettete SQLite-Datenbank, für den Einstieg ist also kein zusätzlicher Datenbank-Container nötig.
+
+Das Volume `medinv-storage` sorgt dafür, dass deine Daten (Datenbank, Cover, Backups, der automatisch erzeugte App-Verschlüsselungsschlüssel) einen Container-Neustart und Updates überstehen — **immer mounten**, sonst setzt sich beim nächsten `docker run` alles zurück.
+
+### Wichtige Umgebungsvariablen
+
+| Variable | Erforderlich | Standard | Bedeutung |
+|---|---|---|---|
+| `MEDINV_ADMINUSER` | ✅ | — | E-Mail-Adresse des Admin-Kontos, das beim ersten Start angelegt wird. |
+| `MEDINV_ADMINPASS` | ✅ | — | Passwort für dieses Admin-Konto. Wird nur beim ersten Start verwendet; danach über die Oberfläche änderbar. |
+| `MEDINV_PortWeb` | | `8080` | Port, auf dem nginx im Container lauscht — bedient sowohl die Oberfläche als auch die API (unter `/api`/`/sanctum`); es gibt bewusst keinen separaten API-Port. Bei Änderung sowohl `-p` als auch den Wert selbst anpassen. |
+| `MEDINV_URL` | | — | Öffentliche URL, unter der diese Instanz tatsächlich erreichbar ist (z. B. hinter einem Reverse Proxy auf einer echten Domain). Nötig, damit der Login von woanders als `localhost`/`127.0.0.1` aus funktioniert — ohne diese Variable schlägt der Login mit einer allgemeinen Fehlermeldung fehl, obwohl die Zugangsdaten korrekt sind. |
+| `MEDINV_DB_CONNECTION` | | `sqlite` | Datenbank-Backend: `sqlite` (Standard, keine zusätzlichen Dienste), `mariadb` oder `pgsql`. Ein fertiges Mehr-Container-Setup dafür liefert `docker/docker-compose.yml` mit `--profile mariadb`/`--profile postgres`. |
+| `MEDINV_LOGLEVEL` | | `WARNING` | Anfänglicher Log-Umfang (`DEBUG`/`INFO`/`WARNING`/`ERROR`); später im Admin-Bereich ohne Neustart änderbar. |
+| `MEDINV_TRUSTEDIP` | | — | IP oder CIDR-Bereich, der vom Brute-Force-Schutz beim Login ausgenommen ist. |
+| `MEDINV_RESTOREBACKUP` | | — | Dateiname eines Backups, das bei jedem Containerstart automatisch wiederhergestellt werden soll — praktisch für Demo-/Staging-Umgebungen, die immer auf einen bekannten Zustand zurückgesetzt werden sollen. |
+
+Das ist die Kurzliste für den Einstieg. Die vollständige Referenz — inklusive aller `MEDINV_DB_*`-Variablen für MariaDB/PostgreSQL — liefert die zweisprachige [`docker/.env.template`](docker/.env.template) (funktioniert auch mit `docker compose`: nach `docker/.env` kopieren, ausfüllen, dann `cd docker && docker compose up`) oder `docs/medinv-briefing.md`, Kapitel 16.
+
+### Update
+
+Einfach das neue Image ziehen und den Container neu anlegen (`docker run` mit denselben Parametern, oder `docker compose up -d --pull always`) — ausstehende Datenbank-Migrationen werden beim Start automatisch angewendet, zuvor jeweils mit einem Sicherheits-Backup abgesichert, falls welche anstehen.
+
+## 🧱 Technischer Stack
 
 - **Backend:** PHP / Laravel 13 (`backend/`), REST-API unter `/api`, Sanctum SPA-Cookie-Authentifizierung, Eloquent als Mehr-Dialekt-Datenbankschicht (SQLite / MariaDB / PostgreSQL — wählbar über `MEDINV_DB_CONNECTION`).
-- **Frontend:** React + TypeScript SPA (`frontend/`), gebaut mit Vite, `react-router` fürs Routing, `react-i18next` für deutsch-/englischsprachige Oberflächentexte.
+- **Frontend:** React + TypeScript SPA (`frontend/`), gebaut mit Vite, `react-router` fürs Routing, `react-i18next` für die mitgelieferten Oberflächensprachen.
 - **Deployment:** ein einzelnes Docker-Image (`docker/Dockerfile`) betreibt nginx + php-fpm gemeinsam über supervisord, liefert die gebaute SPA aus und leitet `/api` + `/sanctum` an Laravel weiter. Das Datenbank-Backend läuft als separater Container/Dienst und ist nie Teil des Anwendungs-Images.
 
-## Verzeichnisstruktur
+## 📁 Verzeichnisstruktur
 
 ```
 backend/    Laravel-API — siehe backend/app/Domain/* für die Fachmodule (Libraries, Metadata, Capture, Backup, Search, Statistics, Security, Mail, ExportImport)
@@ -25,7 +99,7 @@ docker/     Dockerfile, docker-compose.yml, entrypoint.sh, nginx.conf.template, 
 docs/       docs/medinv-briefing.md — das Konzeptdokument, das all dem zugrunde liegt
 ```
 
-## Lokale Entwicklung
+## 🛠️ Lokale Entwicklung
 
 Zwei getrennt laufende Dev-Server (sie kommunizieren über CORS + Sanctum-SPA-Cookies):
 
@@ -64,35 +138,4 @@ npx oxlint                # Linting
 npm run build             # Produktions-Build (frontend/dist)
 ```
 
-## Betrieb mit Docker
-
-```bash
-cd docker
-MEDINV_ADMINUSER=admin@example.com MEDINV_ADMINPASS='ChangeMe123!' docker compose up --build
-```
-
-Statt jede Variable auf der Kommandozeile zu übergeben, [`docker/.env.template`](docker/.env.template) nach `docker/.env` kopieren und ausfüllen — dort ist (zweisprachig, Deutsch + Englisch) jede von `docker-compose.yml` gelesene Variable dokumentiert; `docker compose` lädt `docker/.env` automatisch. Die resultierende `.env` (enthält echte Zugangsdaten) nicht einchecken — `docker/.gitignore` schließt sie bereits aus.
-
-Erreichbar unter `http://localhost:8080` (SPA + same-origin API, unter `/api` und `/sanctum`) — auch `http://127.0.0.1:8080` funktioniert, beide sind als gültige Login-Origins vorkonfiguriert. Es gibt bewusst keinen separaten reinen API-Port: jeder API-Konsument, ob Browser oder nicht, nutzt denselben Port unter dem `/api`-Präfix. Der Port ist über eine Umgebungsvariable konfigurierbar:
-
-```bash
-MEDINV_PortWeb=9090 MEDINV_ADMINUSER=admin@example.com MEDINV_ADMINPASS='ChangeMe123!' docker compose up --build
-```
-
-`APP_KEY` muss nicht manuell gesetzt werden — er wird beim ersten Start generiert und im `storage`-Volume gespeichert, sodass er einen Container-Neustart übersteht. Ist diese Instanz nicht nur unter `localhost`/`127.0.0.1` erreichbar (z. B. hinter einem Reverse Proxy auf einer echten Domain), `MEDINV_URL` auf diese öffentliche URL setzen — sie wird als `APP_URL` verwendet und automatisch zusätzlich zu `localhost`/`127.0.0.1` als gültiger Login-Origin akzeptiert (`SANCTUM_STATEFUL_DOMAINS` muss nur noch explizit gesetzt werden, wenn diese Heuristik den eigenen Fall nicht abdeckt). Ohne das schlägt der Login mit einer allgemeinen Fehlermeldung fehl, obwohl die Zugangsdaten korrekt sind (Sanctum behandelt nur Anfragen von einem bekannten Origin als Browser-Sitzung):
-
-```bash
-MEDINV_URL=https://medinv.example.com MEDINV_ADMINUSER=admin@example.com MEDINV_ADMINPASS='ChangeMe123!' docker compose up --build
-```
-
-Nutzt standardmäßig SQLite (keine zusätzlichen Dienste nötig); um stattdessen MariaDB oder PostgreSQL zu verwenden, `MEDINV_DB_CONNECTION` (und die passenden `MEDINV_DB_*`-Variablen — alle Datenbank-Umgebungsvariablen sind mit `MEDINV_DB_` statt Laravels Standard-`DB_*`-Namen präfixiert) in `docker/.env` oder der Shell-Umgebung setzen und das passende Profil starten:
-
-```bash
-docker compose --profile mariadb up --build    # oder --profile postgres
-```
-
-Die vollständige Liste der `MEDINV_*`-Umgebungsvariablen (initialer Administrator-Account, Loglevel, vom Brute-Force-Schutz ausgenommener IP-Bereich, Backup-Wiederherstellung beim Start) steht in `docs/medinv-briefing.md`, Kapitel 16.
-
-### Update auf eine neue Version
-
-`docker/entrypoint.sh` führt bei jedem Containerstart `php artisan migrate --force` aus — ein neueres Image mit neuen Migrationsdateien wendet seine Datenbankänderungen also automatisch an, ohne manuellen Migrationsschritt beim Update. Unmittelbar davor läuft zusätzlich `php artisan medinv:pre-update-backup`, das ein Sicherheits-Backup erstellt, sobald auf einer bereits initialisierten Datenbank ausstehende Migrationen erkannt werden (bei einer Neuinstallation oder wenn sich nichts geändert hat, passiert nichts) — so gibt es bei einem problematischen Update einen Wiederherstellungspunkt.
+Das Docker-Image lokal bauen und betreiben (statt von ghcr.io zu ziehen) funktioniert genauso — siehe [`docker/.env.template`](docker/.env.template) und `docker compose up --build` aus `docker/` heraus.
