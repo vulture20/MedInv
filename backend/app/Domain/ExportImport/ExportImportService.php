@@ -85,11 +85,9 @@ class ExportImportService
                 'shares' => $library->shares->map(fn (LibraryShare $s) => [
                     'scope' => $s->scope,
                     'user_email' => $s->user?->email,
-                    // GitHub issue #79 — included for completeness/round-trip
-                    // fidelity of the export format even though shares aren't
-                    // currently recreated on import at all (importLibraries()
-                    // only ever restores items, not shares); nothing here
-                    // depends on this value being read back yet.
+                    // GitHub issue #79 — read back by importLibraries()'s
+                    // restoreShares() (GitHub issue #80) when $restoreShares
+                    // is true; see that method's docblock.
                     'access_level' => $s->access_level,
                 ])->all(),
                 'items' => $library->mediaItems()->get()->map(
@@ -232,11 +230,29 @@ class ExportImportService
      *                                 provider_key respectively) rather than duplicated, since
      *                                 a restore is meant to reinstate the backed-up instance's
      *                                 state.
-     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[], plugins_restored: string[]}
+     * @param  bool  $restoreShares  Whether to also recreate each library's shares
+     *                               (GitHub issue #80) — a separate opt-in from
+     *                               $restoreSettings above, deliberately: unlike
+     *                               system_settings/users/metadata_plugins, `shares` is
+     *                               present in *every* export (exportLibraries() embeds it
+     *                               unconditionally, not gated behind $includeUsers), so an
+     *                               ordinary instance-to-instance library import can offer
+     *                               this even though it can never offer $restoreSettings.
+     *                               Applies only to a library that's newly created or
+     *                               overwritten — a `merge` resolution leaves the existing
+     *                               library's own share configuration alone, since merging
+     *                               is presented as "add these items", not "also change who
+     *                               can access this library". A scope=user share whose
+     *                               user_email doesn't match any account on this instance is
+     *                               silently skipped (counted in the returned
+     *                               shares_skipped) rather than created with no target or
+     *                               rejected outright — scope=guest/scope=all_users shares
+     *                               have no such dependency and are never skipped.
+     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[], plugins_restored: string[], shares_restored: bool, shares_skipped: int}
      *
      * @throws InvalidImportFileException
      */
-    public function importLibraries(array $data, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
+    public function importLibraries(array $data, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false, bool $restoreShares = false): array
     {
         // Validated up front, before anything (including the settings/users/
         // plugins restore below) is written — an admin-uploaded file could be
@@ -248,7 +264,11 @@ class ExportImportService
         // a hand-edited or unrelated file.
         $this->assertValidPayload($data);
 
-        $result = ['created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [], 'settings_restored' => false, 'users_restored' => [], 'plugins_restored' => []];
+        $result = [
+            'created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [],
+            'settings_restored' => false, 'users_restored' => [], 'plugins_restored' => [],
+            'shares_restored' => $restoreShares, 'shares_skipped' => 0,
+        ];
 
         if (($conflictResolutions['__all__'] ?? null) === 'cancel') {
             return $result;
@@ -289,12 +309,12 @@ class ExportImportService
             }
         }
 
-        DB::transaction(function () use ($data, $importingAs, $conflictResolutions, &$result) {
+        DB::transaction(function () use ($data, $importingAs, $conflictResolutions, $restoreShares, &$result) {
             foreach ($data['libraries'] ?? [] as $libraryData) {
                 $existing = Library::query()->where('name', $libraryData['name'])->first();
 
                 if (! $existing) {
-                    $this->createLibraryFromExport($libraryData, $importingAs);
+                    $this->createLibraryFromExport($libraryData, $importingAs, $restoreShares, $result);
                     $result['created'][] = $libraryData['name'];
 
                     continue;
@@ -305,10 +325,10 @@ class ExportImportService
                 match ($resolution) {
                     'rename' => $this->createLibraryFromExport(
                         [...$libraryData, 'name' => $libraryData['name'].' (imported '.now()->format('Y-m-d H:i').')'],
-                        $importingAs
+                        $importingAs, $restoreShares, $result
                     ) && $result['created'][] = $libraryData['name'],
                     'merge' => $this->mergeIntoLibrary($existing, $libraryData) && $result['merged'][] = $libraryData['name'],
-                    'overwrite' => $this->overwriteLibrary($existing, $libraryData, $importingAs) && $result['overwritten'][] = $libraryData['name'],
+                    'overwrite' => $this->overwriteLibrary($existing, $libraryData, $importingAs, $restoreShares, $result) && $result['overwritten'][] = $libraryData['name'],
                     default => $result['skipped'][] = $libraryData['name'],
                 };
             }
@@ -355,7 +375,8 @@ class ExportImportService
         }
     }
 
-    private function createLibraryFromExport(array $libraryData, User $owner): true
+    /** @param  array{shares_skipped: int}  &$result  Updated in place — see restoreShares()'s docblock. */
+    private function createLibraryFromExport(array $libraryData, User $owner, bool $restoreShares, array &$result): true
     {
         $library = Library::query()->create([
             'name' => $libraryData['name'],
@@ -366,9 +387,20 @@ class ExportImportService
 
         $this->insertItems($library, $libraryData['items'] ?? []);
 
+        if ($restoreShares) {
+            $result['shares_skipped'] += $this->restoreShares($library, $libraryData['shares'] ?? []);
+        }
+
         return true;
     }
 
+    /**
+     * GitHub issue #80: shares are deliberately left untouched here, unlike
+     * createLibraryFromExport()/overwriteLibrary() — $library already exists
+     * with its own share configuration, and `merge` is presented to the
+     * admin as "add these items to the existing library", not "also change
+     * who can access it".
+     */
     private function mergeIntoLibrary(Library $library, array $libraryData): true
     {
         // Existing records win on EAN collision (5.1: no duplicate within a library).
@@ -377,7 +409,8 @@ class ExportImportService
         return true;
     }
 
-    private function overwriteLibrary(Library $library, array $libraryData, User $owner): true
+    /** @param  array{shares_skipped: int}  &$result  Updated in place — see restoreShares()'s docblock. */
+    private function overwriteLibrary(Library $library, array $libraryData, User $owner, bool $restoreShares, array &$result): true
     {
         $library->mediaItems()->delete();
         $library->update([
@@ -385,7 +418,66 @@ class ExportImportService
         ]);
         $this->insertItems($library, $libraryData['items'] ?? []);
 
+        if ($restoreShares) {
+            // Full replace, same as LibraryController::updateShares() and
+            // consistent with `overwrite` already replacing this library's
+            // items outright above rather than merging them.
+            $library->shares()->delete();
+            $result['shares_skipped'] += $this->restoreShares($library, $libraryData['shares'] ?? []);
+        }
+
         return true;
+    }
+
+    /**
+     * Recreates $library's shares from an exportLibraries() `shares` array
+     * (GitHub issue #80) — mirrors LibraryController::updateShares()'s
+     * insert logic. A scope=user share whose user_email doesn't match any
+     * account on this instance is skipped rather than created with no
+     * target (LibraryShare.user_id is nullable, but a "user" share with no
+     * user would be visible/writable by nobody and unremovable through the
+     * ordinary sharing UI, which only ever lists real accounts) or
+     * rejected outright (an otherwise-valid restore shouldn't fail over one
+     * stale email from a since-deleted account on the source instance).
+     * access_level (#79) is preserved, except a malformed or missing value
+     * defaults to 'read' — same fallback updateShares() itself uses for an
+     * omitted access_level — and scope=guest can never end up 'write'
+     * regardless of what the export claims (briefing 4.2: guests get no
+     * write, full stop; LibraryAccessService::canWriteItems() would ignore
+     * it anyway, but there's no reason to persist a nonsensical value).
+     *
+     * @return int How many shares were skipped for a missing target user.
+     */
+    private function restoreShares(Library $library, array $shares): int
+    {
+        $skipped = 0;
+
+        foreach ($shares as $shareData) {
+            $scope = $shareData['scope'] ?? null;
+            if (! in_array($scope, ['guest', 'all_users', 'user'], true)) {
+                continue; // malformed entry — same tolerance insertItems() has for a bad item
+            }
+
+            $userId = null;
+            if ($scope === 'user') {
+                $user = User::query()->where('email', $shareData['user_email'] ?? null)->first();
+                if (! $user) {
+                    $skipped++;
+
+                    continue;
+                }
+                $userId = $user->id;
+            }
+
+            LibraryShare::query()->create([
+                'library_id' => $library->id,
+                'scope' => $scope,
+                'user_id' => $userId,
+                'access_level' => $scope !== 'guest' && ($shareData['access_level'] ?? 'read') === 'write' ? 'write' : 'read',
+            ]);
+        }
+
+        return $skipped;
     }
 
     private function insertItems(Library $library, array $items, bool $skipExistingEans = false): void

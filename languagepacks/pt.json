@@ -269,9 +269,12 @@
         "warning": "Por padrão, bibliotecas existentes com o mesmo nome são ignoradas (deixadas inalteradas), a menos que você escolha \"Sobrescrever\" abaixo.",
         "overwriteExisting": "Sobrescrever bibliotecas existentes com o mesmo nome em vez de ignorá-las",
         "restoreSettings": "Restaurar também as configurações do sistema e as contas de usuário",
+        "restoreShares": "Restaurar também os compartilhamentos",
         "submit": "Confirmar restauração",
         "confirm": "Restaurar o backup \"{{filename}}\"? Esta ação não pode ser desfeita.",
-        "success": "Restauração concluída: {{created}} criada(s), {{overwritten}} sobrescrita(s), {{merged}} mesclada(s), {{skipped}} ignorada(s)."
+        "success": "Restauração concluída: {{created}} criada(s), {{overwritten}} sobrescrita(s), {{merged}} mesclada(s), {{skipped}} ignorada(s).",
+        "sharesSkipped_one": "{{count}} compartilhamento ignorado (nenhuma conta correspondente).",
+        "sharesSkipped_other": "{{count}} compartilhamentos ignorados (nenhuma conta correspondente)."
       },
       "exportImportPage": {
         "exportTitle": "Exportar",
@@ -281,7 +284,9 @@
         "importTitle": "Importar",
         "importFile": "Arquivo de exportação",
         "importSubmit": "Importar",
-        "importSuccess": "Importação concluída: {{created}} criada(s), {{overwritten}} sobrescrita(s), {{merged}} mesclada(s), {{skipped}} ignorada(s)."
+        "importSuccess": "Importação concluída: {{created}} criada(s), {{overwritten}} sobrescrita(s), {{merged}} mesclada(s), {{skipped}} ignorada(s).",
+        "importSharesSkipped_one": "{{count}} compartilhamento ignorado (nenhuma conta correspondente).",
+        "importSharesSkipped_other": "{{count}} compartilhamentos ignorados (nenhuma conta correspondente)."
       },
       "languagesPage": {
         "code": "Código",

@@ -269,9 +269,12 @@
         "warning": "Aynı ada sahip mevcut kitaplıklar, aşağıda \"Üzerine yaz\" seçilmedikçe varsayılan olarak atlanır (değiştirilmeden bırakılır).",
         "overwriteExisting": "Aynı ada sahip mevcut kitaplıkları atlamak yerine üzerine yaz",
         "restoreSettings": "Sistem ayarlarını ve kullanıcı hesaplarını da geri yükle",
+        "restoreShares": "Paylaşımları da geri yükle",
         "submit": "Geri yüklemeyi onayla",
         "confirm": "\"{{filename}}\" yedeği geri yüklensin mi? Bu işlem geri alınamaz.",
-        "success": "Geri yükleme tamamlandı: {{created}} oluşturuldu, {{overwritten}} üzerine yazıldı, {{merged}} birleştirildi, {{skipped}} atlandı."
+        "success": "Geri yükleme tamamlandı: {{created}} oluşturuldu, {{overwritten}} üzerine yazıldı, {{merged}} birleştirildi, {{skipped}} atlandı.",
+        "sharesSkipped_one": "{{count}} paylaşım atlandı (eşleşen hesap yok).",
+        "sharesSkipped_other": "{{count}} paylaşım atlandı (eşleşen hesap yok)."
       },
       "exportImportPage": {
         "exportTitle": "Dışa aktar",
@@ -281,7 +284,9 @@
         "importTitle": "İçe aktar",
         "importFile": "Dışa aktarma dosyası",
         "importSubmit": "İçe aktar",
-        "importSuccess": "İçe aktarma tamamlandı: {{created}} oluşturuldu, {{overwritten}} üzerine yazıldı, {{merged}} birleştirildi, {{skipped}} atlandı."
+        "importSuccess": "İçe aktarma tamamlandı: {{created}} oluşturuldu, {{overwritten}} üzerine yazıldı, {{merged}} birleştirildi, {{skipped}} atlandı.",
+        "importSharesSkipped_one": "{{count}} paylaşım atlandı (eşleşen hesap yok).",
+        "importSharesSkipped_other": "{{count}} paylaşım atlandı (eşleşen hesap yok)."
       },
       "languagesPage": {
         "code": "Kod",

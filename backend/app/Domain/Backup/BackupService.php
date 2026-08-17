@@ -281,11 +281,11 @@ class BackupService
      * the conflict-resolution logic (rename/merge/overwrite/skip/cancel)
      * shared with ordinary instance-to-instance import (9.1). Both trigger
      * paths from 9.3 use this: BackupController::restore() (admin UI, with
-     * $conflictResolutions/$restoreSettings chosen interactively per
-     * request) and Console\Commands\RestoreBackupOnBoot
+     * $conflictResolutions/$restoreSettings/$restoreShares chosen
+     * interactively per request) and Console\Commands\RestoreBackupOnBoot
      * (MEDINV_RESTOREBACKUP at container start, unattended).
      */
-    public function restore(Backup $backup, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false): array
+    public function restore(Backup $backup, User $importingAs, array $conflictResolutions = [], bool $restoreSettings = false, bool $restoreShares = false): array
     {
         $path = Storage::disk(self::DISK)->path(self::DIR.'/'.$backup->filename);
 
@@ -315,7 +315,7 @@ class BackupService
         $this->exportImportService->restoreCoverFilesFromZip($zip);
         $zip->close();
 
-        $result = $this->exportImportService->importLibraries($data, $importingAs, $conflictResolutions, $restoreSettings);
+        $result = $this->exportImportService->importLibraries($data, $importingAs, $conflictResolutions, $restoreSettings, $restoreShares);
 
         // Restoring overwrites/merges existing data — worth a clear record of
         // who triggered it (importingAs — note this is *not* necessarily an
@@ -327,6 +327,7 @@ class BackupService
             'filename' => $backup->filename,
             'actor_id' => $importingAs->id,
             'restore_settings' => $restoreSettings,
+            'restore_shares' => $restoreShares,
             'created' => count($result['created'] ?? []),
             'merged' => count($result['merged'] ?? []),
             'overwritten' => count($result['overwritten'] ?? []),
@@ -334,6 +335,7 @@ class BackupService
             'settings_restored' => $result['settings_restored'] ?? false,
             'users_restored' => count($result['users_restored'] ?? []),
             'plugins_restored' => count($result['plugins_restored'] ?? []),
+            'shares_skipped' => $result['shares_skipped'] ?? 0,
         ]);
 
         return $result;

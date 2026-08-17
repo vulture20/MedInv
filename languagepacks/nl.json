@@ -269,9 +269,12 @@
         "warning": "Bestaande bibliotheken met dezelfde naam worden standaard overgeslagen (ongewijzigd gelaten), tenzij u hieronder \"Overschrijven\" kiest.",
         "overwriteExisting": "Bestaande bibliotheken met dezelfde naam overschrijven in plaats van overslaan",
         "restoreSettings": "Ook systeeminstellingen en gebruikersaccounts herstellen",
+        "restoreShares": "Ook deelinstellingen herstellen",
         "submit": "Herstel bevestigen",
         "confirm": "Back-up \"{{filename}}\" herstellen? Dit kan niet ongedaan worden gemaakt.",
-        "success": "Herstel voltooid: {{created}} aangemaakt, {{overwritten}} overschreven, {{merged}} samengevoegd, {{skipped}} overgeslagen."
+        "success": "Herstel voltooid: {{created}} aangemaakt, {{overwritten}} overschreven, {{merged}} samengevoegd, {{skipped}} overgeslagen.",
+        "sharesSkipped_one": "{{count}} deelinstelling overgeslagen (geen overeenkomend account).",
+        "sharesSkipped_other": "{{count}} deelinstellingen overgeslagen (geen overeenkomend account)."
       },
       "exportImportPage": {
         "exportTitle": "Exporteren",
@@ -281,7 +284,9 @@
         "importTitle": "Importeren",
         "importFile": "Exportbestand",
         "importSubmit": "Importeren",
-        "importSuccess": "Import voltooid: {{created}} aangemaakt, {{overwritten}} overschreven, {{merged}} samengevoegd, {{skipped}} overgeslagen."
+        "importSuccess": "Import voltooid: {{created}} aangemaakt, {{overwritten}} overschreven, {{merged}} samengevoegd, {{skipped}} overgeslagen.",
+        "importSharesSkipped_one": "{{count}} deelinstelling overgeslagen (geen overeenkomend account).",
+        "importSharesSkipped_other": "{{count}} deelinstellingen overgeslagen (geen overeenkomend account)."
       },
       "languagesPage": {
         "code": "Code",

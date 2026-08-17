@@ -269,9 +269,12 @@
         "warning": "既定では、同名の既存ライブラリはスキップされます（変更されません）。下の「上書き」を選択した場合を除きます。",
         "overwriteExisting": "同名の既存ライブラリをスキップせずに上書きする",
         "restoreSettings": "システム設定とユーザーアカウントも復元する",
+        "restoreShares": "共有設定も復元する",
         "submit": "復元を確認",
         "confirm": "バックアップ「{{filename}}」を復元しますか? この操作は元に戻せません。",
-        "success": "復元が完了しました: 新規作成 {{created}} 件、上書き {{overwritten}} 件、統合 {{merged}} 件、スキップ {{skipped}} 件。"
+        "success": "復元が完了しました: 新規作成 {{created}} 件、上書き {{overwritten}} 件、統合 {{merged}} 件、スキップ {{skipped}} 件。",
+        "sharesSkipped_one": "{{count}} 件の共有をスキップしました（該当するアカウントがありません）。",
+        "sharesSkipped_other": "{{count}} 件の共有をスキップしました(該当するアカウントがありません)。"
       },
       "exportImportPage": {
         "exportTitle": "エクスポート",
@@ -281,7 +284,9 @@
         "importTitle": "インポート",
         "importFile": "エクスポートファイル",
         "importSubmit": "インポート",
-        "importSuccess": "インポートが完了しました: 新規作成 {{created}} 件、上書き {{overwritten}} 件、統合 {{merged}} 件、スキップ {{skipped}} 件。"
+        "importSuccess": "インポートが完了しました: 新規作成 {{created}} 件、上書き {{overwritten}} 件、統合 {{merged}} 件、スキップ {{skipped}} 件。",
+        "importSharesSkipped_one": "{{count}} 件の共有をスキップしました（該当するアカウントがありません）。",
+        "importSharesSkipped_other": "{{count}} 件の共有をスキップしました(該当するアカウントがありません)。"
       },
       "languagesPage": {
         "code": "コード",

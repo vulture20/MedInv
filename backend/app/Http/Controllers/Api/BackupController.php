@@ -59,6 +59,9 @@ class BackupController extends Controller
         $data = $request->validate([
             'conflict_resolutions' => ['sometimes', 'array'],
             'restore_settings' => ['sometimes', 'boolean'],
+            // GitHub issue #80 — a separate opt-in from restore_settings above, see
+            // ExportImportService::importLibraries()'s $restoreShares docblock for why.
+            'restore_shares' => ['sometimes', 'boolean'],
         ]);
 
         return response()->json($this->backupService->restore(
@@ -66,6 +69,7 @@ class BackupController extends Controller
             $request->user(),
             $data['conflict_resolutions'] ?? [],
             $data['restore_settings'] ?? false,
+            $data['restore_shares'] ?? false,
         ));
     }
 }

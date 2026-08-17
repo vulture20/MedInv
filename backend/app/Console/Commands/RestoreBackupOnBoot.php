@@ -18,18 +18,18 @@ use Illuminate\Support\Facades\Log;
  * Unattended means there's no admin present to choose a per-library
  * conflict-resolution (rename/merge/overwrite/skip/cancel, 9.3), so every
  * conflicting library is overwritten via importLibraries()'s `__default__`
- * sentinel, and system settings + user accounts are restored too
- * (restoreSettings: true) — MEDINV_RESTOREBACKUP's whole purpose is
- * bringing this instance to exactly the backed-up state, not a partial
- * library-only import. Acts as the predefined/protected admin account
- * (DatabaseSeeder always creates exactly one), since no user is logged in
- * at boot time.
+ * sentinel, and system settings + user accounts + library shares (GitHub
+ * issue #80) are restored too (restoreSettings: true, restoreShares: true)
+ * — MEDINV_RESTOREBACKUP's whole purpose is bringing this instance to
+ * exactly the backed-up state, not a partial library-only import. Acts as
+ * the predefined/protected admin account (DatabaseSeeder always creates
+ * exactly one), since no user is logged in at boot time.
  */
 class RestoreBackupOnBoot extends Command
 {
     protected $signature = 'medinv:restore-backup {name : Backup filename (MEDINV_RESTOREBACKUP), with or without the .zip extension}';
 
-    protected $description = 'Restore a named backup at container start, overwriting conflicting libraries and restoring settings/users';
+    protected $description = 'Restore a named backup at container start, overwriting conflicting libraries and restoring settings/users/shares';
 
     public function handle(BackupService $backupService): int
     {
@@ -66,16 +66,18 @@ class RestoreBackupOnBoot extends Command
             $actingAs,
             conflictResolutions: ['__default__' => 'overwrite'],
             restoreSettings: true,
+            restoreShares: true,
         );
 
         $this->info(sprintf(
-            'Restore complete: %d created, %d overwritten, %d merged, %d skipped, %d user(s) restored, settings restored: %s.',
+            'Restore complete: %d created, %d overwritten, %d merged, %d skipped, %d user(s) restored, settings restored: %s, %d share(s) skipped (no matching account).',
             count($result['created']),
             count($result['overwritten']),
             count($result['merged']),
             count($result['skipped']),
             count($result['users_restored']),
             $result['settings_restored'] ? 'yes' : 'no',
+            $result['shares_skipped'],
         ));
 
         return self::SUCCESS;

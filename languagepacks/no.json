@@ -270,9 +270,12 @@
         "warning": "Eksisterende biblioteker med samme navn hoppes over (forblir uendret) som standard, med mindre du velger \"Overskriv\" nedenfor.",
         "overwriteExisting": "Overskriv eksisterende biblioteker med samme navn i stedet for å hoppe over dem",
         "restoreSettings": "Gjenopprett også systeminnstillinger og brukerkontoer",
+        "restoreShares": "Gjenopprett også delinger",
         "submit": "Bekreft gjenoppretting",
         "confirm": "Gjenopprette sikkerhetskopi \"{{filename}}\"? Dette kan ikke angres.",
-        "success": "Gjenoppretting fullført: {{created}} opprettet, {{overwritten}} overskrevet, {{merged}} slått sammen, {{skipped}} hoppet over."
+        "success": "Gjenoppretting fullført: {{created}} opprettet, {{overwritten}} overskrevet, {{merged}} slått sammen, {{skipped}} hoppet over.",
+        "sharesSkipped_one": "{{count}} deling hoppet over (ingen matchende konto).",
+        "sharesSkipped_other": "{{count}} delinger hoppet over (ingen matchende konto)."
       },
       "exportImportPage": {
         "exportTitle": "Eksport",
@@ -282,7 +285,9 @@
         "importTitle": "Import",
         "importFile": "Eksportfil",
         "importSubmit": "Importer",
-        "importSuccess": "Import fullført: {{created}} opprettet, {{overwritten}} overskrevet, {{merged}} slått sammen, {{skipped}} hoppet over."
+        "importSuccess": "Import fullført: {{created}} opprettet, {{overwritten}} overskrevet, {{merged}} slått sammen, {{skipped}} hoppet over.",
+        "importSharesSkipped_one": "{{count}} deling hoppet over (ingen matchende konto).",
+        "importSharesSkipped_other": "{{count}} delinger hoppet over (ingen matchende konto)."
       },
       "languagesPage": {
         "code": "Kode",

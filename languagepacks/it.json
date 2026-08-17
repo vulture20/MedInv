@@ -269,9 +269,12 @@
         "warning": "Le biblioteche esistenti con lo stesso nome vengono ignorate (lasciate invariate) per impostazione predefinita, a meno che tu non scelga «Sovrascrivi» qui sotto.",
         "overwriteExisting": "Sovrascrivi le biblioteche esistenti con lo stesso nome invece di ignorarle",
         "restoreSettings": "Ripristina anche le impostazioni di sistema e gli account utente",
+        "restoreShares": "Ripristina anche le condivisioni",
         "submit": "Conferma ripristino",
         "confirm": "Ripristinare il backup «{{filename}}»? Questa azione non può essere annullata.",
-        "success": "Ripristino completato: {{created}} create, {{overwritten}} sovrascritte, {{merged}} unite, {{skipped}} ignorate."
+        "success": "Ripristino completato: {{created}} create, {{overwritten}} sovrascritte, {{merged}} unite, {{skipped}} ignorate.",
+        "sharesSkipped_one": "{{count}} condivisione ignorata (nessun account corrispondente).",
+        "sharesSkipped_other": "{{count}} condivisioni ignorate (nessun account corrispondente)."
       },
       "exportImportPage": {
         "exportTitle": "Esporta",
@@ -281,7 +284,9 @@
         "importTitle": "Importa",
         "importFile": "File di esportazione",
         "importSubmit": "Importa",
-        "importSuccess": "Importazione completata: {{created}} create, {{overwritten}} sovrascritte, {{merged}} unite, {{skipped}} ignorate."
+        "importSuccess": "Importazione completata: {{created}} create, {{overwritten}} sovrascritte, {{merged}} unite, {{skipped}} ignorate.",
+        "importSharesSkipped_one": "{{count}} condivisione ignorata (nessun account corrispondente).",
+        "importSharesSkipped_other": "{{count}} condivisioni ignorate (nessun account corrispondente)."
       },
       "languagesPage": {
         "code": "Codice",

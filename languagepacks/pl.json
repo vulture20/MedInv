@@ -269,9 +269,12 @@
         "warning": "Istniejące biblioteki o tej samej nazwie są domyślnie pomijane (pozostają bez zmian), chyba że wybierzesz poniżej opcję „Nadpisz”.",
         "overwriteExisting": "Nadpisz istniejące biblioteki o tej samej nazwie zamiast je pomijać",
         "restoreSettings": "Przywróć również ustawienia systemowe i konta użytkowników",
+        "restoreShares": "Przywróć również udostępnienia",
         "submit": "Potwierdź przywracanie",
         "confirm": "Przywrócić kopię zapasową „{{filename}}”? Tej czynności nie można cofnąć.",
-        "success": "Przywracanie zakończone: utworzono {{created}}, nadpisano {{overwritten}}, scalono {{merged}}, pominięto {{skipped}}."
+        "success": "Przywracanie zakończone: utworzono {{created}}, nadpisano {{overwritten}}, scalono {{merged}}, pominięto {{skipped}}.",
+        "sharesSkipped_one": "Pominięto {{count}} udostępnienie (brak pasującego konta).",
+        "sharesSkipped_other": "Pominięto {{count}} udostępnień (brak pasującego konta)."
       },
       "exportImportPage": {
         "exportTitle": "Eksport",
@@ -281,7 +284,9 @@
         "importTitle": "Import",
         "importFile": "Plik eksportu",
         "importSubmit": "Importuj",
-        "importSuccess": "Import zakończony: utworzono {{created}}, nadpisano {{overwritten}}, scalono {{merged}}, pominięto {{skipped}}."
+        "importSuccess": "Import zakończony: utworzono {{created}}, nadpisano {{overwritten}}, scalono {{merged}}, pominięto {{skipped}}.",
+        "importSharesSkipped_one": "Pominięto {{count}} udostępnienie (brak pasującego konta).",
+        "importSharesSkipped_other": "Pominięto {{count}} udostępnień (brak pasującego konta)."
       },
       "languagesPage": {
         "code": "Kod",

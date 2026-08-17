@@ -269,9 +269,12 @@
         "warning": "Par défaut, les bibliothèques existantes portant le même nom sont ignorées (laissées inchangées), sauf si vous choisissez « Écraser » ci-dessous.",
         "overwriteExisting": "Écraser les bibliothèques existantes portant le même nom au lieu de les ignorer",
         "restoreSettings": "Restaurer également les paramètres système et les comptes utilisateurs",
+        "restoreShares": "Restaurer également les partages",
         "submit": "Confirmer la restauration",
         "confirm": "Restaurer la sauvegarde « {{filename}} » ? Cette action est irréversible.",
-        "success": "Restauration terminée : {{created}} créée(s), {{overwritten}} écrasée(s), {{merged}} fusionnée(s), {{skipped}} ignorée(s)."
+        "success": "Restauration terminée : {{created}} créée(s), {{overwritten}} écrasée(s), {{merged}} fusionnée(s), {{skipped}} ignorée(s).",
+        "sharesSkipped_one": "{{count}} partage ignoré (aucun compte correspondant).",
+        "sharesSkipped_other": "{{count}} partages ignorés (aucun compte correspondant)."
       },
       "exportImportPage": {
         "exportTitle": "Export",
@@ -281,7 +284,9 @@
         "importTitle": "Import",
         "importFile": "Fichier d'export",
         "importSubmit": "Importer",
-        "importSuccess": "Import terminé : {{created}} créée(s), {{overwritten}} écrasée(s), {{merged}} fusionnée(s), {{skipped}} ignorée(s)."
+        "importSuccess": "Import terminé : {{created}} créée(s), {{overwritten}} écrasée(s), {{merged}} fusionnée(s), {{skipped}} ignorée(s).",
+        "importSharesSkipped_one": "{{count}} partage ignoré (aucun compte correspondant).",
+        "importSharesSkipped_other": "{{count}} partages ignorés (aucun compte correspondant)."
       },
       "languagesPage": {
         "code": "Code",

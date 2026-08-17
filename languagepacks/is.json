@@ -270,9 +270,12 @@
         "warning": "Sjálfgefið er sleppt (og ekkert breytt) söfnum sem þegar eru til með sama nafni, nema þú veljir „Skrifa yfir“ hér að neðan.",
         "overwriteExisting": "Skrifa yfir söfn sem þegar eru til með sama nafni í stað þess að sleppa þeim",
         "restoreSettings": "Einnig endurheimta kerfisstillingar og notandareikninga",
+        "restoreShares": "Einnig endurheimta deilingu",
         "submit": "Staðfesta endurheimt",
         "confirm": "Endurheimta öryggisafritið „{{filename}}“? Þessu er ekki hægt að afturkalla.",
-        "success": "Endurheimt lokið: {{created}} búin til, {{overwritten}} yfirskrifuð, {{merged}} sameinuð, {{skipped}} sleppt."
+        "success": "Endurheimt lokið: {{created}} búin til, {{overwritten}} yfirskrifuð, {{merged}} sameinuð, {{skipped}} sleppt.",
+        "sharesSkipped_one": "{{count}} deiling sleppt (enginn samsvarandi reikningur).",
+        "sharesSkipped_other": "{{count}} deilingar sleppt (enginn samsvarandi reikningur)."
       },
       "exportImportPage": {
         "exportTitle": "Útflutningur",
@@ -282,7 +285,9 @@
         "importTitle": "Innflutningur",
         "importFile": "Útflutningsskrá",
         "importSubmit": "Flytja inn",
-        "importSuccess": "Innflutningi lokið: {{created}} búin til, {{overwritten}} yfirskrifuð, {{merged}} sameinuð, {{skipped}} sleppt."
+        "importSuccess": "Innflutningi lokið: {{created}} búin til, {{overwritten}} yfirskrifuð, {{merged}} sameinuð, {{skipped}} sleppt.",
+        "importSharesSkipped_one": "{{count}} deiling sleppt (enginn samsvarandi reikningur).",
+        "importSharesSkipped_other": "{{count}} deilingar sleppt (enginn samsvarandi reikningur)."
       },
       "languagesPage": {
         "code": "Kóði",

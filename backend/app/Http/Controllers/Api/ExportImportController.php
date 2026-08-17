@@ -120,6 +120,12 @@ class ExportImportController extends Controller
      * in the first place (see that method's docblock for why — a real
      * reported leak, not just an unused option) — `restore_settings` against
      * a plain export is therefore always a no-op regardless of what's sent.
+     *
+     * `restore_shares` (GitHub issue #80) is different from `restore_settings`
+     * in exactly the way that comment describes: unlike system_settings/
+     * users/metadata_plugins, a library's `shares` travel in *every* export
+     * (export() never omits them), so ExportImportPage.tsx does offer this
+     * one — see ExportImportService::importLibraries()'s docblock.
      */
     public function import(Request $request)
     {
@@ -127,6 +133,7 @@ class ExportImportController extends Controller
             'file' => ['required', 'file'],
             'conflict_resolutions' => ['sometimes', 'array'],
             'restore_settings' => ['sometimes', 'boolean'],
+            'restore_shares' => ['sometimes', 'boolean'],
         ]);
 
         $payload = $this->readImportPayload($data['file']);
@@ -140,6 +147,7 @@ class ExportImportController extends Controller
                 $request->user(),
                 $data['conflict_resolutions'] ?? [],
                 $data['restore_settings'] ?? false,
+                $data['restore_shares'] ?? false,
             );
         } catch (InvalidImportFileException $e) {
             return $this->invalidImportResponse($request, $e->errorCode, $e->context);
@@ -151,10 +159,12 @@ class ExportImportController extends Controller
         Log::info('Libraries imported', [
             'actor_id' => $request->user()->id,
             'restore_settings' => $data['restore_settings'] ?? false,
+            'restore_shares' => $data['restore_shares'] ?? false,
             'created' => count($result['created'] ?? []),
             'merged' => count($result['merged'] ?? []),
             'overwritten' => count($result['overwritten'] ?? []),
             'skipped' => count($result['skipped'] ?? []),
+            'shares_skipped' => $result['shares_skipped'] ?? 0,
         ]);
 
         return response()->json($result);

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Domain\Backup\BackupService;
 use App\Models\Library;
+use App\Models\LibraryShare;
 use App\Models\MediaBook;
 use App\Models\SystemSetting;
 use App\Models\User;
@@ -97,5 +98,46 @@ class BackupRestoreTest extends TestCase
         app(BackupService::class)->restore($backup, $admin, [], restoreSettings: true);
 
         $this->assertSame(3, SystemSetting::get('security.throttle_max_attempts'));
+    }
+
+    /**
+     * GitHub issue #80: a recreated library's shares weren't restored at
+     * all before this — restoreShares is a separate opt-in from
+     * restoreSettings above (see ExportImportService::importLibraries()'s
+     * docblock for why they can't share one flag).
+     */
+    public function test_restore_shares_true_restores_a_recreated_librarys_shares(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['level' => 'admin']);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
+        LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'all_users']);
+
+        $backup = app(BackupService::class)->create();
+        $library->mediaItems()->delete();
+        $library->delete();
+
+        app(BackupService::class)->restore($backup, $admin, [], restoreShares: true);
+
+        $restored = Library::query()->where('name', 'Novels')->firstOrFail();
+        $this->assertDatabaseHas((new LibraryShare)->getTable(), ['library_id' => $restored->id, 'scope' => 'all_users']);
+    }
+
+    /** Without the opt-in, shares still don't come back — same default-off stance as restoreSettings. */
+    public function test_shares_are_not_restored_without_the_opt_in(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['level' => 'admin']);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
+        LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'all_users']);
+
+        $backup = app(BackupService::class)->create();
+        $library->mediaItems()->delete();
+        $library->delete();
+
+        app(BackupService::class)->restore($backup, $admin);
+
+        $restored = Library::query()->where('name', 'Novels')->firstOrFail();
+        $this->assertSame(0, LibraryShare::query()->where('library_id', $restored->id)->count());
     }
 }

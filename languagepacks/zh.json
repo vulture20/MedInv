@@ -269,9 +269,12 @@
         "warning": "默认情况下，同名的现有媒体库将被跳过（保持不变），除非您在下方选择“覆盖”。",
         "overwriteExisting": "覆盖同名的现有媒体库，而不是跳过它们",
         "restoreSettings": "同时恢复系统设置和用户账户",
+        "restoreShares": "同时恢复共享设置",
         "submit": "确认恢复",
         "confirm": "恢复备份“{{filename}}”？此操作无法撤销。",
-        "success": "恢复完成：新建 {{created}} 个，覆盖 {{overwritten}} 个，合并 {{merged}} 个，跳过 {{skipped}} 个。"
+        "success": "恢复完成：新建 {{created}} 个，覆盖 {{overwritten}} 个，合并 {{merged}} 个，跳过 {{skipped}} 个。",
+        "sharesSkipped_one": "跳过了 {{count}} 个共享设置(没有匹配的账户)。",
+        "sharesSkipped_other": "跳过了 {{count}} 个共享设置(没有匹配的账户)。"
       },
       "exportImportPage": {
         "exportTitle": "导出",
@@ -281,7 +284,9 @@
         "importTitle": "导入",
         "importFile": "导出文件",
         "importSubmit": "导入",
-        "importSuccess": "导入完成：新建 {{created}} 个，覆盖 {{overwritten}} 个，合并 {{merged}} 个，跳过 {{skipped}} 个。"
+        "importSuccess": "导入完成：新建 {{created}} 个，覆盖 {{overwritten}} 个，合并 {{merged}} 个，跳过 {{skipped}} 个。",
+        "importSharesSkipped_one": "跳过了 {{count}} 个共享设置(没有匹配的账户)。",
+        "importSharesSkipped_other": "跳过了 {{count}} 个共享设置(没有匹配的账户)。"
       },
       "languagesPage": {
         "code": "代码",

@@ -9,6 +9,8 @@ interface ImportResult {
   merged: string[]
   overwritten: string[]
   skipped: string[]
+  /** GitHub issue #80 — a scope=user share whose user_email matched no account here. */
+  shares_skipped: number
 }
 
 /**
@@ -53,7 +55,10 @@ function filenameFromContentDisposition(disposition: string | undefined): string
  * and user accounts" checkbox — a plain library export never contains user
  * accounts at all (ExportImportService::exportLibraries() only embeds those
  * when called with $includeUsers, and export() never sets it), so offering
- * that option here would promise something it can't do.
+ * that option here would promise something it can't do. A "restore shares"
+ * checkbox (GitHub issue #80) *is* offered here, unlike that one — shares
+ * are embedded in every export unconditionally, not gated behind
+ * $includeUsers, so this page can actually deliver on it.
  *
  * Card layout matches OidcPage.tsx's/MailPage.tsx's (.panel-page/
  * .panel-card/.panel-confirmation, see index.css's shared docblock) — one
@@ -73,6 +78,8 @@ export function ExportImportPage() {
 
   const [file, setFile] = useState<File | null>(null)
   const [overwriteExisting, setOverwriteExisting] = useState(false)
+  // GitHub issue #80 — opt-in, same reasoning as BackupsPage's own restoreShares.
+  const [restoreShares, setRestoreShares] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState<string | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
@@ -130,17 +137,21 @@ export function ExportImportPage() {
       const form = new FormData()
       form.append('file', file)
       if (overwriteExisting) form.append('conflict_resolutions[__default__]', 'overwrite')
+      if (restoreShares) form.append('restore_shares', '1')
       const { data } = await apiClient.post<ImportResult>('/admin/import', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      setImportResult(
-        t('admin.exportImportPage.importSuccess', {
-          created: data.created.length,
-          overwritten: data.overwritten.length,
-          merged: data.merged.length,
-          skipped: data.skipped.length,
-        }),
-      )
+      let message = t('admin.exportImportPage.importSuccess', {
+        created: data.created.length,
+        overwritten: data.overwritten.length,
+        merged: data.merged.length,
+        skipped: data.skipped.length,
+      })
+      // GitHub issue #80 — same "only mention it if it's actually relevant" reasoning as BackupsPage's own restore result message.
+      if (restoreShares && data.shares_skipped > 0) {
+        message += ' ' + t('admin.exportImportPage.importSharesSkipped', { count: data.shares_skipped })
+      }
+      setImportResult(message)
       setFile(null)
     } catch (err) {
       setImportError(describeError(err, t))
@@ -189,6 +200,10 @@ export function ExportImportPage() {
               onChange={(e) => setOverwriteExisting(e.target.checked)}
             />
             {t('admin.backupRestore.overwriteExisting')}
+          </label>
+          <label className="panel-field">
+            <input type="checkbox" checked={restoreShares} onChange={(e) => setRestoreShares(e.target.checked)} />
+            {t('admin.backupRestore.restoreShares')}
           </label>
           <button type="submit" disabled={importing || !file}>
             {t('admin.exportImportPage.importSubmit')}

@@ -270,9 +270,12 @@
         "warning": "Befintliga bibliotek med samma namn hoppas som standard över (lämnas orörda) om du inte väljer \"Skriv över\" nedan.",
         "overwriteExisting": "Skriv över befintliga bibliotek med samma namn i stället för att hoppa över dem",
         "restoreSettings": "Återställ även systeminställningar och användarkonton",
+        "restoreShares": "Återställ även delningar",
         "submit": "Bekräfta återställning",
         "confirm": "Återställa säkerhetskopian \"{{filename}}\"? Detta kan inte ångras.",
-        "success": "Återställning klar: {{created}} skapade, {{overwritten}} överskrivna, {{merged}} sammanslagna, {{skipped}} överhoppade."
+        "success": "Återställning klar: {{created}} skapade, {{overwritten}} överskrivna, {{merged}} sammanslagna, {{skipped}} överhoppade.",
+        "sharesSkipped_one": "{{count}} delning överhoppad (inget matchande konto).",
+        "sharesSkipped_other": "{{count}} delningar överhoppade (inget matchande konto)."
       },
       "exportImportPage": {
         "exportTitle": "Export",
@@ -282,7 +285,9 @@
         "importTitle": "Import",
         "importFile": "Exportfil",
         "importSubmit": "Importera",
-        "importSuccess": "Import klar: {{created}} skapade, {{overwritten}} överskrivna, {{merged}} sammanslagna, {{skipped}} överhoppade."
+        "importSuccess": "Import klar: {{created}} skapade, {{overwritten}} överskrivna, {{merged}} sammanslagna, {{skipped}} överhoppade.",
+        "importSharesSkipped_one": "{{count}} delning överhoppad (inget matchande konto).",
+        "importSharesSkipped_other": "{{count}} delningar överhoppade (inget matchande konto)."
       },
       "languagesPage": {
         "code": "Kod",

@@ -269,9 +269,12 @@
         "warning": "Por defecto, las bibliotecas existentes con el mismo nombre se omiten (se dejan sin cambios), a menos que elijas «Sobrescribir» a continuación.",
         "overwriteExisting": "Sobrescribir las bibliotecas existentes con el mismo nombre en lugar de omitirlas",
         "restoreSettings": "Restaurar también la configuración del sistema y las cuentas de usuario",
+        "restoreShares": "Restaurar también los permisos compartidos",
         "submit": "Confirmar restauración",
         "confirm": "¿Restaurar la copia de seguridad «{{filename}}»? Esta acción no se puede deshacer.",
-        "success": "Restauración completada: {{created}} creada(s), {{overwritten}} sobrescrita(s), {{merged}} fusionada(s), {{skipped}} omitida(s)."
+        "success": "Restauración completada: {{created}} creada(s), {{overwritten}} sobrescrita(s), {{merged}} fusionada(s), {{skipped}} omitida(s).",
+        "sharesSkipped_one": "{{count}} permiso compartido omitido (sin cuenta coincidente).",
+        "sharesSkipped_other": "{{count}} permisos compartidos omitidos (sin cuenta coincidente)."
       },
       "exportImportPage": {
         "exportTitle": "Exportar",
@@ -281,7 +284,9 @@
         "importTitle": "Importar",
         "importFile": "Archivo de exportación",
         "importSubmit": "Importar",
-        "importSuccess": "Importación completada: {{created}} creada(s), {{overwritten}} sobrescrita(s), {{merged}} fusionada(s), {{skipped}} omitida(s)."
+        "importSuccess": "Importación completada: {{created}} creada(s), {{overwritten}} sobrescrita(s), {{merged}} fusionada(s), {{skipped}} omitida(s).",
+        "importSharesSkipped_one": "{{count}} permiso compartido omitido (sin cuenta coincidente).",
+        "importSharesSkipped_other": "{{count}} permisos compartidos omitidos (sin cuenta coincidente)."
       },
       "languagesPage": {
         "code": "Código",

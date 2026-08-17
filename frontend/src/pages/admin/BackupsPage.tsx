@@ -37,6 +37,8 @@ interface RestoreResult {
   skipped: string[]
   settings_restored: boolean
   users_restored: string[]
+  /** GitHub issue #80 — a scope=user share whose user_email matched no account here. */
+  shares_skipped: number
 }
 
 /**
@@ -48,9 +50,9 @@ interface RestoreResult {
  * docblock) — a card for the backup list (each backup a dense row, same
  * "compare magnitude"-adjacent reasoning as LibraryDetailPage.tsx's
  * media-item list, plus an inline expandable restore panel per row), a
- * card for the schedule/retention form. The restore panel's two checkbox
+ * card for the schedule/retention form. The restore panel's checkbox
  * labels use .panel-field for the same reason ExportImportPage.tsx's do
- * (see that class's docblock) — two checkbox-only labels in a row would
+ * (see that class's docblock) — checkbox-only labels in a row would
  * otherwise run into each other.
  */
 export function BackupsPage() {
@@ -60,7 +62,7 @@ export function BackupsPage() {
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSaved, setSettingsSaved] = useState(false)
 
-  // Which backup's restore form is expanded, and its two options — briefing 9.3's
+  // Which backup's restore form is expanded, and its options — briefing 9.3's
   // full per-library rename/merge/overwrite/skip picker needs to know which
   // libraries the backup actually contains, which nothing currently exposes
   // ahead of attempting the restore; "overwrite every conflicting library" (via
@@ -70,6 +72,10 @@ export function BackupsPage() {
   const [restoringId, setRestoringId] = useState<number | null>(null)
   const [overwriteExisting, setOverwriteExisting] = useState(false)
   const [restoreSettings, setRestoreSettings] = useState(false)
+  // GitHub issue #80 — a separate opt-in from restoreSettings above, since
+  // shares are present in every backup regardless of restoreSettings'
+  // own includeUsers-gated system_settings/users/metadata_plugins.
+  const [restoreShares, setRestoreShares] = useState(false)
   const [restoreResult, setRestoreResult] = useState<string | null>(null)
   const [restoreError, setRestoreError] = useState<string | null>(null)
 
@@ -103,6 +109,7 @@ export function BackupsPage() {
     setRestoringId(backup.id)
     setOverwriteExisting(false)
     setRestoreSettings(false)
+    setRestoreShares(false)
     setRestoreResult(null)
     setRestoreError(null)
   }
@@ -114,15 +121,21 @@ export function BackupsPage() {
       const { data } = await apiClient.post<RestoreResult>(`/admin/backups/${backup.id}/restore`, {
         conflict_resolutions: overwriteExisting ? { __default__: 'overwrite' } : {},
         restore_settings: restoreSettings,
+        restore_shares: restoreShares,
       })
-      setRestoreResult(
-        t('admin.backupRestore.success', {
-          created: data.created.length,
-          overwritten: data.overwritten.length,
-          merged: data.merged.length,
-          skipped: data.skipped.length,
-        }),
-      )
+      let message = t('admin.backupRestore.success', {
+        created: data.created.length,
+        overwritten: data.overwritten.length,
+        merged: data.merged.length,
+        skipped: data.skipped.length,
+      })
+      // GitHub issue #80 — only appended when shares were actually asked
+      // for and something was actually skipped, so an ordinary restore's
+      // result message reads exactly as it did before this option existed.
+      if (restoreShares && data.shares_skipped > 0) {
+        message += ' ' + t('admin.backupRestore.sharesSkipped', { count: data.shares_skipped })
+      }
+      setRestoreResult(message)
       setRestoringId(null)
     } catch (err) {
       setRestoreError(describeError(err, t))
@@ -197,6 +210,14 @@ export function BackupsPage() {
                         onChange={(e) => setRestoreSettings(e.target.checked)}
                       />
                       {t('admin.backupRestore.restoreSettings')}
+                    </label>
+                    <label className="panel-field">
+                      <input
+                        type="checkbox"
+                        checked={restoreShares}
+                        onChange={(e) => setRestoreShares(e.target.checked)}
+                      />
+                      {t('admin.backupRestore.restoreShares')}
                     </label>
                     <button onClick={() => void confirmRestore(b)}>{t('admin.backupRestore.submit')}</button>
                     {restoreError && <p role="alert">{restoreError}</p>}

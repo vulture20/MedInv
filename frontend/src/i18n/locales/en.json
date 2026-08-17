@@ -267,9 +267,12 @@
       "warning": "Existing libraries with the same name are skipped (left untouched) by default unless you choose \"Overwrite\" below.",
       "overwriteExisting": "Overwrite existing libraries with the same name instead of skipping them",
       "restoreSettings": "Also restore system settings and user accounts",
+      "restoreShares": "Also restore shares",
       "submit": "Confirm restore",
       "confirm": "Restore backup \"{{filename}}\"? This cannot be undone.",
-      "success": "Restore complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped."
+      "success": "Restore complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped.",
+      "sharesSkipped_one": "{{count}} share skipped (no matching account).",
+      "sharesSkipped_other": "{{count}} shares skipped (no matching account)."
     },
     "exportImportPage": {
       "exportTitle": "Export",
@@ -279,7 +282,9 @@
       "importTitle": "Import",
       "importFile": "Export file",
       "importSubmit": "Import",
-      "importSuccess": "Import complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped."
+      "importSuccess": "Import complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped.",
+      "importSharesSkipped_one": "{{count}} share skipped (no matching account).",
+      "importSharesSkipped_other": "{{count}} shares skipped (no matching account)."
     },
     "languagesPage": {
       "code": "Code",

@@ -270,9 +270,12 @@
         "warning": "Samannimiset olemassa olevat kirjastot ohitetaan (jätetään koskematta) oletuksena, ellet valitse alla olevaa \"Korvaa\"-vaihtoehtoa.",
         "overwriteExisting": "Korvaa samannimiset olemassa olevat kirjastot niiden ohittamisen sijaan",
         "restoreSettings": "Palauta myös järjestelmäasetukset ja käyttäjätilit",
+        "restoreShares": "Palauta myös jaot",
         "submit": "Vahvista palautus",
         "confirm": "Palautetaanko varmuuskopio \"{{filename}}\"? Tätä ei voi perua.",
-        "success": "Palautus valmis: {{created}} luotu, {{overwritten}} korvattu, {{merged}} yhdistetty, {{skipped}} ohitettu."
+        "success": "Palautus valmis: {{created}} luotu, {{overwritten}} korvattu, {{merged}} yhdistetty, {{skipped}} ohitettu.",
+        "sharesSkipped_one": "{{count}} jako ohitettu (ei vastaavaa tiliä).",
+        "sharesSkipped_other": "{{count}} jakoa ohitettu (ei vastaavaa tiliä)."
       },
       "exportImportPage": {
         "exportTitle": "Vienti",
@@ -282,7 +285,9 @@
         "importTitle": "Tuonti",
         "importFile": "Vientitiedosto",
         "importSubmit": "Tuo",
-        "importSuccess": "Tuonti valmis: {{created}} luotu, {{overwritten}} korvattu, {{merged}} yhdistetty, {{skipped}} ohitettu."
+        "importSuccess": "Tuonti valmis: {{created}} luotu, {{overwritten}} korvattu, {{merged}} yhdistetty, {{skipped}} ohitettu.",
+        "importSharesSkipped_one": "{{count}} jako ohitettu (ei vastaavaa tiliä).",
+        "importSharesSkipped_other": "{{count}} jakoa ohitettu (ei vastaavaa tiliä)."
       },
       "languagesPage": {
         "code": "Koodi",
