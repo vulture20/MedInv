@@ -13,9 +13,14 @@ interface HeaderProps {
 
 /**
  * Top header (briefing 11.2): logo + app name + search on the left;
- * statistics/capture/administration quick-access + user menu on the right.
- * The quick-access icons duplicate sidebar entries deliberately — the
- * briefing calls this out as intentional convenience, not a bug (11.2 note).
+ * capture quick-access + user menu on the right. The statistics and
+ * administration quick-access icons that used to sit here were removed
+ * (they duplicated the sidebar's own "Statistiken"/"Administration"
+ * entries, which remain the only way to reach those pages) to keep this
+ * bar focused; the user menu's "Benutzereinstellungen"/"Abmelden" entries
+ * are likewise duplicated at the bottom of the sidebar (see Sidebar.tsx)
+ * but were deliberately left here too, as a second, always-reachable path
+ * to them regardless of viewport/scroll position.
  */
 export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
   const { t } = useTranslation()
@@ -57,17 +62,9 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
       </div>
 
       <div className="app-header__right">
-        <Link to="/statistics" title={t('nav.statistics')}>
-          📊
-        </Link>
         {user?.level !== 'guest' && (
           <Link to="/capture" title={t('nav.capture')}>
             ➕
-          </Link>
-        )}
-        {user?.level === 'admin' && (
-          <Link to="/admin" title={t('nav.administration')}>
-            ⚙️
           </Link>
         )}
 

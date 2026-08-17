@@ -17,10 +17,15 @@ interface SidebarProps {
  * one library — simplified here to "not a guest" (11.3); a guest never has
  * write access to anything, and a user/admin's actual per-library
  * permissions are re-checked backend-side regardless.
+ *
+ * The bottom of the sidebar additionally repeats the header user menu's
+ * account actions (Benutzereinstellungen/Abmelden), set off with a
+ * `sidebar__divider` so they read as a distinct "account" group rather
+ * than another item in the main nav list above.
  */
 export function Sidebar({ open = false }: SidebarProps) {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
   return (
     <nav id="app-sidebar" className={`sidebar${open ? ' sidebar--open' : ''}`} aria-label="Main navigation">
@@ -31,6 +36,12 @@ export function Sidebar({ open = false }: SidebarProps) {
       <NavLink to="/libraries">{t('nav.libraries')}</NavLink>
       <NavLink to="/statistics">{t('nav.statistics')}</NavLink>
       {user?.level === 'admin' && <NavLink to="/admin">{t('nav.administration')}</NavLink>}
+
+      <hr className="sidebar__divider" />
+      <NavLink to="/settings">{t('userMenu.settings')}</NavLink>
+      <button type="button" className="sidebar__logout" onClick={() => void logout()}>
+        {t('userMenu.logout')}
+      </button>
     </nav>
   )
 }
