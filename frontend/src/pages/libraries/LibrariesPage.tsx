@@ -33,6 +33,10 @@ export function LibrariesPage() {
   const navigate = useNavigate()
   const [libraries, setLibraries] = useState<Library[]>([])
   const [name, setName] = useState('')
+  // GitHub issue #88 — the backend already accepted `description` on create
+  // (LibraryController::store()); only the create form itself never asked
+  // for one, unlike the edit form below, which has had one all along.
+  const [description, setDescription] = useState('')
   const [mediaType, setMediaType] = useState<'book' | 'cd' | 'dvd_bluray'>('book')
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
@@ -56,8 +60,9 @@ export function LibrariesPage() {
 
   async function createLibrary(e: React.FormEvent) {
     e.preventDefault()
-    await apiClient.post('/libraries', { name, media_type: mediaType })
+    await apiClient.post('/libraries', { name, description: description === '' ? null : description, media_type: mediaType })
     setName('')
+    setDescription('')
     setCreating(false)
     await load()
   }
@@ -112,6 +117,10 @@ export function LibrariesPage() {
                 <label>
                   {t('common.name')}
                   <input className="panel-select" value={name} onChange={(e) => setName(e.target.value)} required />
+                </label>
+                <label>
+                  {t('libraries.descriptionLabel')}
+                  <textarea className="panel-select" value={description} onChange={(e) => setDescription(e.target.value)} />
                 </label>
                 <label>
                   {/* media_type is fixed once created (briefing 5.) — libraries.createHint above says so. */}
