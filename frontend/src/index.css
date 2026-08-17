@@ -79,7 +79,6 @@ a {
  * still correctly overlays the header rather than hiding behind it. */
 .app-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.25rem;
   background: var(--color-surface);
@@ -89,8 +88,7 @@ a {
   z-index: 10;
 }
 
-.app-header__left,
-.app-header__right {
+.app-header__left {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -178,6 +176,15 @@ a {
   border-top: 1px solid var(--color-border);
 }
 
+/* The second divider, between Abmelden and the current-user line, sits
+ * within the already-bottom-pinned account group rather than needing to
+ * pin anything itself — a plain margin instead of the first divider's
+ * margin-top: auto, which would otherwise just consume any leftover
+ * space with no visible effect since none is left by that point. */
+.sidebar__divider--tight {
+  margin: 0.5rem 0;
+}
+
 .sidebar__logout {
   padding: 0.5rem 0.75rem;
   border: none;
@@ -191,6 +198,12 @@ a {
 
 .sidebar__logout:hover {
   color: var(--color-accent);
+}
+
+.sidebar__current-user {
+  padding: 0.5rem 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
 }
 
 .app-shell__content {
@@ -244,33 +257,6 @@ a {
   padding: 0.5rem;
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
-}
-
-.user-menu {
-  position: relative;
-}
-
-.user-menu__dropdown {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  min-width: 160px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.user-menu__dropdown a,
-.user-menu__dropdown button {
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  background: none;
-  border: none;
-  color: var(--color-text);
-  cursor: pointer;
 }
 
 .login-screen {

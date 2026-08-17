@@ -18,10 +18,14 @@ interface SidebarProps {
  * write access to anything, and a user/admin's actual per-library
  * permissions are re-checked backend-side regardless.
  *
- * The bottom of the sidebar additionally repeats the header user menu's
- * account actions (Benutzereinstellungen/Abmelden), set off with a
+ * The bottom of the sidebar additionally carries what used to be the
+ * header's user-name dropdown (Header.tsx no longer has one at all):
+ * account actions (Benutzereinstellungen/Abmelden) set off with a
  * `sidebar__divider` so they read as a distinct "account" group rather
- * than another item in the main nav list above.
+ * than another item in the main nav list above, followed by a second
+ * divider and the currently signed-in user's name/level — the same
+ * "{name} ({level})" format DashboardPage.tsx already uses — so who's
+ * logged in is still visible now that the header no longer shows it.
  */
 export function Sidebar({ open = false }: SidebarProps) {
   const { t } = useTranslation()
@@ -42,6 +46,11 @@ export function Sidebar({ open = false }: SidebarProps) {
       <button type="button" className="sidebar__logout" onClick={() => void logout()}>
         {t('userMenu.logout')}
       </button>
+
+      <hr className="sidebar__divider sidebar__divider--tight" />
+      <span className="sidebar__current-user">
+        {user?.name} ({user?.level})
+      </span>
     </nav>
   )
 }
