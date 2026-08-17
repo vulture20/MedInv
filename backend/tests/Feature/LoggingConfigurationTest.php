@@ -25,6 +25,23 @@ class LoggingConfigurationTest extends TestCase
         $this->assertSame('WARNING', SystemSetting::defaults()['loglevel']);
     }
 
+    /**
+     * GitHub issue #85: pins 'daily' (rotating, LOG_DAILY_DAYS-limited) as
+     * the active stack channel, not Laravel's stock 'single' default —
+     * several legitimate audit-trail log lines (login, password reset,
+     * user account changes, ...) carry a plaintext email/IP, and 'single'
+     * never rotates or expires storage/logs/laravel.log at all. This is
+     * config/logging.php's own PHP-level default (not merely
+     * backend/.env.example's), since that's what actually governs the
+     * shipped Docker image — no .env file ships in it at all
+     * (docker/entrypoint.sh's own comment), so a deployment that never
+     * explicitly sets LOG_STACK falls straight through to this default.
+     */
+    public function test_default_log_stack_channel_is_daily_not_single(): void
+    {
+        $this->assertSame(['daily'], config('logging.channels.stack.channels'));
+    }
+
     public function test_default_loglevel_is_applied_to_the_log_channel(): void
     {
         (new AppServiceProvider($this->app))->boot();

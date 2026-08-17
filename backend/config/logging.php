@@ -54,7 +54,22 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            // GitHub issue #85: 'daily' (14-day retention via LOG_DAILY_DAYS
+            // below), not Laravel's stock 'single' default — several
+            // already-legitimate audit-trail log lines (login, password
+            // reset, user account changes, ...) carry a plaintext email/IP,
+            // and 'single' never rotates or expires storage/logs/laravel.log
+            // at all. This is the default that actually matters for the
+            // shipped Docker image specifically: docker/entrypoint.sh's own
+            // comment notes no .env file ships in the image at all ("No
+            // .env file ships in the image (see .dockerignore)"), so a
+            // deployment that never explicitly sets LOG_STACK falls
+            // straight through to this PHP-level default, not to
+            // backend/.env.example's (also updated, for the local,
+            // non-Docker `cp .env.example .env` dev path, which does read
+            // it) — env(LOG_STACK) is unset in that case, not merely absent
+            // from a nonexistent file.
+            'channels' => explode(',', (string) env('LOG_STACK', 'daily')),
             'ignore_exceptions' => false,
         ],
 
