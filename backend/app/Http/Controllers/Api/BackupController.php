@@ -17,8 +17,11 @@ class BackupController extends Controller
 {
     public function __construct(private readonly BackupService $backupService) {}
 
+    /** reconcileWithDisk() first — see its own docblock — so a backup file that exists on disk without a tracked row (GitHub-reported: 8 shown vs. 50 files actually present) shows up here too, self-healing on every page load rather than staying permanently invisible. */
     public function index()
     {
+        $this->backupService->reconcileWithDisk();
+
         return Backup::query()->latest()->get();
     }
 

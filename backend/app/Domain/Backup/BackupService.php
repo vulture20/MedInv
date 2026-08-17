@@ -6,6 +6,7 @@ use App\Domain\ExportImport\ExportImportService;
 use App\Models\Backup;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -108,6 +109,76 @@ class BackupService
         $this->prune();
 
         return $backup;
+    }
+
+    /**
+     * GitHub-reported gap: BackupController::index() (the admin UI's backup
+     * list) and prune() (retention) both work purely off this table — never
+     * the filesystem — so a .zip that ends up in storage/app/private/backups
+     * without a matching `backups` row is simultaneously invisible in the UI
+     * *and* permanently exempt from automatic cleanup, silently taking up
+     * disk space forever. This can happen whenever the two fall out of sync
+     * with each other: most concretely, GitHub issue #25's now-fixed bug,
+     * where every container recreation reset the sqlite database to empty
+     * while the separately-mounted `backups` volume (never affected by that
+     * bug) kept every file ever written to it — but the same mismatch could
+     * just as easily follow a manual `DB::table('backups')->truncate()`, a
+     * restored database from an older point in time, or a switched DB
+     * connection/backend. Recreates a row for every such orphaned file, so
+     * `index()` calling this first makes the admin UI self-heal the moment
+     * anyone opens the Backups page, without needing a separate admin
+     * action or waiting on a schedule — this is purely additive (only ever
+     * inserts, never deletes/modifies an existing row), so it's safe to run
+     * on every page load.
+     *
+     * Reconciled rows are always trigger: 'manual', regardless of how the
+     * file actually came to exist — genuinely unknowable at this point, and
+     * 'manual' is prune()'s own existing exemption from automatic deletion
+     * (see its docblock): a real automatic backup lingering a little longer
+     * than intended is a far smaller problem than a genuine admin-made one
+     * getting swept away by a retention policy that never actually chose to
+     * keep it. `created_at`/`updated_at` are backdated to the file's own
+     * on-disk mtime (forceFill(), since timestamps aren't in Backup's
+     * #[Fillable(...)] list) rather than "now", so the UI shows when the
+     * backup was actually made, not when it happened to be rediscovered.
+     *
+     * @return int Number of rows reconciled.
+     */
+    public function reconcileWithDisk(): int
+    {
+        $knownFilenames = Backup::query()->pluck('filename')->all();
+        $onDisk = collect(Storage::disk(self::DISK)->files(self::DIR))
+            ->filter(fn (string $path) => str_ends_with($path, '.zip'));
+
+        $reconciled = 0;
+
+        foreach ($onDisk as $path) {
+            $filename = basename($path);
+
+            if (in_array($filename, $knownFilenames, true)) {
+                continue;
+            }
+
+            $mtime = Carbon::createFromTimestamp(Storage::disk(self::DISK)->lastModified($path));
+
+            $backup = new Backup;
+            $backup->forceFill([
+                'filename' => $filename,
+                'size_bytes' => Storage::disk(self::DISK)->size($path),
+                'trigger' => 'manual',
+                'status' => 'completed',
+                'created_at' => $mtime,
+                'updated_at' => $mtime,
+            ])->save();
+
+            $reconciled++;
+        }
+
+        if ($reconciled > 0) {
+            Log::info('Reconciled orphaned backup file(s) on disk into the database.', ['count' => $reconciled]);
+        }
+
+        return $reconciled;
     }
 
     /**
