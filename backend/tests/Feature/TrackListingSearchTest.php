@@ -10,13 +10,16 @@ use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
- * GitHub issue #57: MediaCd::tracks (a JSON array of {position, title,
- * duration_seconds}, added by #48) was missing from
- * SearchService::SEARCHABLE_COLUMNS entirely — a query matching only a
- * track's title (not the album title itself) found nothing. This covers
- * the coarse, whole-JSON-blob-text matching added to close that gap; see
- * the follow-up issue referenced in SearchService's SEARCHABLE_COLUMNS
- * docblock for a possible later field-specific refinement.
+ * GitHub issue #57 first added MediaCd::tracks (a JSON array of {position,
+ * title, duration_seconds}, added by #48) to search — a query matching
+ * only a track's title (not the album title itself) found nothing before
+ * that. #57's own fix was deliberately coarse: it matched the whole JSON
+ * blob as text, so a query matching a position number, a duration_seconds
+ * value, or plain JSON punctuation elsewhere in the blob could also
+ * produce a hit, not just a real track title. Issue #72 replaced that with
+ * a precise match against tracks[].title specifically — this file covers
+ * both the original "track title is findable at all" behavior and #72's
+ * false-positive fix.
  */
 class TrackListingSearchTest extends TestCase
 {
@@ -124,28 +127,57 @@ class TrackListingSearchTest extends TestCase
     }
 
     /**
-     * Self-skips unless actually run against a real Postgres connection
-     * (the default/CI connection is sqlite, see phpunit.xml) — mirrors
-     * FuzzySearchTest::test_postgres_trigram_index_is_actually_used().
+     * The exact false positive #72 fixed: "284" is Airbag's duration_seconds
+     * value, not a track title, and doesn't appear anywhere else on this CD
+     * (title/artist/EAN) — #57's whole-JSON-blob-text match would have found
+     * it anyway (LIKE '%284%' against the raw JSON string matches the
+     * digits regardless of which JSON key they belong to); the field-
+     * specific tracks[].title match added by #72 must not.
      */
-    public function test_postgres_trigram_index_for_tracks_is_actually_used(): void
+    public function test_a_duration_value_does_not_produce_a_false_positive_match(): void
+    {
+        $user = $this->actingAsUser();
+        $this->createCdLibraryWithTracks($user);
+
+        $response = $this->getJson('/api/search?query=284&fuzzy=false');
+
+        $response->assertOk();
+        $this->assertCount(0, $response->json());
+    }
+
+    /**
+     * Self-skips unless actually run against a real Postgres connection
+     * (the default/CI connection is sqlite, see phpunit.xml).
+     */
+    public function test_postgres_field_specific_track_title_match_works_without_the_old_whole_blob_index(): void
     {
         if (DB::connection()->getDriverName() !== 'pgsql') {
             $this->markTestSkipped('Only meaningful against a real Postgres connection.');
         }
 
-        $this->assertNotEmpty(
+        // #57's whole-JSON-blob-text trigram index is superseded by #72's
+        // field-specific jsonb_array_elements() match, which queries a
+        // different expression shape the old index can't accelerate — the
+        // migration dropping it should have actually removed it, not left
+        // it behind as dead weight on every write.
+        $this->assertEmpty(
             DB::select("SELECT indexname FROM pg_indexes WHERE indexname LIKE '%media_cds_tracks_trgm_idx'"),
-            'Expected GIN trigram index on media_cds.tracks was not created.',
+            'Expected the superseded whole-blob tracks trigram index to have been dropped.',
         );
 
         $user = $this->actingAsUser();
         $this->createCdLibraryWithTracks($user);
 
-        $response = $this->getJson('/api/search?query=Airbagg&fuzzy=true');
+        $exactMatch = $this->getJson('/api/search?query=Paranoid Android&fuzzy=false');
+        $exactMatch->assertOk();
+        $this->assertCount(1, $exactMatch->json());
 
-        $response->assertOk();
-        $this->assertCount(1, $response->json());
-        $this->assertSame('OK Computer', $response->json('0.title'));
+        $fuzzyMatch = $this->getJson('/api/search?query=Airbagg&fuzzy=true');
+        $fuzzyMatch->assertOk();
+        $this->assertCount(1, $fuzzyMatch->json());
+
+        $falsePositive = $this->getJson('/api/search?query=284&fuzzy=false');
+        $falsePositive->assertOk();
+        $this->assertCount(0, $falsePositive->json());
     }
 }

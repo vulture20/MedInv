@@ -21,31 +21,41 @@ use Illuminate\Support\Facades\DB;
 class SearchService
 {
     /**
-     * @var array<string, string[]> Searchable text columns per model class.
+     * @var array<string, string[]> Searchable plain text columns per model class.
      *
      * Public (not just used by search() itself): the pg_trgm migration
      * (database/migrations/*_add_pg_trgm_indexes_for_media_search.php)
      * iterates this exact list to build its GIN trigram indexes, rather
      * than keeping a second, driftable copy of the same column list.
      *
-     * MediaCd::tracks (GitHub issue #57) is the one entry here that isn't a
-     * plain text column — it's a JSON array of {position, title,
-     * duration_seconds} (see MediaCd::casts()) — so it's matched as raw
-     * JSON text rather than a specific track title, catching a query word
-     * that appears anywhere in the blob (including position numbers,
-     * durations, and JSON punctuation), not just inside a track's title.
-     * jsonColumnsOf() detects it automatically from the model's own cast
-     * map rather than a second, driftable list. A precise, field-specific
-     * search of just each track's title is a possible follow-up if this
-     * coarse matching produces too many false positives in practice — see
-     * issue #57's own writeup for why that's meaningfully more work
-     * (different native JSON-path syntax per DB backend) and not attempted
-     * here.
+     * MediaCd::tracks (a JSON array, see MediaCd::casts()) is deliberately
+     * NOT listed here — it isn't a plain text column, so it can't go
+     * through the uniform wrap()+LIKE loop every entry here does. It's
+     * matched separately via JSON_ARRAY_SEARCHABLE_FIELDS below.
      */
     public const SEARCHABLE_COLUMNS = [
         MediaBook::class => ['title', 'description', 'authors', 'format', 'genre', 'language', 'publisher', 'isbn10', 'isbn13', 'ean'],
-        MediaCd::class => ['title', 'description', 'artist', 'medium', 'asin', 'ean', 'tracks'],
+        MediaCd::class => ['title', 'description', 'artist', 'medium', 'asin', 'ean'],
         MediaDvdBluray::class => ['title', 'description', 'medium', 'languages', 'cast', 'director', 'ean'],
+    ];
+
+    /**
+     * @var array<string, array<string, string>> Model class => JSON array
+     *                                           column => the field within each array element to match precisely.
+     *
+     * GitHub issue #72 (a follow-up to #57, which first added tracks to
+     * search via a coarse whole-JSON-blob-text match): matches only
+     * MediaCd::tracks[].title, not position numbers, duration_seconds, or
+     * JSON punctuation elsewhere in the blob. Needs genuinely different,
+     * native JSON-path SQL per DB backend — no shared, privilege-free
+     * syntax exists across sqlite/mariadb/pgsql for "does any element of a
+     * JSON array have a given key matching a pattern" the way plain
+     * wrap()+LIKE is shared for ordinary columns — see
+     * addJsonArrayFieldConditions() for each backend's query, individually
+     * live-verified against a real instance of that backend.
+     */
+    public const JSON_ARRAY_SEARCHABLE_FIELDS = [
+        MediaCd::class => ['tracks' => 'title'],
     ];
 
     public function __construct(private readonly LibraryAccessService $accessService) {}
@@ -74,31 +84,21 @@ class SearchService
     private function sqlSearch(string $modelClass, array $columns, Collection $visibleLibraryIds, string $query, bool $fuzzy): Collection
     {
         $useTrigram = $fuzzy && $this->pgTrgmAvailable();
-        $jsonColumns = $this->jsonColumnsOf($modelClass, $columns);
+        $jsonArrayFields = self::JSON_ARRAY_SEARCHABLE_FIELDS[$modelClass] ?? [];
 
         return $modelClass::query()
             ->whereIn('library_id', $visibleLibraryIds)
-            ->where(function ($q) use ($columns, $query, $fuzzy, $useTrigram, $jsonColumns) {
+            ->where(function ($q) use ($columns, $query, $fuzzy, $useTrigram, $jsonArrayFields) {
                 foreach ($columns as $column) {
-                    $isJsonColumn = in_array($column, $jsonColumns, true);
-
                     // MediaDvdBluray::$SEARCHABLE_COLUMNS includes `cast`, a reserved SQL
                     // keyword (CAST(expr AS type)) — unquoted, `LOWER(cast)` parses as the
                     // start of a CAST expression and blows up with a syntax error. wrap()
                     // applies the connection-appropriate identifier quoting (double quotes
                     // on sqlite/postgres, backticks on mysql/mariadb) instead of hardcoding one.
-                    // wrapSearchColumn() additionally casts a JSON column (e.g. MediaCd::tracks,
-                    // issue #57) to text on Postgres — see its own docblock for why.
-                    $wrapped = $this->wrapSearchColumn($column, $isJsonColumn);
+                    $wrapped = DB::getQueryGrammar()->wrap($column);
 
                     if ($fuzzy) {
                         $q->orWhereRaw("LOWER({$wrapped}) LIKE ?", ['%'.mb_strtolower($query).'%']);
-                    } elseif ($isJsonColumn) {
-                        // Eloquent's plain where($column, 'like', ...) can't be used here:
-                        // on Postgres, json/jsonb has no LIKE operator without the explicit
-                        // cast wrapSearchColumn() applies, so this always goes through
-                        // whereRaw with that same casted expression instead.
-                        $q->orWhereRaw("{$wrapped} LIKE ?", ["%{$query}%"]);
                     } else {
                         $q->orWhere($column, 'like', "%{$query}%");
                     }
@@ -116,9 +116,76 @@ class SearchService
                         $q->orWhereRaw("LOWER({$wrapped}) %> LOWER(?)", [$query]);
                     }
                 }
+
+                foreach ($jsonArrayFields as $column => $field) {
+                    $this->addJsonArrayFieldConditions($q, $column, $field, $query, $useTrigram);
+                }
             })
             ->with('library:id,name,media_type')
             ->get();
+    }
+
+    /**
+     * Adds the OR-condition(s) matching a single field within every element
+     * of a JSON array column (issue #72) — e.g. "does any element of
+     * MediaCd::tracks have a title matching the query". Genuinely different
+     * SQL per backend, each individually live-verified:
+     *
+     * - **sqlite**: `json_each()` as a correlated table-valued function,
+     *   `json_extract()` to pull the field out of each element.
+     * - **MariaDB/MySQL**: `JSON_SEARCH()` in 'one' mode with a `$[*].field`
+     *   path restricts the search to just that field of each array element;
+     *   its search_str parameter accepts SQL LIKE wildcards directly.
+     * - **PostgreSQL**: `jsonb_array_elements()` — the column is declared
+     *   `json`, not `jsonb` (see the migration that added it), so an
+     *   explicit `::jsonb` cast is needed first; `->>'field'` then extracts
+     *   the field as text from each element. The fuzzy branch uses
+     *   word_similarity's `%>` operator, same semantic as the plain-column
+     *   trigram branch above, but unindexed — a GIN index over "any array
+     *   element's field" isn't a simple expression index the way a plain
+     *   column's `LOWER(column)` is, and this app's realistic data volumes
+     *   (a personal collection's track counts) don't warrant the added
+     *   complexity of one.
+     *
+     * $useTrigram (only ever true on a real Postgres connection, see
+     * sqlSearch()) adds one further OR-condition on top, using
+     * word_similarity for genuine typo tolerance — the LIKE condition above
+     * still runs too even then, catching a clean substring match exactly
+     * like the plain-column branches above do.
+     *
+     * An unrecognized driver adds no condition for this field rather than
+     * guessing at syntax — degrades to "not found via track title" rather
+     * than a broken query.
+     */
+    private function addJsonArrayFieldConditions($q, string $column, string $field, string $query, bool $useTrigram): void
+    {
+        $wrapped = DB::getQueryGrammar()->wrap($column);
+        $driver = DB::connection()->getDriverName();
+
+        match ($driver) {
+            'sqlite' => $q->orWhereRaw(
+                "EXISTS (SELECT 1 FROM json_each({$wrapped}) WHERE LOWER(json_extract(value, '\$.{$field}')) LIKE ?)",
+                ['%'.mb_strtolower($query).'%']
+            ),
+            'mysql', 'mariadb' => $q->orWhereRaw(
+                "JSON_SEARCH(LOWER({$wrapped}), 'one', ?, NULL, '\$[*].{$field}') IS NOT NULL",
+                ['%'.mb_strtolower($query).'%']
+            ),
+            'pgsql' => $this->addPostgresJsonArrayFieldConditions($q, $wrapped, $field, $query, $useTrigram),
+            default => null,
+        };
+    }
+
+    private function addPostgresJsonArrayFieldConditions($q, string $wrapped, string $field, string $query, bool $useTrigram): void
+    {
+        $elements = "jsonb_array_elements(({$wrapped})::jsonb) elem";
+        $extracted = "elem->>'{$field}'";
+
+        $q->orWhereRaw("EXISTS (SELECT 1 FROM {$elements} WHERE LOWER({$extracted}) LIKE ?)", ['%'.mb_strtolower($query).'%']);
+
+        if ($useTrigram) {
+            $q->orWhereRaw("EXISTS (SELECT 1 FROM {$elements} WHERE LOWER({$extracted}) %> LOWER(?))", [$query]);
+        }
     }
 
     /**
@@ -139,63 +206,35 @@ class SearchService
      */
     private function fuzzyPortableSearch(string $modelClass, array $columns, Collection $visibleLibraryIds, string $query): Collection
     {
-        $jsonColumns = $this->jsonColumnsOf($modelClass, $columns);
+        $jsonArrayFields = self::JSON_ARRAY_SEARCHABLE_FIELDS[$modelClass] ?? [];
 
         return $modelClass::query()
             ->whereIn('library_id', $visibleLibraryIds)
             ->with('library:id,name,media_type')
             ->get()
-            ->filter(function ($item) use ($columns, $query, $jsonColumns) {
+            ->filter(function ($item) use ($columns, $query, $jsonArrayFields) {
                 foreach ($columns as $column) {
-                    // A JSON column (e.g. MediaCd::tracks) is cast to a PHP array by
-                    // Eloquent — (string) against it would throw ("Array to string
-                    // conversion"), not just match nothing — so this matches against
-                    // its raw, still-JSON-encoded database value instead.
-                    $text = in_array($column, $jsonColumns, true)
-                        ? (string) $item->getRawOriginal($column)
-                        : (string) $item->{$column};
-
-                    if (FuzzyTextMatcher::matchesAllWords($query, $text)) {
+                    if (FuzzyTextMatcher::matchesAllWords($query, (string) $item->{$column})) {
                         return true;
+                    }
+                }
+
+                // Matches against each array element's field individually (issue
+                // #72) rather than the whole tracks array at once — MediaCd::tracks
+                // is cast to a PHP array by Eloquent, so this reads real track
+                // titles directly, with none of the position-number/duration/JSON-
+                // punctuation false positives a whole-blob-text match would have.
+                foreach ($jsonArrayFields as $column => $field) {
+                    foreach ((array) $item->{$column} as $element) {
+                        if (FuzzyTextMatcher::matchesAllWords($query, (string) ($element[$field] ?? ''))) {
+                            return true;
+                        }
                     }
                 }
 
                 return false;
             })
             ->values();
-    }
-
-    /**
-     * @param  string[]  $columns
-     * @return string[] The subset of $columns Eloquent casts to 'array' (i.e.
-     *                  stored as JSON) on $modelClass — derived from the
-     *                  model's own cast map rather than a second, driftable
-     *                  list, so any future JSON entry in SEARCHABLE_COLUMNS
-     *                  gets this same handling automatically.
-     */
-    private function jsonColumnsOf(string $modelClass, array $columns): array
-    {
-        $casts = (new $modelClass)->getCasts();
-
-        return array_values(array_filter($columns, fn (string $column) => ($casts[$column] ?? null) === 'array'));
-    }
-
-    /**
-     * Postgres' json/jsonb columns have no LIKE or pg_trgm operator without
-     * an explicit cast to text — an uncast comparison is a SQL type error,
-     * not just an empty result. sqlite stores a `$table->json()` column as
-     * plain TEXT and MariaDB's JSON type is a LONGTEXT alias, so LIKE
-     * already works against both without any special handling there.
-     */
-    private function wrapSearchColumn(string $column, bool $isJsonColumn): string
-    {
-        $wrapped = DB::getQueryGrammar()->wrap($column);
-
-        if ($isJsonColumn && DB::connection()->getDriverName() === 'pgsql') {
-            return "({$wrapped})::text";
-        }
-
-        return $wrapped;
     }
 
     /**
