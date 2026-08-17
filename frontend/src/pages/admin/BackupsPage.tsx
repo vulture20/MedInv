@@ -163,7 +163,9 @@ export function BackupsPage() {
                     </span>
                   </div>
                   <div className="backup-list__actions">
-                    <a href={`${apiClient.defaults.baseURL}/admin/backups/${b.id}/download`}>{t('admin.actions.download')}</a>
+                    <a href={`${apiClient.defaults.baseURL}/admin/backups/${b.id}/download`} className="button-link">
+                      {t('admin.actions.download')}
+                    </a>
                     <button onClick={() => void deleteBackup(b)}>{t('admin.actions.delete')}</button>
                     {restoringId === b.id ? (
                       <button onClick={() => setRestoringId(null)}>{t('admin.actions.cancel')}</button>

@@ -159,7 +159,9 @@ export function LibrariesPage() {
                 <p className="hint">{lib.owner.name}</p>
                 {lib.description && <p>{lib.description}</p>}
                 <div className="library-card__actions">
-                  <Link to={`/libraries/${lib.id}`}>{t('libraries.view')}</Link>
+                  <Link to={`/libraries/${lib.id}`} className="button-link">
+                    {t('libraries.view')}
+                  </Link>
                   {canDelete(lib) && (
                     <>
                       <button type="button" onClick={() => startEdit(lib)}>

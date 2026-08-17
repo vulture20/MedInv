@@ -59,6 +59,30 @@ a {
   color: var(--color-accent);
 }
 
+/* A handful of actions (LibrariesPage's "Anzeigen", BackupsPage's
+ * "Herunterladen") are plain navigation/downloads, so they're genuinely
+ * <a> tags, not <button>s with a handler — but they sit directly next to
+ * real <button>s in the same action row (Bearbeiten/Löschen, Löschen/
+ * Wiederherstellen) with no shared button styling anywhere in this app
+ * (every <button> here relies on the browser's native rendering), so a
+ * plain link there reads as visually inconsistent. `appearance: button`
+ * alone (tried first) does NOT reliably give an <a> the platform's actual
+ * push-button chrome — live-checked in headless Chromium, it rendered as
+ * plain text, no box at all — so this instead reconstructs that chrome
+ * explicitly from the system color/font keywords browsers use for real
+ * <button>s (ButtonFace/ButtonText, font: menu) rather than hardcoded
+ * colors, so it still tracks color-scheme (see :root above) into the dark
+ * template the same way native buttons already do. */
+.button-link {
+  display: inline-block;
+  font: menu;
+  padding: 1px 6px;
+  border: 2px outset ButtonFace;
+  background-color: ButtonFace;
+  color: ButtonText;
+  text-decoration: none;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;
