@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Delen",
-        "hint": "Bepaalt wie deze bibliotheek nog meer kan zien, naast uzelf. Hier kan alleen leestoegang worden verleend.",
+        "hint": "Bepaalt wie deze bibliotheek nog meer kan zien, naast uzelf — optioneel ook met schrijftoegang.",
         "guests": "Delen met gasten",
         "allUsers": "Delen met alle gebruikers",
+        "writeAccess": "Ook schrijftoegang verlenen (items toevoegen, bewerken en verwijderen)",
         "specificUsers": "Specifieke gebruikers",
         "noSpecificUsers": "Niet gedeeld met een specifieke gebruiker.",
         "selectUser": "Selecteer een gebruiker…",

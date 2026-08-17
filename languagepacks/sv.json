@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Delning",
-        "hint": "Styr vem mer som kan se detta bibliotek, förutom du. Endast läsåtkomst kan beviljas här.",
+        "hint": "Styr vem mer som kan se detta bibliotek, förutom du — valfritt även med skrivbehörighet.",
         "guests": "Dela med gäster",
         "allUsers": "Dela med alla användare",
+        "writeAccess": "Ge även skrivbehörighet (skapa, redigera och ta bort objekt)",
         "specificUsers": "Specifika användare",
         "noSpecificUsers": "Inte delat med någon specifik användare.",
         "selectUser": "Välj en användare…",

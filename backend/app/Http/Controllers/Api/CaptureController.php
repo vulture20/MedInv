@@ -24,7 +24,7 @@ class CaptureController extends Controller
 
     public function scan(Request $request, Library $library)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $data = $request->validate(['ean' => ['required', 'string']]);
 
@@ -34,7 +34,7 @@ class CaptureController extends Controller
     /** Ziel-Bibliothek is the `library` route-model itself, asked for client-side before upload (7.2). */
     public function textFile(Request $request, Library $library)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $request->validate(['file' => ['required', 'file']]);
 

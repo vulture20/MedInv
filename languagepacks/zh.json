@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "共享",
-        "hint": "控制除您之外还有谁可以查看此媒体库。此处只能授予只读权限。",
+        "hint": "控制除您之外还有谁可以查看此媒体库——也可以选择授予写入权限。",
         "guests": "与访客共享",
         "allUsers": "与所有用户共享",
+        "writeAccess": "同时授予写入权限（添加、编辑和删除项目）",
         "specificUsers": "特定用户",
         "noSpecificUsers": "未与任何特定用户共享。",
         "selectUser": "选择用户…",

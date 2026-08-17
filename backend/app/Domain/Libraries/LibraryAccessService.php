@@ -14,9 +14,16 @@ use Illuminate\Database\Eloquent\Builder;
  * Rules:
  * - Admins can read/write every library, regardless of shares.
  * - A library's owner can read/write it.
- * - Anyone else can only *read* it if a matching LibraryShare exists:
+ * - Anyone else can *read* it if a matching LibraryShare exists:
  *   scope=all_users (any "user"-level account), scope=guest (any
  *   "guest"-level account), or scope=user with their own user_id.
+ * - A share can additionally grant write access to that library's *items*
+ *   (not the library itself — see canWrite() vs. canWriteItems() below) via
+ *   its `access_level` column (GitHub issue #79, a deliberate extension
+ *   beyond briefing 4.3's original "jeweils mit Lesezugriff" — see the
+ *   migration that added the column) — except scope=guest, which never
+ *   grants write regardless of access_level (briefing 4.2: "Gast: ... Keine
+ *   Anlage, keine Bearbeitung").
  * - Unshared libraries are invisible to non-owners/non-admins, including in
  *   search results (4.3: "weder sichtbar noch auffindbar").
  */
@@ -53,6 +60,19 @@ class LibraryAccessService
             ->exists();
     }
 
+    /**
+     * Whether the user can *manage* this library itself: rename/describe it
+     * (LibraryController::update()), delete it, replace its share list, or
+     * transfer its ownership. Deliberately admin-or-owner only, unaffected
+     * by GitHub issue #79's write shares below — briefing 5. ("Bibliotheken
+     * lassen sich durch ihren Ersteller oder einen Administrator löschen")
+     * and the issue's own proposal both keep library-level management
+     * exclusive to the owner/an admin, distinct from canWriteItems() below,
+     * which a write share *does* extend to. If you're checking whether a
+     * request can create/edit/delete a *media item* inside a library
+     * (MediaItemController, CaptureController, MetadataController), you
+     * want canWriteItems(), not this method.
+     */
     public function canWrite(User $user, Library $library): bool
     {
         if ($user->isAdmin()) {
@@ -69,6 +89,48 @@ class LibraryAccessService
         // this makes it hold regardless of routing (briefing 4.2: "Gast:
         // ... Keine Anlage, keine Bearbeitung").
         return ! $user->isGuest() && $library->owner_id === $user->id;
+    }
+
+    /**
+     * Whether the user can create/edit/delete this library's *items* —
+     * everything canWrite() allows (an owner/admin can obviously also edit
+     * items), plus GitHub issue #79's write shares: a scope=all_users or
+     * scope=user LibraryShare with access_level='write' extends this to a
+     * user who doesn't own the library and isn't an admin, without handing
+     * them any of canWrite()'s library-management actions above. No
+     * scope=guest branch here at all, unlike canRead() — a guest-level user
+     * already returns false via canWrite() above (this method's first
+     * check), and a non-guest user never matches a scope=guest share in the
+     * first place (canRead() has the same asymmetry); combined,
+     * scope=guest can never grant write access, matching briefing 4.2's
+     * "Gast: ... Keine Anlage, keine Bearbeitung" regardless of
+     * access_level — LibraryController::updateShares() also rejects
+     * scope=guest combined with access_level=write at the source, but this
+     * is the check that actually enforces it regardless of how the row got
+     * there (e.g. a user demoted to guest after being granted a write
+     * share, with no forced share cleanup on demotion — the same gap
+     * canWrite() itself guards against for ownership, just for a write
+     * share instead).
+     */
+    public function canWriteItems(User $user, Library $library): bool
+    {
+        if ($this->canWrite($user, $library)) {
+            return true;
+        }
+
+        if ($user->isGuest()) {
+            return false;
+        }
+
+        return $library->shares()
+            ->where('access_level', 'write')
+            ->where(function (Builder $query) use ($user) {
+                $query->where('scope', 'all_users')
+                    ->orWhere(function (Builder $q) use ($user) {
+                        $q->where('scope', 'user')->where('user_id', $user->id);
+                    });
+            })
+            ->exists();
     }
 
     /** Query scoped to libraries visible to the given user (used for listing/search). */

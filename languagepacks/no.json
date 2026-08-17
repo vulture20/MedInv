@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Deling",
-        "hint": "Bestemmer hvem andre som kan se dette biblioteket, i tillegg til deg. Bare lesetilgang kan gis her.",
+        "hint": "Bestemmer hvem andre som kan se dette biblioteket, i tillegg til deg — eventuelt også med skrivetilgang.",
         "guests": "Del med gjester",
         "allUsers": "Del med alle brukere",
+        "writeAccess": "Gi også skrivetilgang (opprette, redigere og slette elementer)",
         "specificUsers": "Bestemte brukere",
         "noSpecificUsers": "Ikke delt med noen bestemt bruker.",
         "selectUser": "Velg en bruker…",

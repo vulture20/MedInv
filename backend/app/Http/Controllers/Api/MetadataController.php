@@ -79,7 +79,7 @@ class MetadataController extends Controller
 
     public function search(Request $request, Library $library)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $data = $request->validate(['query' => ['required', 'string']]);
 
@@ -94,7 +94,7 @@ class MetadataController extends Controller
      */
     public function import(Request $request, Library $library)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $data = $request->validate([
             'attributes' => ['required', 'array'],
@@ -146,7 +146,7 @@ class MetadataController extends Controller
      */
     public function refresh(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
         $result = $this->importService->lookupMerged($library, $record->ean);
@@ -169,7 +169,7 @@ class MetadataController extends Controller
      */
     public function reimport(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
 

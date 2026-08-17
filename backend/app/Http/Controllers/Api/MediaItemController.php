@@ -121,7 +121,7 @@ class MediaItemController extends Controller
      */
     public function uploadCover(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
         $data = $request->validate([
@@ -144,7 +144,7 @@ class MediaItemController extends Controller
     /** Removes the item's cover — clears cover_path and deletes both the original and thumbnail files (media item detail dialog's "remove cover" action). */
     public function deleteCover(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
         $this->coverDownloadService->delete($record->cover_path);
@@ -159,7 +159,7 @@ class MediaItemController extends Controller
      */
     public function store(Request $request, Library $library)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $data = $request->validate($this->rulesFor($library->media_type));
         // GitHub issue #64: a live-converted price stays meaningful in
@@ -181,7 +181,7 @@ class MediaItemController extends Controller
 
     public function update(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
         $rules = $this->rulesFor($library->media_type);
@@ -211,7 +211,7 @@ class MediaItemController extends Controller
 
     public function destroy(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
         $coverPath = $record->cover_path;
@@ -242,7 +242,7 @@ class MediaItemController extends Controller
      */
     public function bulkDestroy(Request $request, Library $library)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
@@ -290,7 +290,7 @@ class MediaItemController extends Controller
      */
     public function bulkUpdate(Request $request, Library $library)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $rules = $this->rulesFor($library->media_type);
         unset($rules['ean'], $rules['tracks'], $rules['runtime_seconds'], $rules['runtime_computed']);
@@ -325,7 +325,7 @@ class MediaItemController extends Controller
      */
     public function move(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWrite($request->user(), $library), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
         $data = $request->validate([
@@ -333,7 +333,7 @@ class MediaItemController extends Controller
         ]);
 
         $target = Library::query()->findOrFail($data['target_library_id']);
-        abort_unless($this->access->canWrite($request->user(), $target), 403);
+        abort_unless($this->access->canWriteItems($request->user(), $target), 403);
 
         if ($target->id === $library->id) {
             return response()->json(['error_code' => 'same_library', 'message' => 'Item is already in this library.'], 422);

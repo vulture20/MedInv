@@ -85,6 +85,12 @@ class ExportImportService
                 'shares' => $library->shares->map(fn (LibraryShare $s) => [
                     'scope' => $s->scope,
                     'user_email' => $s->user?->email,
+                    // GitHub issue #79 — included for completeness/round-trip
+                    // fidelity of the export format even though shares aren't
+                    // currently recreated on import at all (importLibraries()
+                    // only ever restores items, not shares); nothing here
+                    // depends on this value being read back yet.
+                    'access_level' => $s->access_level,
                 ])->all(),
                 'items' => $library->mediaItems()->get()->map(
                     fn ($item) => $item->makeHidden(['id', 'library_id', 'created_at', 'updated_at'])->toArray()

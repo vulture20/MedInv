@@ -14,6 +14,8 @@ interface Share {
   scope: 'guest' | 'all_users' | 'user'
   user_id: number | null
   user: { id: number; name: string } | null
+  /** GitHub issue #79 — a deliberate extension beyond briefing 4.3's originally read-only shares; always present (the backend defaults it to 'read'), never null. */
+  access_level: 'read' | 'write'
 }
 
 /** Exported for LibrarySettingsDialog.tsx, which edits every field here (GitHub issue #76). */

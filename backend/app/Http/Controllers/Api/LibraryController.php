@@ -144,11 +144,29 @@ class LibraryController extends Controller
             'shares' => ['array'],
             'shares.*.scope' => ['required_with:shares', Rule::in(['guest', 'all_users', 'user'])],
             'shares.*.user_id' => ['required_if:shares.*.scope,user', 'nullable', 'exists:users,id'],
+            // GitHub issue #79: an optional write grant alongside the existing
+            // read-only scope, deliberately beyond briefing 4.3's original
+            // "jeweils mit Lesezugriff" — see the migration that added this
+            // column. 'sometimes' + the access_level(...) default below rather
+            // than 'required_with:shares', so a plain {scope, user_id} payload
+            // from before this field existed (or a client that just doesn't
+            // send it) still round-trips as a read-only share exactly like
+            // before.
+            'shares.*.access_level' => ['sometimes', Rule::in(['read', 'write'])],
         ]);
 
         foreach ($data['shares'] ?? [] as $share) {
             if ($share['scope'] === 'user' && empty($share['user_id'])) {
                 throw ValidationException::withMessages(['shares' => 'user_id is required for scope=user.']);
+            }
+            // A guest-level account never has write access at all (briefing
+            // 4.2, GitHub issue #35) — LibraryAccessService::canWriteItems()
+            // already ignores access_level=write on a scope=guest share as a
+            // second line of defense, but rejecting it here means whoever set
+            // this up finds out immediately instead of assuming it took
+            // effect.
+            if (($share['access_level'] ?? 'read') === 'write' && $share['scope'] === 'guest') {
+                throw ValidationException::withMessages(['shares' => 'A guest share cannot grant write access.']);
             }
         }
 
@@ -158,20 +176,23 @@ class LibraryController extends Controller
                 'library_id' => $library->id,
                 'scope' => $share['scope'],
                 'user_id' => $share['scope'] === 'user' ? $share['user_id'] : null,
+                'access_level' => $share['access_level'] ?? 'read',
             ]);
         }
 
-        // Who can see a library changing is an access-control change, same
-        // audit-trail category as the ownership transfer above — this
-        // replaces the *entire* share list every time (not an incremental
-        // add/remove), so the log reflects the new state in full rather
-        // than a diff.
+        // Who can see (and now, per share, write to — GitHub issue #79) a
+        // library changing is an access-control change, same audit-trail
+        // category as the ownership transfer above — this replaces the
+        // *entire* share list every time (not an incremental add/remove), so
+        // the log reflects the new state in full rather than a diff.
         Log::info('Library shares updated', [
             'actor_id' => $request->user()->id,
             'library_id' => $library->id,
             'guest' => collect($data['shares'] ?? [])->contains('scope', 'guest'),
             'all_users' => collect($data['shares'] ?? [])->contains('scope', 'all_users'),
             'user_ids' => collect($data['shares'] ?? [])->where('scope', 'user')->pluck('user_id')->all(),
+            'write_all_users' => collect($data['shares'] ?? [])->contains(fn ($s) => $s['scope'] === 'all_users' && ($s['access_level'] ?? 'read') === 'write'),
+            'write_user_ids' => collect($data['shares'] ?? [])->where('scope', 'user')->where('access_level', 'write')->pluck('user_id')->all(),
         ]);
 
         return $library->load('shares.user:id,name,email');

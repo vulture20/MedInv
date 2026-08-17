@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Jakaminen",
-        "hint": "Määrittää, ketkä muut voivat nähdä tämän kirjaston sinun lisäksesi. Täällä voi myöntää vain lukuoikeuden.",
+        "hint": "Määrittää, ketkä muut voivat nähdä tämän kirjaston sinun lisäksesi — valinnaisesti myös kirjoitusoikeudella.",
         "guests": "Jaa vierailijoille",
         "allUsers": "Jaa kaikille käyttäjille",
+        "writeAccess": "Myönnä myös kirjoitusoikeus (kohteiden lisääminen, muokkaaminen ja poistaminen)",
         "specificUsers": "Tietyt käyttäjät",
         "noSpecificUsers": "Ei jaettu millekään tietylle käyttäjälle.",
         "selectUser": "Valitse käyttäjä…",

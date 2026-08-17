@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Udostępnianie",
-        "hint": "Określa, kto oprócz Ciebie może widzieć tę bibliotekę. Tutaj można przyznać wyłącznie dostęp do odczytu.",
+        "hint": "Określa, kto oprócz Ciebie może widzieć tę bibliotekę — opcjonalnie także z dostępem do zapisu.",
         "guests": "Udostępnij gościom",
         "allUsers": "Udostępnij wszystkim użytkownikom",
+        "writeAccess": "Przyznaj też dostęp do zapisu (dodawanie, edytowanie i usuwanie pozycji)",
         "specificUsers": "Wybrani użytkownicy",
         "noSpecificUsers": "Nieudostępniona żadnemu konkretnemu użytkownikowi.",
         "selectUser": "Wybierz użytkownika…",

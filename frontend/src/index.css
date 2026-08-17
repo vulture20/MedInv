@@ -1518,6 +1518,16 @@ td {
   margin: 0.25rem 0 0;
 }
 
+/*
+ * GitHub issue #79 — the "also grant write access" checkbox nested under
+ * the "share with all users" toggle in LibrarySettingsDialog.tsx, indented
+ * to read as dependent on the checkbox directly above it rather than a
+ * third, equally-weighted sharing option.
+ */
+.libraries-sharing__write-toggle {
+  margin-left: 1.5rem;
+}
+
 .library-items-toolbar {
   display: flex;
   flex-wrap: wrap;

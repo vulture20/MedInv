@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Partage",
-        "hint": "Détermine qui d'autre peut voir cette bibliothèque, en plus de vous. Seul un accès en lecture peut être accordé ici.",
+        "hint": "Détermine qui d'autre peut voir cette bibliothèque, en plus de vous — avec, en option, un accès en écriture.",
         "guests": "Partager avec les invités",
         "allUsers": "Partager avec tous les utilisateurs",
+        "writeAccess": "Accorder aussi l'accès en écriture (créer, modifier et supprimer des éléments)",
         "specificUsers": "Utilisateurs spécifiques",
         "noSpecificUsers": "Non partagée avec un utilisateur spécifique.",
         "selectUser": "Sélectionner un utilisateur…",

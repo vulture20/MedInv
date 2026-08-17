@@ -40,7 +40,12 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
 
   const [guestShare, setGuestShare] = useState(false)
   const [allUsersShare, setAllUsersShare] = useState(false)
-  const [userShares, setUserShares] = useState<{ user_id: number; name: string }[]>([])
+  // GitHub issue #79 — 'write' additionally lets the all_users/specific-user
+  // scope create/edit/delete media items, not just see them. No equivalent
+  // for guestShare above: a guest never gets write access regardless
+  // (briefing 4.2), so that toggle intentionally has no write variant.
+  const [allUsersWrite, setAllUsersWrite] = useState(false)
+  const [userShares, setUserShares] = useState<{ user_id: number; name: string; access_level: 'read' | 'write' }[]>([])
   const [addUserId, setAddUserId] = useState<number | ''>('')
   const [sharesSaved, setSharesSaved] = useState(false)
   const [sharesError, setSharesError] = useState<string | null>(null)
@@ -62,10 +67,11 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
       setInfoError(null)
       setGuestShare(library.shares?.some((s) => s.scope === 'guest') ?? false)
       setAllUsersShare(library.shares?.some((s) => s.scope === 'all_users') ?? false)
+      setAllUsersWrite(library.shares?.some((s) => s.scope === 'all_users' && s.access_level === 'write') ?? false)
       setUserShares(
         (library.shares ?? [])
           .filter((s) => s.scope === 'user' && s.user)
-          .map((s) => ({ user_id: s.user!.id, name: s.user!.name })),
+          .map((s) => ({ user_id: s.user!.id, name: s.user!.name, access_level: s.access_level })),
       )
       setAddUserId('')
       setSharesSaved(false)
@@ -123,8 +129,8 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
     setSharesSaved(false)
     const shares = [
       ...(guestShare ? [{ scope: 'guest' }] : []),
-      ...(allUsersShare ? [{ scope: 'all_users' }] : []),
-      ...userShares.map((s) => ({ scope: 'user', user_id: s.user_id })),
+      ...(allUsersShare ? [{ scope: 'all_users', access_level: allUsersWrite ? 'write' : 'read' }] : []),
+      ...userShares.map((s) => ({ scope: 'user', user_id: s.user_id, access_level: s.access_level })),
     ]
     try {
       await apiClient.put(`/libraries/${library.id}/shares`, { shares })
@@ -139,8 +145,13 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
     if (addUserId === '') return
     const target = shareableUsers.find((u) => u.id === addUserId)
     if (!target) return
-    setUserShares((prev) => [...prev, { user_id: target.id, name: target.name }])
+    setUserShares((prev) => [...prev, { user_id: target.id, name: target.name, access_level: 'read' }])
     setAddUserId('')
+  }
+
+  /** GitHub issue #79 — toggles a single specific-user share between read and write, in place. */
+  function toggleUserShareWrite(userId: number, write: boolean) {
+    setUserShares((prev) => prev.map((s) => (s.user_id === userId ? { ...s, access_level: write ? 'write' : 'read' } : s)))
   }
 
   async function transferOwnership() {
@@ -200,6 +211,13 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
               <input type="checkbox" checked={allUsersShare} onChange={(e) => setAllUsersShare(e.target.checked)} />
               {t('libraries.sharing.allUsers')}
             </label>
+            {/* GitHub issue #79 — only shown once the all_users scope itself is enabled; hiding it rather than merely disabling it when it isn't is enough on its own, since saveShares() below only ever reads allUsersWrite while building the all_users share, never while allUsersShare is false. */}
+            {allUsersShare && (
+              <label className="libraries-sharing__write-toggle">
+                <input type="checkbox" checked={allUsersWrite} onChange={(e) => setAllUsersWrite(e.target.checked)} />
+                {t('libraries.sharing.writeAccess')}
+              </label>
+            )}
 
             <div>
               <h5>{t('libraries.sharing.specificUsers')}</h5>
@@ -210,6 +228,14 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
                   {userShares.map((share) => (
                     <li key={share.user_id}>
                       {share.name}{' '}
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={share.access_level === 'write'}
+                          onChange={(e) => toggleUserShareWrite(share.user_id, e.target.checked)}
+                        />
+                        {t('libraries.sharing.writeAccess')}
+                      </label>{' '}
                       <button
                         type="button"
                         onClick={() => setUserShares((prev) => prev.filter((s) => s.user_id !== share.user_id))}

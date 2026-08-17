@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Compartilhamento",
-        "hint": "Controla quem mais pode ver esta biblioteca, além de você. Aqui só é possível conceder acesso de leitura.",
+        "hint": "Controla quem mais pode ver esta biblioteca, além de você — opcionalmente também com acesso de escrita.",
         "guests": "Compartilhar com convidados",
         "allUsers": "Compartilhar com todos os usuários",
+        "writeAccess": "Conceder também acesso de escrita (criar, editar e excluir itens)",
         "specificUsers": "Usuários específicos",
         "noSpecificUsers": "Não compartilhada com nenhum usuário específico.",
         "selectUser": "Selecionar um usuário…",

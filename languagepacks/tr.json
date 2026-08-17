@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Paylaşım",
-        "hint": "Sizin dışınızda bu kitaplığı kimlerin görebileceğini belirler. Burada yalnızca okuma erişimi verilebilir.",
+        "hint": "Sizin dışınızda bu kitaplığı kimlerin görebileceğini belirler — isteğe bağlı olarak yazma erişimiyle de.",
         "guests": "Misafirlerle paylaş",
         "allUsers": "Tüm kullanıcılarla paylaş",
+        "writeAccess": "Ayrıca yazma erişimi de ver (öğe ekleme, düzenleme ve silme)",
         "specificUsers": "Belirli kullanıcılar",
         "noSpecificUsers": "Belirli bir kullanıcıyla paylaşılmadı.",
         "selectUser": "Bir kullanıcı seçin…",

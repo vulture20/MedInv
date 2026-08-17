@@ -54,9 +54,10 @@
       },
       "sharing": {
         "title": "Deiling",
-        "hint": "Stjórnar því hverjir aðrir geta séð þetta safn, auk þín. Aðeins er hægt að veita lesaðgang hér.",
+        "hint": "Stjórnar því hverjir aðrir geta séð þetta safn, auk þín — með valfrjálsum ritaðgangi líka.",
         "guests": "Deila með gestum",
         "allUsers": "Deila með öllum notendum",
+        "writeAccess": "Veita einnig ritaðgang (búa til, breyta og eyða færslum)",
         "specificUsers": "Tilteknir notendur",
         "noSpecificUsers": "Ekki deilt með neinum tilteknum notanda.",
         "selectUser": "Veldu notanda…",

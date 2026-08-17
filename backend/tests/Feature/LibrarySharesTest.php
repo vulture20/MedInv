@@ -143,6 +143,102 @@ class LibrarySharesTest extends TestCase
         $response->assertStatus(422);
     }
 
+    /** GitHub issue #79: a share with no access_level at all defaults to 'read', matching every share created before this field existed. */
+    public function test_a_share_without_an_access_level_defaults_to_read(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->library($owner->id);
+
+        $response = $this->putJson("/api/libraries/{$library->id}/shares", ['shares' => [['scope' => 'all_users']]]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas((new LibraryShare)->getTable(), ['library_id' => $library->id, 'scope' => 'all_users', 'access_level' => 'read']);
+    }
+
+    /** GitHub issue #79: the owner/admin can explicitly grant write access alongside a scope. */
+    public function test_owner_can_grant_a_write_share(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->library($owner->id);
+        $target = User::factory()->create(['level' => 'user', 'is_active' => true]);
+
+        $response = $this->putJson("/api/libraries/{$library->id}/shares", [
+            'shares' => [['scope' => 'user', 'user_id' => $target->id, 'access_level' => 'write']],
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas((new LibraryShare)->getTable(), [
+            'library_id' => $library->id,
+            'scope' => 'user',
+            'user_id' => $target->id,
+            'access_level' => 'write',
+        ]);
+    }
+
+    /** briefing 4.2: a guest can never have write access, so a scope=guest + access_level=write combination is rejected outright rather than silently stored and ignored. */
+    public function test_a_guest_scope_share_cannot_be_granted_write_access(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->library($owner->id);
+
+        $response = $this->putJson("/api/libraries/{$library->id}/shares", [
+            'shares' => [['scope' => 'guest', 'access_level' => 'write']],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertSame(0, LibraryShare::query()->where('library_id', $library->id)->count());
+    }
+
+    /** An invalid access_level value (not 'read'/'write') is rejected the same way an invalid scope is. */
+    public function test_an_invalid_access_level_is_rejected(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->library($owner->id);
+
+        $response = $this->putJson("/api/libraries/{$library->id}/shares", [
+            'shares' => [['scope' => 'all_users', 'access_level' => 'admin']],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * End-to-end proof that a write share actually grants write access
+     * through the real write endpoints, not just LibraryAccessService in
+     * isolation (LibraryAccessServiceTest covers that directly) — a
+     * write-shared user can create an item in a library they don't own.
+     */
+    public function test_a_user_with_a_write_share_can_create_an_item_in_the_library(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->library($owner->id);
+        $writer = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $this->putJson("/api/libraries/{$library->id}/shares", [
+            'shares' => [['scope' => 'user', 'user_id' => $writer->id, 'access_level' => 'write']],
+        ])->assertOk();
+
+        $this->actingAs($writer);
+        $response = $this->postJson("/api/libraries/{$library->id}/items", ['ean' => '9780000000099', 'title' => 'Written by a shared user']);
+
+        $response->assertCreated();
+    }
+
+    /** The same write-shared user still cannot delete the library itself — write access to items is not the same as owner/admin-level library management. */
+    public function test_a_user_with_a_write_share_still_cannot_delete_the_library(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->library($owner->id);
+        $writer = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $this->putJson("/api/libraries/{$library->id}/shares", [
+            'shares' => [['scope' => 'user', 'user_id' => $writer->id, 'access_level' => 'write']],
+        ])->assertOk();
+
+        $this->actingAs($writer);
+        $response = $this->deleteJson("/api/libraries/{$library->id}");
+
+        $response->assertForbidden();
+    }
+
     public function test_the_response_includes_the_shared_users_name_and_email(): void
     {
         $owner = $this->actingAsUser();

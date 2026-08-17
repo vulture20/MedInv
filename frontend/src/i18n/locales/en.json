@@ -51,9 +51,10 @@
     },
     "sharing": {
       "title": "Sharing",
-      "hint": "Controls who else can see this library, in addition to you. Only read access can be granted here.",
+      "hint": "Controls who else can see this library, in addition to you — optionally with write access too.",
       "guests": "Share with guests",
       "allUsers": "Share with all users",
+      "writeAccess": "Also grant write access (create, edit and delete items)",
       "specificUsers": "Specific users",
       "noSpecificUsers": "Not shared with any specific user.",
       "selectUser": "Select a user…",
