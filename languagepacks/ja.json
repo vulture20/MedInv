@@ -80,6 +80,7 @@
       "uploadCover": "カバー画像をアップロード",
       "removeCover": "カバー画像を削除",
       "confirmRemoveCover": "カバー画像を削除しますか? この操作は元に戻せません。",
+      "createCoverUploadFailed": "アイテムは作成されましたが、カバー画像をアップロードできませんでした。後でアイテム自体から追加できます。",
       "addManually": "手動で追加",
       "createTitle": "メディアを追加",
       "fields": {

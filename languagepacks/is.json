@@ -81,6 +81,7 @@
       "removeCover": "Fjarlægja kápu",
       "viewCoverFullscreen": "Skoða kápu í fullum skjá",
       "confirmRemoveCover": "Fjarlægja kápuna? Þessu er ekki hægt að afturkalla.",
+      "createCoverUploadFailed": "Færslan var stofnuð, en ekki tókst að hlaða upp kápunni. Þú getur bætt henni við síðar í færslunni sjálfri.",
       "addManually": "Bæta við handvirkt",
       "createTitle": "Bæta við miðli",
       "tracklist": "Lagalisti",

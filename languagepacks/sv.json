@@ -81,6 +81,7 @@
       "removeCover": "Ta bort omslag",
       "viewCoverFullscreen": "Visa omslag i helskärm",
       "confirmRemoveCover": "Ta bort omslaget? Detta kan inte ångras.",
+      "createCoverUploadFailed": "Objektet skapades, men omslaget kunde inte laddas upp. Du kan lägga till det senare från själva objektet.",
       "addManually": "Lägg till manuellt",
       "createTitle": "Lägg till media",
       "tracklist": "Spårlista",

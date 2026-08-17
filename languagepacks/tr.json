@@ -80,6 +80,7 @@
       "uploadCover": "Kapak yükle",
       "removeCover": "Kapağı kaldır",
       "confirmRemoveCover": "Kapak kaldırılsın mı? Bu işlem geri alınamaz.",
+      "createCoverUploadFailed": "Öğe oluşturuldu, ancak kapak yüklenemedi. Daha sonra öğenin kendisinden ekleyebilirsiniz.",
       "addManually": "Elle ekle",
       "createTitle": "Medya ekle",
       "fields": {

@@ -80,6 +80,7 @@
       "uploadCover": "Prześlij okładkę",
       "removeCover": "Usuń okładkę",
       "confirmRemoveCover": "Usunąć okładkę? Tej czynności nie można cofnąć.",
+      "createCoverUploadFailed": "Pozycja została utworzona, ale nie udało się przesłać okładki. Możesz dodać ją później bezpośrednio w tej pozycji.",
       "addManually": "Dodaj ręcznie",
       "createTitle": "Dodaj multimedia",
       "fields": {

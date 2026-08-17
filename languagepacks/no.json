@@ -81,6 +81,7 @@
       "removeCover": "Fjern omslag",
       "viewCoverFullscreen": "Vis omslag i fullskjerm",
       "confirmRemoveCover": "Fjerne omslaget? Dette kan ikke angres.",
+      "createCoverUploadFailed": "Elementet ble opprettet, men omslaget kunne ikke lastes opp. Du kan legge det til senere fra selve elementet.",
       "addManually": "Legg til manuelt",
       "createTitle": "Legg til medium",
       "tracklist": "Sporliste",

@@ -80,6 +80,7 @@
       "uploadCover": "Subir portada",
       "removeCover": "Eliminar portada",
       "confirmRemoveCover": "¿Eliminar la portada? Esta acción no se puede deshacer.",
+      "createCoverUploadFailed": "El elemento se ha creado, pero no se pudo subir la portada. Puede añadirla más tarde desde el propio elemento.",
       "addManually": "Añadir manualmente",
       "createTitle": "Añadir elemento multimedia",
       "fields": {

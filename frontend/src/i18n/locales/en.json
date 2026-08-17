@@ -78,6 +78,7 @@
     "removeCover": "Remove cover",
     "viewCoverFullscreen": "View cover fullscreen",
     "confirmRemoveCover": "Remove the cover? This cannot be undone.",
+    "createCoverUploadFailed": "The item was created, but the cover couldn't be uploaded. You can add it later from the item itself.",
     "addManually": "Add manually",
     "createTitle": "Add media item",
     "tracklist": "Track listing",

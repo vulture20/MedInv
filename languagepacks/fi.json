@@ -81,6 +81,7 @@
       "removeCover": "Poista kansikuva",
       "viewCoverFullscreen": "Näytä kansikuva koko näytöllä",
       "confirmRemoveCover": "Poistetaanko kansikuva? Tätä ei voi perua.",
+      "createCoverUploadFailed": "Kohde luotiin, mutta kansikuvaa ei voitu ladata. Voit lisätä sen myöhemmin itse kohteesta.",
       "addManually": "Lisää manuaalisesti",
       "createTitle": "Lisää media",
       "tracklist": "Kappaleluettelo",

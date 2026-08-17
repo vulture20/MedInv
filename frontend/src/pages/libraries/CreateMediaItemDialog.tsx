@@ -28,6 +28,11 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
   const [values, setValues] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  // GitHub issue #75 — held locally rather than uploaded on selection like
+  // MediaItemDetailDialog's uploadCover() does, since there's no item id to
+  // attach it to yet; actually uploaded as a second request in submit()
+  // below, right after the item itself is created.
+  const [coverFile, setCoverFile] = useState<File | null>(null)
 
   const specs = FIELD_SPECS[library.media_type]
 
@@ -37,6 +42,7 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
       setValues({})
       setError(null)
       setSaving(false)
+      setCoverFile(null)
       dialogRef.current?.showModal()
     } else {
       dialogRef.current?.close()
@@ -57,10 +63,31 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
     setError(null)
     setSaving(true)
     try {
-      const { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items`, {
+      let { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items`, {
         ean,
         ...payloadFromValues(values, specs),
       })
+      // GitHub issue #75: a second request, hidden behind this same submit,
+      // mirroring MediaItemDetailDialog's uploadCover() now that the item
+      // (and its id) exists. A failure here doesn't roll back or block the
+      // item creation that already succeeded — retrying the whole form
+      // would just 409 on the now-duplicate EAN — so it's surfaced
+      // separately via window.alert() (same pattern LanguagesPage.tsx/
+      // TemplatesPage.tsx/UsersPage.tsx use for a failure alongside an
+      // otherwise-successful action) rather than through `error` above,
+      // which the dialog closing right after would hide immediately.
+      if (coverFile) {
+        try {
+          const form = new FormData()
+          form.append('cover', coverFile)
+          const coverRes = await apiClient.post<MediaItem>(`/libraries/${library.id}/items/${data.id}/cover`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          })
+          data = coverRes.data
+        } catch {
+          window.alert(t('mediaItem.createCoverUploadFailed'))
+        }
+      }
       onCreated(data)
     } catch (err) {
       setError(describeApiError(err))
@@ -83,6 +110,17 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
           <h3>{t('mediaItem.createTitle')}</h3>
           {error && <p role="alert">{error}</p>}
           <form onSubmit={(e) => void submit(e)}>
+            {/* GitHub issue #75: uploaded as a second request in submit()
+                above right after the item itself is created — there's no
+                item id to attach a cover to yet, unlike
+                MediaItemDetailDialog's identically-styled upload control,
+                which uploads immediately on selection. */}
+            <div className="media-item-dialog__cover-actions">
+              <label className="media-item-dialog__cover-upload-label">
+                {t('mediaItem.uploadCover')}
+                <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} />
+              </label>
+            </div>
             <label>
               {t('mediaItem.fields.ean')}
               <input value={ean} onChange={(e) => setEan(e.target.value)} required />

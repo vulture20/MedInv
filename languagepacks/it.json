@@ -80,6 +80,7 @@
       "uploadCover": "Carica copertina",
       "removeCover": "Rimuovi copertina",
       "confirmRemoveCover": "Rimuovere la copertina? Questa azione non può essere annullata.",
+      "createCoverUploadFailed": "L'elemento è stato creato, ma non è stato possibile caricare la copertina. Puoi aggiungerla in seguito direttamente dall'elemento.",
       "addManually": "Aggiungi manualmente",
       "createTitle": "Aggiungi media",
       "fields": {

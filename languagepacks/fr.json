@@ -80,6 +80,7 @@
       "uploadCover": "Importer une couverture",
       "removeCover": "Supprimer la couverture",
       "confirmRemoveCover": "Supprimer la couverture ? Cette action est irréversible.",
+      "createCoverUploadFailed": "L'élément a été créé, mais la couverture n'a pas pu être importée. Vous pouvez l'ajouter plus tard depuis l'élément lui-même.",
       "addManually": "Ajouter manuellement",
       "createTitle": "Ajouter un média",
       "fields": {

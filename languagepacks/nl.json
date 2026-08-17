@@ -80,6 +80,7 @@
       "uploadCover": "Cover uploaden",
       "removeCover": "Cover verwijderen",
       "confirmRemoveCover": "Cover verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "createCoverUploadFailed": "Het item is aangemaakt, maar de cover kon niet worden geüpload. U kunt deze later vanuit het item zelf toevoegen.",
       "addManually": "Handmatig toevoegen",
       "createTitle": "Media toevoegen",
       "fields": {

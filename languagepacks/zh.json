@@ -80,6 +80,7 @@
       "uploadCover": "上传封面",
       "removeCover": "移除封面",
       "confirmRemoveCover": "移除封面？此操作无法撤销。",
+      "createCoverUploadFailed": "该媒体项目已创建，但封面上传失败。您可以稍后在该项目中重新添加封面。",
       "addManually": "手动添加",
       "createTitle": "添加媒体项目",
       "fields": {

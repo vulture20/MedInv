@@ -80,6 +80,7 @@
       "uploadCover": "Enviar capa",
       "removeCover": "Remover capa",
       "confirmRemoveCover": "Remover a capa? Esta ação não pode ser desfeita.",
+      "createCoverUploadFailed": "O item foi criado, mas não foi possível enviar a capa. Você pode adicioná-la mais tarde a partir do próprio item.",
       "addManually": "Adicionar manualmente",
       "createTitle": "Adicionar item de mídia",
       "fields": {

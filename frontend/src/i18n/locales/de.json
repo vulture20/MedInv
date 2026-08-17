@@ -78,6 +78,7 @@
     "removeCover": "Cover entfernen",
     "viewCoverFullscreen": "Cover in Vollbildansicht anzeigen",
     "confirmRemoveCover": "Cover entfernen? Dies kann nicht rückgängig gemacht werden.",
+    "createCoverUploadFailed": "Der Eintrag wurde angelegt, aber das Cover konnte nicht hochgeladen werden. Sie können es später im Eintrag selbst nachtragen.",
     "addManually": "Manuell hinzufügen",
     "createTitle": "Medium hinzufügen",
     "tracklist": "Titelliste",
