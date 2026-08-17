@@ -95,6 +95,10 @@ export function CapturePage() {
   // synchronously on every call, not just after the next render.
   const lastScanRef = useRef<{ ean: string; at: number } | null>(null)
   const nextResultId = useRef(0)
+  // GitHub issue #89 — see the effect below for why this needs its own ref
+  // (not `results.length` compared against 0 directly).
+  const codeInputRef = useRef<HTMLInputElement>(null)
+  const previousResultsLength = useRef(0)
 
   useEffect(() => {
     void apiClient.get<Library[]>('/libraries').then(({ data }) => {
@@ -102,6 +106,26 @@ export function CapturePage() {
       if (data.length) setLibraryId(data[0].id)
     })
   }, [])
+
+  /**
+   * GitHub issue #89: a hardware barcode scanner "types" its code into
+   * whichever input has focus (see this component's own docblock) — once
+   * the last pending result is confirmed/dismissed/manually created (all
+   * three go through setResults() above/below, so watching `results.length`
+   * covers all of them without duplicating a .focus() call into each
+   * handler), the EAN/ISBN input should be ready to receive the next scan
+   * again without a manual click first. Only on the 1-to-0 transition, not
+   * on mount (`results` starts at 0, and the input already has `autoFocus`
+   * for that case) or on every render where it merely stays 0 — otherwise
+   * this would steal focus from something else on the page (e.g. the
+   * library picker) the moment it renders, before any scan ever happened.
+   */
+  useEffect(() => {
+    if (previousResultsLength.current > 0 && results.length === 0) {
+      codeInputRef.current?.focus()
+    }
+    previousResultsLength.current = results.length
+  }, [results.length])
 
   async function scanCode(code: string) {
     const library = libraries.find((l) => l.id === libraryId)
@@ -177,6 +201,7 @@ export function CapturePage() {
         {/* Hardware scanner + manual entry share this one input (7.2) — see this component's own docblock for why it can never be hidden behind a reveal toggle the way camera/text-file below are. */}
         <form className="capture-scan-form" onSubmit={submitCode}>
           <input
+            ref={codeInputRef}
             className="panel-select capture-scan-form__input"
             value={codeInput}
             onChange={(e) => setCodeInput(e.target.value)}
