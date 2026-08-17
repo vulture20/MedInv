@@ -81,6 +81,58 @@ class ExportImportCoverTest extends TestCase
         $this->postJson('/api/admin/export')->assertOk();
     }
 
+    /**
+     * GitHub-reported bug: addCoverFilesToZip() only ever added the
+     * full-size cover_path itself — the thumbnail CoverDownloadService
+     * generates alongside every cover (served by
+     * MediaItemController::coverThumbnail() for library list views) was
+     * never included, so a restored/imported instance's list views quietly
+     * fell back to shipping the full-size image to every row.
+     */
+    public function test_export_zip_also_contains_the_covers_thumbnail(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('covers/book/dune-AbCdEfGh.jpg', 'fake-cover-bytes');
+        Storage::disk('local')->put('covers/book/thumb_dune-AbCdEfGh.jpg', 'fake-thumbnail-bytes');
+        $admin = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
+        MediaBook::query()->create([
+            'library_id' => $library->id,
+            'title' => 'Dune',
+            'ean' => '9780000000001',
+            'cover_path' => 'covers/book/dune-AbCdEfGh.jpg',
+        ]);
+
+        $response = $this->postJson('/api/admin/export');
+        $tmpFile = tempnam(sys_get_temp_dir(), 'export-test');
+        file_put_contents($tmpFile, $response->streamedContent());
+
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($tmpFile) === true);
+        $this->assertSame('fake-cover-bytes', $zip->getFromName('covers/book/dune-AbCdEfGh.jpg'));
+        $this->assertSame('fake-thumbnail-bytes', $zip->getFromName('covers/book/thumb_dune-AbCdEfGh.jpg'));
+        $zip->close();
+        unlink($tmpFile);
+    }
+
+    /** Mirrors the cover's own best-effort handling above — a thumbnail that never generated (CoverDownloadService::generateThumbnail() is itself best-effort) must not fail the export either. */
+    public function test_export_does_not_fail_when_a_covers_thumbnail_was_never_generated(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('covers/book/dune-AbCdEfGh.jpg', 'fake-cover-bytes');
+        // No thumb_dune-AbCdEfGh.jpg on disk at all.
+        $admin = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
+        MediaBook::query()->create([
+            'library_id' => $library->id,
+            'title' => 'Dune',
+            'ean' => '9780000000001',
+            'cover_path' => 'covers/book/dune-AbCdEfGh.jpg',
+        ]);
+
+        $this->postJson('/api/admin/export')->assertOk();
+    }
+
     public function test_import_from_a_zip_restores_the_cover_file_onto_the_local_disk(): void
     {
         Storage::fake('local');
@@ -132,6 +184,7 @@ class ExportImportCoverTest extends TestCase
     {
         Storage::fake('local');
         Storage::disk('local')->put('covers/book/dune-AbCdEfGh.jpg', 'fake-cover-bytes');
+        Storage::disk('local')->put('covers/book/thumb_dune-AbCdEfGh.jpg', 'fake-thumbnail-bytes');
         $admin = $this->actingAsAdmin();
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
         MediaBook::query()->create([
@@ -145,11 +198,11 @@ class ExportImportCoverTest extends TestCase
         $tmpFile = tempnam(sys_get_temp_dir(), 'roundtrip-test');
         file_put_contents($tmpFile, $response->streamedContent());
 
-        // Simulate a fresh receiving instance: the library and its cover are
-        // both gone, only the exported zip remains.
+        // Simulate a fresh receiving instance: the library and its cover+thumbnail
+        // are both gone, only the exported zip remains.
         $library->mediaItems()->delete();
         $library->delete();
-        Storage::disk('local')->delete('covers/book/dune-AbCdEfGh.jpg');
+        Storage::disk('local')->delete(['covers/book/dune-AbCdEfGh.jpg', 'covers/book/thumb_dune-AbCdEfGh.jpg']);
 
         $file = new UploadedFile($tmpFile, 'export.zip', 'application/zip', null, true);
         $result = $this->postJson('/api/admin/import', ['file' => $file])->json();
@@ -157,5 +210,7 @@ class ExportImportCoverTest extends TestCase
         $this->assertSame(['Novels'], $result['created']);
         $this->assertTrue(Storage::disk('local')->exists('covers/book/dune-AbCdEfGh.jpg'));
         $this->assertSame('fake-cover-bytes', Storage::disk('local')->get('covers/book/dune-AbCdEfGh.jpg'));
+        $this->assertTrue(Storage::disk('local')->exists('covers/book/thumb_dune-AbCdEfGh.jpg'));
+        $this->assertSame('fake-thumbnail-bytes', Storage::disk('local')->get('covers/book/thumb_dune-AbCdEfGh.jpg'));
     }
 }

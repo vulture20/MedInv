@@ -4,6 +4,7 @@ namespace App\Domain\ExportImport;
 
 use App\Domain\Libraries\DuplicateEanException;
 use App\Domain\Libraries\MediaItemService;
+use App\Domain\Metadata\CoverDownloadService;
 use App\Models\Library;
 use App\Models\LibraryShare;
 use App\Models\MetadataPlugin;
@@ -36,7 +37,10 @@ class ExportImportService
     /** Must match CoverDownloadService::DIR — the prefix every item's cover_path is stored under on the `local` disk. */
     public const COVERS_DIR = 'covers';
 
-    public function __construct(private readonly MediaItemService $mediaItemService) {}
+    public function __construct(
+        private readonly MediaItemService $mediaItemService,
+        private readonly CoverDownloadService $coverDownloadService,
+    ) {}
 
     /**
      * @param  int[]|null  $libraryIds  Null exports all libraries ("alle", briefing 9.1).
@@ -134,8 +138,19 @@ class ExportImportService
      * — using that same relative path as the zip entry name so
      * restoreCoverFilesFromZip() can write it straight back without any
      * translation table. Best-effort per file: a cover_path whose file is
-     * already gone (e.g. deleted by hand outside the app) is skipped rather
-     * than failing the whole export.
+     * already gone (e.g. deleted by hand outside the app), or whose
+     * thumbnail was never generated (CoverDownloadService::
+     * generateThumbnail() is itself best-effort — see its docblock), is
+     * skipped rather than failing the whole export.
+     *
+     * Each cover's thumbnail (CoverDownloadService::thumbnailPath()) is
+     * added alongside the full-size original — an export/backup that
+     * carried covers but not their thumbnails restored fine, but every
+     * restored item's library list view (which serves the thumbnail, not
+     * the full image — MediaItemController::coverThumbnail()) silently fell
+     * back to shipping the full-size cover to every row until the next
+     * unrelated cover change happened to regenerate it, reported as
+     * thumbnails "missing from the zip".
      */
     public function addCoverFilesToZip(ZipArchive $zip, array $data): void
     {
@@ -144,9 +159,11 @@ class ExportImportService
             ->filter()
             ->unique();
 
-        foreach ($coverPaths as $coverPath) {
-            if (Storage::disk(self::DISK)->exists($coverPath)) {
-                $zip->addFile(Storage::disk(self::DISK)->path($coverPath), $coverPath);
+        $allPaths = $coverPaths->flatMap(fn (string $coverPath) => [$coverPath, $this->coverDownloadService->thumbnailPath($coverPath)]);
+
+        foreach ($allPaths as $path) {
+            if (Storage::disk(self::DISK)->exists($path)) {
+                $zip->addFile(Storage::disk(self::DISK)->path($path), $path);
             }
         }
     }

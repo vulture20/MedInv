@@ -16,7 +16,9 @@ use ZipArchive;
  * every cover_path it referenced pointed at a file that simply didn't exist
  * once restored — MediaItemController::cover() 404s forever for such an
  * item. BackupService::create()/restore() now carry the referenced cover
- * files inside the same zip, under their own cover_path as the entry name.
+ * files inside the same zip, under their own cover_path as the entry name —
+ * and, per a later report, each cover's thumbnail alongside it too (see
+ * test_backup_includes_the_covers_thumbnail_in_the_zip's own docblock).
  */
 class BackupCoverTest extends TestCase
 {
@@ -40,6 +42,35 @@ class BackupCoverTest extends TestCase
         $zip = new ZipArchive;
         $zip->open(Storage::disk('local')->path('backups/'.$backup->filename));
         $this->assertSame('fake-cover-bytes', $zip->getFromName('covers/book/dune-AbCdEfGh.jpg'));
+        $zip->close();
+    }
+
+    /**
+     * GitHub-reported bug: the backup zip carried the full-size cover but
+     * not its thumbnail (CoverDownloadService::thumbnailPath()) — a
+     * restored instance's list views (MediaItemController::coverThumbnail())
+     * silently fell back to serving the full-size image to every row
+     * instead, reported as thumbnails "missing from the zip".
+     */
+    public function test_backup_includes_the_covers_thumbnail_in_the_zip(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('covers/book/dune-AbCdEfGh.jpg', 'fake-cover-bytes');
+        Storage::disk('local')->put('covers/book/thumb_dune-AbCdEfGh.jpg', 'fake-thumbnail-bytes');
+        $admin = User::factory()->create(['level' => 'admin']);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
+        MediaBook::query()->create([
+            'library_id' => $library->id,
+            'title' => 'Dune',
+            'ean' => '9780000000001',
+            'cover_path' => 'covers/book/dune-AbCdEfGh.jpg',
+        ]);
+
+        $backup = app(BackupService::class)->create();
+
+        $zip = new ZipArchive;
+        $zip->open(Storage::disk('local')->path('backups/'.$backup->filename));
+        $this->assertSame('fake-thumbnail-bytes', $zip->getFromName('covers/book/thumb_dune-AbCdEfGh.jpg'));
         $zip->close();
     }
 
@@ -69,6 +100,7 @@ class BackupCoverTest extends TestCase
     {
         Storage::fake('local');
         Storage::disk('local')->put('covers/book/dune-AbCdEfGh.jpg', 'fake-cover-bytes');
+        Storage::disk('local')->put('covers/book/thumb_dune-AbCdEfGh.jpg', 'fake-thumbnail-bytes');
         $admin = User::factory()->create(['level' => 'admin']);
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
         MediaBook::query()->create([
@@ -81,10 +113,10 @@ class BackupCoverTest extends TestCase
         $backup = app(BackupService::class)->create();
 
         // Simulate exactly the loss scenario from the issue: the library and
-        // its cover file are both gone, only the backup remains.
+        // its cover+thumbnail files are all gone, only the backup remains.
         $library->mediaItems()->delete();
         $library->delete();
-        Storage::disk('local')->delete('covers/book/dune-AbCdEfGh.jpg');
+        Storage::disk('local')->delete(['covers/book/dune-AbCdEfGh.jpg', 'covers/book/thumb_dune-AbCdEfGh.jpg']);
         $this->assertFalse(Storage::disk('local')->exists('covers/book/dune-AbCdEfGh.jpg'));
 
         $result = app(BackupService::class)->restore($backup, $admin);
@@ -92,6 +124,8 @@ class BackupCoverTest extends TestCase
         $this->assertSame(['Novels'], $result['created']);
         $this->assertTrue(Storage::disk('local')->exists('covers/book/dune-AbCdEfGh.jpg'));
         $this->assertSame('fake-cover-bytes', Storage::disk('local')->get('covers/book/dune-AbCdEfGh.jpg'));
+        $this->assertTrue(Storage::disk('local')->exists('covers/book/thumb_dune-AbCdEfGh.jpg'));
+        $this->assertSame('fake-thumbnail-bytes', Storage::disk('local')->get('covers/book/thumb_dune-AbCdEfGh.jpg'));
         $restored = MediaBook::query()->where('ean', '9780000000001')->first();
         $this->assertSame('covers/book/dune-AbCdEfGh.jpg', $restored->cover_path);
     }
