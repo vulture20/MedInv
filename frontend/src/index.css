@@ -600,8 +600,16 @@ td {
   min-width: 0;
 }
 
+/* GitHub issue #94: minutes/seconds, not a single raw-seconds field — see TrackListEditor.tsx's updateDurationPart() docblock. */
+.media-item-dialog__track-duration-group {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex: none;
+}
+
 .media-item-dialog__track-duration-input {
-  width: 5rem;
+  width: 3rem;
   flex: none;
 }
 
