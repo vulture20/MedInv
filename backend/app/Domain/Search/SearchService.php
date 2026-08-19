@@ -127,7 +127,13 @@ class SearchService
                     $this->addJsonArrayFieldConditions($q, $column, $field, $query, $useTrigram);
                 }
             })
-            ->with('library:id,name,media_type')
+            // `library.owner` (GitHub issue #100) — SearchPage.tsx now opens a
+            // hit's MediaItemDetailDialog in place rather than navigating to
+            // the owning library, and that dialog's write-access gating
+            // (mirrors LibraryAccessService::canWrite()) needs `library.owner.id`
+            // client-side, the same way LibraryDetailPage's own `library` prop
+            // already carries it.
+            ->with(['library:id,name,media_type,owner_id', 'library.owner:id,name'])
             ->get();
     }
 
@@ -216,7 +222,13 @@ class SearchService
 
         return $modelClass::query()
             ->whereIn('library_id', $visibleLibraryIds)
-            ->with('library:id,name,media_type')
+            // `library.owner` (GitHub issue #100) — SearchPage.tsx now opens a
+            // hit's MediaItemDetailDialog in place rather than navigating to
+            // the owning library, and that dialog's write-access gating
+            // (mirrors LibraryAccessService::canWrite()) needs `library.owner.id`
+            // client-side, the same way LibraryDetailPage's own `library` prop
+            // already carries it.
+            ->with(['library:id,name,media_type,owner_id', 'library.owner:id,name'])
             ->get()
             ->filter(function ($item) use ($columns, $query, $jsonArrayFields) {
                 foreach ($columns as $column) {

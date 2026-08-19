@@ -186,7 +186,9 @@
       "resultsFor": "Søk: «{{query}}»",
       "submit": "Søk",
       "fuzzy": "Uklart søk",
-      "error": "Søket mislyktes. Prøv igjen."
+      "error": "Søket mislyktes. Prøv igjen.",
+      "noResults": "Ingen treff funnet.",
+      "library": "Bibliotek"
     },
     "statistics": {
       "title": "Statistikk",

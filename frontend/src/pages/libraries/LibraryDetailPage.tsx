@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
+import { SortableHeader } from '../../components/SortableHeader'
 import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
 import { CreateMediaItemDialog } from './CreateMediaItemDialog'
 import { LibrarySettingsDialog } from './LibrarySettingsDialog'
-import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues } from './mediaItemFields'
+import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, subtitleField } from './mediaItemFields'
 
 /** One row of App\Models\LibraryShare, as returned by LibraryController::show()'s `shares.user:id,name,email` eager load (briefing 4.3). */
 interface Share {
@@ -39,56 +40,6 @@ interface Paginated<T> {
   current_page: number
   last_page: number
   total: number
-}
-
-/**
- * The item table's second column, media-type dependent (briefing 6.) — the
- * field key itself, not just its displayed value, since it doubles as the
- * `sort_by` value sent to GET .../items (GitHub issue #77) and mirrors
- * MediaItemController::SORTABLE_COLUMNS.
- */
-function subtitleField(mediaType: Library['media_type']): 'authors' | 'artist' | 'director' {
-  switch (mediaType) {
-    case 'book':
-      return 'authors'
-    case 'cd':
-      return 'artist'
-    case 'dvd_bluray':
-      return 'director'
-  }
-}
-
-/**
- * One clickable, sortable `<th>` in the item table (GitHub issue #77) —
- * a plain `<button>` filling the header cell so the sort toggle stays
- * keyboard/screen-reader operable, same reasoning as
- * media-item-table__title-button below. `aria-sort` reflects the *current*
- * state (not just "this column is sortable") per the WAI-ARIA table
- * sorting pattern, so assistive tech announces which column and direction
- * is active without relying on the visual ▲/▼ glyph alone.
- */
-function SortableHeader({
-  column,
-  label,
-  sortBy,
-  sortDir,
-  onSort,
-}: {
-  column: string
-  label: string
-  sortBy: string | null
-  sortDir: 'asc' | 'desc'
-  onSort: (column: string) => void
-}) {
-  const active = sortBy === column
-  return (
-    <th aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}>
-      <button type="button" className="media-item-table__sort-button" onClick={() => onSort(column)}>
-        {label}
-        {active && <span aria-hidden="true"> {sortDir === 'asc' ? '▲' : '▼'}</span>}
-      </button>
-    </th>
-  )
 }
 
 /**

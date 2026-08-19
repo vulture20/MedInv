@@ -186,7 +186,9 @@
       "resultsFor": "Zoeken: \"{{query}}\"",
       "submit": "Zoeken",
       "fuzzy": "Fuzzy-zoeken",
-      "error": "Zoeken mislukt. Probeer het opnieuw."
+      "error": "Zoeken mislukt. Probeer het opnieuw.",
+      "noResults": "Geen overeenkomsten gevonden.",
+      "library": "Bibliotheek"
     },
     "statistics": {
       "title": "Statistieken",

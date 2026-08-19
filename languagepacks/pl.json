@@ -186,7 +186,9 @@
       "resultsFor": "Wyszukiwanie: „{{query}}”",
       "submit": "Szukaj",
       "fuzzy": "Wyszukiwanie rozmyte",
-      "error": "Wyszukiwanie nie powiodło się. Spróbuj ponownie."
+      "error": "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
+      "noResults": "Nie znaleziono wyników.",
+      "library": "Biblioteka"
     },
     "statistics": {
       "title": "Statystyki",

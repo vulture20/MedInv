@@ -186,7 +186,9 @@
       "resultsFor": "Leit: „{{query}}“",
       "submit": "Leita",
       "fuzzy": "Óskörp leit",
-      "error": "Leit mistókst. Reyndu aftur."
+      "error": "Leit mistókst. Reyndu aftur.",
+      "noResults": "Engar samsvaranir fundust.",
+      "library": "Safn"
     },
     "statistics": {
       "title": "Tölfræði",

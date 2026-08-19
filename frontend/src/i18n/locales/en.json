@@ -183,7 +183,9 @@
     "resultsFor": "Search: “{{query}}”",
     "submit": "Search",
     "fuzzy": "Fuzzy search",
-    "error": "Search failed. Please try again."
+    "error": "Search failed. Please try again.",
+    "noResults": "No matches found.",
+    "library": "Library"
   },
   "statistics": {
     "title": "Statistics",

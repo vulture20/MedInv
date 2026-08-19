@@ -186,7 +186,9 @@
       "resultsFor": "Ricerca: «{{query}}»",
       "submit": "Cerca",
       "fuzzy": "Ricerca approssimata",
-      "error": "Ricerca non riuscita. Riprova."
+      "error": "Ricerca non riuscita. Riprova.",
+      "noResults": "Nessuna corrispondenza trovata.",
+      "library": "Biblioteca"
     },
     "statistics": {
       "title": "Statistiche",

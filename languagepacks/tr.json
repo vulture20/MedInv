@@ -186,7 +186,9 @@
       "resultsFor": "Arama: \"{{query}}\"",
       "submit": "Ara",
       "fuzzy": "Bulanık arama",
-      "error": "Arama başarısız oldu. Lütfen tekrar deneyin."
+      "error": "Arama başarısız oldu. Lütfen tekrar deneyin.",
+      "noResults": "Eşleşme bulunamadı.",
+      "library": "Kitaplık"
     },
     "statistics": {
       "title": "İstatistikler",

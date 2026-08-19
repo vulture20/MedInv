@@ -121,6 +121,25 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
   ],
 }
 
+/**
+ * The item table's second column, media-type dependent (briefing 6.) — the
+ * field key itself, not just its displayed value, since it doubles as the
+ * `sort_by` value sent to GET .../items (GitHub issue #77) and mirrors
+ * MediaItemController::SORTABLE_COLUMNS. Originally LibraryDetailPage-only;
+ * exported here (GitHub issue #100) so SearchPage's mixed-media-type
+ * results table can show the same per-row field.
+ */
+export function subtitleField(mediaType: MediaType): 'authors' | 'artist' | 'director' {
+  switch (mediaType) {
+    case 'book':
+      return 'authors'
+    case 'cd':
+      return 'artist'
+    case 'dvd_bluray':
+      return 'director'
+  }
+}
+
 /** Backend serializes `date`-cast columns as full ISO datetimes (e.g. "2021-05-04T00:00:00.000000Z") — trim to the plain date both an <input type="date"> and the read view want. */
 export function dateOnly(value: unknown): string {
   return typeof value === 'string' ? value.slice(0, 10) : ''

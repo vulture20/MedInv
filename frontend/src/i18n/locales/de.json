@@ -183,7 +183,9 @@
     "resultsFor": "Suche: „{{query}}“",
     "submit": "Suchen",
     "fuzzy": "Fuzzy-Suche",
-    "error": "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+    "error": "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "noResults": "Keine Treffer gefunden.",
+    "library": "Bibliothek"
   },
   "statistics": {
     "title": "Statistiken",

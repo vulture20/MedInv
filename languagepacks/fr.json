@@ -186,7 +186,9 @@
       "resultsFor": "Recherche : « {{query}} »",
       "submit": "Rechercher",
       "fuzzy": "Recherche approximative",
-      "error": "La recherche a échoué. Veuillez réessayer."
+      "error": "La recherche a échoué. Veuillez réessayer.",
+      "noResults": "Aucun résultat trouvé.",
+      "library": "Bibliothèque"
     },
     "statistics": {
       "title": "Statistiques",

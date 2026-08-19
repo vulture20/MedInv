@@ -186,7 +186,9 @@
       "resultsFor": "Pesquisa: \"{{query}}\"",
       "submit": "Pesquisar",
       "fuzzy": "Pesquisa aproximada",
-      "error": "A pesquisa falhou. Tente novamente."
+      "error": "A pesquisa falhou. Tente novamente.",
+      "noResults": "Nenhuma correspondência encontrada.",
+      "library": "Biblioteca"
     },
     "statistics": {
       "title": "Estatísticas",

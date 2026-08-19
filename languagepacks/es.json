@@ -186,7 +186,9 @@
       "resultsFor": "Búsqueda: «{{query}}»",
       "submit": "Buscar",
       "fuzzy": "Búsqueda aproximada",
-      "error": "La búsqueda ha fallado. Inténtalo de nuevo."
+      "error": "La búsqueda ha fallado. Inténtalo de nuevo.",
+      "noResults": "No se encontraron coincidencias.",
+      "library": "Biblioteca"
     },
     "statistics": {
       "title": "Estadísticas",

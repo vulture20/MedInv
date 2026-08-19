@@ -186,7 +186,9 @@
       "resultsFor": "Haku: ”{{query}}”",
       "submit": "Hae",
       "fuzzy": "Sumea haku",
-      "error": "Haku epäonnistui. Yritä uudelleen."
+      "error": "Haku epäonnistui. Yritä uudelleen.",
+      "noResults": "Osumia ei löytynyt.",
+      "library": "Kirjasto"
     },
     "statistics": {
       "title": "Tilastot",
