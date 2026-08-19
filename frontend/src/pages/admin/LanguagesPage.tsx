@@ -64,8 +64,13 @@ export function LanguagesPage() {
   const { t } = useTranslation()
   const [packs, setPacks] = useState<LanguagePackSummary[]>([])
   const [loading, setLoading] = useState(true)
+  // GitHub issue #110 — previously missing entirely: a failed load() left
+  // `loading` stuck at `true` forever (setLoading(false) never ran), the
+  // same gap already fixed on several other pages this session.
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const [bundled, setBundled] = useState<BundledPack[]>([])
+  const [loadBundledError, setLoadBundledError] = useState<string | null>(null)
   const [installingCode, setInstallingCode] = useState<string | null>(null)
   const [installError, setInstallError] = useState<string | null>(null)
 
@@ -80,20 +85,31 @@ export function LanguagesPage() {
   const [viewingBuiltIn, setViewingBuiltIn] = useState<(typeof AVAILABLE_LANGUAGES)[number] | null>(null)
 
   async function load() {
-    const { data } = await apiClient.get<LanguagePackSummary[]>('/languages')
-    setPacks(data)
-    setRuntimeLanguagePacks(data)
-    setLoading(false)
+    setLoadError(null)
+    try {
+      const { data } = await apiClient.get<LanguagePackSummary[]>('/languages')
+      setPacks(data)
+      setRuntimeLanguagePacks(data)
+    } catch (err) {
+      setLoadError(describeError(err, t))
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function loadBundled() {
-    const { data } = await apiClient.get<BundledPack[]>('/admin/languages/bundled')
-    setBundled(data)
+    try {
+      const { data } = await apiClient.get<BundledPack[]>('/admin/languages/bundled')
+      setBundled(data)
+    } catch (err) {
+      setLoadBundledError(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void load()
     void loadBundled()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
@@ -236,6 +252,7 @@ export function LanguagesPage() {
     <div className="panel-page">
       <section className="panel-card">
         <h2>{t('admin.languagesPage.bundledTitle')}</h2>
+        {loadBundledError && <p role="alert">{loadBundledError}</p>}
         <ul className="bundled-language-list">
           {bundled.map((pack) => (
             <li key={pack.code} className="bundled-language-list__row">
@@ -255,6 +272,7 @@ export function LanguagesPage() {
       <section className="panel-card">
         <h2>{t('admin.languages')}</h2>
         <p className="hint">{t('admin.languagesPage.builtInHint')}</p>
+        {loadError && <p role="alert">{loadError}</p>}
 
         {loading ? (
           <p className="hint">…</p>

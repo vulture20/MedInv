@@ -84,8 +84,16 @@ export function ExportImportPage() {
   const [importResult, setImportResult] = useState<string | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
 
+  // GitHub issue #110 — previously missing entirely: a failed request left
+  // the export selection silently empty with no indication anything went
+  // wrong. Reuses exportError since the library list only feeds the export
+  // section below.
   useEffect(() => {
-    void apiClient.get<LibraryRef[]>('/libraries').then(({ data }) => setLibraries(data))
+    apiClient
+      .get<LibraryRef[]>('/libraries')
+      .then(({ data }) => setLibraries(data))
+      .catch((err) => setExportError(describeError(err, t)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function toggle(id: number) {

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { Spinner } from '../../components/Spinner'
+import { describeError } from '../admin/adminErrors'
 import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
 import type { LibraryRef, MediaItem } from '../libraries/mediaItemFields'
 import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from './MetadataMergeReview'
@@ -119,12 +120,23 @@ export function CapturePage() {
   // (not `results.length` compared against 0 directly).
   const codeInputRef = useRef<HTMLInputElement>(null)
   const previousResultsLength = useRef(0)
+  // GitHub issue #110 — previously missing entirely, on this effect and on
+  // scanCode()/submitTextFile()/confirmMerged() below: a failed request
+  // just silently did nothing (the initial library list stayed empty with
+  // no explanation, or a scan/import vanished from the pending list with no
+  // sign it never actually succeeded), the same gap already fixed on
+  // several other pages this session.
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    void apiClient.get<Library[]>('/libraries').then(({ data }) => {
-      setLibraries(data)
-      if (data.length) setLibraryId(data[0].id)
-    })
+    apiClient
+      .get<Library[]>('/libraries')
+      .then(({ data }) => {
+        setLibraries(data)
+        if (data.length) setLibraryId(data[0].id)
+      })
+      .catch((err) => setError(describeError(err, t)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
@@ -163,9 +175,12 @@ export function CapturePage() {
     // provider server-side.
     const pendingId = nextResultId.current++
     setPendingLookups((prev) => [{ ean, library, id: pendingId }, ...prev])
+    setError(null)
     try {
       const { data } = await apiClient.post<ScanResult>(`/libraries/${library.id}/capture/scan`, { ean })
       setResults((prev) => [{ ...data, library, id: nextResultId.current++ }, ...prev])
+    } catch (err) {
+      setError(describeError(err, t))
     } finally {
       setPendingLookups((prev) => prev.filter((p) => p.id !== pendingId))
     }
@@ -201,11 +216,14 @@ export function CapturePage() {
     const form = new FormData()
     form.append('file', file)
     setFile(null)
+    setError(null)
     try {
       const { data } = await apiClient.post<ScanResult[]>(`/libraries/${library.id}/capture/textfile`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       setResults((prev) => [...data.map((r) => ({ ...r, library, id: nextResultId.current++ })), ...prev])
+    } catch (err) {
+      setError(describeError(err, t))
     } finally {
       const pendingIds = new Set(pendingEntries.map((p) => p.id))
       setPendingLookups((prev) => prev.filter((p) => !pendingIds.has(p.id)))
@@ -213,13 +231,24 @@ export function CapturePage() {
   }
 
   async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) {
-    await apiClient.post(`/libraries/${result.library.id}/metadata/import`, {
-      attributes,
-      cover_url: coverUrl ?? undefined,
-      // GitHub issue #74 — see MetadataMergeReview's onConfirm docblock.
-      metadata_providers: providerKeys,
-    })
-    setResults((prev) => prev.filter((r) => r.id !== result.id))
+    setError(null)
+    try {
+      await apiClient.post(`/libraries/${result.library.id}/metadata/import`, {
+        attributes,
+        cover_url: coverUrl ?? undefined,
+        // GitHub issue #74 — see MetadataMergeReview's onConfirm docblock.
+        metadata_providers: providerKeys,
+      })
+      setResults((prev) => prev.filter((r) => r.id !== result.id))
+    } catch (err) {
+      // Deliberately doesn't remove `result` from `results` on failure
+      // (GitHub issue #110) — it used to just vanish from the pending list
+      // with no sign the import never actually went through (e.g. a
+      // duplicate-EAN 409); leaving the card in place lets the user see
+      // the error and retry the same confirm instead of losing the lookup
+      // entirely.
+      setError(describeError(err, t))
+    }
   }
 
   /** Removes a result the user has no other action to take on (a 'duplicate' has none at all; a 'no_match' has "add manually" but may just as well not be wanted) — 'candidates' already has its own dismissal via MetadataMergeReview's "reject all". Keyed by `id`, not `ean` — see PendingResult's docblock for why more than one result can share an ean. */
@@ -235,6 +264,8 @@ export function CapturePage() {
         <h1>{t('capture.title')}</h1>
         <p className="hint">{t('capture.subtitle')}</p>
       </header>
+
+      {error && <p role="alert">{error}</p>}
 
       <section className="panel-card">
         <h2>{t('libraries.title')}</h2>

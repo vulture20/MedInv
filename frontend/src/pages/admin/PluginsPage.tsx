@@ -178,13 +178,22 @@ export function PluginsPage() {
   // get mistaken for a drag.
   const sensors = useSensors(useSensor(PointerSensor, POINTER_SENSOR_OPTIONS), useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS))
 
+  // GitHub issue #110 — previously missing entirely: a failed request left
+  // the plugin list silently empty with no indication anything went wrong
+  // (and, since update()'s own catch below calls load() again to resync
+  // after a failed optimistic update, an unhandled rejection there too).
   async function load() {
-    const { data } = await apiClient.get<Plugin[]>('/admin/metadata/plugins')
-    setPlugins(data)
+    try {
+      const { data } = await apiClient.get<Plugin[]>('/admin/metadata/plugins')
+      setPlugins(data)
+    } catch (err) {
+      setError(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function update(plugin: Plugin, patch: Partial<Pick<Plugin, 'enabled' | 'priority' | 'config'>>) {

@@ -140,8 +140,16 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   async function remove() {
     if (!item) return
     if (!window.confirm(t('mediaItem.confirmDelete', { title: item.title }))) return
-    await apiClient.delete(`/libraries/${library.id}/items/${item.id}`)
-    onDeleted()
+    setError(null)
+    // GitHub issue #110 — previously the one action in this file without
+    // try/catch: a failed delete used to just do nothing, with no error
+    // shown and no way to tell whether it had actually succeeded.
+    try {
+      await apiClient.delete(`/libraries/${library.id}/items/${item.id}`)
+      onDeleted()
+    } catch (err) {
+      setError(describeApiError(err))
+    }
   }
 
   async function move() {

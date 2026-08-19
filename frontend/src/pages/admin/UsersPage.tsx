@@ -49,13 +49,23 @@ export function UsersPage() {
   const [editUser, setEditUser] = useState<{ name: string; email: string; level: AdminUser['level'] } | null>(null)
   const [editError, setEditError] = useState<string | null>(null)
 
+  // GitHub issue #110 — previously missing entirely: a failed request left
+  // the user table silently empty with no indication anything went wrong.
+  // window.alert(), not an inline message — same convention
+  // toggleActive()/deleteUser() below already use for a failure against
+  // this same list.
   async function loadUsers() {
-    const { data } = await apiClient.get<AdminUser[]>('/admin/users')
-    setUsers(data)
+    try {
+      const { data } = await apiClient.get<AdminUser[]>('/admin/users')
+      setUsers(data)
+    } catch (err) {
+      window.alert(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void loadUsers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function toggleActive(user: AdminUser) {

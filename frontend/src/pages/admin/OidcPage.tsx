@@ -43,13 +43,20 @@ export function OidcPage() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // GitHub issue #110 — previously missing entirely, same gap MailPage.tsx
+  // (this component's own structural mirror) already got fixed for.
   async function load() {
-    const { data } = await apiClient.get<{ oidc: OidcSettings }>('/admin/settings')
-    setSettings(data.oidc)
+    try {
+      const { data } = await apiClient.get<{ oidc: OidcSettings }>('/admin/settings')
+      setSettings(data.oidc)
+    } catch (err) {
+      setError(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function save(e: React.FormEvent) {
@@ -75,7 +82,10 @@ export function OidcPage() {
     }
   }
 
-  if (!settings) return null
+  // GitHub issue #110: a failed load() used to leave this whole page blank
+  // (not even an error message) — show the error inline instead of
+  // returning nothing at all, same fix MailPage.tsx already got.
+  if (!settings) return error ? <p role="alert">{error}</p> : null
 
   return (
     <div className="panel-page">

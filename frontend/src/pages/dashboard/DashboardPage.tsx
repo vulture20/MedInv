@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { apiClient } from '../../api/client'
+import { describeError } from '../admin/adminErrors'
 
 /** A Library, mirroring backend/app/Models/Library.php (see LibrariesPage.tsx). */
 interface Library {
@@ -34,12 +35,22 @@ export function DashboardPage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [libraries, setLibraries] = useState<Library[] | null>(null)
+  // GitHub issue #110 — previously missing entirely: a failed request left
+  // `libraries` at its initial `null` forever, indistinguishable from
+  // "still loading" (the `libraries === null` branch below shows "…" either
+  // way) — the app's own home page could silently hang with no explanation.
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     void (async () => {
-      const { data } = await apiClient.get<Library[]>('/libraries')
-      setLibraries(data)
+      try {
+        const { data } = await apiClient.get<Library[]>('/libraries')
+        setLibraries(data)
+      } catch (err) {
+        setError(describeError(err, t))
+      }
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -53,8 +64,9 @@ export function DashboardPage() {
 
       <section className="panel-card">
         <h2>{t('libraries.title')}</h2>
+        {error && <p role="alert">{error}</p>}
         {libraries === null ? (
-          <p className="hint">…</p>
+          error ? null : <p className="hint">…</p>
         ) : libraries.length === 0 ? (
           <p className="hint">{t('dashboard.noLibraries')}</p>
         ) : (

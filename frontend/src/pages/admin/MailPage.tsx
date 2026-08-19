@@ -42,13 +42,22 @@ export function MailPage() {
   const [testResult, setTestResult] = useState<string | null>(null)
   const [testError, setTestError] = useState<string | null>(null)
 
+  // GitHub issue #110 — previously missing entirely: a failed request left
+  // the whole form silently absent (settings stays null) with no
+  // indication anything went wrong. Reuses `error`/`setError`, same state
+  // save() below already uses.
   async function load() {
-    const { data } = await apiClient.get<{ mail: MailSettings }>('/admin/settings')
-    setSettings(data.mail)
+    try {
+      const { data } = await apiClient.get<{ mail: MailSettings }>('/admin/settings')
+      setSettings(data.mail)
+    } catch (err) {
+      setError(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -111,7 +120,10 @@ export function MailPage() {
     }
   }
 
-  if (!settings) return null
+  // GitHub issue #110: a failed load() used to leave this whole page blank
+  // (not even an error message, since {error} below is never reached) —
+  // show the error inline instead of returning nothing at all.
+  if (!settings) return error ? <p role="alert">{error}</p> : null
 
   return (
     <div className="panel-page">

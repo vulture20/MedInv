@@ -58,6 +58,11 @@ interface RestoreResult {
 export function BackupsPage() {
   const { t } = useTranslation()
   const [backups, setBackups] = useState<Backup[]>([])
+  // GitHub issue #110 — previously missing entirely, on the initial load
+  // and on createBackup()/deleteBackup() below (unlike confirmRestore()/
+  // saveSettings(), which already had it): a failed request just left the
+  // list silently unchanged with no indication anything went wrong.
+  const [backupsError, setBackupsError] = useState<string | null>(null)
   const [settings, setSettings] = useState<BackupSettings | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSaved, setSettingsSaved] = useState(false)
@@ -80,29 +85,48 @@ export function BackupsPage() {
   const [restoreError, setRestoreError] = useState<string | null>(null)
 
   async function loadBackups() {
-    const { data } = await apiClient.get<Backup[]>('/admin/backups')
-    setBackups(data)
+    try {
+      const { data } = await apiClient.get<Backup[]>('/admin/backups')
+      setBackups(data)
+    } catch (err) {
+      setBackupsError(describeError(err, t))
+    }
   }
 
   async function loadSettings() {
-    const { data } = await apiClient.get<{ backup: BackupSettings }>('/admin/settings')
-    setSettings(data.backup)
+    try {
+      const { data } = await apiClient.get<{ backup: BackupSettings }>('/admin/settings')
+      setSettings(data.backup)
+    } catch (err) {
+      setSettingsError(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void loadBackups()
     void loadSettings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function createBackup() {
-    await apiClient.post('/admin/backups')
-    await loadBackups()
+    setBackupsError(null)
+    try {
+      await apiClient.post('/admin/backups')
+      await loadBackups()
+    } catch (err) {
+      setBackupsError(describeError(err, t))
+    }
   }
 
   async function deleteBackup(backup: Backup) {
     if (!window.confirm(t('admin.confirmDeleteBackup', { filename: backup.filename }))) return
-    await apiClient.delete(`/admin/backups/${backup.id}`)
-    await loadBackups()
+    setBackupsError(null)
+    try {
+      await apiClient.delete(`/admin/backups/${backup.id}`)
+      await loadBackups()
+    } catch (err) {
+      setBackupsError(describeError(err, t))
+    }
   }
 
   function startRestore(backup: Backup) {
@@ -161,6 +185,7 @@ export function BackupsPage() {
       <section className="panel-card">
         <h2>{t('admin.backups')}</h2>
         <button onClick={() => void createBackup()}>{t('admin.actions.createBackupNow')}</button>
+        {backupsError && <p role="alert">{backupsError}</p>}
         {backups.length === 0 ? (
           <p className="hint">{t('admin.noBackups')}</p>
         ) : (

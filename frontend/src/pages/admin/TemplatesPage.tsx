@@ -49,8 +49,13 @@ export function TemplatesPage() {
   const { registerTemplate, unregisterTemplate } = useTheme()
   const [templates, setTemplates] = useState<TemplateSummary[]>([])
   const [loading, setLoading] = useState(true)
+  // GitHub issue #110 — previously missing entirely: a failed load() left
+  // `loading` stuck at `true` forever (setLoading(false) never ran), the
+  // same gap already fixed on several other pages this session.
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const [bundled, setBundled] = useState<BundledTemplate[]>([])
+  const [loadBundledError, setLoadBundledError] = useState<string | null>(null)
   const [installingCode, setInstallingCode] = useState<string | null>(null)
   const [installError, setInstallError] = useState<string | null>(null)
 
@@ -65,19 +70,30 @@ export function TemplatesPage() {
   const [viewingBuiltIn, setViewingBuiltIn] = useState<(typeof BUILT_IN_CODES)[number] | null>(null)
 
   async function load() {
-    const { data } = await apiClient.get<TemplateSummary[]>('/templates')
-    setTemplates(data)
-    setLoading(false)
+    setLoadError(null)
+    try {
+      const { data } = await apiClient.get<TemplateSummary[]>('/templates')
+      setTemplates(data)
+    } catch (err) {
+      setLoadError(describeError(err, t))
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function loadBundled() {
-    const { data } = await apiClient.get<BundledTemplate[]>('/admin/templates/bundled')
-    setBundled(data)
+    try {
+      const { data } = await apiClient.get<BundledTemplate[]>('/admin/templates/bundled')
+      setBundled(data)
+    } catch (err) {
+      setLoadBundledError(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void load()
     void loadBundled()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
@@ -196,6 +212,7 @@ export function TemplatesPage() {
     <div className="panel-page">
       <section className="panel-card">
         <h2>{t('admin.templatesPage.bundledTitle')}</h2>
+        {loadBundledError && <p role="alert">{loadBundledError}</p>}
         {bundled.length === 0 ? (
           <p className="hint">{t('admin.templatesPage.bundledNone')}</p>
         ) : (
@@ -219,6 +236,7 @@ export function TemplatesPage() {
       <section className="panel-card">
         <h2>{t('admin.templates')}</h2>
         <p className="hint">{t('admin.templatesPage.builtInHint')}</p>
+        {loadError && <p role="alert">{loadError}</p>}
 
         {loading ? (
           <p className="hint">…</p>

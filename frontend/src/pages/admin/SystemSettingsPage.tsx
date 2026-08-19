@@ -55,6 +55,9 @@ const TIMEZONES: string[] = (() => {
  */
 export function SystemSettingsPage() {
   const { t } = useTranslation()
+  // GitHub issue #110 — see load()'s own docblock for why this is separate
+  // from the six section-specific error states below.
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [security, setSecurity] = useState<SecuritySettings | null>(null)
   const [securitySaved, setSecuritySaved] = useState(false)
   const [securityError, setSecurityError] = useState<string | null>(null)
@@ -83,25 +86,42 @@ export function SystemSettingsPage() {
   // mounts, hence the snapshot-plus-subscription pair rather than a single read.
   const [runtimePacks, setRuntimePacks] = useState<LanguagePackSummary[]>(getRuntimeLanguagePacks)
 
+  /**
+   * GitHub issue #110 — previously missing entirely: a failed request left
+   * every section below at its initial null, each silently not rendering
+   * *at all* (every section, its own error display included, is gated
+   * behind e.g. `{security && (...)}`) — so unlike this file's six
+   * existing per-section error states (each only ever set by that
+   * section's own save() below, and rendered *inside* that same
+   * now-hidden section), a failure here needs its own page-level
+   * `loadError`, rendered unconditionally, or it would have nowhere
+   * visible to appear.
+   */
   async function load() {
-    const { data } = await apiClient.get<{
-      security: SecuritySettings
-      loglevel: LogLevel
-      locale: { default_language: DefaultLanguage }
-      covers: CoverCleanupSettings
-      timezone: string
-      statistics: { default_currency: string | null }
-    }>('/admin/settings')
-    setSecurity(data.security)
-    setLoglevel(data.loglevel)
-    setDefaultLanguage(data.locale.default_language)
-    setCoverCleanup(data.covers)
-    setTimezone(data.timezone)
-    setDefaultCurrency(data.statistics.default_currency)
+    setLoadError(null)
+    try {
+      const { data } = await apiClient.get<{
+        security: SecuritySettings
+        loglevel: LogLevel
+        locale: { default_language: DefaultLanguage }
+        covers: CoverCleanupSettings
+        timezone: string
+        statistics: { default_currency: string | null }
+      }>('/admin/settings')
+      setSecurity(data.security)
+      setLoglevel(data.loglevel)
+      setDefaultLanguage(data.locale.default_language)
+      setCoverCleanup(data.covers)
+      setTimezone(data.timezone)
+      setDefaultCurrency(data.statistics.default_currency)
+    } catch (err) {
+      setLoadError(describeError(err, t))
+    }
   }
 
   useEffect(() => {
     void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => onRuntimeLanguagePacksChanged(setRuntimePacks), [])
@@ -197,6 +217,8 @@ export function SystemSettingsPage() {
 
   return (
     <div className="panel-page">
+      {loadError && <p role="alert">{loadError}</p>}
+
       {security && (
         <section className="panel-card">
           <h2>{t('admin.securitySettings.title')}</h2>
