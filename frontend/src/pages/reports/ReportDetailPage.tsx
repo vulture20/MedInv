@@ -104,13 +104,18 @@ function ItemsTable<T extends ReportItem>({
  * every other price display in the app now does; a ranking whose metric
  * isn't a price just ignores the rest of the row and formats `row.value`
  * directly, same as before.
+ *
+ * GitHub issue #112: its own `.panel-card` rather than a plain `<div>` — all
+ * eight rankings used to sit stacked inside one shared card (unlike every
+ * other report, which only ever has one table to begin with), which read as
+ * one long, undifferentiated scroll rather than eight distinct rankings.
  */
 function TopList({ title, rows, extraHeader, formatValue, onSelect }: { title: string; rows: TopListRow[]; extraHeader: string; formatValue: (row: TopListRow) => string; onSelect: (row: TopListRow) => void }) {
   return (
-    <div className="report-top-list">
-      <h4>{title}</h4>
+    <section className="panel-card report-top-list">
+      <h2>{title}</h2>
       <ItemsTable rows={rows} extraHeader={extraHeader} renderExtra={formatValue} onSelect={onSelect} />
-    </div>
+    </section>
   )
 }
 
@@ -297,6 +302,71 @@ export function ReportDetailPage() {
 
       {loading ? (
         <p className="hint">…</p>
+      ) : meta.key === 'top-lists' ? (
+        // GitHub issue #112: rendered as eight of TopList's own .panel-cards
+        // (a plain flex/grid wrapper here, no card styling of its own)
+        // rather than nested inside the single shared .panel-card every
+        // other report type below still uses — see TopList's own docblock.
+        topLists && (
+          <div className="report-top-lists">
+            <TopList
+              title={t('reports.topLists.mostExpensive')}
+              rows={topLists.most_expensive}
+              extraHeader={t('mediaItem.fields.price')}
+              formatValue={(row) => formatPrice(row.value, row.currency, i18n.language)}
+              onSelect={(row) => void openItem(row)}
+            />
+            <TopList
+              title={t('reports.topLists.cheapest')}
+              rows={topLists.cheapest}
+              extraHeader={t('mediaItem.fields.price')}
+              formatValue={(row) => formatPrice(row.value, row.currency, i18n.language)}
+              onSelect={(row) => void openItem(row)}
+            />
+            <TopList
+              title={t('reports.topLists.mostPages')}
+              rows={topLists.most_pages}
+              extraHeader={t('mediaItem.fields.page_count')}
+              formatValue={(row) => String(row.value)}
+              onSelect={(row) => void openItem(row)}
+            />
+            <TopList
+              title={t('reports.topLists.longestCdRuntime')}
+              rows={topLists.longest_cd_runtime}
+              extraHeader={t('mediaItem.runtime')}
+              formatValue={(row) => formatDuration(Number(row.value))}
+              onSelect={(row) => void openItem(row)}
+            />
+            <TopList
+              title={t('reports.topLists.shortestCdRuntime')}
+              rows={topLists.shortest_cd_runtime}
+              extraHeader={t('mediaItem.runtime')}
+              formatValue={(row) => formatDuration(Number(row.value))}
+              onSelect={(row) => void openItem(row)}
+            />
+            <TopList
+              title={t('reports.topLists.longestDvdRuntime')}
+              rows={topLists.longest_dvd_runtime}
+              extraHeader={t('mediaItem.fields.runtime_minutes')}
+              formatValue={(row) => t('reports.topLists.minutes', { count: Number(row.value) })}
+              onSelect={(row) => void openItem(row)}
+            />
+            <TopList
+              title={t('reports.topLists.shortestDvdRuntime')}
+              rows={topLists.shortest_dvd_runtime}
+              extraHeader={t('mediaItem.fields.runtime_minutes')}
+              formatValue={(row) => t('reports.topLists.minutes', { count: Number(row.value) })}
+              onSelect={(row) => void openItem(row)}
+            />
+            <TopList
+              title={t('reports.topLists.highestDiscCount')}
+              rows={topLists.highest_disc_count}
+              extraHeader={t('mediaItem.fields.disc_count')}
+              formatValue={(row) => String(row.value)}
+              onSelect={(row) => void openItem(row)}
+            />
+          </div>
+        )
       ) : (
         <section className="panel-card">
           {meta.key === 'duplicates' &&
@@ -336,67 +406,6 @@ export function ReportDetailPage() {
             ) : (
               <p className="hint">{t('reports.none')}</p>
             ))}
-
-          {meta.key === 'top-lists' && topLists && (
-            <div className="report-top-lists">
-              <TopList
-                title={t('reports.topLists.mostExpensive')}
-                rows={topLists.most_expensive}
-                extraHeader={t('mediaItem.fields.price')}
-                formatValue={(row) => formatPrice(row.value, row.currency, i18n.language)}
-                onSelect={(row) => void openItem(row)}
-              />
-              <TopList
-                title={t('reports.topLists.cheapest')}
-                rows={topLists.cheapest}
-                extraHeader={t('mediaItem.fields.price')}
-                formatValue={(row) => formatPrice(row.value, row.currency, i18n.language)}
-                onSelect={(row) => void openItem(row)}
-              />
-              <TopList
-                title={t('reports.topLists.mostPages')}
-                rows={topLists.most_pages}
-                extraHeader={t('mediaItem.fields.page_count')}
-                formatValue={(row) => String(row.value)}
-                onSelect={(row) => void openItem(row)}
-              />
-              <TopList
-                title={t('reports.topLists.longestCdRuntime')}
-                rows={topLists.longest_cd_runtime}
-                extraHeader={t('mediaItem.runtime')}
-                formatValue={(row) => formatDuration(Number(row.value))}
-                onSelect={(row) => void openItem(row)}
-              />
-              <TopList
-                title={t('reports.topLists.shortestCdRuntime')}
-                rows={topLists.shortest_cd_runtime}
-                extraHeader={t('mediaItem.runtime')}
-                formatValue={(row) => formatDuration(Number(row.value))}
-                onSelect={(row) => void openItem(row)}
-              />
-              <TopList
-                title={t('reports.topLists.longestDvdRuntime')}
-                rows={topLists.longest_dvd_runtime}
-                extraHeader={t('mediaItem.fields.runtime_minutes')}
-                formatValue={(row) => t('reports.topLists.minutes', { count: Number(row.value) })}
-                onSelect={(row) => void openItem(row)}
-              />
-              <TopList
-                title={t('reports.topLists.shortestDvdRuntime')}
-                rows={topLists.shortest_dvd_runtime}
-                extraHeader={t('mediaItem.fields.runtime_minutes')}
-                formatValue={(row) => t('reports.topLists.minutes', { count: Number(row.value) })}
-                onSelect={(row) => void openItem(row)}
-              />
-              <TopList
-                title={t('reports.topLists.highestDiscCount')}
-                rows={topLists.highest_disc_count}
-                extraHeader={t('mediaItem.fields.disc_count')}
-                formatValue={(row) => String(row.value)}
-                onSelect={(row) => void openItem(row)}
-              />
-            </div>
-          )}
 
           {meta.key === 'capture-source' && captureSource && (
             <>
