@@ -10,11 +10,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * GitHub issue #74's two Statistics additions — StatisticsService::
- * sharingFor()/userActivityFor() (see that service's docblock for why
- * these live in Statistics rather than ReportsService).
+ * GitHub issue #74's two "Auswertungen" additions — ReportsService::
+ * sharingFor()/userActivityFor(). Originally lived in StatisticsService
+ * (and this file was StatisticsSharingAndActivityTest); moved here by
+ * GitHub issue #103 — see ReportsService's own docblock for why.
  */
-class StatisticsSharingAndActivityTest extends TestCase
+class ReportsSharingAndActivityTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -32,7 +33,7 @@ class StatisticsSharingAndActivityTest extends TestCase
         $library = Library::query()->create(['name' => 'Shared Stash', 'media_type' => 'book', 'owner_id' => $owner->id]);
         LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'all_users', 'access_level' => 'write']);
 
-        $response = $this->getJson('/api/statistics/sharing');
+        $response = $this->getJson('/api/reports/sharing');
 
         $response->assertOk();
         $row = collect($response->json())->firstWhere('library_id', $library->id);
@@ -50,7 +51,7 @@ class StatisticsSharingAndActivityTest extends TestCase
         LibraryShare::query()->create(['library_id' => $library->id, 'scope' => 'all_users']);
         $this->actingAsUser();
 
-        $response = $this->getJson('/api/statistics/sharing');
+        $response = $this->getJson('/api/reports/sharing');
 
         $response->assertOk();
         $this->assertFalse(collect($response->json())->contains('library_id', $library->id));
@@ -62,7 +63,7 @@ class StatisticsSharingAndActivityTest extends TestCase
         $library = Library::query()->create(['name' => 'Someone Elses Library', 'media_type' => 'book', 'owner_id' => $owner->id]);
         $this->actingAsUser('admin');
 
-        $response = $this->getJson('/api/statistics/sharing');
+        $response = $this->getJson('/api/reports/sharing');
 
         $response->assertOk();
         $this->assertTrue(collect($response->json())->contains('library_id', $library->id));
@@ -78,7 +79,7 @@ class StatisticsSharingAndActivityTest extends TestCase
         MediaBook::query()->create(['library_id' => $library->id, 'title' => 'B', 'ean' => '9780000000002', 'captured_by_user_id' => $owner->id]);
         MediaBook::query()->create(['library_id' => $library->id, 'title' => 'C', 'ean' => '9780000000003', 'captured_by_user_id' => $other->id]);
 
-        $response = $this->getJson('/api/statistics/user-activity');
+        $response = $this->getJson('/api/reports/user-activity');
 
         $response->assertOk();
         $rows = collect($response->json());
@@ -93,7 +94,7 @@ class StatisticsSharingAndActivityTest extends TestCase
         $library = Library::query()->create(['name' => 'Books', 'media_type' => 'book', 'owner_id' => $owner->id]);
         MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Pre-existing', 'ean' => '9780000000001']);
 
-        $response = $this->getJson('/api/statistics/user-activity');
+        $response = $this->getJson('/api/reports/user-activity');
 
         $response->assertOk();
         $unknown = collect($response->json())->firstWhere('user_id', null);

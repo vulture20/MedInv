@@ -214,27 +214,6 @@
         "noData": "Non ci sono ancora abbastanza dati per uno storico del valore.",
         "estimatedNoteUntil": "Lo storico precedente al {{date}} è stimato dalle date di acquisizione degli elementi e potrebbe non riflettere eliminazioni o variazioni di prezzo successive.",
         "estimatedNoteAll": "Tutto questo storico è stimato dalle date di acquisizione degli elementi — non è ancora stato eseguito alcuno snapshot giornaliero."
-      },
-      "sharing": {
-        "title": "Panoramica delle condivisioni",
-        "hint": "Quali biblioteche sono condivise, e con chi.",
-        "sharedWith": "Condivisa con",
-        "notShared": "Non condivisa",
-        "scope": {
-          "guest": "Ospiti",
-          "all_users": "Tutti gli utenti"
-        },
-        "accessLevel": {
-          "read": "lettura",
-          "write": "scrittura"
-        }
-      },
-      "userActivity": {
-        "title": "Attività per utente",
-        "hint": "Quanti elementi ha acquisito ciascun utente.",
-        "user": "Utente",
-        "unknownUser": "Sconosciuto (acquisito prima di questa funzione)",
-        "lastCaptured": "Ultima acquisizione"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Inserimento manuale",
           "unknown": "Sconosciuto (acquisito prima di questa funzione)"
         }
+      },
+      "itemCount": "Numero di elementi",
+      "sharing": {
+        "title": "Panoramica delle condivisioni",
+        "hint": "Quali biblioteche sono condivise, e con chi.",
+        "sharedWith": "Condivisa con",
+        "notShared": "Non condivisa",
+        "scope": {
+          "guest": "Ospiti",
+          "all_users": "Tutti gli utenti"
+        },
+        "accessLevel": {
+          "read": "lettura",
+          "write": "scrittura"
+        }
+      },
+      "userActivity": {
+        "title": "Attività per utente",
+        "hint": "Quanti elementi ha acquisito ciascun utente.",
+        "user": "Utente",
+        "unknownUser": "Sconosciuto (acquisito prima di questa funzione)",
+        "lastCaptured": "Ultima acquisizione"
       }
     }
   }

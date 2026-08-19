@@ -211,34 +211,14 @@
       "noData": "Not enough data yet for a value history.",
       "estimatedNoteUntil": "History before {{date}} is estimated from item capture dates and may not reflect later deletions or price changes.",
       "estimatedNoteAll": "This entire history is estimated from item capture dates — no daily snapshot has run yet."
-    },
-    "sharing": {
-      "title": "Sharing overview",
-      "hint": "Which of your libraries are shared, and with whom.",
-      "sharedWith": "Shared with",
-      "notShared": "Not shared",
-      "scope": {
-        "guest": "Guests",
-        "all_users": "All users"
-      },
-      "accessLevel": {
-        "read": "read",
-        "write": "write"
-      }
-    },
-    "userActivity": {
-      "title": "Activity by user",
-      "hint": "How many items each user has captured.",
-      "user": "User",
-      "unknownUser": "Unknown (captured before this feature existed)",
-      "lastCaptured": "Last captured"
     }
   },
   "reports": {
     "title": "Reports",
-    "subtitle": "Tables of concrete items across all your libraries — duplicates, data quality, top lists, recent additions, and capture source.",
+    "subtitle": "Tables across all your libraries — duplicates, data quality, top lists, recent additions, capture source, sharing, and per-user activity.",
     "none": "Nothing to show here yet.",
     "library": "Library",
+    "itemCount": "Item count",
     "view": "View",
     "notFound": "Unknown report.",
     "duplicates": {
@@ -277,6 +257,27 @@
         "manual": "Manual entry",
         "unknown": "Unknown (captured before this feature existed)"
       }
+    },
+    "sharing": {
+      "title": "Sharing overview",
+      "hint": "Which of your libraries are shared, and with whom.",
+      "sharedWith": "Shared with",
+      "notShared": "Not shared",
+      "scope": {
+        "guest": "Guests",
+        "all_users": "All users"
+      },
+      "accessLevel": {
+        "read": "read",
+        "write": "write"
+      }
+    },
+    "userActivity": {
+      "title": "Activity by user",
+      "hint": "How many items each user has captured.",
+      "user": "User",
+      "unknownUser": "Unknown (captured before this feature existed)",
+      "lastCaptured": "Last captured"
     }
   },
   "settings": {

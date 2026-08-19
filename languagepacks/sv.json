@@ -214,27 +214,6 @@
         "noData": "Inte tillräckligt med data ännu för en värdehistorik.",
         "estimatedNoteUntil": "Historik före {{date}} är uppskattad utifrån posters registreringsdatum och kanske inte återspeglar senare borttagningar eller prisändringar.",
         "estimatedNoteAll": "Hela denna historik är uppskattad utifrån posters registreringsdatum — ingen daglig ögonblicksbild har körts ännu."
-      },
-      "sharing": {
-        "title": "Delningsöversikt",
-        "hint": "Vilka bibliotek som är delade, och med vem.",
-        "sharedWith": "Delat med",
-        "notShared": "Inte delat",
-        "scope": {
-          "guest": "Gäster",
-          "all_users": "Alla användare"
-        },
-        "accessLevel": {
-          "read": "läsning",
-          "write": "skrivning"
-        }
-      },
-      "userActivity": {
-        "title": "Aktivitet per användare",
-        "hint": "Hur många poster varje användare har registrerat.",
-        "user": "Användare",
-        "unknownUser": "Okänd (registrerad före denna funktion)",
-        "lastCaptured": "Senast registrerad"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Manuell inmatning",
           "unknown": "Okänd (registrerad före denna funktion)"
         }
+      },
+      "itemCount": "Antal poster",
+      "sharing": {
+        "title": "Delningsöversikt",
+        "hint": "Vilka bibliotek som är delade, och med vem.",
+        "sharedWith": "Delat med",
+        "notShared": "Inte delat",
+        "scope": {
+          "guest": "Gäster",
+          "all_users": "Alla användare"
+        },
+        "accessLevel": {
+          "read": "läsning",
+          "write": "skrivning"
+        }
+      },
+      "userActivity": {
+        "title": "Aktivitet per användare",
+        "hint": "Hur många poster varje användare har registrerat.",
+        "user": "Användare",
+        "unknownUser": "Okänd (registrerad före denna funktion)",
+        "lastCaptured": "Senast registrerad"
       }
     }
   }

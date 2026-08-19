@@ -214,27 +214,6 @@
         "noData": "Ekki nægjanleg gögn ennþá fyrir verðmætasögu.",
         "estimatedNoteUntil": "Saga fyrir {{date}} er áætluð út frá skráningardögum færslna og endurspeglar ef til vill ekki síðari eyðingar eða verðbreytingar.",
         "estimatedNoteAll": "Öll þessi saga er áætluð út frá skráningardögum færslna — engin dagleg mynd hefur enn verið tekin."
-      },
-      "sharing": {
-        "title": "Yfirlit yfir deilingu",
-        "hint": "Hvaða söfn eru deild, og með hverjum.",
-        "sharedWith": "Deilt með",
-        "notShared": "Ekki deilt",
-        "scope": {
-          "guest": "Gestir",
-          "all_users": "Allir notendur"
-        },
-        "accessLevel": {
-          "read": "lestur",
-          "write": "skrifun"
-        }
-      },
-      "userActivity": {
-        "title": "Virkni eftir notanda",
-        "hint": "Hversu margar færslur hver notandi hefur skráð.",
-        "user": "Notandi",
-        "unknownUser": "Óþekkt (skráð fyrir tilkomu þessa eiginleika)",
-        "lastCaptured": "Síðast skráð"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Handvirk skráning",
           "unknown": "Óþekkt (skráð fyrir tilkomu þessa eiginleika)"
         }
+      },
+      "itemCount": "Fjöldi færslna",
+      "sharing": {
+        "title": "Yfirlit yfir deilingu",
+        "hint": "Hvaða söfn eru deild, og með hverjum.",
+        "sharedWith": "Deilt með",
+        "notShared": "Ekki deilt",
+        "scope": {
+          "guest": "Gestir",
+          "all_users": "Allir notendur"
+        },
+        "accessLevel": {
+          "read": "lestur",
+          "write": "skrifun"
+        }
+      },
+      "userActivity": {
+        "title": "Virkni eftir notanda",
+        "hint": "Hversu margar færslur hver notandi hefur skráð.",
+        "user": "Notandi",
+        "unknownUser": "Óþekkt (skráð fyrir tilkomu þessa eiginleika)",
+        "lastCaptured": "Síðast skráð"
       }
     }
   }

@@ -4,6 +4,7 @@ namespace App\Domain\Reports;
 
 use App\Domain\Libraries\LibraryAccessService;
 use App\Models\Library;
+use App\Models\LibraryShare;
 use App\Models\MediaBook;
 use App\Models\MediaCd;
 use App\Models\MediaDvdBluray;
@@ -14,13 +15,18 @@ use Illuminate\Support\Collection;
 /**
  * "Auswertungen" (GitHub issue #74) — a new, standalone domain module
  * (briefing 10.'s "ein Namensraum je Fachmodul") deliberately separate from
- * App\Domain\Statistics: per issue #74's own clarifying comment, a
- * Statistik is charts/aggregated sums with no reference to individual
- * items, while an Auswertung is a *table of concrete media items* — every
- * method below returns identifiable items (id/title/ean/library), never
- * just a count. "Freigabe-/Sharing-Übersicht" and "Aktivität je Benutzer"
- * (per-user counts, no item list) went to StatisticsService instead for
- * the same reason; only the item-level ideas from #74 live here.
+ * App\Domain\Statistics: a Statistik is a chart/aggregated sum (per-library
+ * item count and value, distributions, value-over-time), while an
+ * Auswertung is a table a user browses row by row. Most rows below are
+ * individual media items (id/title/ean/library) — duplicatesFor(),
+ * dataQualityFor(), topListsFor(), recentAdditionsFor(), captureSourceFor()
+ * — but sharingFor()/userActivityFor() (GitHub issue #74's sharing overview
+ * and per-user capture activity) are tables too, just of libraries/users
+ * rather than media items; they briefly lived in StatisticsService instead
+ * on the theory that "no individual item referenced" made them a Statistik,
+ * until GitHub issue #103 pointed out that a browsable table is an
+ * Auswertung either way, item-level or not — see StatisticsService's own
+ * docblock for that history.
  *
  * Every method is scoped through LibraryAccessService::visibleLibrariesQuery(),
  * exactly like SearchService/StatisticsService, so an unshared library
@@ -282,6 +288,88 @@ class ReportsService
     private function visibleLibraryIds(User $user): Collection
     {
         return $this->accessService->visibleLibrariesQuery($user)->pluck('id');
+    }
+
+    /**
+     * "Freigabe-/Sharing-Übersicht" (GitHub issue #74, moved here from
+     * StatisticsService by GitHub issue #103 — see this class's own
+     * docblock for why) — how many libraries are shared, with how many
+     * users, on which access level.
+     *
+     * Restricted to libraries the requesting user can manage
+     * (LibraryAccessService::canWrite() — owner or admin), not merely read:
+     * LibraryController::show() already treats a library's share list as
+     * management-sensitive, only ever loading `shares` for a canWrite()
+     * caller ("no business learning who else it's shared with" otherwise)
+     * — this mirrors that same restriction rather than exposing it more
+     * broadly than the rest of the app already does.
+     *
+     * @return array<int, array{library_id:int, library_name:string, media_type:string, is_shared:bool, share_count:int, shares:array}>
+     */
+    public function sharingFor(User $user): array
+    {
+        return $this->accessService->visibleLibrariesQuery($user)
+            ->with('shares.user:id,name')
+            ->get()
+            ->filter(fn (Library $library) => $this->accessService->canWrite($user, $library))
+            ->map(fn (Library $library) => [
+                'library_id' => $library->id,
+                'library_name' => $library->name,
+                'media_type' => $library->media_type,
+                'is_shared' => $library->shares->isNotEmpty(),
+                'share_count' => $library->shares->count(),
+                'shares' => $library->shares->map(fn (LibraryShare $share) => [
+                    'scope' => $share->scope,
+                    'access_level' => $share->access_level,
+                    'user_name' => $share->user?->name,
+                ])->values()->all(),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * "Aktivität je Benutzer" (GitHub issue #74's second "größerer Aufwand"
+     * idea, moved here from StatisticsService by GitHub issue #103 — see
+     * this class's own docblock for why) — how many items each user has
+     * captured, and when they last did so, across every visible library.
+     * Made possible by MediaBook/MediaCd/MediaDvdBluray::captured_by_user_id
+     * (see the migration that added it) — a field this app never had
+     * before #74, so an item captured before this feature shipped groups
+     * under `user_id: null` ("unknown") rather than being silently
+     * excluded.
+     *
+     * @return array<int, array{user_id: ?int, user_name: ?string, item_count: int, last_captured_at: ?string}>
+     */
+    public function userActivityFor(User $user): array
+    {
+        $visibleLibraryIds = $this->accessService->visibleLibrariesQuery($user)->pluck('id');
+        $items = collect();
+
+        foreach (self::MEDIA_MODEL_CLASSES as $modelClass) {
+            $items = $items->merge(
+                $modelClass::query()
+                    ->whereIn('library_id', $visibleLibraryIds)
+                    ->with('capturedBy:id,name')
+                    ->get(['id', 'captured_by_user_id', 'created_at'])
+            );
+        }
+
+        return $items->groupBy('captured_by_user_id')
+            ->map(function (Collection $group, $userId) {
+                /** @var Model $first */
+                $first = $group->first();
+
+                return [
+                    'user_id' => $userId === '' || $userId === null ? null : (int) $userId,
+                    'user_name' => $first->capturedBy?->name,
+                    'item_count' => $group->count(),
+                    'last_captured_at' => $group->pluck('created_at')->filter()->sort()->last()?->toIso8601String(),
+                ];
+            })
+            ->sortByDesc('item_count')
+            ->values()
+            ->all();
     }
 
     /** @return array{id: int, title: string, ean: string, library_id: int, library_name: string, media_type: string, price: mixed, currency: ?string, created_at: ?string} */

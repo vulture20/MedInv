@@ -214,27 +214,6 @@
         "noData": "Wciąż za mało danych do wyświetlenia historii wartości.",
         "estimatedNoteUntil": "Historia sprzed {{date}} jest szacowana na podstawie dat rejestracji pozycji i może nie odzwierciedlać późniejszych usunięć lub zmian cen.",
         "estimatedNoteAll": "Cała ta historia jest szacowana na podstawie dat rejestracji pozycji — nie wykonano jeszcze żadnej dziennej migawki."
-      },
-      "sharing": {
-        "title": "Przegląd udostępniania",
-        "hint": "Które biblioteki są udostępnione i komu.",
-        "sharedWith": "Udostępniono dla",
-        "notShared": "Nie udostępniono",
-        "scope": {
-          "guest": "Goście",
-          "all_users": "Wszyscy użytkownicy"
-        },
-        "accessLevel": {
-          "read": "odczyt",
-          "write": "zapis"
-        }
-      },
-      "userActivity": {
-        "title": "Aktywność według użytkownika",
-        "hint": "Ile pozycji zarejestrował każdy użytkownik.",
-        "user": "Użytkownik",
-        "unknownUser": "Nieznany (zarejestrowano przed wprowadzeniem tej funkcji)",
-        "lastCaptured": "Ostatnio zarejestrowano"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Ręczne wprowadzanie",
           "unknown": "Nieznana (zarejestrowano przed wprowadzeniem tej funkcji)"
         }
+      },
+      "itemCount": "Liczba pozycji",
+      "sharing": {
+        "title": "Przegląd udostępniania",
+        "hint": "Które biblioteki są udostępnione i komu.",
+        "sharedWith": "Udostępniono dla",
+        "notShared": "Nie udostępniono",
+        "scope": {
+          "guest": "Goście",
+          "all_users": "Wszyscy użytkownicy"
+        },
+        "accessLevel": {
+          "read": "odczyt",
+          "write": "zapis"
+        }
+      },
+      "userActivity": {
+        "title": "Aktywność według użytkownika",
+        "hint": "Ile pozycji zarejestrował każdy użytkownik.",
+        "user": "Użytkownik",
+        "unknownUser": "Nieznany (zarejestrowano przed wprowadzeniem tej funkcji)",
+        "lastCaptured": "Ostatnio zarejestrowano"
       }
     }
   }

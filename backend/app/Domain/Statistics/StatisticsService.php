@@ -4,16 +4,10 @@ namespace App\Domain\Statistics;
 
 use App\Domain\Libraries\LibraryAccessService;
 use App\Models\Library;
-use App\Models\LibraryShare;
 use App\Models\LibraryValueSnapshot;
-use App\Models\MediaBook;
-use App\Models\MediaCd;
-use App\Models\MediaDvdBluray;
 use App\Models\SystemSetting;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 
 /**
  * Bestand statistics (briefing 14.), scoped through LibraryAccessService so
@@ -24,6 +18,15 @@ use Illuminate\Support\Collection;
  * "Zeitlicher Zuwachs des Bestands" (growth over time, GitHub issue #30) is
  * covered separately by snapshotAll()/valueHistoryFor() below, since it
  * needs historical snapshots rather than just aggregating current state.
+ *
+ * The sharing overview and per-user capture activity GitHub issue #74
+ * originally added here (on the reasoning that both are pure counts with
+ * no individual-item reference, unlike ReportsService's item-level tables)
+ * moved to ReportsService::sharingFor()/userActivityFor() instead per
+ * GitHub issue #103 — both are still tables a user browses the same way as
+ * the rest of "Auswertungen", not a chart/aggregate like everything that
+ * actually remains in this service, so the original per-item-reference
+ * distinction wasn't the deciding factor after all.
  */
 class StatisticsService
 {
@@ -61,90 +64,6 @@ class StatisticsService
                 && $library->mediaItems()->whereNotNull('currency')->where('currency', '!=', $defaultCurrency)->exists(),
             'distributions' => $this->distributionsFor($library),
         ])->all();
-    }
-
-    /**
-     * "Freigabe-/Sharing-Übersicht" (GitHub issue #74) — how many
-     * libraries are shared, with how many users, on which access level.
-     * A pure count/list-of-shares summary with no individual *media item*
-     * referenced anywhere, which is exactly why #74's own clarifying
-     * comment places this in Statistics rather than the item-level
-     * ReportsService (see that service's docblock).
-     *
-     * Restricted to libraries the requesting user can manage
-     * (LibraryAccessService::canWrite() — owner or admin), not merely read:
-     * LibraryController::show() already treats a library's share list as
-     * management-sensitive, only ever loading `shares` for a canWrite()
-     * caller ("no business learning who else it's shared with" otherwise)
-     * — this mirrors that same restriction rather than exposing it more
-     * broadly than the rest of the app already does.
-     *
-     * @return array<int, array{library_id:int, library_name:string, media_type:string, is_shared:bool, share_count:int, shares:array}>
-     */
-    public function sharingFor(User $user): array
-    {
-        return $this->accessService->visibleLibrariesQuery($user)
-            ->with('shares.user:id,name')
-            ->get()
-            ->filter(fn (Library $library) => $this->accessService->canWrite($user, $library))
-            ->map(fn (Library $library) => [
-                'library_id' => $library->id,
-                'library_name' => $library->name,
-                'media_type' => $library->media_type,
-                'is_shared' => $library->shares->isNotEmpty(),
-                'share_count' => $library->shares->count(),
-                'shares' => $library->shares->map(fn (LibraryShare $share) => [
-                    'scope' => $share->scope,
-                    'access_level' => $share->access_level,
-                    'user_name' => $share->user?->name,
-                ])->values()->all(),
-            ])
-            ->values()
-            ->all();
-    }
-
-    /**
-     * "Aktivität je Benutzer" (GitHub issue #74's second "größerer Aufwand"
-     * idea) — how many items each user has captured, and when they last
-     * did so, across every visible library. Made possible by
-     * MediaBook/MediaCd/MediaDvdBluray::captured_by_user_id (see the
-     * migration that added it) — a field this app never had before #74, so
-     * an item captured before this feature shipped groups under `user_id:
-     * null` ("unknown") rather than being silently excluded. A per-user
-     * count with no individual item referenced, hence Statistics rather
-     * than ReportsService, same reasoning as sharingFor() above.
-     *
-     * @return array<int, array{user_id: ?int, user_name: ?string, item_count: int, last_captured_at: ?string}>
-     */
-    public function userActivityFor(User $user): array
-    {
-        $visibleLibraryIds = $this->accessService->visibleLibrariesQuery($user)->pluck('id');
-        $items = collect();
-
-        foreach ([MediaBook::class, MediaCd::class, MediaDvdBluray::class] as $modelClass) {
-            $items = $items->merge(
-                $modelClass::query()
-                    ->whereIn('library_id', $visibleLibraryIds)
-                    ->with('capturedBy:id,name')
-                    ->get(['id', 'captured_by_user_id', 'created_at'])
-            );
-        }
-
-        return $items->groupBy('captured_by_user_id')
-            ->map(function (Collection $group, $userId) {
-                /** @var Model $first */
-                $first = $group->first();
-
-                return [
-                    'user_id' => $userId === '' || $userId === null ? null : (int) $userId,
-                    'user_name' => $first->capturedBy?->name,
-                    'item_count' => $group->count(),
-                    'last_captured_at' => $group->pluck('created_at')->filter()->sort()->last()?->toIso8601String(),
-                ];
-            })
-            ->sortByDesc('item_count')
-            ->values()
-            ->all();
     }
 
     /**

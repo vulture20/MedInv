@@ -214,27 +214,6 @@
         "noData": "Nog niet genoeg gegevens voor een waardeverloop.",
         "estimatedNoteUntil": "De geschiedenis vóór {{date}} is geschat op basis van de registratiedata van items en kan latere verwijderingen of prijswijzigingen niet weergeven.",
         "estimatedNoteAll": "Dit hele verloop is geschat op basis van de registratiedata van items — er is nog geen dagelijkse momentopname uitgevoerd."
-      },
-      "sharing": {
-        "title": "Overzicht delen",
-        "hint": "Welke bibliotheken zijn gedeeld, en met wie.",
-        "sharedWith": "Gedeeld met",
-        "notShared": "Niet gedeeld",
-        "scope": {
-          "guest": "Gasten",
-          "all_users": "Alle gebruikers"
-        },
-        "accessLevel": {
-          "read": "lezen",
-          "write": "schrijven"
-        }
-      },
-      "userActivity": {
-        "title": "Activiteit per gebruiker",
-        "hint": "Hoeveel items elke gebruiker heeft vastgelegd.",
-        "user": "Gebruiker",
-        "unknownUser": "Onbekend (vastgelegd vóór deze functie)",
-        "lastCaptured": "Laatst vastgelegd"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Handmatige invoer",
           "unknown": "Onbekend (vastgelegd vóór deze functie)"
         }
+      },
+      "itemCount": "Aantal items",
+      "sharing": {
+        "title": "Overzicht delen",
+        "hint": "Welke bibliotheken zijn gedeeld, en met wie.",
+        "sharedWith": "Gedeeld met",
+        "notShared": "Niet gedeeld",
+        "scope": {
+          "guest": "Gasten",
+          "all_users": "Alle gebruikers"
+        },
+        "accessLevel": {
+          "read": "lezen",
+          "write": "schrijven"
+        }
+      },
+      "userActivity": {
+        "title": "Activiteit per gebruiker",
+        "hint": "Hoeveel items elke gebruiker heeft vastgelegd.",
+        "user": "Gebruiker",
+        "unknownUser": "Onbekend (vastgelegd vóór deze functie)",
+        "lastCaptured": "Laatst vastgelegd"
       }
     }
   }

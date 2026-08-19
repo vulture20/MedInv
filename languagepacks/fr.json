@@ -214,27 +214,6 @@
         "noData": "Pas encore assez de données pour un historique de valeur.",
         "estimatedNoteUntil": "L'historique antérieur au {{date}} est estimé à partir des dates de saisie des éléments et peut ne pas refléter les suppressions ou changements de prix ultérieurs.",
         "estimatedNoteAll": "Tout cet historique est estimé à partir des dates de saisie des éléments — aucun instantané quotidien n'a encore été effectué."
-      },
-      "sharing": {
-        "title": "Aperçu des partages",
-        "hint": "Quelles bibliothèques sont partagées, et avec qui.",
-        "sharedWith": "Partagée avec",
-        "notShared": "Non partagée",
-        "scope": {
-          "guest": "Invités",
-          "all_users": "Tous les utilisateurs"
-        },
-        "accessLevel": {
-          "read": "lecture",
-          "write": "écriture"
-        }
-      },
-      "userActivity": {
-        "title": "Activité par utilisateur",
-        "hint": "Combien d'éléments chaque utilisateur a capturés.",
-        "user": "Utilisateur",
-        "unknownUser": "Inconnu (capturé avant cette fonctionnalité)",
-        "lastCaptured": "Dernière capture"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Saisie manuelle",
           "unknown": "Inconnu (capturé avant cette fonctionnalité)"
         }
+      },
+      "itemCount": "Nombre d'éléments",
+      "sharing": {
+        "title": "Aperçu des partages",
+        "hint": "Quelles bibliothèques sont partagées, et avec qui.",
+        "sharedWith": "Partagée avec",
+        "notShared": "Non partagée",
+        "scope": {
+          "guest": "Invités",
+          "all_users": "Tous les utilisateurs"
+        },
+        "accessLevel": {
+          "read": "lecture",
+          "write": "écriture"
+        }
+      },
+      "userActivity": {
+        "title": "Activité par utilisateur",
+        "hint": "Combien d'éléments chaque utilisateur a capturés.",
+        "user": "Utilisateur",
+        "unknownUser": "Inconnu (capturé avant cette fonctionnalité)",
+        "lastCaptured": "Dernière capture"
       }
     }
   }

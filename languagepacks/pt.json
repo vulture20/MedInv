@@ -214,27 +214,6 @@
         "noData": "Ainda não há dados suficientes para um histórico de valor.",
         "estimatedNoteUntil": "O histórico anterior a {{date}} é estimado a partir das datas de captura dos itens e pode não refletir exclusões ou alterações de preço posteriores.",
         "estimatedNoteAll": "Todo este histórico é estimado a partir das datas de captura dos itens — ainda não foi executado nenhum snapshot diário."
-      },
-      "sharing": {
-        "title": "Resumo de compartilhamento",
-        "hint": "Quais bibliotecas estão compartilhadas, e com quem.",
-        "sharedWith": "Compartilhada com",
-        "notShared": "Não compartilhada",
-        "scope": {
-          "guest": "Convidados",
-          "all_users": "Todos os usuários"
-        },
-        "accessLevel": {
-          "read": "leitura",
-          "write": "escrita"
-        }
-      },
-      "userActivity": {
-        "title": "Atividade por usuário",
-        "hint": "Quantos itens cada usuário capturou.",
-        "user": "Usuário",
-        "unknownUser": "Desconhecido (capturado antes deste recurso)",
-        "lastCaptured": "Última captura"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Entrada manual",
           "unknown": "Desconhecido (capturado antes deste recurso)"
         }
+      },
+      "itemCount": "Número de itens",
+      "sharing": {
+        "title": "Resumo de compartilhamento",
+        "hint": "Quais bibliotecas estão compartilhadas, e com quem.",
+        "sharedWith": "Compartilhada com",
+        "notShared": "Não compartilhada",
+        "scope": {
+          "guest": "Convidados",
+          "all_users": "Todos os usuários"
+        },
+        "accessLevel": {
+          "read": "leitura",
+          "write": "escrita"
+        }
+      },
+      "userActivity": {
+        "title": "Atividade por usuário",
+        "hint": "Quantos itens cada usuário capturou.",
+        "user": "Usuário",
+        "unknownUser": "Desconhecido (capturado antes deste recurso)",
+        "lastCaptured": "Última captura"
       }
     }
   }

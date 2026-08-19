@@ -214,27 +214,6 @@
         "noData": "価値の推移を表示するにはデータが不足しています。",
         "estimatedNoteUntil": "{{date}} より前の履歴はアイテムの登録日から推定したものであり、その後の削除や価格変更が反映されていない場合があります。",
         "estimatedNoteAll": "この履歴はすべてアイテムの登録日から推定されたものです — 日次スナップショットはまだ実行されていません。"
-      },
-      "sharing": {
-        "title": "共有の概要",
-        "hint": "どのライブラリが誰と共有されているか。",
-        "sharedWith": "共有先",
-        "notShared": "共有されていません",
-        "scope": {
-          "guest": "ゲスト",
-          "all_users": "全ユーザー"
-        },
-        "accessLevel": {
-          "read": "閲覧",
-          "write": "編集"
-        }
-      },
-      "userActivity": {
-        "title": "ユーザー別アクティビティ",
-        "hint": "各ユーザーが登録したアイテム数。",
-        "user": "ユーザー",
-        "unknownUser": "不明（この機能導入前に登録）",
-        "lastCaptured": "最終登録日"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "手動入力",
           "unknown": "不明（この機能導入前に登録）"
         }
+      },
+      "itemCount": "アイテム数",
+      "sharing": {
+        "title": "共有の概要",
+        "hint": "どのライブラリが誰と共有されているか。",
+        "sharedWith": "共有先",
+        "notShared": "共有されていません",
+        "scope": {
+          "guest": "ゲスト",
+          "all_users": "全ユーザー"
+        },
+        "accessLevel": {
+          "read": "閲覧",
+          "write": "編集"
+        }
+      },
+      "userActivity": {
+        "title": "ユーザー別アクティビティ",
+        "hint": "各ユーザーが登録したアイテム数。",
+        "user": "ユーザー",
+        "unknownUser": "不明（この機能導入前に登録）",
+        "lastCaptured": "最終登録日"
       }
     }
   }

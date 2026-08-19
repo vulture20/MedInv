@@ -214,27 +214,6 @@
         "noData": "数据尚不足以生成价值历史记录。",
         "estimatedNoteUntil": "{{date}} 之前的历史记录是根据项目录入日期估算的，可能未反映之后的删除或价格变动。",
         "estimatedNoteAll": "此历史记录完全基于项目录入日期估算 — 尚未运行过每日快照。"
-      },
-      "sharing": {
-        "title": "共享概览",
-        "hint": "哪些媒体库已共享，以及共享给了谁。",
-        "sharedWith": "共享给",
-        "notShared": "未共享",
-        "scope": {
-          "guest": "访客",
-          "all_users": "所有用户"
-        },
-        "accessLevel": {
-          "read": "只读",
-          "write": "读写"
-        }
-      },
-      "userActivity": {
-        "title": "按用户统计的活动",
-        "hint": "每位用户添加了多少项目。",
-        "user": "用户",
-        "unknownUser": "未知（在此功能上线前添加）",
-        "lastCaptured": "最近添加时间"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "手动录入",
           "unknown": "未知（在此功能上线前添加）"
         }
+      },
+      "itemCount": "项目数量",
+      "sharing": {
+        "title": "共享概览",
+        "hint": "哪些媒体库已共享，以及共享给了谁。",
+        "sharedWith": "共享给",
+        "notShared": "未共享",
+        "scope": {
+          "guest": "访客",
+          "all_users": "所有用户"
+        },
+        "accessLevel": {
+          "read": "只读",
+          "write": "读写"
+        }
+      },
+      "userActivity": {
+        "title": "按用户统计的活动",
+        "hint": "每位用户添加了多少项目。",
+        "user": "用户",
+        "unknownUser": "未知（在此功能上线前添加）",
+        "lastCaptured": "最近添加时间"
       }
     }
   }

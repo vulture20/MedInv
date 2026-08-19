@@ -12,8 +12,10 @@ import {
   type DuplicateGroup,
   type ReportItem,
   type ReportKey,
+  type SharingRow,
   type TopListRow,
   type TopLists,
+  type UserActivityRow,
 } from './reportTypes'
 
 /** A report item's identity columns (title/EAN/library/media type), shared by every table below — the report-specific extra column is passed as `children` per row via `extraHeader`/`renderExtra`. GitHub issue #102: every row opens `onSelect`'s row in MediaItemDetailDialog — same `media-item-table__row`/`__title-button` classes (and click/keyboard pattern) LibraryDetailPage's and SearchPage's own item tables already use, so the affordance looks and behaves identically everywhere in the app. */
@@ -119,6 +121,8 @@ export function ReportDetailPage() {
   const [recentAdditions, setRecentAdditions] = useState<ReportItem[] | null>(null)
   const [topLists, setTopLists] = useState<TopLists | null>(null)
   const [captureSource, setCaptureSource] = useState<CaptureSourceResponse | null>(null)
+  const [sharing, setSharing] = useState<SharingRow[] | null>(null)
+  const [userActivity, setUserActivity] = useState<UserActivityRow[] | null>(null)
 
   // Every library visible to this user (GET /libraries) — both the source
   // of a clicked row's full LibraryRef (id/name/media_type/owner; a report
@@ -158,6 +162,16 @@ export function ReportDetailPage() {
       case 'capture-source': {
         const { data } = await apiClient.get<CaptureSourceResponse>('/reports/capture-source')
         setCaptureSource(data)
+        break
+      }
+      case 'sharing': {
+        const { data } = await apiClient.get<SharingRow[]>('/reports/sharing')
+        setSharing(data)
+        break
+      }
+      case 'user-activity': {
+        const { data } = await apiClient.get<UserActivityRow[]>('/reports/user-activity')
+        setUserActivity(data)
         break
       }
     }
@@ -317,6 +331,68 @@ export function ReportDetailPage() {
               />
             </>
           )}
+
+          {/* GitHub issue #103: moved here from StatisticsPage.tsx — rows are libraries, not media items, so unlike every table above there's no single item to open on click. */}
+          {meta.key === 'sharing' &&
+            (sharing && sharing.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t('libraries.title')}</th>
+                    <th>{t('reports.sharing.sharedWith')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sharing.map((row) => (
+                    <tr key={row.library_id}>
+                      <td>
+                        {row.library_name} <span className="media-type-badge">{t(`libraries.mediaType.${row.media_type}`)}</span>
+                      </td>
+                      <td>
+                        {row.is_shared ? (
+                          row.shares
+                            .map((share) => {
+                              const who = share.scope === 'user' ? (share.user_name ?? '?') : t(`reports.sharing.scope.${share.scope}`)
+
+                              return `${who} (${t(`reports.sharing.accessLevel.${share.access_level}`)})`
+                            })
+                            .join(', ')
+                        ) : (
+                          <span className="hint">{t('reports.sharing.notShared')}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="hint">{t('reports.none')}</p>
+            ))}
+
+          {/* GitHub issue #103: moved here from StatisticsPage.tsx — rows are users, not media items, same reasoning as 'sharing' above. */}
+          {meta.key === 'user-activity' &&
+            (userActivity && userActivity.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t('reports.userActivity.user')}</th>
+                    <th>{t('reports.itemCount')}</th>
+                    <th>{t('reports.userActivity.lastCaptured')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userActivity.map((row) => (
+                    <tr key={row.user_id ?? 'unknown'}>
+                      <td>{row.user_name ?? t('reports.userActivity.unknownUser')}</td>
+                      <td>{row.item_count}</td>
+                      <td>{row.last_captured_at ? new Date(row.last_captured_at).toLocaleDateString() : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="hint">{t('reports.none')}</p>
+            ))}
         </section>
       )}
 

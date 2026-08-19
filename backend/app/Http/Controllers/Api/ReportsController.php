@@ -35,4 +35,16 @@ class ReportsController extends Controller
     {
         return $this->reportsService->captureSourceFor($request->user());
     }
+
+    /** Sharing overview (GitHub issue #74, moved here from StatisticsController by GitHub issue #103) — see ReportsService::sharingFor(). */
+    public function sharing(Request $request)
+    {
+        return $this->reportsService->sharingFor($request->user());
+    }
+
+    /** Per-user capture activity (GitHub issue #74, moved here from StatisticsController by GitHub issue #103) — see ReportsService::userActivityFor(). */
+    public function userActivity(Request $request)
+    {
+        return $this->reportsService->userActivityFor($request->user());
+    }
 }

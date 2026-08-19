@@ -214,27 +214,6 @@
         "noData": "Ikke nok data ennå for en verdihistorikk.",
         "estimatedNoteUntil": "Historikk før {{date}} er estimert ut fra registreringsdatoer for oppføringer og gjenspeiler kanskje ikke senere slettinger eller prisendringer.",
         "estimatedNoteAll": "Hele denne historikken er estimert ut fra registreringsdatoer for oppføringer — ingen daglig øyeblikksbilde er kjørt ennå."
-      },
-      "sharing": {
-        "title": "Delingsoversikt",
-        "hint": "Hvilke biblioteker som er delt, og med hvem.",
-        "sharedWith": "Delt med",
-        "notShared": "Ikke delt",
-        "scope": {
-          "guest": "Gjester",
-          "all_users": "Alle brukere"
-        },
-        "accessLevel": {
-          "read": "lesing",
-          "write": "skriving"
-        }
-      },
-      "userActivity": {
-        "title": "Aktivitet per bruker",
-        "hint": "Hvor mange elementer hver bruker har registrert.",
-        "user": "Bruker",
-        "unknownUser": "Ukjent (registrert før denne funksjonen)",
-        "lastCaptured": "Sist registrert"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Manuell registrering",
           "unknown": "Ukjent (registrert før denne funksjonen)"
         }
+      },
+      "itemCount": "Antall oppføringer",
+      "sharing": {
+        "title": "Delingsoversikt",
+        "hint": "Hvilke biblioteker som er delt, og med hvem.",
+        "sharedWith": "Delt med",
+        "notShared": "Ikke delt",
+        "scope": {
+          "guest": "Gjester",
+          "all_users": "Alle brukere"
+        },
+        "accessLevel": {
+          "read": "lesing",
+          "write": "skriving"
+        }
+      },
+      "userActivity": {
+        "title": "Aktivitet per bruker",
+        "hint": "Hvor mange elementer hver bruker har registrert.",
+        "user": "Bruker",
+        "unknownUser": "Ukjent (registrert før denne funksjonen)",
+        "lastCaptured": "Sist registrert"
       }
     }
   }

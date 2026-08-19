@@ -214,27 +214,6 @@
         "noData": "Değer geçmişi için henüz yeterli veri yok.",
         "estimatedNoteUntil": "{{date}} öncesindeki geçmiş, öğelerin kayıt tarihlerinden tahmin edilmiştir ve sonraki silmeleri veya fiyat değişikliklerini yansıtmayabilir.",
         "estimatedNoteAll": "Bu geçmişin tamamı öğelerin kayıt tarihlerinden tahmin edilmiştir — henüz günlük bir anlık görüntü çalıştırılmadı."
-      },
-      "sharing": {
-        "title": "Paylaşım özeti",
-        "hint": "Hangi kitaplıkların paylaşıldığı ve kiminle.",
-        "sharedWith": "Şununla paylaşıldı",
-        "notShared": "Paylaşılmadı",
-        "scope": {
-          "guest": "Misafirler",
-          "all_users": "Tüm kullanıcılar"
-        },
-        "accessLevel": {
-          "read": "okuma",
-          "write": "yazma"
-        }
-      },
-      "userActivity": {
-        "title": "Kullanıcıya göre etkinlik",
-        "hint": "Her kullanıcının kaç öğe eklediği.",
-        "user": "Kullanıcı",
-        "unknownUser": "Bilinmiyor (bu özellikten önce eklenmiş)",
-        "lastCaptured": "Son ekleme"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Manuel giriş",
           "unknown": "Bilinmiyor (bu özellikten önce eklenmiş)"
         }
+      },
+      "itemCount": "Öğe sayısı",
+      "sharing": {
+        "title": "Paylaşım özeti",
+        "hint": "Hangi kitaplıkların paylaşıldığı ve kiminle.",
+        "sharedWith": "Şununla paylaşıldı",
+        "notShared": "Paylaşılmadı",
+        "scope": {
+          "guest": "Misafirler",
+          "all_users": "Tüm kullanıcılar"
+        },
+        "accessLevel": {
+          "read": "okuma",
+          "write": "yazma"
+        }
+      },
+      "userActivity": {
+        "title": "Kullanıcıya göre etkinlik",
+        "hint": "Her kullanıcının kaç öğe eklediği.",
+        "user": "Kullanıcı",
+        "unknownUser": "Bilinmiyor (bu özellikten önce eklenmiş)",
+        "lastCaptured": "Son ekleme"
       }
     }
   }

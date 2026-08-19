@@ -214,27 +214,6 @@
         "noData": "Arvohistoriaa varten ei ole vielä tarpeeksi tietoa.",
         "estimatedNoteUntil": "Historia ennen päivämäärää {{date}} on arvioitu kohteiden tallennuspäivien perusteella, eikä se välttämättä huomioi myöhempiä poistoja tai hintamuutoksia.",
         "estimatedNoteAll": "Koko tämä historia on arvioitu kohteiden tallennuspäivien perusteella — päivittäistä tilannevedosta ei ole vielä suoritettu."
-      },
-      "sharing": {
-        "title": "Jakamiskatsaus",
-        "hint": "Mitkä kirjastot on jaettu, ja kenelle.",
-        "sharedWith": "Jaettu käyttäjille",
-        "notShared": "Ei jaettu",
-        "scope": {
-          "guest": "Vierailijat",
-          "all_users": "Kaikki käyttäjät"
-        },
-        "accessLevel": {
-          "read": "luku",
-          "write": "kirjoitus"
-        }
-      },
-      "userActivity": {
-        "title": "Aktiivisuus käyttäjittäin",
-        "hint": "Kuinka monta kohdetta kukin käyttäjä on lisännyt.",
-        "user": "Käyttäjä",
-        "unknownUser": "Tuntematon (lisätty ennen tätä ominaisuutta)",
-        "lastCaptured": "Viimeksi lisätty"
       }
     },
     "settings": {
@@ -561,6 +540,28 @@
           "manual": "Manuaalinen syöttö",
           "unknown": "Tuntematon (lisätty ennen tätä ominaisuutta)"
         }
+      },
+      "itemCount": "Kohteiden määrä",
+      "sharing": {
+        "title": "Jakamiskatsaus",
+        "hint": "Mitkä kirjastot on jaettu, ja kenelle.",
+        "sharedWith": "Jaettu käyttäjille",
+        "notShared": "Ei jaettu",
+        "scope": {
+          "guest": "Vierailijat",
+          "all_users": "Kaikki käyttäjät"
+        },
+        "accessLevel": {
+          "read": "luku",
+          "write": "kirjoitus"
+        }
+      },
+      "userActivity": {
+        "title": "Aktiivisuus käyttäjittäin",
+        "hint": "Kuinka monta kohdetta kukin käyttäjä on lisännyt.",
+        "user": "Käyttäjä",
+        "unknownUser": "Tuntematon (lisätty ennen tätä ominaisuutta)",
+        "lastCaptured": "Viimeksi lisätty"
       }
     }
   }
