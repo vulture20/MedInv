@@ -145,6 +145,41 @@ export function dateOnly(value: unknown): string {
   return typeof value === 'string' ? value.slice(0, 10) : ''
 }
 
+/**
+ * A price/monetary value with an actual currency symbol (GitHub issue #107)
+ * instead of a bare, unit-less number or a spelled-out ISO code — "93,49 €"
+ * rather than "93.49" or "93.49 EUR". Shared by every place in the app that
+ * displays a price (StatisticsPage.tsx's total_value, ReportDetailPage.tsx's
+ * per-item price and price-based top lists) so they can't drift into
+ * showing the same kind of value three different ways again, which is
+ * exactly what #107 reported.
+ *
+ * `currency` is deliberately the caller's responsibility to resolve first
+ * (StatisticsPage.tsx, unlike a single item's own known `currency`, only
+ * passes one when `currency_mismatch` is false — a mismatched library's sum
+ * mixes currencies, so labeling it with just one of them would be
+ * misleading) — this function only ever formats, never decides whether a
+ * currency is trustworthy to show. `Intl.NumberFormat`'s 'currency' style
+ * renders the locale-appropriate symbol — falls back to the plain number if
+ * `currency` isn't a real ISO 4217 code Intl recognizes, since both a
+ * media item's own `currency` (MediaItemController::rulesFor()) and the
+ * admin-configured default (AdminSettingsController::updateStatistics())
+ * are free-text fields with no whitelist and could hold anything up to
+ * three characters. See PdfExportService::formatPrice() for the PHP
+ * equivalent used by the PDF export (GitHub issue #87).
+ */
+export function formatPrice(price: number | string | null, currency: string | null, language: string): string {
+  if (price === null) return '—'
+  if (currency) {
+    try {
+      return new Intl.NumberFormat(language, { style: 'currency', currency }).format(Number(price))
+    } catch {
+      // Not a currency code Intl recognizes — fall through to the plain number.
+    }
+  }
+  return String(price)
+}
+
 /** Formats a duration in seconds as "M:SS" (or "H:MM:SS" past an hour) — used for a CD's `runtime_seconds` and each track's `duration_seconds` (GitHub issue #48). Raw seconds (e.g. "2652") isn't something a person reads at a glance the way "44:12" is. */
 export function formatDuration(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600)

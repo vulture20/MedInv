@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Library;
 use App\Models\LibraryShare;
 use App\Models\MediaBook;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -87,5 +89,60 @@ class LibraryPdfExportTest extends TestCase
         $response = $this->get('/api/libraries/999999/export/pdf');
 
         $response->assertNotFound();
+    }
+
+    /** Extracts a PDF response's text content via poppler-utils' pdftotext, same tool ReportsPdfExportTest's own content test uses — see that test's docblock for why (dompdf's compressed streams make a raw-bytes search unreliable). */
+    private function pdfText(TestResponse $response): string
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'medinv-pdf-test');
+        file_put_contents($tmp, $response->getContent());
+        $text = shell_exec('pdftotext '.escapeshellarg($tmp).' - 2>/dev/null') ?? '';
+        unlink($tmp);
+
+        return $text;
+    }
+
+    /**
+     * GitHub issue #107 — a library's total_value shows an actual currency
+     * symbol when every item agrees with the admin-configured default
+     * currency, same rule StatisticsService::overviewFor() already applies
+     * to its own per-library total (see PdfExportService::
+     * libraryInventoryPdf()'s docblock).
+     */
+    public function test_the_total_value_shows_a_currency_symbol_when_every_item_matches_the_default_currency(): void
+    {
+        if (trim(shell_exec('which pdftotext 2>/dev/null') ?? '') === '') {
+            $this->markTestSkipped('pdftotext (poppler-utils) not available in this environment.');
+        }
+
+        $owner = $this->actingAsUser();
+        SystemSetting::set('statistics.default_currency', 'EUR');
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001', 'price' => 12, 'currency' => 'EUR']);
+
+        $response = $this->get("/api/libraries/{$library->id}/export/pdf");
+
+        $response->assertOk();
+        $this->assertStringContainsString('€12', $this->pdfText($response));
+    }
+
+    /** A mismatched item's currency makes the sum untrustworthy to label with any single currency — same reasoning the on-screen warning banner (statistics.currencyMismatchWarning) already documents. */
+    public function test_the_total_value_stays_a_bare_number_on_a_currency_mismatch(): void
+    {
+        if (trim(shell_exec('which pdftotext 2>/dev/null') ?? '') === '') {
+            $this->markTestSkipped('pdftotext (poppler-utils) not available in this environment.');
+        }
+
+        $owner = $this->actingAsUser();
+        SystemSetting::set('statistics.default_currency', 'EUR');
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001', 'price' => 12, 'currency' => 'USD']);
+
+        $response = $this->get("/api/libraries/{$library->id}/export/pdf");
+
+        $response->assertOk();
+        $text = $this->pdfText($response);
+        $this->assertStringContainsString('total value 12', $text);
+        $this->assertStringNotContainsString('€', $text);
     }
 }

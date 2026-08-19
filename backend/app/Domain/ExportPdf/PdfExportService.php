@@ -11,6 +11,7 @@ use Barryvdh\DomPDF\PDF as PdfDocument;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use NumberFormatter;
 
 /**
  * PDF export (GitHub issue #87) for the "Auswertungen" (ReportsService's
@@ -141,7 +142,7 @@ class PdfExportService
             $sections[] = [
                 'title' => $spec['title'],
                 'extraHeader' => $spec['extraHeader'],
-                'rows' => $this->withExtra($topLists[$key], fn (array $row) => $this->formatTopListValue($spec['type'], $row['value'])),
+                'rows' => $this->withExtra($topLists[$key], fn (array $row) => $this->formatTopListValue($spec['type'], $row)),
             ];
         }
 
@@ -218,13 +219,24 @@ class PdfExportService
             'location' => $item->location,
         ])->all();
 
+        // Same currency_mismatch rule StatisticsService::overviewFor() already
+        // applies to its own per-library total_value (GitHub issue #62/#105),
+        // expressed against an already-loaded Collection here instead of a
+        // second query — this library's item total is exactly the same kind
+        // of aggregate sum, so it gets the same "only label it with a
+        // currency when every item actually agrees" treatment (GitHub issue
+        // #107) rather than always showing a bare, unit-less number.
+        $defaultCurrency = SystemSetting::get('statistics.default_currency');
+        $currencyMismatch = $defaultCurrency !== null
+            && $items->contains(fn (Model $item) => $item->currency !== null && $item->currency !== $defaultCurrency);
+
         return $this->render('pdf.library', [
             'title' => $library->name,
             'mediaTypeLabel' => self::MEDIA_TYPE_LABELS[$library->media_type] ?? $library->media_type,
             'subtitleLabel' => $subtitleLabel,
             'rows' => $rows,
             'itemCount' => $items->count(),
-            'totalValueLabel' => $this->formatPrice($items->sum('price'), null),
+            'totalValueLabel' => $this->formatPrice($items->sum('price'), $currencyMismatch ? null : $defaultCurrency),
         ]);
     }
 
@@ -234,14 +246,34 @@ class PdfExportService
         return array_map(fn (array $row) => [...$row, 'extra' => $formatter($row)], $rows);
     }
 
-    /** Mirrors mediaItemFields.ts's ItemsTable/reports.none-adjacent price formatting: no currency shown at all when none is on record, rather than a misleading bare number. */
+    /**
+     * PHP equivalent of mediaItemFields.ts's formatPrice() (GitHub issue
+     * #107) — an actual currency symbol via PHP's intl extension
+     * (NumberFormatter, already installed in docker/Dockerfile's runtime
+     * image alongside the other extensions this app depends on) rather than
+     * a spelled-out ISO code, matching what the frontend now shows for the
+     * exact same values. Locale hardcoded to 'en', consistent with this
+     * whole service rendering English-only (see this class's own
+     * docblock). formatCurrency() returns false rather than throwing on a
+     * currency string it can't make sense of (unlike the frontend's
+     * Intl.NumberFormat, which throws on construction) — both a media
+     * item's own `currency` and the admin-configured default are free-text
+     * fields with no whitelist, so this can genuinely happen.
+     */
     private function formatPrice(mixed $price, ?string $currency): string
     {
         if ($price === null) {
             return '—';
         }
 
-        return $currency ? "{$price} {$currency}" : (string) $price;
+        if ($currency) {
+            $formatted = (new NumberFormatter('en', NumberFormatter::CURRENCY))->formatCurrency((float) $price, $currency);
+            if ($formatted !== false) {
+                return $formatted;
+            }
+        }
+
+        return (string) $price;
     }
 
     /** Mirrors mediaItemFields.ts's formatDuration() (M:SS, or H:MM:SS past an hour) — used for a CD's runtime_seconds top lists. */
@@ -257,13 +289,22 @@ class PdfExportService
             : "{$minutes}:{$paddedSeconds}";
     }
 
-    private function formatTopListValue(string $type, mixed $value): string
+    /**
+     * @param  array{value: mixed, currency?: ?string}  $row
+     *
+     * GitHub issue #107: takes the whole row, not just `$row['value']` —
+     * the 'price' type needs $row['currency'] too, to format via
+     * formatPrice() the same way every other price display now does,
+     * instead of always passing null and silently discarding a known
+     * currency (exactly what #107 reported).
+     */
+    private function formatTopListValue(string $type, array $row): string
     {
         return match ($type) {
-            'price' => $this->formatPrice($value, null),
-            'duration' => $this->formatDuration((int) $value),
-            'minutes' => "{$value} min",
-            'plain' => (string) $value,
+            'price' => $this->formatPrice($row['value'], $row['currency'] ?? null),
+            'duration' => $this->formatDuration((int) $row['value']),
+            'minutes' => "{$row['value']} min",
+            'plain' => (string) $row['value'],
         };
     }
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
-import { type LibraryRef, type MediaItem, formatDuration } from '../libraries/mediaItemFields'
+import { type LibraryRef, type MediaItem, formatDuration, formatPrice } from '../libraries/mediaItemFields'
 import { MediaItemDetailDialog } from '../libraries/MediaItemDetailDialog'
 import { formatProviderKey } from '../capture/MetadataMergeReview'
 import {
@@ -97,19 +97,21 @@ function ItemsTable<T extends ReportItem>({
  * `<h2>`, unconditionally). An empty ranking used to just silently vanish,
  * indistinguishable from "this ranking doesn't exist" rather than "nothing
  * currently qualifies for it".
+ *
+ * `formatValue` receives the whole row, not just `row.value` (GitHub issue
+ * #107) — the price-based rankings (most expensive/cheapest) need `row`'s
+ * own `currency` too, to format via the shared formatPrice() the same way
+ * every other price display in the app now does; a ranking whose metric
+ * isn't a price just ignores the rest of the row and formats `row.value`
+ * directly, same as before.
  */
-function TopList({ title, rows, extraHeader, formatValue, onSelect }: { title: string; rows: TopListRow[]; extraHeader: string; formatValue: (value: number | string) => string; onSelect: (row: TopListRow) => void }) {
+function TopList({ title, rows, extraHeader, formatValue, onSelect }: { title: string; rows: TopListRow[]; extraHeader: string; formatValue: (row: TopListRow) => string; onSelect: (row: TopListRow) => void }) {
   return (
     <div className="report-top-list">
       <h4>{title}</h4>
-      <ItemsTable rows={rows} extraHeader={extraHeader} renderExtra={(row) => formatValue(row.value)} onSelect={onSelect} />
+      <ItemsTable rows={rows} extraHeader={extraHeader} renderExtra={formatValue} onSelect={onSelect} />
     </div>
   )
-}
-
-function formatPrice(row: { price: number | string | null; currency: string | null }): string {
-  if (row.price === null) return '—'
-  return row.currency ? `${row.price} ${row.currency}` : String(row.price)
 }
 
 /**
@@ -129,7 +131,7 @@ function formatPrice(row: { price: number | string | null; currency: string | nu
  * for every row of every report.
  */
 export function ReportDetailPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { key } = useParams<{ key: string }>()
   const meta = REPORTS.find((r) => r.key === key)
   const [loading, setLoading] = useState(true)
@@ -304,7 +306,7 @@ export function ReportDetailPage() {
                   <h4>
                     {group.ean} <span className="media-type-badge">{t(`libraries.mediaType.${group.media_type}`)}</span>
                   </h4>
-                  <ItemsTable rows={group.items} extraHeader={t('mediaItem.fields.price')} renderExtra={formatPrice} onSelect={(row) => void openItem(row)} />
+                  <ItemsTable rows={group.items} extraHeader={t('mediaItem.fields.price')} renderExtra={(row) => formatPrice(row.price, row.currency, i18n.language)} onSelect={(row) => void openItem(row)} />
                 </div>
               ))
             ) : (
@@ -341,56 +343,56 @@ export function ReportDetailPage() {
                 title={t('reports.topLists.mostExpensive')}
                 rows={topLists.most_expensive}
                 extraHeader={t('mediaItem.fields.price')}
-                formatValue={(v) => formatPrice({ price: v, currency: null })}
+                formatValue={(row) => formatPrice(row.value, row.currency, i18n.language)}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.cheapest')}
                 rows={topLists.cheapest}
                 extraHeader={t('mediaItem.fields.price')}
-                formatValue={(v) => formatPrice({ price: v, currency: null })}
+                formatValue={(row) => formatPrice(row.value, row.currency, i18n.language)}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.mostPages')}
                 rows={topLists.most_pages}
                 extraHeader={t('mediaItem.fields.page_count')}
-                formatValue={(v) => String(v)}
+                formatValue={(row) => String(row.value)}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.longestCdRuntime')}
                 rows={topLists.longest_cd_runtime}
                 extraHeader={t('mediaItem.runtime')}
-                formatValue={(v) => formatDuration(Number(v))}
+                formatValue={(row) => formatDuration(Number(row.value))}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.shortestCdRuntime')}
                 rows={topLists.shortest_cd_runtime}
                 extraHeader={t('mediaItem.runtime')}
-                formatValue={(v) => formatDuration(Number(v))}
+                formatValue={(row) => formatDuration(Number(row.value))}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.longestDvdRuntime')}
                 rows={topLists.longest_dvd_runtime}
                 extraHeader={t('mediaItem.fields.runtime_minutes')}
-                formatValue={(v) => t('reports.topLists.minutes', { count: Number(v) })}
+                formatValue={(row) => t('reports.topLists.minutes', { count: Number(row.value) })}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.shortestDvdRuntime')}
                 rows={topLists.shortest_dvd_runtime}
                 extraHeader={t('mediaItem.fields.runtime_minutes')}
-                formatValue={(v) => t('reports.topLists.minutes', { count: Number(v) })}
+                formatValue={(row) => t('reports.topLists.minutes', { count: Number(row.value) })}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.highestDiscCount')}
                 rows={topLists.highest_disc_count}
                 extraHeader={t('mediaItem.fields.disc_count')}
-                formatValue={(v) => String(v)}
+                formatValue={(row) => String(row.value)}
                 onSelect={(row) => void openItem(row)}
               />
             </div>
