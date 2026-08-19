@@ -150,6 +150,7 @@
     "or": "or",
     "resultsTitle_one": "{{count}} result",
     "resultsTitle_other": "{{count}} results",
+    "searching": "Searching…",
     "dismiss": "Dismiss",
     "textFileImport": "Text file import",
     "duplicate": "This item already exists in this library.",

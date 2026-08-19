@@ -153,6 +153,7 @@
       "or": "ou",
       "resultsTitle_one": "{{count}} résultat",
       "resultsTitle_other": "{{count}} résultats",
+      "searching": "Recherche en cours…",
       "dismiss": "Ignorer",
       "textFileImport": "Import de fichier texte",
       "duplicate": "Cet élément existe déjà dans cette bibliothèque.",

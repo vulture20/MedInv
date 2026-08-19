@@ -153,6 +153,7 @@
       "or": "veya",
       "resultsTitle_one": "{{count}} sonuç",
       "resultsTitle_other": "{{count}} sonuç",
+      "searching": "Aranıyor…",
       "dismiss": "Yoksay",
       "textFileImport": "Metin dosyası içe aktarma",
       "duplicate": "Bu öğe bu kitaplıkta zaten mevcut.",

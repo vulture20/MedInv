@@ -153,6 +153,7 @@
       "or": "або",
       "resultsTitle_one": "{{count}} результат",
       "resultsTitle_other": "{{count}} результатів",
+      "searching": "Триває пошук…",
       "dismiss": "Відхилити",
       "textFileImport": "Імпорт текстового файлу",
       "duplicate": "Цей елемент уже є в цій бібліотеці.",

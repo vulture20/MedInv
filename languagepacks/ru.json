@@ -153,6 +153,7 @@
       "or": "или",
       "resultsTitle_one": "{{count}} результат",
       "resultsTitle_other": "{{count}} результатов",
+      "searching": "Идёт поиск…",
       "dismiss": "Отклонить",
       "textFileImport": "Импорт текстового файла",
       "duplicate": "Этот элемент уже есть в этой библиотеке.",

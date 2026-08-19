@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
+import { Spinner } from '../../components/Spinner'
 import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
 import type { LibraryRef, MediaItem } from '../libraries/mediaItemFields'
 import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from './MetadataMergeReview'
@@ -47,6 +48,23 @@ interface PendingResult extends ScanResult {
 }
 
 /**
+ * GitHub issue #93: a placeholder shown from the moment an EAN is submitted
+ * (scan-form, camera decode, or one row of an uploaded text file) until the
+ * matching lookup actually resolves — `POST .../capture/scan` runs
+ * MetadataImportService::lookupMerged() over every enabled provider
+ * sequentially before responding at all (briefing 8.3), which used to leave
+ * this whole page looking inert while that ran. Same `library`/`id`
+ * bookkeeping as PendingResult, but deliberately its own, narrower type: a
+ * pending entry only ever has an ean/library, never any of ScanResult's
+ * fields, which only exist once the real response lands.
+ */
+interface PendingLookup {
+  ean: string
+  library: Library
+  id: number
+}
+
+/**
  * How long a repeat scan of the *same* EAN is ignored. A hardware barcode
  * scanner "types" its code and presses Enter on its own (see this
  * component's own docblock) — some double-fire on a single trigger pull,
@@ -81,6 +99,8 @@ export function CapturePage() {
   const [libraryId, setLibraryId] = useState<number | null>(null)
   const [codeInput, setCodeInput] = useState('')
   const [results, setResults] = useState<PendingResult[]>([])
+  // GitHub issue #93 — see PendingLookup's own docblock.
+  const [pendingLookups, setPendingLookups] = useState<PendingLookup[]>([])
   const [file, setFile] = useState<File | null>(null)
   const [cameraOpen, setCameraOpen] = useState(false)
   // Manual creation dead-end fix (GitHub issue #17): a `no_match` result
@@ -137,8 +157,18 @@ export function CapturePage() {
     if (last && last.ean === ean && now - last.at < EAN_SCAN_THROTTLE_MS) return
     lastScanRef.current = { ean, at: now }
 
-    const { data } = await apiClient.post<ScanResult>(`/libraries/${library.id}/capture/scan`, { ean })
-    setResults((prev) => [{ ...data, library, id: nextResultId.current++ }, ...prev])
+    // GitHub issue #93: visible from submission until the request below
+    // actually resolves, so the page doesn't look inert while
+    // MetadataImportService::lookupMerged() works through every enabled
+    // provider server-side.
+    const pendingId = nextResultId.current++
+    setPendingLookups((prev) => [{ ean, library, id: pendingId }, ...prev])
+    try {
+      const { data } = await apiClient.post<ScanResult>(`/libraries/${library.id}/capture/scan`, { ean })
+      setResults((prev) => [{ ...data, library, id: nextResultId.current++ }, ...prev])
+    } finally {
+      setPendingLookups((prev) => prev.filter((p) => p.id !== pendingId))
+    }
   }
 
   async function submitCode(e: React.FormEvent) {
@@ -151,13 +181,35 @@ export function CapturePage() {
     e.preventDefault()
     const library = libraries.find((l) => l.id === libraryId)
     if (!library || !file) return
+
+    // GitHub issue #93: one pending placeholder per line, not just one for
+    // the whole file — POST .../capture/textfile only responds once every
+    // line has been looked up server-side (BulkImportService::resolveMany()),
+    // so without this the whole batch would still look like nothing is
+    // happening until it's entirely done. Split/trim/filter mirrors
+    // BulkImportService::parseEanTextFile() exactly, so the placeholders
+    // shown here match the codes the backend will actually process one for
+    // one.
+    const contents = await file.text()
+    const eans = contents
+      .split(/\r\n|\r|\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+    const pendingEntries = eans.map((ean) => ({ ean, library, id: nextResultId.current++ }))
+    setPendingLookups((prev) => [...pendingEntries, ...prev])
+
     const form = new FormData()
     form.append('file', file)
-    const { data } = await apiClient.post<ScanResult[]>(`/libraries/${library.id}/capture/textfile`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    setResults((prev) => [...data.map((r) => ({ ...r, library, id: nextResultId.current++ })), ...prev])
     setFile(null)
+    try {
+      const { data } = await apiClient.post<ScanResult[]>(`/libraries/${library.id}/capture/textfile`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setResults((prev) => [...data.map((r) => ({ ...r, library, id: nextResultId.current++ })), ...prev])
+    } finally {
+      const pendingIds = new Set(pendingEntries.map((p) => p.id))
+      setPendingLookups((prev) => prev.filter((p) => !pendingIds.has(p.id)))
+    }
   }
 
   async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) {
@@ -239,11 +291,22 @@ export function CapturePage() {
         </div>
       </section>
 
-      {results.length > 0 && (
+      {(results.length > 0 || pendingLookups.length > 0) && (
         <section className="panel-card">
           <h2>{t('capture.resultsTitle', { count: results.length })}</h2>
 
           <ul className="capture-results">
+            {/* GitHub issue #93: rendered above the real results below, same "newest first" order results.length itself already prepends new entries in. */}
+            {pendingLookups.map((pending) => (
+              <li key={pending.id} className="capture-result capture-result--pending">
+                <div className="capture-result__header">
+                  <Spinner />
+                  <span className="capture-result__ean">{pending.ean}</span>
+                  <span className="hint">{t('capture.searching')}</span>
+                </div>
+              </li>
+            ))}
+
             {results.map((result) => (
               <li key={result.id} className="capture-result">
                 <div className="capture-result__header">

@@ -153,6 +153,7 @@
       "or": "tai",
       "resultsTitle_one": "{{count}} tulos",
       "resultsTitle_other": "{{count}} tulosta",
+      "searching": "Haetaan…",
       "dismiss": "Hylkää",
       "textFileImport": "Tuonti tekstitiedostosta",
       "duplicate": "Tämä kohde on jo tässä kirjastossa.",

@@ -1464,6 +1464,19 @@ td {
   border-radius: 8px;
 }
 
+/* GitHub issue #93: a placeholder row shown while a scan/EAN lookup is still in flight — dashed border + reduced opacity so it reads at a glance as "not a real result yet", distinct from every other .capture-result. */
+.capture-result--pending {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+.capture-result--pending .spinner {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15rem;
+  flex: none;
+}
+
 .capture-result__header {
   display: flex;
   align-items: center;

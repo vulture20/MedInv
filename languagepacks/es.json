@@ -153,6 +153,7 @@
       "or": "o",
       "resultsTitle_one": "{{count}} resultado",
       "resultsTitle_other": "{{count}} resultados",
+      "searching": "Buscando…",
       "dismiss": "Descartar",
       "textFileImport": "Importar archivo de texto",
       "duplicate": "Este elemento ya existe en esta biblioteca.",

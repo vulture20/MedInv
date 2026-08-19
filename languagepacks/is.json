@@ -153,6 +153,7 @@
       "or": "eða",
       "resultsTitle_one": "{{count}} niðurstaða",
       "resultsTitle_other": "{{count}} niðurstöður",
+      "searching": "Leita…",
       "dismiss": "Hafna",
       "textFileImport": "Innflutningur úr textaskrá",
       "duplicate": "Þessi færsla er þegar til í þessu safni.",

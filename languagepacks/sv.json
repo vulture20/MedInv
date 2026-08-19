@@ -153,6 +153,7 @@
       "or": "eller",
       "resultsTitle_one": "{{count}} resultat",
       "resultsTitle_other": "{{count}} resultat",
+      "searching": "Söker…",
       "dismiss": "Ignorera",
       "textFileImport": "Import från textfil",
       "duplicate": "Den här posten finns redan i det här biblioteket.",

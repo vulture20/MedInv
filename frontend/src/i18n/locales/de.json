@@ -150,6 +150,7 @@
     "or": "oder",
     "resultsTitle_one": "{{count}} Ergebnis",
     "resultsTitle_other": "{{count}} Ergebnisse",
+    "searching": "Wird gesucht …",
     "dismiss": "Verwerfen",
     "textFileImport": "Textdatei-Import",
     "duplicate": "Dieses Medium ist in dieser Bibliothek bereits vorhanden.",

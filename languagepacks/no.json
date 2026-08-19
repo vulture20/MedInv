@@ -153,6 +153,7 @@
       "or": "eller",
       "resultsTitle_one": "{{count}} resultat",
       "resultsTitle_other": "{{count}} resultater",
+      "searching": "Søker…",
       "dismiss": "Forkast",
       "textFileImport": "Import fra tekstfil",
       "duplicate": "Denne oppføringen finnes allerede i dette biblioteket.",
