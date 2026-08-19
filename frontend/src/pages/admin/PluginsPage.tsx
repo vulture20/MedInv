@@ -271,7 +271,7 @@ export function PluginsPage() {
   const editingPlugin = plugins.find((p) => p.id === editingPluginId) ?? null
 
   return (
-    <div className="panel-page">
+    <div className="panel-page panel-page--wide">
       {error && <p role="alert">{error}</p>}
       {MEDIA_TYPES.map((mediaType) => {
         const groupPlugins = pluginsInGroup(plugins, mediaType)

@@ -257,7 +257,7 @@ export function ReportDetailPage() {
 
   if (!meta) {
     return (
-      <div className="panel-page">
+      <div className="panel-page panel-page--wide">
         <p>
           <Link to="/reports">← {t('reports.title')}</Link>
         </p>
@@ -267,7 +267,7 @@ export function ReportDetailPage() {
   }
 
   return (
-    <div className="panel-page">
+    <div className="panel-page panel-page--wide">
       <p>
         <Link to="/reports">← {t('reports.title')}</Link>
       </p>

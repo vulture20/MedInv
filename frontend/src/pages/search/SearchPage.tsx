@@ -146,7 +146,7 @@ export function SearchPage() {
   }
 
   return (
-    <div className="panel-page">
+    <div className="panel-page panel-page--wide">
       <header className="panel-page__header">
         <h1>{query ? t('search.resultsFor', { query }) : t('search.placeholder')}</h1>
       </header>

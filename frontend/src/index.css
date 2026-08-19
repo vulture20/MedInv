@@ -1219,6 +1219,30 @@ td {
   max-width: 42rem;
 }
 
+/*
+ * Wider variant for pages whose main content is a data table (GitHub issue
+ * #111) — .panel-page's 42rem cap above was sized for SettingsPage.tsx's
+ * simple label/input rows, comfortable to read at that width, but the same
+ * shared class is also reused by every table-heavy page (LibraryDetailPage,
+ * ReportDetailPage, SearchPage, and several admin/*Page.tsx tables). There,
+ * the cap forced .panel-card's own overflow-x: auto (see its docblock) into
+ * horizontal scrolling on *any* screen once a table's natural width passed
+ * 42rem — not because the viewport was actually too narrow for it, but
+ * because the container itself was capped regardless of how much room was
+ * genuinely available. `none` rather than a larger fixed cap: a table's
+ * columns just gain breathing room on a very wide monitor instead of
+ * needing an arbitrary second number to tune, and .panel-card's overflow-x:
+ * auto still catches the case where even the full viewport isn't enough
+ * (a narrow desktop window, very many columns). Never actually changes
+ * anything below the 768px mobile breakpoint below: a mobile viewport is
+ * already narrower than 42rem, so that cap was never the binding
+ * constraint there to begin with — this only ever removes slack that
+ * existed on screens wide enough to have it.
+ */
+.panel-page--wide {
+  max-width: none;
+}
+
 .panel-page__header {
   margin-bottom: 1.5rem;
 }

@@ -209,7 +209,7 @@ export function TemplatesPage() {
   }
 
   return (
-    <div className="panel-page">
+    <div className="panel-page panel-page--wide">
       <section className="panel-card">
         <h2>{t('admin.templatesPage.bundledTitle')}</h2>
         {loadBundledError && <p role="alert">{loadBundledError}</p>}

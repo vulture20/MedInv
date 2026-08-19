@@ -130,7 +130,7 @@ export function UsersPage() {
   }
 
   return (
-    <div className="panel-page">
+    <div className="panel-page panel-page--wide">
       <section className="panel-card">
         <h2>{t('admin.users')}</h2>
         <table>

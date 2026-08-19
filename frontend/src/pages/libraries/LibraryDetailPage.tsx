@@ -328,7 +328,7 @@ export function LibraryDetailPage() {
   if (loading) return <p className="hint">…</p>
   if (!library) {
     return (
-      <div className="panel-page">
+      <div className="panel-page panel-page--wide">
         <p>
           <Link to="/libraries">← {t('libraries.title')}</Link>
         </p>
@@ -350,7 +350,7 @@ export function LibraryDetailPage() {
   const bulkEditFieldSpec = bulkEditableFields.find((f) => f.key === bulkEditField)
 
   return (
-    <div className="panel-page">
+    <div className="panel-page panel-page--wide">
       <p>
         <Link to="/libraries">← {t('libraries.title')}</Link>
       </p>
