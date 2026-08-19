@@ -21,9 +21,32 @@ class LibraryController extends Controller
 {
     public function __construct(private readonly LibraryAccessService $access) {}
 
+    /**
+     * GitHub issue #95: each library's item count, for LibrariesPage.tsx's
+     * overview cards — direct `withCount('mediaItems')` doesn't work here,
+     * since Library::mediaItems() only resolves the right relation at
+     * runtime from an already-loaded $this->media_type, but withCount()
+     * needs a relation it can resolve on an empty model instance while
+     * building the query. Same three-relations-then-pick-one-per-row
+     * pattern StatisticsService::overviewFor() already uses for exactly
+     * this reason. The three raw *_count columns withCount() adds are
+     * hidden from the response — only the single, already-correct
+     * item_count is meant to be consumed here.
+     */
     public function index(Request $request)
     {
-        return $this->access->visibleLibrariesQuery($request->user())->with('owner:id,name')->get();
+        return $this->access->visibleLibrariesQuery($request->user())
+            ->with('owner:id,name')
+            ->withCount(['mediaBooks', 'mediaCds', 'mediaDvdBlurays'])
+            ->get()
+            ->each(function (Library $library) {
+                $library->setAttribute('item_count', match ($library->media_type) {
+                    'book' => $library->media_books_count,
+                    'cd' => $library->media_cds_count,
+                    'dvd_bluray' => $library->media_dvd_blurays_count,
+                });
+                $library->makeHidden(['media_books_count', 'media_cds_count', 'media_dvd_blurays_count']);
+            });
     }
 
     /**

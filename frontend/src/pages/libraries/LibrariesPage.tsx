@@ -11,6 +11,8 @@ interface Library {
   description: string | null
   media_type: 'book' | 'cd' | 'dvd_bluray'
   owner: { id: number; name: string }
+  /** GitHub issue #95 — LibraryController::index() only, not part of the Library model itself. */
+  item_count: number
 }
 
 /**
@@ -166,7 +168,10 @@ export function LibrariesPage() {
                   <h2>{lib.name}</h2>
                   <span className="media-type-badge">{t(`libraries.mediaType.${lib.media_type}`)}</span>
                 </div>
-                <p className="hint">{lib.owner.name}</p>
+                <p className="hint">
+                  {/* GitHub issue #95 — reuses the same libraries.itemsTitle key LibraryDetailPage.tsx's own item-list header already uses. */}
+                  {lib.owner.name} · {t('libraries.itemsTitle', { count: lib.item_count })}
+                </p>
                 {lib.description && <p>{lib.description}</p>}
                 <div className="library-card__actions">
                   <button type="button" onClick={() => navigate(`/libraries/${lib.id}`)}>
