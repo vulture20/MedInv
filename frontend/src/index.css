@@ -1142,6 +1142,25 @@ td {
   object-fit: cover;
   border-radius: 4px;
   border: 1px solid var(--color-border);
+  transition: transform 0.1s ease-out;
+}
+
+/* Wraps .metadata-merge__cover-thumb (GitHub issue #99) — reset back to
+ * looking exactly like the bare <img> it wraps, same as
+ * .media-item-dialog__cover-button, plus a hover affordance (the thumbnail
+ * itself scales up slightly) since this button's only purpose is opening
+ * the enlarged view, not toggling the radio choice next to it. */
+.metadata-merge__cover-thumb-button {
+  display: block;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+}
+
+.metadata-merge__cover-thumb-button:hover .metadata-merge__cover-thumb {
+  transform: scale(1.08);
 }
 
 .metadata-merge__actions {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FIELD_SPECS, formatDuration, type MediaType, type Track } from '../libraries/mediaItemFields'
 
@@ -170,6 +170,21 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm
   const [selectedTracks, setSelectedTracks] = useState<Track[] | null>(
     tracksField && !tracksField.agreed && tracksField.options.length > 0 ? tracksField.options[0].value : null
   )
+  // GitHub issue #99: a larger view of a candidate cover, opened by clicking
+  // its thumbnail — same native-<dialog> pattern as MediaItemDetailDialog's
+  // own fullscreen cover view (issue #45), reusing its .media-item-cover-
+  // dialog* styling. Kept separate from `selectedCoverUrl` (which cover is
+  // *chosen*) since viewing one enlarged shouldn't select it.
+  const [fullscreenCoverUrl, setFullscreenCoverUrl] = useState<string | null>(null)
+  const coverDialogRef = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    if (fullscreenCoverUrl) {
+      coverDialogRef.current?.showModal()
+    } else {
+      coverDialogRef.current?.close()
+    }
+  }, [fullscreenCoverUrl])
 
   function confirm() {
     const attributes: Record<string, unknown> = { ean }
@@ -303,7 +318,19 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm
                   checked={selectedCoverUrl === cover.url}
                   onChange={() => setSelectedCoverUrl(cover.url)}
                 />
-                <img src={cover.url} alt={formatProviderKey(cover.provider_key)} className="metadata-merge__cover-thumb" />
+                {/* GitHub issue #99: enlarges on click; e.preventDefault()+stopPropagation() keep this from also toggling the radio via the enclosing <label>'s default click-forwarding. */}
+                <button
+                  type="button"
+                  className="metadata-merge__cover-thumb-button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setFullscreenCoverUrl(cover.url)
+                  }}
+                  aria-label={t('mediaItem.viewCoverFullscreen')}
+                >
+                  <img src={cover.url} alt={formatProviderKey(cover.provider_key)} className="metadata-merge__cover-thumb" />
+                </button>
                 <span className="metadata-merge__option-source">{formatProviderKey(cover.provider_key)}</span>
               </label>
             ))}
@@ -323,6 +350,13 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm
           {t('capture.rejectAll')}
         </button>
       </div>
+
+      {/* GitHub issue #99: same "any click closes it" behavior as MediaItemDetailDialog's fullscreen cover dialog (issue #45) — see that dialog's docblock for why. */}
+      {fullscreenCoverUrl && (
+        <dialog ref={coverDialogRef} className="media-item-cover-dialog" onClose={() => setFullscreenCoverUrl(null)} onClick={() => setFullscreenCoverUrl(null)}>
+          <img className="media-item-cover-dialog__image" src={fullscreenCoverUrl} alt="" />
+        </dialog>
+      )}
     </div>
   )
 }
