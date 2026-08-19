@@ -18,7 +18,24 @@ import {
   type UserActivityRow,
 } from './reportTypes'
 
-/** A report item's identity columns (title/EAN/library/media type), shared by every table below — the report-specific extra column is passed as `children` per row via `extraHeader`/`renderExtra`. GitHub issue #102: every row opens `onSelect`'s row in MediaItemDetailDialog — same `media-item-table__row`/`__title-button` classes (and click/keyboard pattern) LibraryDetailPage's and SearchPage's own item tables already use, so the affordance looks and behaves identically everywhere in the app. */
+/**
+ * A report item's identity columns (title/EAN/library/media type), shared by
+ * every table below — the report-specific extra column is passed as
+ * `children` per row via `extraHeader`/`renderExtra`. GitHub issue #102:
+ * every row opens `onSelect`'s row in MediaItemDetailDialog — same
+ * `media-item-table__row`/`__title-button` classes (and click/keyboard
+ * pattern) LibraryDetailPage's and SearchPage's own item tables already
+ * use, so the affordance looks and behaves identically everywhere in the
+ * app.
+ *
+ * GitHub issue #106: shows `reports.none` itself when `rows` is empty,
+ * rather than rendering nothing — the PDF export's equivalent
+ * (resources/views/pdf/partials/items-table.blade.php) already did this
+ * from the start, and having the check live here once means every call
+ * site (including top-lists' 8 rankings and capture-source, which used to
+ * have no empty-state handling at all) gets it automatically instead of
+ * needing its own emptiness check.
+ */
 function ItemsTable<T extends ReportItem>({
   rows,
   extraHeader,
@@ -32,7 +49,7 @@ function ItemsTable<T extends ReportItem>({
 }) {
   const { t } = useTranslation()
 
-  if (rows.length === 0) return null
+  if (rows.length === 0) return <p className="hint">{t('reports.none')}</p>
 
   return (
     <table>
@@ -72,10 +89,16 @@ function ItemsTable<T extends ReportItem>({
  * `ReportItem`, so this is exactly ItemsTable with the ranking's own metric
  * as the extra column — same table formatting (and click-to-open, GitHub
  * issue #102) as every other report instead of a one-off layout.
+ *
+ * GitHub issue #106: no longer hides itself (`return null`) when `rows` is
+ * empty — the heading now always shows, with ItemsTable's own `reports.none`
+ * filling in for the missing table, matching the PDF export's
+ * pdf.reports.top-lists.blade.php (which always renders every ranking's
+ * `<h2>`, unconditionally). An empty ranking used to just silently vanish,
+ * indistinguishable from "this ranking doesn't exist" rather than "nothing
+ * currently qualifies for it".
  */
 function TopList({ title, rows, extraHeader, formatValue, onSelect }: { title: string; rows: TopListRow[]; extraHeader: string; formatValue: (value: number | string) => string; onSelect: (row: TopListRow) => void }) {
-  if (rows.length === 0) return null
-
   return (
     <div className="report-top-list">
       <h4>{title}</h4>
@@ -132,9 +155,17 @@ export function ReportDetailPage() {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
   const [selectedLibrary, setSelectedLibrary] = useState<LibraryRef | null>(null)
 
+  // GitHub issue #106: skipped for 'sharing'/'user-activity' — their rows
+  // are libraries/users, not media items (see SharingRow/UserActivityRow's
+  // own docblocks in reportTypes.ts), so neither ever calls openItem()
+  // below, and `libraries` would just sit unused. Every other report needs
+  // it, so still fetched eagerly rather than only once a row is actually
+  // clicked — same reasoning MediaItemDetailDialog's "move to library"
+  // dropdown already fetches it up front elsewhere.
   useEffect(() => {
+    if (key === 'sharing' || key === 'user-activity') return
     apiClient.get<LibraryRef[]>('/libraries').then(({ data }) => setLibraries(data))
-  }, [])
+  }, [key])
 
   async function loadReport(reportKey: ReportKey) {
     setError(null)
@@ -367,13 +398,16 @@ export function ReportDetailPage() {
 
           {meta.key === 'capture-source' && captureSource && (
             <>
-              <p className="library-detail__meta hint">
-                {Object.entries(captureSource.by_capture_method).map(([method, count]) => (
-                  <span key={method}>
-                    {t(`reports.captureSource.method.${method}`)}: {count}
-                  </span>
-                ))}
-              </p>
+              {/* GitHub issue #106: guarded the same way by_metadata_provider below already was — empty whenever captureSource.items itself is (no items at all), which used to render as a visible-but-blank paragraph instead of nothing. */}
+              {Object.keys(captureSource.by_capture_method).length > 0 && (
+                <p className="library-detail__meta hint">
+                  {Object.entries(captureSource.by_capture_method).map(([method, count]) => (
+                    <span key={method}>
+                      {t(`reports.captureSource.method.${method}`)}: {count}
+                    </span>
+                  ))}
+                </p>
+              )}
               {Object.keys(captureSource.by_metadata_provider).length > 0 && (
                 <p className="library-detail__meta hint">
                   {Object.entries(captureSource.by_metadata_provider).map(([provider, count]) => (
