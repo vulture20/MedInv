@@ -84,6 +84,8 @@
     "addManually": "Add manually",
     "createTitle": "Add media item",
     "tracklist": "Track listing",
+    "runtime": "Runtime",
+    "trackCount": "Tracks",
     "trackPosition": "Position",
     "trackTitle": "Title",
     "trackDurationMinutes": "Minutes",

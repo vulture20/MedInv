@@ -115,6 +115,8 @@
         "tracks": "トラックリスト"
       },
       "tracklist": "トラックリスト",
+      "runtime": "再生時間",
+      "trackCount": "トラック数",
       "trackPosition": "位置",
       "trackTitle": "タイトル",
       "trackDurationMinutes": "分",

@@ -115,6 +115,8 @@
         "tracks": "Lista utworów"
       },
       "tracklist": "Lista utworów",
+      "runtime": "Czas trwania",
+      "trackCount": "Liczba utworów",
       "trackPosition": "Pozycja",
       "trackTitle": "Tytuł",
       "trackDurationMinutes": "Minuty",

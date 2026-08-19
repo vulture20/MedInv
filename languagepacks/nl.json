@@ -115,6 +115,8 @@
         "tracks": "Tracklist"
       },
       "tracklist": "Tracklist",
+      "runtime": "Speelduur",
+      "trackCount": "Aantal tracks",
       "trackPosition": "Positie",
       "trackTitle": "Titel",
       "trackDurationMinutes": "Minuten",

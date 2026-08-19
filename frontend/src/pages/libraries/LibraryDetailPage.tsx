@@ -7,7 +7,7 @@ import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
 import { CreateMediaItemDialog } from './CreateMediaItemDialog'
 import { LibrarySettingsDialog } from './LibrarySettingsDialog'
-import { FIELD_SPECS, payloadFromValues } from './mediaItemFields'
+import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues } from './mediaItemFields'
 
 /** One row of App\Models\LibraryShare, as returned by LibraryController::show()'s `shares.user:id,name,email` eager load (briefing 4.3). */
 interface Share {
@@ -410,6 +410,14 @@ export function LibraryDetailPage() {
                 <SortableHeader column="title" label={t('mediaItem.fields.title')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader column={subtitleField(library.media_type)} label={t(`mediaItem.fields.${subtitleField(library.media_type)}`)} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader column="ean" label={t('mediaItem.fields.ean')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                {/* CD-only columns (GitHub issue #98) — already part of every row's payload (MediaItemController::index() serializes the full model, no field selection), so no extra fetch is needed. */}
+                {library.media_type === 'cd' && (
+                  <>
+                    <SortableHeader column="runtime_seconds" label={t('mediaItem.runtime')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <th>{t('mediaItem.trackCount')}</th>
+                    <SortableHeader column="release_date" label={t('mediaItem.fields.release_date')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -455,6 +463,13 @@ export function LibraryDetailPage() {
                   </td>
                   <td>{item[subtitleField(library.media_type)] ?? ''}</td>
                   <td>{item.ean}</td>
+                  {library.media_type === 'cd' && (
+                    <>
+                      <td>{item.runtime_seconds != null ? formatDuration(item.runtime_seconds) : ''}</td>
+                      <td>{item.tracks?.length ?? ''}</td>
+                      <td>{item.release_date ? dateOnly(item.release_date) : ''}</td>
+                    </>
+                  )}
                 </tr>
               ))}
             </tbody>

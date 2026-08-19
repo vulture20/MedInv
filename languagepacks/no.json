@@ -87,6 +87,8 @@
       "addManually": "Legg til manuelt",
       "createTitle": "Legg til medium",
       "tracklist": "Sporliste",
+      "runtime": "Spilletid",
+      "trackCount": "Antall spor",
       "trackPosition": "Posisjon",
       "trackTitle": "Tittel",
       "trackDurationMinutes": "Minutter",

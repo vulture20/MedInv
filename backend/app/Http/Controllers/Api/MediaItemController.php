@@ -38,7 +38,11 @@ class MediaItemController extends Controller
      */
     private const SORTABLE_COLUMNS = [
         'book' => ['title', 'authors', 'ean'],
-        'cd' => ['title', 'artist', 'ean'],
+        // release_date/runtime_seconds (GitHub issue #98) — sortable columns
+        // for the two extra CD-only table columns; track count has no
+        // dedicated `tracks` column to sort by (it's a JSON array's length),
+        // so it stays unsortable.
+        'cd' => ['title', 'artist', 'ean', 'release_date', 'runtime_seconds'],
         'dvd_bluray' => ['title', 'director', 'ean'],
     ];
 

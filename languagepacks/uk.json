@@ -115,6 +115,8 @@
         "tracks": "Список треків"
       },
       "tracklist": "Список треків",
+      "runtime": "Тривалість",
+      "trackCount": "Кількість треків",
       "trackPosition": "Позиція",
       "trackTitle": "Назва",
       "trackDurationMinutes": "Хвилини",

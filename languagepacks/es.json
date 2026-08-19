@@ -115,6 +115,8 @@
         "tracks": "Lista de pistas"
       },
       "tracklist": "Lista de pistas",
+      "runtime": "Duración",
+      "trackCount": "Número de pistas",
       "trackPosition": "Posición",
       "trackTitle": "Título",
       "trackDurationMinutes": "Minutos",

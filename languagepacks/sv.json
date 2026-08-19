@@ -87,6 +87,8 @@
       "addManually": "Lägg till manuellt",
       "createTitle": "Lägg till media",
       "tracklist": "Spårlista",
+      "runtime": "Speltid",
+      "trackCount": "Antal spår",
       "trackPosition": "Position",
       "trackTitle": "Titel",
       "trackDurationMinutes": "Minuter",

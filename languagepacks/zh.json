@@ -115,6 +115,8 @@
         "tracks": "曲目列表"
       },
       "tracklist": "曲目列表",
+      "runtime": "时长",
+      "trackCount": "曲目数",
       "trackPosition": "位置",
       "trackTitle": "标题",
       "trackDurationMinutes": "分钟",

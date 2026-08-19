@@ -87,6 +87,8 @@
       "addManually": "Bæta við handvirkt",
       "createTitle": "Bæta við miðli",
       "tracklist": "Lagalisti",
+      "runtime": "Lengd",
+      "trackCount": "Fjöldi laga",
       "trackPosition": "Staða",
       "trackTitle": "Titill",
       "trackDurationMinutes": "Mínútur",

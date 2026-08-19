@@ -115,6 +115,8 @@
         "tracks": "Parça listesi"
       },
       "tracklist": "Parça listesi",
+      "runtime": "Süre",
+      "trackCount": "Parça sayısı",
       "trackPosition": "Konum",
       "trackTitle": "Başlık",
       "trackDurationMinutes": "Dakika",

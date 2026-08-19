@@ -87,6 +87,8 @@
       "addManually": "Lisää manuaalisesti",
       "createTitle": "Lisää media",
       "tracklist": "Kappaleluettelo",
+      "runtime": "Kesto",
+      "trackCount": "Kappaleiden määrä",
       "trackPosition": "Sijainti",
       "trackTitle": "Nimi",
       "trackDurationMinutes": "Minuutit",

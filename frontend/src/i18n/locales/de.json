@@ -84,6 +84,8 @@
     "addManually": "Manuell hinzufügen",
     "createTitle": "Medium hinzufügen",
     "tracklist": "Titelliste",
+    "runtime": "Spieldauer",
+    "trackCount": "Anzahl der Tracks",
     "trackPosition": "Position",
     "trackTitle": "Titel",
     "trackDurationMinutes": "Minuten",
