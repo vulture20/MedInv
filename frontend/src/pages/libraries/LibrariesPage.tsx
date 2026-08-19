@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
+import { describeError } from '../admin/adminErrors'
 
 /** A Library, mirroring backend/app/Models/Library.php. */
 interface Library {
@@ -50,23 +51,44 @@ export function LibrariesPage() {
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
 
+  // GitHub issue #108 — previously missing entirely on this page (unlike
+  // SearchPage.tsx/StatisticsPage.tsx/ReportDetailPage.tsx, which already
+  // got this fix): a failed load() left `loading` stuck at `true` forever
+  // (setLoading(false) never ran), and a failed create/delete/edit just
+  // silently did nothing with no feedback at all. One shared error state
+  // for all four actions — simpler than per-action state given how few,
+  // and how similar in shape, they are on this page.
+  const [error, setError] = useState<string | null>(null)
+
   async function load() {
-    const { data } = await apiClient.get<Library[]>('/libraries')
-    setLibraries(data)
-    setLoading(false)
+    setError(null)
+    try {
+      const { data } = await apiClient.get<Library[]>('/libraries')
+      setLibraries(data)
+    } catch (err) {
+      setError(describeError(err, t))
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
     void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function createLibrary(e: React.FormEvent) {
     e.preventDefault()
-    await apiClient.post('/libraries', { name, description: description === '' ? null : description, media_type: mediaType })
-    setName('')
-    setDescription('')
-    setCreating(false)
-    await load()
+    setError(null)
+    try {
+      await apiClient.post('/libraries', { name, description: description === '' ? null : description, media_type: mediaType })
+      setName('')
+      setDescription('')
+      setCreating(false)
+      await load()
+    } catch (err) {
+      setError(describeError(err, t))
+    }
   }
 
   /**
@@ -80,8 +102,13 @@ export function LibrariesPage() {
 
   async function deleteLibrary(lib: Library) {
     if (!window.confirm(t('libraries.confirmDelete', { name: lib.name }))) return
-    await apiClient.delete(`/libraries/${lib.id}`)
-    await load()
+    setError(null)
+    try {
+      await apiClient.delete(`/libraries/${lib.id}`)
+      await load()
+    } catch (err) {
+      setError(describeError(err, t))
+    }
   }
 
   function startEdit(lib: Library) {
@@ -93,9 +120,14 @@ export function LibrariesPage() {
   async function saveEdit(e: React.FormEvent) {
     e.preventDefault()
     if (editingId === null) return
-    await apiClient.put(`/libraries/${editingId}`, { name: editName, description: editDescription === '' ? null : editDescription })
-    setEditingId(null)
-    await load()
+    setError(null)
+    try {
+      await apiClient.put(`/libraries/${editingId}`, { name: editName, description: editDescription === '' ? null : editDescription })
+      setEditingId(null)
+      await load()
+    } catch (err) {
+      setError(describeError(err, t))
+    }
   }
 
   return (
@@ -104,6 +136,8 @@ export function LibrariesPage() {
         <h1>{t('libraries.title')}</h1>
         <p className="hint">{t('libraries.subtitle')}</p>
       </header>
+
+      {error && <p role="alert">{error}</p>}
 
       {user?.level !== 'guest' && (
         <>

@@ -73,6 +73,20 @@ class MediaItemListSortTest extends TestCase
         $this->assertSame(['Anna', 'Zeta'], array_column($response->json('data'), 'artist'));
     }
 
+    /** GitHub issue #108 — location (issue #96) is sortable for every media type, unlike authors/artist/director, which are each specific to one. */
+    public function test_sorts_by_location_regardless_of_media_type(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = $this->createLibrary($owner->id, 'book');
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'X', 'ean' => '9780000000001', 'location' => 'Regal 5']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Y', 'ean' => '9780000000002', 'location' => 'Regal 1']);
+
+        $response = $this->getJson("/api/libraries/{$library->id}/items?sort_by=location&sort_dir=asc");
+
+        $response->assertOk();
+        $this->assertSame(['Regal 1', 'Regal 5'], array_column($response->json('data'), 'location'));
+    }
+
     /** `authors`/`director` are only sortable for the media type they actually belong to — mirrors FIELD_SPECS' own per-type field sets. */
     public function test_rejects_a_sort_column_that_does_not_belong_to_this_media_type(): void
     {

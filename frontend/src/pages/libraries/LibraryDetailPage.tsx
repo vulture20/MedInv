@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
@@ -63,6 +63,15 @@ export function LibraryDetailPage() {
   const [creating, setCreating] = useState(false)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+  // GitHub issue #108 — a lighter-weight indicator for loadItems() below,
+  // which (unlike `loading`) never blanks the rest of the page; only the
+  // item table's own heading gets a subtle "…" while it's in flight.
+  const [itemsLoading, setItemsLoading] = useState(false)
+  // GitHub issue #108 — previously missing entirely: a failed load left
+  // `loading` stuck at `true` forever (setLoading(false) never ran), the
+  // same gap SearchPage.tsx/StatisticsPage.tsx/ReportDetailPage.tsx already
+  // got fixed for.
+  const [error, setError] = useState<string | null>(null)
 
   // Column sorting (GitHub issue #77) — resolved server-side
   // (MediaItemController::index()'s sort_by/sort_dir) rather than sorting
@@ -106,33 +115,110 @@ export function LibraryDetailPage() {
   // visible page sections.
   const [editingSettings, setEditingSettings] = useState(false)
 
-  async function load() {
+  /**
+   * Everything this page needs (library metadata, the current page of
+   * items, the cross-library move-target list, the shareable-user list) —
+   * used for the initial load, whenever the library itself changes (id),
+   * and after settings are saved (LibrarySettingsDialog's onSaved, since
+   * only that action can change the library's own name/description/
+   * sharing). Takes page/sortBy/sortDir as explicit parameters rather than
+   * reading them from state (GitHub issue #108): the id-change effect
+   * below calls this in the same tick it resets page/sortBy/sortDir back
+   * to their defaults, before that reset has actually re-rendered —
+   * reading state here would still see the *previous* library's stale
+   * values.
+   */
+  async function loadAll(pageParam: number, sortByParam: string | null, sortDirParam: 'asc' | 'desc') {
     setLoading(true)
-    const [libraryRes, itemsRes, librariesRes, shareableUsersRes] = await Promise.all([
-      apiClient.get<Library>(`/libraries/${id}`),
-      apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, {
-        params: { page, ...(sortBy ? { sort_by: sortBy, sort_dir: sortDir } : {}) },
-      }),
-      // Needed for the detail dialog's "move to another library" target list
-      // (only libraries visible to this user are returned to begin with).
-      apiClient.get<Library[]>('/libraries'),
-      apiClient.get<ShareableUser[]>('/users'),
-    ])
-    setLibrary(libraryRes.data)
-    setItems(itemsRes.data)
-    setLibraries(librariesRes.data)
-    setShareableUsers(shareableUsersRes.data)
-    setLoading(false)
+    setError(null)
+    try {
+      const [libraryRes, itemsRes, librariesRes, shareableUsersRes] = await Promise.all([
+        apiClient.get<Library>(`/libraries/${id}`),
+        apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, {
+          params: { page: pageParam, ...(sortByParam ? { sort_by: sortByParam, sort_dir: sortDirParam } : {}) },
+        }),
+        // Needed for the detail dialog's "move to another library" target list
+        // (only libraries visible to this user are returned to begin with).
+        apiClient.get<Library[]>('/libraries'),
+        apiClient.get<ShareableUser[]>('/users'),
+      ])
+      setLibrary(libraryRes.data)
+      setItems(itemsRes.data)
+      setLibraries(librariesRes.data)
+      setShareableUsers(shareableUsersRes.data)
+    } catch (err) {
+      setError(describeError(err, t))
+    } finally {
+      setLoading(false)
+    }
   }
 
-  useEffect(() => {
-    void load()
+  /**
+   * GitHub issue #108: reloads just the item list. Sorting a column or
+   * turning a page never changes the library's own metadata, the
+   * cross-library move-target list, or the shareable-user list, so
+   * re-fetching all four via loadAll() on every such click was wasted work
+   * that also blanked the entire page — `loading` gates everything
+   * rendered below, not just the table. Also reused by item mutations that
+   * only ever affect the item list itself (creating/deleting/bulk-editing
+   * items below) for the same reason.
+   */
+  async function loadItems(pageParam: number, sortByParam: string | null, sortDirParam: 'asc' | 'desc') {
+    setItemsLoading(true)
+    setError(null)
+    try {
+      const { data } = await apiClient.get<Paginated<MediaItem>>(`/libraries/${id}/items`, {
+        params: { page: pageParam, ...(sortByParam ? { sort_by: sortByParam, sort_dir: sortDirParam } : {}) },
+      })
+      setItems(data)
+    } catch (err) {
+      setError(describeError(err, t))
+    } finally {
+      setItemsLoading(false)
+    }
+  }
+
+  function resetBulkState() {
     setSelectedIds(new Set())
     setBulkDeleteError(null)
     setBulkEditValue('')
     setBulkUpdateError(null)
+  }
+
+  // GitHub issue #108: the page/sort effect below would otherwise also
+  // fire right after the id effect resets page/sortBy/sortDir back to
+  // their defaults for the newly opened library — this flag tells it to
+  // skip that one redundant run, since loadAll() below already loads the
+  // (correctly reset) first page unsorted.
+  const skipNextItemsReload = useRef(false)
+
+  // A different library entirely (id changed) — full reload, and reset
+  // pagination/sort back to defaults rather than carrying over whatever
+  // page/column the *previous* library happened to be on (GitHub issue
+  // #108): a smaller library could otherwise open on a page past its own
+  // last page and wrongly appear empty.
+  useEffect(() => {
+    skipNextItemsReload.current = true
+    setPage(1)
+    setSortBy(null)
+    setSortDir('asc')
+    void loadAll(1, null, 'asc')
+    resetBulkState()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, page, sortBy, sortDir])
+  }, [id])
+
+  // Same library, just a different page or sort column (GitHub issue
+  // #108) — see loadItems()'s own docblock for why this doesn't repeat
+  // the id effect's full reload.
+  useEffect(() => {
+    if (skipNextItemsReload.current) {
+      skipNextItemsReload.current = false
+      return
+    }
+    void loadItems(page, sortBy, sortDir)
+    resetBulkState()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, sortBy, sortDir])
 
   /** Clicking a sortable column header (GitHub issue #77) — same column toggles asc/desc, a different one starts at asc, either way back to page 1 since the sort applies across the whole result set, not just this page. */
   function handleSort(column: string) {
@@ -202,7 +288,7 @@ export function LibraryDetailPage() {
     try {
       await apiClient.post(`/libraries/${id}/items/bulk-delete`, { ids: Array.from(selectedIds) })
       setSelectedIds(new Set())
-      await load()
+      await loadItems(page, sortBy, sortDir)
     } catch (err) {
       setBulkDeleteError(describeError(err, t))
     }
@@ -227,13 +313,29 @@ export function LibraryDetailPage() {
       await apiClient.post(`/libraries/${id}/items/bulk-update`, { ids: Array.from(selectedIds), field: bulkEditFieldSpec.key, value })
       setSelectedIds(new Set())
       setBulkEditValue('')
-      await load()
+      await loadItems(page, sortBy, sortDir)
     } catch (err) {
       setBulkUpdateError(describeError(err, t))
     }
   }
 
-  if (loading || !library) return <p>…</p>
+  // GitHub issue #108: `loading` no longer gets stuck forever on a failed
+  // loadAll() (see that function's own try/finally), but `library` itself
+  // would otherwise stay null forever in that case too — showing a plain
+  // "…" with no way back and no explanation. A way back to the library
+  // list plus the actual error message is more useful than an
+  // indefinitely-stuck loading indicator.
+  if (loading) return <p className="hint">…</p>
+  if (!library) {
+    return (
+      <div className="panel-page">
+        <p>
+          <Link to="/libraries">← {t('libraries.title')}</Link>
+        </p>
+        {error && <p role="alert">{error}</p>}
+      </div>
+    )
+  }
 
   // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
   // Gates the "Bearbeiten" button that opens LibrarySettingsDialog.tsx (GitHub issue #76) — name/description, sharing and ownership are all owner/admin-only.
@@ -271,8 +373,13 @@ export function LibraryDetailPage() {
         )}
       </header>
 
+      {error && <p role="alert">{error}</p>}
+
       <section className="panel-card">
-        <h2>{t('libraries.itemsTitle', { count: items?.total ?? 0 })}</h2>
+        <h2>
+          {t('libraries.itemsTitle', { count: items?.total ?? 0 })}
+          {itemsLoading && ' …'}
+        </h2>
 
         <div className="library-items-toolbar">
           {/* GitHub issue #87: a printable/archivable PDF inventory list of
@@ -384,6 +491,8 @@ export function LibraryDetailPage() {
                     <SortableHeader column="release_date" label={t('mediaItem.fields.release_date')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                   </>
                 )}
+                {/* location (GitHub issue #96) applies to every media type, unlike the CD-only columns above — GitHub issue #108. */}
+                <SortableHeader column="location" label={t('mediaItem.fields.location')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
               </tr>
             </thead>
             <tbody>
@@ -436,6 +545,7 @@ export function LibraryDetailPage() {
                       <td>{item.release_date ? dateOnly(item.release_date) : ''}</td>
                     </>
                   )}
+                  <td>{item.location ?? ''}</td>
                 </tr>
               ))}
             </tbody>
@@ -462,7 +572,7 @@ export function LibraryDetailPage() {
         shareableUsers={shareableUsers}
         open={editingSettings}
         onClose={() => setEditingSettings(false)}
-        onSaved={() => void load()}
+        onSaved={() => void loadAll(page, sortBy, sortDir)}
       />
 
       <CreateMediaItemDialog
@@ -474,8 +584,11 @@ export function LibraryDetailPage() {
           // Re-fetches instead of splicing the new item into items.data
           // directly — a fresh item can land on any page depending on the
           // list's current sort/pagination, so reloading is the only way
-          // to reflect it (and the updated total) correctly.
-          void load()
+          // to reflect it (and the updated total) correctly. Only the item
+          // list itself needs it (GitHub issue #108) — creating an item
+          // never changes the library's own metadata, the move-target
+          // list, or the shareable-user list.
+          void loadItems(page, sortBy, sortDir)
         }}
       />
 

@@ -37,13 +37,15 @@ class MediaItemController extends Controller
      * query param and orderBy() doesn't parameterize column names.
      */
     private const SORTABLE_COLUMNS = [
-        'book' => ['title', 'authors', 'ean'],
+        // location (GitHub issue #108) — every media type's own table has
+        // this column (GitHub issue #96), so it's sortable everywhere too.
+        'book' => ['title', 'authors', 'ean', 'location'],
         // release_date/runtime_seconds (GitHub issue #98) — sortable columns
         // for the two extra CD-only table columns; track count has no
         // dedicated `tracks` column to sort by (it's a JSON array's length),
         // so it stays unsortable.
-        'cd' => ['title', 'artist', 'ean', 'release_date', 'runtime_seconds'],
-        'dvd_bluray' => ['title', 'director', 'ean'],
+        'cd' => ['title', 'artist', 'ean', 'release_date', 'runtime_seconds', 'location'],
+        'dvd_bluray' => ['title', 'director', 'ean', 'location'],
     ];
 
     public function index(Request $request, Library $library)
