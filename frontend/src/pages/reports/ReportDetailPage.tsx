@@ -64,28 +64,22 @@ function ItemsTable<T extends ReportItem>({
   )
 }
 
-/** A compact top-N ranking (GitHub issue #74's "Top-Listen") — a numbered list rather than ItemsTable's full table, since there's only ever one value column and up to eight of these render side by side. GitHub issue #102: same click-to-open behavior as ItemsTable above. */
-function TopList({ title, rows, formatValue, onSelect }: { title: string; rows: TopListRow[]; formatValue: (value: number | string) => string; onSelect: (row: TopListRow) => void }) {
-  const { t } = useTranslation()
-
+/**
+ * A top-N ranking (GitHub issue #74's "Top-Listen") — GitHub issue #104: a
+ * thin wrapper around ItemsTable rather than the bespoke `<ol>` this used
+ * to be, whose contents (title button, value, library) had no CSS at all
+ * and just ran together as plain inline text. `TopListRow` already extends
+ * `ReportItem`, so this is exactly ItemsTable with the ranking's own metric
+ * as the extra column — same table formatting (and click-to-open, GitHub
+ * issue #102) as every other report instead of a one-off layout.
+ */
+function TopList({ title, rows, extraHeader, formatValue, onSelect }: { title: string; rows: TopListRow[]; extraHeader: string; formatValue: (value: number | string) => string; onSelect: (row: TopListRow) => void }) {
   if (rows.length === 0) return null
 
   return (
     <div className="report-top-list">
       <h4>{title}</h4>
-      <ol>
-        {rows.map((row) => (
-          <li key={row.id} className="media-item-table__row" onClick={() => onSelect(row)}>
-            <button type="button" className="media-item-table__title-button report-top-list__title" onClick={(e) => { e.stopPropagation(); onSelect(row) }}>
-              {row.title}
-            </button>
-            <span className="report-top-list__value">{formatValue(row.value)}</span>
-            <span className="hint">
-              {row.library_name} · {t(`libraries.mediaType.${row.media_type}`)}
-            </span>
-          </li>
-        ))}
-      </ol>
+      <ItemsTable rows={rows} extraHeader={extraHeader} renderExtra={(row) => formatValue(row.value)} onSelect={onSelect} />
     </div>
   )
 }
@@ -279,24 +273,62 @@ export function ReportDetailPage() {
 
           {meta.key === 'top-lists' && topLists && (
             <div className="report-top-lists">
-              <TopList title={t('reports.topLists.mostExpensive')} rows={topLists.most_expensive} formatValue={(v) => formatPrice({ price: v, currency: null })} onSelect={(row) => void openItem(row)} />
-              <TopList title={t('reports.topLists.cheapest')} rows={topLists.cheapest} formatValue={(v) => formatPrice({ price: v, currency: null })} onSelect={(row) => void openItem(row)} />
-              <TopList title={t('reports.topLists.mostPages')} rows={topLists.most_pages} formatValue={(v) => String(v)} onSelect={(row) => void openItem(row)} />
-              <TopList title={t('reports.topLists.longestCdRuntime')} rows={topLists.longest_cd_runtime} formatValue={(v) => formatDuration(Number(v))} onSelect={(row) => void openItem(row)} />
-              <TopList title={t('reports.topLists.shortestCdRuntime')} rows={topLists.shortest_cd_runtime} formatValue={(v) => formatDuration(Number(v))} onSelect={(row) => void openItem(row)} />
+              <TopList
+                title={t('reports.topLists.mostExpensive')}
+                rows={topLists.most_expensive}
+                extraHeader={t('mediaItem.fields.price')}
+                formatValue={(v) => formatPrice({ price: v, currency: null })}
+                onSelect={(row) => void openItem(row)}
+              />
+              <TopList
+                title={t('reports.topLists.cheapest')}
+                rows={topLists.cheapest}
+                extraHeader={t('mediaItem.fields.price')}
+                formatValue={(v) => formatPrice({ price: v, currency: null })}
+                onSelect={(row) => void openItem(row)}
+              />
+              <TopList
+                title={t('reports.topLists.mostPages')}
+                rows={topLists.most_pages}
+                extraHeader={t('mediaItem.fields.page_count')}
+                formatValue={(v) => String(v)}
+                onSelect={(row) => void openItem(row)}
+              />
+              <TopList
+                title={t('reports.topLists.longestCdRuntime')}
+                rows={topLists.longest_cd_runtime}
+                extraHeader={t('mediaItem.runtime')}
+                formatValue={(v) => formatDuration(Number(v))}
+                onSelect={(row) => void openItem(row)}
+              />
+              <TopList
+                title={t('reports.topLists.shortestCdRuntime')}
+                rows={topLists.shortest_cd_runtime}
+                extraHeader={t('mediaItem.runtime')}
+                formatValue={(v) => formatDuration(Number(v))}
+                onSelect={(row) => void openItem(row)}
+              />
               <TopList
                 title={t('reports.topLists.longestDvdRuntime')}
                 rows={topLists.longest_dvd_runtime}
+                extraHeader={t('mediaItem.fields.runtime_minutes')}
                 formatValue={(v) => t('reports.topLists.minutes', { count: Number(v) })}
                 onSelect={(row) => void openItem(row)}
               />
               <TopList
                 title={t('reports.topLists.shortestDvdRuntime')}
                 rows={topLists.shortest_dvd_runtime}
+                extraHeader={t('mediaItem.fields.runtime_minutes')}
                 formatValue={(v) => t('reports.topLists.minutes', { count: Number(v) })}
                 onSelect={(row) => void openItem(row)}
               />
-              <TopList title={t('reports.topLists.highestDiscCount')} rows={topLists.highest_disc_count} formatValue={(v) => String(v)} onSelect={(row) => void openItem(row)} />
+              <TopList
+                title={t('reports.topLists.highestDiscCount')}
+                rows={topLists.highest_disc_count}
+                extraHeader={t('mediaItem.fields.disc_count')}
+                formatValue={(v) => String(v)}
+                onSelect={(row) => void openItem(row)}
+              />
             </div>
           )}
 
