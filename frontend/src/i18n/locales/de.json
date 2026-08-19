@@ -164,6 +164,7 @@
     "mergeConfirm": "Diese Werte übernehmen",
     "mergeTracksCount_one": "{{count}} Titel",
     "mergeTracksCount_other": "{{count}} Titel",
+    "mergeNoTracks": "Keine Titelliste gefunden.",
     "providerStatus": {
       "ok_one": "{{count}} Treffer",
       "ok_other": "{{count}} Treffer",

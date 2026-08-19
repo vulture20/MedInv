@@ -167,6 +167,7 @@
       "mergeConfirm": "Nota þessi gildi",
       "mergeTracksCount_one": "{{count}} lag",
       "mergeTracksCount_other": "{{count}} lög",
+      "mergeNoTracks": "Enginn lagalisti fannst.",
       "providerStatus": {
         "ok_one": "{{count}} niðurstaða",
         "ok_other": "{{count}} niðurstöður",

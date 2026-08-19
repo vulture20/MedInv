@@ -167,6 +167,7 @@
       "mergeConfirm": "Bruk disse verdiene",
       "mergeTracksCount_one": "{{count}} spor",
       "mergeTracksCount_other": "{{count}} spor",
+      "mergeNoTracks": "Fant ingen sporliste.",
       "providerStatus": {
         "ok_one": "{{count}} treff",
         "ok_other": "{{count}} treff",

@@ -245,10 +245,24 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm
         )
       })}
 
-      {tracksField && (
+      {/*
+        GitHub issue #97: for a CD, always show this row — present or not —
+        rather than only rendering it when at least one provider actually
+        reported a `tracks` field. Silently omitting the whole section
+        whenever tracksField was undefined used to leave no way to tell
+        "this candidate genuinely has no track list, confirming creates an
+        item without one" apart from "the section just hasn't loaded/
+        rendered for some other reason" — the same ambiguity every other
+        merge field already has (see the specs.map() loop above, which
+        equally skips a field no provider reported), but tracks is the one
+        CD collectors most need a definite answer on before confirming.
+      */}
+      {mediaType === 'cd' && (
         <div className="metadata-merge__field">
           <span className="metadata-merge__field-label">{t('mediaItem.tracklist')}</span>
-          {tracksField.agreed ? (
+          {!tracksField ? (
+            <span className="hint">{t('capture.mergeNoTracks')}</span>
+          ) : tracksField.agreed ? (
             <span className="metadata-merge__agreed-value">
               {t('capture.mergeTracksCount', { count: tracksField.value?.length ?? 0 })}
             </span>

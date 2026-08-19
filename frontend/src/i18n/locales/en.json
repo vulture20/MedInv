@@ -164,6 +164,7 @@
     "mergeConfirm": "Use these values",
     "mergeTracksCount_one": "{{count}} track",
     "mergeTracksCount_other": "{{count}} tracks",
+    "mergeNoTracks": "No track list found.",
     "providerStatus": {
       "ok_one": "{{count}} match",
       "ok_other": "{{count}} matches",

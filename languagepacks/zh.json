@@ -171,6 +171,7 @@
       "mergeConfirm": "使用这些值",
       "mergeTracksCount_one": "{{count}} 首",
       "mergeTracksCount_other": "{{count}} 首",
+      "mergeNoTracks": "未找到曲目列表。",
       "providerStatus": {
         "ok_one": "{{count}} 个结果",
         "ok_other": "{{count}} 个结果",

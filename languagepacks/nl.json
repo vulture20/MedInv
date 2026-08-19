@@ -171,6 +171,7 @@
       "mergeConfirm": "Deze waarden gebruiken",
       "mergeTracksCount_one": "{{count}} track",
       "mergeTracksCount_other": "{{count}} tracks",
+      "mergeNoTracks": "Geen tracklist gevonden.",
       "providerStatus": {
         "ok_one": "{{count}} resultaat",
         "ok_other": "{{count}} resultaten",

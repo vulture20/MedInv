@@ -171,6 +171,7 @@
       "mergeConfirm": "この値を使用",
       "mergeTracksCount_one": "{{count}}曲",
       "mergeTracksCount_other": "{{count}}曲",
+      "mergeNoTracks": "トラックリストが見つかりませんでした。",
       "providerStatus": {
         "ok_one": "{{count}} 件",
         "ok_other": "{{count}} 件",

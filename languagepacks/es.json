@@ -171,6 +171,7 @@
       "mergeConfirm": "Usar estos valores",
       "mergeTracksCount_one": "{{count}} pista",
       "mergeTracksCount_other": "{{count}} pistas",
+      "mergeNoTracks": "No se encontró ninguna lista de pistas.",
       "providerStatus": {
         "ok_one": "{{count}} resultado",
         "ok_other": "{{count}} resultados",
