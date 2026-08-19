@@ -5,6 +5,28 @@ set -e
 # 16.) is evaluated at container start, per the "Leitgedanken" in chapter 19.
 cd /var/www/backend
 
+# Self-healing fix for GitHub issue #91: this whole script runs as root (no
+# USER directive anywhere in the Dockerfile), and so does every `php artisan`
+# call below (migrate/seed/pre-update-backup) — if any of them writes to
+# Laravel's log (config/logging.php's `daily` channel, GitHub issue #85), the
+# file it creates is owned by root:root, not www-data:www-data. The php-fpm
+# workers that handle every actual HTTP request run as www-data and can't
+# write to a root-owned log file, which surfaced as the whole app silently
+# hanging on the login screen — a failed write inside Laravel's own logging
+# pipeline, mid-request, rather than a clean error page. supervisord.conf's
+# scheduler (`schedule:run`, running once a minute around the clock) is the
+# single likeliest process to hit this the moment a new calendar day's log
+# file is first needed, and now runs as www-data itself for the same reason
+# — but this also repairs a file already left root-owned by a previous boot
+# (before that fix existed, or from one of entrypoint.sh's own artisan calls
+# below), so a broken deployment self-heals on the next restart instead of
+# needing a manual `docker compose exec app chown` from the operator. `-R`
+# despite this normally only ever needing to fix files, not the directory
+# itself, is deliberate: recovering from a wholly-missing directory (an old
+# volume predating a chown ever happening at all) at no extra cost.
+mkdir -p storage/logs
+chown -R www-data:www-data storage/logs
+
 # APP_KEY encrypts sessions/cookies — without it, Sanctum's stateful
 # middleware throws MissingAppKeyException on every request (including
 # login), which previously surfaced as a misleading generic error instead
