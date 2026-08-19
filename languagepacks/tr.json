@@ -570,6 +570,9 @@
         "unknownUser": "Bilinmiyor (bu özellikten önce eklenmiş)",
         "lastCaptured": "Son ekleme"
       }
+    },
+    "pdfExport": {
+      "generatedAt": "{{date}} tarihinde oluşturuldu"
     }
   }
 }

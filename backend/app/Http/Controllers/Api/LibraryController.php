@@ -87,7 +87,7 @@ class LibraryController extends Controller
     {
         abort_unless($this->access->canRead($request->user(), $library), 403);
 
-        $pdf = $this->pdfExportService->libraryInventoryPdf($library);
+        $pdf = $this->pdfExportService->libraryInventoryPdf($library, $request->user());
         $filename = 'medinv-'.$this->sanitizeForFilename($library->name).'-'.SystemSetting::localNow()->format('Ymd-His').'.pdf';
 
         return $pdf->download($filename);

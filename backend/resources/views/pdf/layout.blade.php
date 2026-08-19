@@ -8,7 +8,9 @@
     dompdf's own bundled default font family, chosen explicitly (rather than
     left unset) for its broad Unicode coverage — library/item names are free
     text in whatever script a user chose, this app being translated into a
-    dozen languages (briefing 10./11.4).
+    dozen languages (briefing 10./11.4); as of GitHub issue #113, the
+    surrounding UI copy in this very layout is too, via $generatedAtText
+    (PdfExportService::render()).
 --}}
 <!DOCTYPE html>
 <html>
@@ -29,7 +31,7 @@
 </head>
 <body>
     <h1>{{ $title }}</h1>
-    <p class="meta">MedInv &mdash; generated {{ $generatedAt }}</p>
+    <p class="meta">MedInv &mdash; {{ $generatedAtText }}</p>
     @yield('content')
 </body>
 </html>

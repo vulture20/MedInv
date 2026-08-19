@@ -1,20 +1,31 @@
-{{-- A single library's inventory (GitHub issue #87) — title/subtitle (author/artist/director)/EAN/price/location, plus an item-count and total-value summary line. The stated use case in #87 is exactly this: a printable/archivable inventory list, e.g. as proof for an insurance claim. --}}
+{{--
+    A single library's inventory (GitHub issue #87) — title/subtitle
+    (author/artist/director)/EAN/price/location, plus an item-count and
+    total-value summary line. The stated use case in #87 is exactly this: a
+    printable/archivable inventory list, e.g. as proof for an insurance
+    claim.
+
+    GitHub issue #113: $metaLine (mediaTypeLabel/item-count pluralization/
+    total value) is fully precomputed by libraryInventoryPdf() rather than
+    assembled here — pluralization needs a real _one/_other lookup
+    (Translator::plural()), not the plain PHP ternary this used to be.
+--}}
 @extends('pdf.layout')
 
 @section('content')
-    <p class="meta">{{ $mediaTypeLabel }} &mdash; {{ $itemCount }} {{ $itemCount === 1 ? 'item' : 'items' }} &mdash; total value {{ $totalValueLabel }}</p>
+    <p class="meta">{{ $metaLine }}</p>
 
     @if(count($rows) === 0)
-        <p class="hint">This library doesn't contain any items yet.</p>
+        <p class="hint">{{ $emptyLibraryText }}</p>
     @else
         <table>
             <thead>
                 <tr>
-                    <th>Title</th>
+                    <th>{{ $colTitle }}</th>
                     <th>{{ $subtitleLabel }}</th>
-                    <th>EAN</th>
-                    <th>Price</th>
-                    <th>Location</th>
+                    <th>{{ $colEan }}</th>
+                    <th>{{ $colPrice }}</th>
+                    <th>{{ $locationHeader }}</th>
                 </tr>
             </thead>
             <tbody>

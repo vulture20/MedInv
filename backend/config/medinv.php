@@ -29,4 +29,17 @@ return [
     // of backend/ at the project root, both locally and inside the Docker
     // image (docker/Dockerfile's dedicated COPY).
     'templates_path' => base_path('../templates'),
+
+    // Bundled UI locale files (frontend/src/i18n/locales/{de,en}.json,
+    // briefing 11.4/GitHub issue #113) — App\Domain\Languages\Translator's
+    // source for the two bundled languages (every other language lives in
+    // the language_packs table instead, see BundledLanguagePackRegistry).
+    // Unlike languagepacks_path/templates_path above, this isn't a
+    // top-level sibling of backend/ in the repo — it's nested inside
+    // frontend/src/i18n/locales/ — so the same base_path('../X') trick
+    // needs docker/Dockerfile to COPY it to that exact same nested path
+    // under WORKDIR's parent (rather than flattening it to a new top-level
+    // directory) for this one expression to resolve identically in local
+    // dev and inside the container.
+    'locales_path' => base_path('../frontend/src/i18n/locales'),
 ];

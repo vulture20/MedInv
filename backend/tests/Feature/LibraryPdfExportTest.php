@@ -21,9 +21,16 @@ class LibraryPdfExportTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function actingAsUser(string $level = 'user'): User
+    /**
+     * `$overrides` defaults `preferred_language` to 'en' (GitHub issue
+     * #113 — PDFs now render in the requesting user's language rather than
+     * always English) so every test below not specifically about
+     * localization keeps asserting the same English text it always has;
+     * pass an explicit 'preferred_language' to override that.
+     */
+    private function actingAsUser(string $level = 'user', array $overrides = []): User
     {
-        $user = User::factory()->create(['level' => $level, 'is_active' => true]);
+        $user = User::factory()->create(['level' => $level, 'is_active' => true, 'preferred_language' => 'en', ...$overrides]);
         $this->actingAs($user);
 
         return $user;
@@ -141,8 +148,11 @@ class LibraryPdfExportTest extends TestCase
         $response = $this->get("/api/libraries/{$library->id}/export/pdf");
 
         $response->assertOk();
+        // GitHub issue #113: this meta line now reuses statistics.totalValue's own
+        // "Total value" wording/casing verbatim, rather than the lowercase
+        // "total value" this test used to spell out itself.
         $text = $this->pdfText($response);
-        $this->assertStringContainsString('total value 12', $text);
+        $this->assertStringContainsString('Total value: 12', $text);
         $this->assertStringNotContainsString('€', $text);
     }
 }

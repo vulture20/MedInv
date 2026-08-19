@@ -570,6 +570,9 @@
         "unknownUser": "Tuntematon (lisätty ennen tätä ominaisuutta)",
         "lastCaptured": "Viimeksi lisätty"
       }
+    },
+    "pdfExport": {
+      "generatedAt": "luotu {{date}}"
     }
   }
 }

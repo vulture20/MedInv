@@ -570,6 +570,9 @@
         "unknownUser": "未知（在此功能上线前添加）",
         "lastCaptured": "最近添加时间"
       }
+    },
+    "pdfExport": {
+      "generatedAt": "生成于 {{date}}"
     }
   }
 }

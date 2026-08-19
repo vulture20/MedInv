@@ -570,6 +570,9 @@
         "unknownUser": "Onbekend (vastgelegd vóór deze functie)",
         "lastCaptured": "Laatst vastgelegd"
       }
+    },
+    "pdfExport": {
+      "generatedAt": "gegenereerd op {{date}}"
     }
   }
 }

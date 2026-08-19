@@ -61,6 +61,17 @@ COPY languagepacks/ /var/www/languagepacks/
 # templates_path')) — same relative-position reasoning as languagepacks/
 # just above.
 COPY templates/ /var/www/templates/
+
+# Bundled UI locale files (App\Domain\Languages\Translator, config('medinv.
+# locales_path'), GitHub issue #113 — PDF exports rendering in the
+# requesting user's language) — copied to the exact same nested path it
+# has in the repo (not flattened to a new top-level directory, unlike
+# languagepacks/templates/ above) so base_path('../frontend/src/i18n/
+# locales') resolves identically here and in local dev. The frontend-build
+# stage above only ever produces a minified dist/ bundle with no raw JSON
+# left in it, so these source files wouldn't otherwise exist in this image
+# at all.
+COPY frontend/src/i18n/locales/ /var/www/frontend/src/i18n/locales/
 RUN composer dump-autoload --optimize --no-dev \
     && mkdir -p storage/framework/{cache,sessions,views} storage/logs storage/app/private/backups storage/database bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache

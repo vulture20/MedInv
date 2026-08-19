@@ -567,5 +567,8 @@
     "oidc_failed": "Single Sign-On ist fehlgeschlagen. Bitte erneut versuchen oder stattdessen mit Passwort anmelden.",
     "oidc_no_account": "Für diese Identität existiert noch kein Konto. Bitte an einen Administrator wenden.",
     "oidc_account_deactivated": "Dieses Konto wurde deaktiviert."
+  },
+  "pdfExport": {
+    "generatedAt": "erstellt am {{date}}"
   }
 }

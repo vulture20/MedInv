@@ -3,20 +3,21 @@
 
 @section('content')
     @if(count($rows) === 0)
-        <p class="hint">No activity to show.</p>
+        <p class="hint">{{ $noItemsText }}</p>
     @else
         <table>
             <thead>
                 <tr>
-                    <th>User</th>
-                    <th>Item count</th>
-                    <th>Last captured</th>
+                    <th>{{ $userHeader }}</th>
+                    <th>{{ $itemCountHeader }}</th>
+                    <th>{{ $lastCapturedHeader }}</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($rows as $row)
                     <tr>
-                        <td>{{ $row['user_name'] ?? 'Unknown (captured before this feature existed)' }}</td>
+                        {{-- GitHub issue #113: 'user_name' already resolved to $unknownUserText in userActivityPdf() when null. --}}
+                        <td>{{ $row['user_name'] }}</td>
                         <td>{{ $row['item_count'] }}</td>
                         <td>{{ $row['last_captured_at'] ? \Illuminate\Support\Carbon::parse($row['last_captured_at'])->toDateString() : '—' }}</td>
                     </tr>

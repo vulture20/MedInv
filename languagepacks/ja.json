@@ -570,6 +570,9 @@
         "unknownUser": "不明（この機能導入前に登録）",
         "lastCaptured": "最終登録日"
       }
+    },
+    "pdfExport": {
+      "generatedAt": "{{date}} に生成"
     }
   }
 }

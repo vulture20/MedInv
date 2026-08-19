@@ -570,6 +570,9 @@
         "unknownUser": "Desconocido (capturado antes de esta función)",
         "lastCaptured": "Última captura"
       }
+    },
+    "pdfExport": {
+      "generatedAt": "generado el {{date}}"
     }
   }
 }

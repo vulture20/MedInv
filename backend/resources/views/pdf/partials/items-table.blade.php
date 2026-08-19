@@ -10,17 +10,17 @@
 
     $rows: array<int, array{title:string, ean:string, library_name:string, media_type:string, extra?:string}>
     $extraHeader: string|null — omit the extra column entirely when null (mirrors ItemsTable's optional extraHeader prop).
-    $mediaTypeLabels: array<string,string>
+    $mediaTypeLabels, $colTitle, $colEan, $colLibrary, $noItemsText: all injected by PdfExportService::render() (GitHub issue #113), shared across every view using this partial rather than passed at each @include site.
 --}}
 @if(count($rows) === 0)
-    <p class="hint">No items.</p>
+    <p class="hint">{{ $noItemsText }}</p>
 @else
     <table>
         <thead>
             <tr>
-                <th>Title</th>
-                <th>EAN</th>
-                <th>Library</th>
+                <th>{{ $colTitle }}</th>
+                <th>{{ $colEan }}</th>
+                <th>{{ $colLibrary }}</th>
                 @if($extraHeader ?? null)
                     <th>{{ $extraHeader }}</th>
                 @endif

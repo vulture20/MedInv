@@ -570,6 +570,9 @@
         "unknownUser": "Óþekkt (skráð fyrir tilkomu þessa eiginleika)",
         "lastCaptured": "Síðast skráð"
       }
+    },
+    "pdfExport": {
+      "generatedAt": "búið til {{date}}"
     }
   }
 }
