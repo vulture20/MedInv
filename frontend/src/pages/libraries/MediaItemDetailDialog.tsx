@@ -4,6 +4,7 @@ import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem, type Track } from './mediaItemFields'
+import { TrackListEditor } from './TrackListEditor'
 import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from '../capture/MetadataMergeReview'
 
 export type { MediaItem } from './mediaItemFields'
@@ -107,29 +108,6 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     const errors = (err.response?.data as { errors?: Record<string, string[]> } | undefined)?.errors
     if (errors) return Object.values(errors).flat().join(' ')
     return t('errors.generic')
-  }
-
-  // GitHub issue #90: add/remove/reorder rows in the CD track editor below.
-  function addTrack() {
-    setTracks((prev) => [...prev, { position: String(prev.length + 1), title: '', duration_seconds: null }])
-  }
-
-  function removeTrack(index: number) {
-    setTracks((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  function updateTrack(index: number, patch: Partial<Track>) {
-    setTracks((prev) => prev.map((track, i) => (i === index ? { ...track, ...patch } : track)))
-  }
-
-  function moveTrack(index: number, direction: -1 | 1) {
-    setTracks((prev) => {
-      const target = index + direction
-      if (target < 0 || target >= prev.length) return prev
-      const next = [...prev]
-      ;[next[index], next[target]] = [next[target], next[index]]
-      return next
-    })
   }
 
   async function save(e: React.FormEvent) {
@@ -328,53 +306,8 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                 </label>
               ))}
 
-              {/* GitHub issue #90: a dedicated, non-FIELD_SPECS editor for a CD's track list — mirrors the read-only <ol> below (shown only outside editing), since a track list isn't a single scalar value the generic loop above can represent. */}
-              {library.media_type === 'cd' && (
-                <div className="media-item-dialog__track-editor">
-                  <h4>{t('mediaItem.tracklist')}</h4>
-                  {tracks.map((track, index) => (
-                    <div key={index} className="media-item-dialog__track-editor-row">
-                      <input
-                        className="media-item-dialog__track-position-input"
-                        type="text"
-                        aria-label={t('mediaItem.trackPosition')}
-                        placeholder={t('mediaItem.trackPosition')}
-                        value={track.position ?? ''}
-                        onChange={(e) => updateTrack(index, { position: e.target.value })}
-                      />
-                      <input
-                        className="media-item-dialog__track-title-input"
-                        type="text"
-                        aria-label={t('mediaItem.trackTitle')}
-                        placeholder={t('mediaItem.trackTitle')}
-                        value={track.title ?? ''}
-                        onChange={(e) => updateTrack(index, { title: e.target.value })}
-                      />
-                      <input
-                        className="media-item-dialog__track-duration-input"
-                        type="number"
-                        step="any"
-                        aria-label={t('mediaItem.trackDurationSeconds')}
-                        placeholder={t('mediaItem.trackDurationSeconds')}
-                        value={track.duration_seconds ?? ''}
-                        onChange={(e) => updateTrack(index, { duration_seconds: e.target.value === '' ? null : Number(e.target.value) })}
-                      />
-                      <button type="button" onClick={() => moveTrack(index, -1)} disabled={index === 0} aria-label={t('mediaItem.moveTrackUp')}>
-                        ↑
-                      </button>
-                      <button type="button" onClick={() => moveTrack(index, 1)} disabled={index === tracks.length - 1} aria-label={t('mediaItem.moveTrackDown')}>
-                        ↓
-                      </button>
-                      <button type="button" onClick={() => removeTrack(index)} aria-label={t('mediaItem.removeTrack')}>
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={addTrack}>
-                    {t('mediaItem.addTrack')}
-                  </button>
-                </div>
-              )}
+              {/* GitHub issue #90: a dedicated, non-FIELD_SPECS editor for a CD's track list (GitHub issue #92: now shared with CreateMediaItemDialog.tsx, see TrackListEditor.tsx) — mirrors the read-only <ol> below (shown only outside editing), since a track list isn't a single scalar value the generic loop above can represent. */}
+              {library.media_type === 'cd' && <TrackListEditor tracks={tracks} onChange={setTracks} />}
 
               <div className="media-item-dialog__actions">
                 <button type="submit">{t('admin.actions.save')}</button>

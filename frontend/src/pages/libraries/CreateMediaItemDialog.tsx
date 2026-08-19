@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
-import { FIELD_SPECS, payloadFromValues, type LibraryRef, type MediaItem } from './mediaItemFields'
+import { FIELD_SPECS, payloadFromValues, type LibraryRef, type MediaItem, type Track } from './mediaItemFields'
+import { TrackListEditor } from './TrackListEditor'
 
 interface Props {
   library: LibraryRef
@@ -33,6 +34,13 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
   // attach it to yet; actually uploaded as a second request in submit()
   // below, right after the item itself is created.
   const [coverFile, setCoverFile] = useState<File | null>(null)
+  // GitHub issue #92: a CD's track list, editable right at manual entry —
+  // most useful right after a capture-flow `no_match` dead end, previously
+  // the one case where typing a track list by hand was most likely to be
+  // wanted but least possible until the item was saved and reopened for
+  // editing. See TrackListEditor.tsx (shared with MediaItemDetailDialog.tsx,
+  // GitHub issue #90) for why this isn't part of the FIELD_SPECS loop below.
+  const [tracks, setTracks] = useState<Track[]>([])
 
   const specs = FIELD_SPECS[library.media_type]
 
@@ -43,6 +51,7 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
       setError(null)
       setSaving(false)
       setCoverFile(null)
+      setTracks([])
       dialogRef.current?.showModal()
     } else {
       dialogRef.current?.close()
@@ -63,10 +72,16 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
     setError(null)
     setSaving(true)
     try {
-      let { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items`, {
-        ean,
-        ...payloadFromValues(values, specs),
-      })
+      const payload: Record<string, unknown> = { ean, ...payloadFromValues(values, specs) }
+      // GitHub issue #92: no "was it touched" distinction needed here unlike
+      // MediaItemDetailDialog.tsx's save() — there's no pre-existing item
+      // whose runtime_seconds a blank tracks list could ever accidentally
+      // overwrite, so MediaItemService::withDerivedRuntime() (already run by
+      // MediaItemController::store()) can simply be handed whatever's here.
+      if (library.media_type === 'cd' && tracks.length > 0) {
+        payload.tracks = tracks
+      }
+      let { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items`, payload)
       // GitHub issue #75: a second request, hidden behind this same submit,
       // mirroring MediaItemDetailDialog's uploadCover() now that the item
       // (and its id) exists. A failure here doesn't roll back or block the
@@ -144,6 +159,10 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
                 )}
               </label>
             ))}
+
+            {/* GitHub issue #92 — see TrackListEditor.tsx's own docblock for why this needed to be added here too, alongside #90's edit-dialog version. */}
+            {library.media_type === 'cd' && <TrackListEditor tracks={tracks} onChange={setTracks} />}
+
             <div className="media-item-dialog__actions">
               <button type="submit" disabled={saving}>
                 {t('admin.actions.save')}
