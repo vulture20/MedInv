@@ -117,6 +117,11 @@ export function ReportDetailPage() {
   const [captureSource, setCaptureSource] = useState<CaptureSourceResponse | null>(null)
   const [sharing, setSharing] = useState<SharingRow[] | null>(null)
   const [userActivity, setUserActivity] = useState<UserActivityRow[] | null>(null)
+  // GitHub issue #105 — previously missing entirely, same gap SearchPage.tsx
+  // already got fixed for: a failed request left every report's state at
+  // its initial `null`, rendering as if the report were simply empty
+  // (reports.none) rather than as a genuine load failure.
+  const [error, setError] = useState<string | null>(null)
 
   // Every library visible to this user (GET /libraries) — both the source
   // of a clicked row's full LibraryRef (id/name/media_type/owner; a report
@@ -132,6 +137,16 @@ export function ReportDetailPage() {
   }, [])
 
   async function loadReport(reportKey: ReportKey) {
+    setError(null)
+    try {
+      await loadReportUnsafe(reportKey)
+    } catch (err) {
+      console.error('Failed to load report:', err)
+      setError(t('reports.error'))
+    }
+  }
+
+  async function loadReportUnsafe(reportKey: ReportKey) {
     switch (reportKey) {
       case 'duplicates': {
         const { data } = await apiClient.get<DuplicateGroup[]>('/reports/duplicates')
@@ -228,6 +243,8 @@ export function ReportDetailPage() {
         <h1>{t(meta.titleKey)}</h1>
         <p className="hint">{t(meta.hintKey)}</p>
       </header>
+
+      {error && <p role="alert">{error}</p>}
 
       {loading ? (
         <p className="hint">…</p>

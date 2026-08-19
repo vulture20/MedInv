@@ -194,6 +194,7 @@
       "title": "Statistikk",
       "subtitle": "Oversikt over størrelsen, verdien og sammensetningen av bibliotekene dine.",
       "none": "Ingen statistikk å vise ennå.",
+      "error": "Kunne ikke laste statistikk. Prøv igjen.",
       "itemCount": "Antall oppføringer",
       "totalValue": "Total verdi",
       "currencyMismatchWarning": "Inneholder oppføringer i en annen valuta enn den konfigurerte standarden — denne totalen er kanskje ikke meningsfull.",
@@ -504,6 +505,7 @@
       "library": "Bibliotek",
       "view": "Vis",
       "notFound": "Ukjent rapport.",
+      "error": "Kunne ikke laste denne rapporten. Prøv igjen.",
       "duplicates": {
         "title": "Duplikater på tvers av biblioteker",
         "hint": "Samme EAN registrert i mer enn ett bibliotek av samme medietype."

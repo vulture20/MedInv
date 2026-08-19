@@ -194,6 +194,7 @@
       "title": "İstatistikler",
       "subtitle": "Kitaplıklarınızın boyutuna, değerine ve içeriğine genel bakış.",
       "none": "Henüz gösterilecek istatistik yok.",
+      "error": "İstatistikler yüklenemedi. Lütfen tekrar deneyin.",
       "itemCount": "Öğe sayısı",
       "totalValue": "Toplam değer",
       "currencyMismatchWarning": "Yapılandırılan varsayılandan farklı bir para biriminde öğeler içeriyor — bu toplam anlamlı olmayabilir.",
@@ -504,6 +505,7 @@
       "library": "Kitaplık",
       "view": "Görüntüle",
       "notFound": "Bilinmeyen rapor.",
+      "error": "Bu rapor yüklenemedi. Lütfen tekrar deneyin.",
       "duplicates": {
         "title": "Kitaplıklar arası yinelenenler",
         "hint": "Aynı medya türündeki birden fazla kitaplığa eklenmiş aynı EAN."

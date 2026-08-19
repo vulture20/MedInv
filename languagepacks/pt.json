@@ -194,6 +194,7 @@
       "title": "Estatísticas",
       "subtitle": "Visão geral do tamanho, valor e composição das suas bibliotecas.",
       "none": "Ainda não há estatísticas para mostrar.",
+      "error": "Não foi possível carregar as estatísticas. Tente novamente.",
       "itemCount": "Número de itens",
       "totalValue": "Valor total",
       "currencyMismatchWarning": "Contém itens em uma moeda diferente da padrão configurada — este total pode não ser significativo.",
@@ -504,6 +505,7 @@
       "library": "Biblioteca",
       "view": "Ver",
       "notFound": "Relatório desconhecido.",
+      "error": "Não foi possível carregar este relatório. Tente novamente.",
       "duplicates": {
         "title": "Duplicados entre bibliotecas",
         "hint": "O mesmo EAN capturado em mais de uma biblioteca do mesmo tipo de mídia."

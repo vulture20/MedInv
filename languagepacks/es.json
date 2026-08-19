@@ -194,6 +194,7 @@
       "title": "Estadísticas",
       "subtitle": "Resumen del tamaño, valor y composición de tus bibliotecas.",
       "none": "Todavía no hay estadísticas que mostrar.",
+      "error": "No se pudieron cargar las estadísticas. Inténtalo de nuevo.",
       "itemCount": "Número de elementos",
       "totalValue": "Valor total",
       "currencyMismatchWarning": "Contiene elementos en una divisa distinta a la predeterminada configurada — este total puede no ser significativo.",
@@ -504,6 +505,7 @@
       "library": "Biblioteca",
       "view": "Ver",
       "notFound": "Informe desconocido.",
+      "error": "No se pudo cargar este informe. Inténtalo de nuevo.",
       "duplicates": {
         "title": "Duplicados entre bibliotecas",
         "hint": "El mismo EAN capturado en más de una biblioteca de la misma clase de medio."

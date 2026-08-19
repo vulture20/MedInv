@@ -194,6 +194,7 @@
       "title": "Statystyki",
       "subtitle": "Przegląd rozmiaru, wartości i składu Twoich bibliotek.",
       "none": "Brak statystyk do wyświetlenia.",
+      "error": "Nie udało się wczytać statystyk. Spróbuj ponownie.",
       "itemCount": "Liczba pozycji",
       "totalValue": "Wartość całkowita",
       "currencyMismatchWarning": "Zawiera pozycje w innej walucie niż skonfigurowana domyślna — ta suma może nie być miarodajna.",
@@ -504,6 +505,7 @@
       "library": "Biblioteka",
       "view": "Wyświetl",
       "notFound": "Nieznany raport.",
+      "error": "Nie udało się wczytać tego raportu. Spróbuj ponownie.",
       "duplicates": {
         "title": "Duplikaty między bibliotekami",
         "hint": "Ten sam EAN zarejestrowany w więcej niż jednej bibliotece tego samego typu mediów."

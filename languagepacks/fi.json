@@ -194,6 +194,7 @@
       "title": "Tilastot",
       "subtitle": "Yleiskatsaus kirjastojesi laajuuteen, arvoon ja koostumukseen.",
       "none": "Ei vielä näytettäviä tilastoja.",
+      "error": "Tilastojen lataaminen epäonnistui. Yritä uudelleen.",
       "itemCount": "Kohteiden määrä",
       "totalValue": "Kokonaisarvo",
       "currencyMismatchWarning": "Sisältää kohteita, joiden valuutta poikkeaa asetetusta oletuksesta — tämä summa ei välttämättä ole merkityksellinen.",
@@ -504,6 +505,7 @@
       "library": "Kirjasto",
       "view": "Näytä",
       "notFound": "Tuntematon raportti.",
+      "error": "Tämän raportin lataaminen epäonnistui. Yritä uudelleen.",
       "duplicates": {
         "title": "Kaksoiskappaleet kirjastojen välillä",
         "hint": "Sama EAN tallennettu useampaan saman mediatyypin kirjastoon."

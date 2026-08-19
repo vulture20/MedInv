@@ -10,6 +10,8 @@ interface LibraryStats {
   total_value: number
   /** GitHub issue #62: true when this library has an item whose `currency` (#58) disagrees with the admin-configured default (SystemSettingsPage.tsx) — total_value itself is still a plain currency-less sum either way, see StatisticsService::overviewFor()'s docblock. */
   currency_mismatch: boolean
+  /** The admin-configured default currency (SystemSettingsPage.tsx), or null if unset — GitHub issue #105. Only meaningful to display alongside `total_value` when `currency_mismatch` is false; see formatTotalValue()'s docblock. */
+  default_currency: string | null
   /** Which keys are present depends on media_type — only book libraries have `genre`, for instance (briefing 6./14.). */
   distributions: Record<string, Record<string, number>>
 }
@@ -33,6 +35,30 @@ interface ValueHistoryResponse {
   accumulated: { series: ValueHistoryPoint[] }
   /** The earliest real snapshot date anywhere in the system, or null if the daily job hasn't run yet at all. */
   cutover_date: string | null
+}
+
+/**
+ * `total_value` with an actual currency symbol (GitHub issue #105) instead
+ * of a bare, unit-less number. Only ever called with a non-null `currency`
+ * when `currency_mismatch` is false (see LibraryStats.default_currency's
+ * docblock) — a mismatched library's sum mixes currencies, so labeling it
+ * with just one of them would be actively misleading, the same reason the
+ * warning banner exists at all. `Intl.NumberFormat`'s 'currency' style
+ * renders the locale-appropriate symbol (e.g. "€" for EUR, not the bare
+ * "EUR" code) — falls back to the plain number if `currency` isn't a real
+ * ISO 4217 code Intl recognizes, since the admin-configured setting
+ * (AdminSettingsController::updateStatistics()) is a free-text field with
+ * no whitelist and could hold anything up to three characters.
+ */
+function formatTotalValue(value: number, currency: string | null, language: string): string {
+  if (currency) {
+    try {
+      return new Intl.NumberFormat(language, { style: 'currency', currency }).format(value)
+    } catch {
+      // Not a currency code Intl recognizes — fall through to the plain number.
+    }
+  }
+  return String(value)
 }
 
 /** Bars beyond this many are folded into a "+N more" note rather than rendered (briefing 14., ">7 classes" per dataviz guidance). */
@@ -201,17 +227,29 @@ function ValueHistoryChart({ title, points, cutoverDate }: { title: string; poin
  * inventing parallel classes for what's structurally the same header shape.
  */
 export function StatisticsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [stats, setStats] = useState<LibraryStats[]>([])
   const [history, setHistory] = useState<ValueHistoryResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  // GitHub issue #105 — previously missing entirely — a failed request (a
+  // session hiccup, a 500, ...) left `stats`/`history` at their initial
+  // empty values with no indication anything went wrong, indistinguishable
+  // from a genuine "no libraries visible yet" result. Same fix SearchPage.tsx
+  // already got for the identical gap.
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    setError(null)
     void Promise.all([
       apiClient.get<LibraryStats[]>('/statistics').then(({ data }) => setStats(data)),
       apiClient.get<ValueHistoryResponse>('/statistics/value-history').then(({ data }) => setHistory(data)),
-    ]).finally(() => setLoading(false))
-  }, [])
+    ])
+      .catch((err) => {
+        console.error('Failed to load statistics:', err)
+        setError(t('statistics.error'))
+      })
+      .finally(() => setLoading(false))
+  }, [t])
 
   return (
     <div className="panel-page">
@@ -219,6 +257,8 @@ export function StatisticsPage() {
         <h1>{t('statistics.title')}</h1>
         <p className="hint">{t('statistics.subtitle')}</p>
       </header>
+
+      {error && <p role="alert">{error}</p>}
 
       {loading ? (
         <p className="hint">…</p>
@@ -253,7 +293,7 @@ export function StatisticsPage() {
                       {t('statistics.itemCount')}: {s.item_count}
                     </span>
                     <span>
-                      {t('statistics.totalValue')}: {s.total_value}
+                      {t('statistics.totalValue')}: {formatTotalValue(s.total_value, s.currency_mismatch ? null : s.default_currency, i18n.language)}
                     </span>
                   </p>
                   {s.currency_mismatch && <p className="warning warning--danger">{t('statistics.currencyMismatchWarning')}</p>}

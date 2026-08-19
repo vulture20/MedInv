@@ -82,6 +82,24 @@ class StatisticsCurrencyMismatchTest extends TestCase
         $this->assertFalse($this->statsFor($library->id)['currency_mismatch']);
     }
 
+    /** GitHub issue #105 — `default_currency` rides along on every /statistics row so the frontend can show total_value with a currency symbol. */
+    public function test_statistics_includes_the_configured_default_currency(): void
+    {
+        $owner = $this->actingAsAdmin();
+        SystemSetting::set('statistics.default_currency', 'EUR');
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+
+        $this->assertSame('EUR', $this->statsFor($library->id)['default_currency']);
+    }
+
+    public function test_statistics_default_currency_is_null_when_unconfigured(): void
+    {
+        $owner = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+
+        $this->assertNull($this->statsFor($library->id)['default_currency']);
+    }
+
     public function test_the_admin_settings_index_includes_the_current_default_currency(): void
     {
         $this->actingAsAdmin();

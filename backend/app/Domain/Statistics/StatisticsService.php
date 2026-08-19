@@ -48,6 +48,17 @@ class StatisticsService
         // might be wrong is at least distinguishable from one that
         // definitely isn't. Never true when no default is configured at
         // all — there's nothing to compare against yet.
+        //
+        // `default_currency` itself also rides along on every row (GitHub
+        // issue #105) so StatisticsPage.tsx can show `total_value` with an
+        // actual currency symbol instead of a bare, unit-less number — only
+        // meaningful to display when `currency_mismatch` is false, since a
+        // mismatched library's sum mixes currencies and labeling it with
+        // just one of them would be actively misleading. Denormalized onto
+        // every row (the same single admin setting repeated) rather than a
+        // separate top-level response field, so this stays a plain array of
+        // rows for GET /statistics's existing consumers instead of becoming
+        // a wrapper object.
         $defaultCurrency = SystemSetting::get('statistics.default_currency');
 
         return $libraries->map(fn (Library $library) => [
@@ -62,6 +73,7 @@ class StatisticsService
             'total_value' => $library->mediaItems()->sum('price'),
             'currency_mismatch' => $defaultCurrency !== null
                 && $library->mediaItems()->whereNotNull('currency')->where('currency', '!=', $defaultCurrency)->exists(),
+            'default_currency' => $defaultCurrency,
             'distributions' => $this->distributionsFor($library),
         ])->all();
     }

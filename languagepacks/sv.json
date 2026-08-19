@@ -194,6 +194,7 @@
       "title": "Statistik",
       "subtitle": "Översikt över dina biblioteks storlek, värde och sammansättning.",
       "none": "Ingen statistik att visa ännu.",
+      "error": "Det gick inte att läsa in statistiken. Försök igen.",
       "itemCount": "Antal poster",
       "totalValue": "Totalt värde",
       "currencyMismatchWarning": "Innehåller poster i en annan valuta än den konfigurerade standarden — denna summa kanske inte är meningsfull.",
@@ -504,6 +505,7 @@
       "library": "Bibliotek",
       "view": "Visa",
       "notFound": "Okänd rapport.",
+      "error": "Det gick inte att läsa in den här rapporten. Försök igen.",
       "duplicates": {
         "title": "Dubbletter mellan bibliotek",
         "hint": "Samma EAN registrerad i fler än ett bibliotek av samma medietyp."

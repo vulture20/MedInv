@@ -194,6 +194,7 @@
       "title": "Tölfræði",
       "subtitle": "Yfirlit yfir stærð, verðmæti og samsetningu safnanna þinna.",
       "none": "Engin tölfræði til að sýna ennþá.",
+      "error": "Ekki tókst að hlaða tölfræði. Reyndu aftur.",
       "itemCount": "Fjöldi færslna",
       "totalValue": "Heildarverðmæti",
       "currencyMismatchWarning": "Inniheldur færslur í öðrum gjaldmiðli en þeim sjálfgefna sem stilltur er — þessi heildartala er ef til vill ekki marktæk.",
@@ -504,6 +505,7 @@
       "library": "Safn",
       "view": "Skoða",
       "notFound": "Óþekkt skýrsla.",
+      "error": "Ekki tókst að hlaða þessa skýrslu. Reyndu aftur.",
       "duplicates": {
         "title": "Tvítekningar milli safna",
         "hint": "Sama EAN skráð í fleiri en eitt safn af sömu miðlategund."

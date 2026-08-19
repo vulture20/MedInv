@@ -191,6 +191,7 @@
     "title": "Statistics",
     "subtitle": "Overview of your libraries' size, value, and composition.",
     "none": "No statistics to show yet.",
+    "error": "Failed to load statistics. Please try again.",
     "itemCount": "Item count",
     "totalValue": "Total value",
     "currencyMismatchWarning": "Contains items in a currency other than the configured default — this total may not be meaningful.",
@@ -221,6 +222,7 @@
     "itemCount": "Item count",
     "view": "View",
     "notFound": "Unknown report.",
+    "error": "Failed to load this report. Please try again.",
     "duplicates": {
       "title": "Duplicates across libraries",
       "hint": "The same EAN captured in more than one of your libraries of the same media type."

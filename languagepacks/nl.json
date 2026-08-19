@@ -194,6 +194,7 @@
       "title": "Statistieken",
       "subtitle": "Overzicht van de omvang, waarde en samenstelling van je bibliotheken.",
       "none": "Nog geen statistieken om te tonen.",
+      "error": "Laden van statistieken mislukt. Probeer het opnieuw.",
       "itemCount": "Aantal items",
       "totalValue": "Totale waarde",
       "currencyMismatchWarning": "Bevat items in een andere valuta dan de ingestelde standaardvaluta — dit totaal is mogelijk niet betekenisvol.",
@@ -504,6 +505,7 @@
       "library": "Bibliotheek",
       "view": "Bekijken",
       "notFound": "Onbekend rapport.",
+      "error": "Laden van dit rapport mislukt. Probeer het opnieuw.",
       "duplicates": {
         "title": "Duplicaten tussen bibliotheken",
         "hint": "Dezelfde EAN vastgelegd in meer dan één bibliotheek van hetzelfde mediatype."
