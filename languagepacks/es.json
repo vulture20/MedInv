@@ -13,7 +13,8 @@
       "libraries": "Bibliotecas",
       "statistics": "Estadísticas",
       "administration": "Administración",
-      "toggleMenu": "Alternar menú"
+      "toggleMenu": "Alternar menú",
+      "reports": "Informes"
     },
     "dashboard": {
       "noLibraries": "Aún no tienes ninguna biblioteca visible.",
@@ -108,7 +109,9 @@
         "director": "Director",
         "production_year": "Año de producción",
         "runtime_minutes": "Duración (minutos)",
-        "runtime_seconds": "Duración (segundos)"
+        "runtime_seconds": "Duración (segundos)",
+        "cover_path": "Portada",
+        "tracks": "Lista de pistas"
       },
       "tracklist": "Lista de pistas",
       "trackPosition": "Posición",
@@ -203,6 +206,27 @@
         "noData": "Todavía no hay datos suficientes para un historial de valor.",
         "estimatedNoteUntil": "El historial anterior a {{date}} se estima a partir de las fechas de captura de los elementos y puede no reflejar eliminaciones o cambios de precio posteriores.",
         "estimatedNoteAll": "Todo este historial se estima a partir de las fechas de captura de los elementos — todavía no se ha ejecutado ninguna instantánea diaria."
+      },
+      "sharing": {
+        "title": "Resumen de comparticiones",
+        "hint": "Qué bibliotecas están compartidas y con quién.",
+        "sharedWith": "Compartida con",
+        "notShared": "No compartida",
+        "scope": {
+          "guest": "Invitados",
+          "all_users": "Todos los usuarios"
+        },
+        "accessLevel": {
+          "read": "lectura",
+          "write": "escritura"
+        }
+      },
+      "userActivity": {
+        "title": "Actividad por usuario",
+        "hint": "Cuántos elementos ha capturado cada usuario.",
+        "user": "Usuario",
+        "unknownUser": "Desconocido (capturado antes de esta función)",
+        "lastCaptured": "Última captura"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "El inicio de sesión único falló. Vuelva a intentarlo o utilice su contraseña.",
       "oidc_no_account": "Aún no existe una cuenta para esta identidad. Póngase en contacto con un administrador.",
       "oidc_account_deactivated": "Esta cuenta ha sido desactivada."
+    },
+    "reports": {
+      "title": "Informes",
+      "subtitle": "Tablas de elementos concretos de todas sus bibliotecas: duplicados, calidad de datos, listas destacadas, novedades y origen de captura.",
+      "none": "Todavía no hay nada que mostrar.",
+      "library": "Biblioteca",
+      "duplicates": {
+        "title": "Duplicados entre bibliotecas",
+        "hint": "El mismo EAN capturado en más de una biblioteca de la misma clase de medio."
+      },
+      "dataQuality": {
+        "title": "Calidad de datos",
+        "hint": "Elementos sin portada, descripción, precio u otro campo habitualmente útil.",
+        "missingFields": "Campos faltantes"
+      },
+      "recentAdditions": {
+        "title": "Novedades recientes",
+        "hint": "Los elementos capturados más recientemente en todas sus bibliotecas.",
+        "addedAt": "Añadido"
+      },
+      "topLists": {
+        "title": "Listas destacadas",
+        "hint": "Los valores más altos/bajos de algunos campos en todas sus bibliotecas.",
+        "mostExpensive": "Más caros",
+        "cheapest": "Más baratos",
+        "mostPages": "Más páginas",
+        "longestCdRuntime": "CD con mayor duración",
+        "shortestCdRuntime": "CD con menor duración",
+        "longestDvdRuntime": "DVD/Blu-ray con mayor duración",
+        "shortestDvdRuntime": "DVD/Blu-ray con menor duración",
+        "highestDiscCount": "Mayor número de discos",
+        "minutes_one": "{{count}} minuto",
+        "minutes_other": "{{count}} minutos"
+      },
+      "captureSource": {
+        "title": "Método de captura y origen de metadatos",
+        "hint": "Cómo se capturó cada elemento y qué proveedor(es) de metadatos aportaron sus datos.",
+        "method": {
+          "scan": "Escaneo / captura masiva",
+          "manual": "Entrada manual",
+          "unknown": "Desconocido (capturado antes de esta función)"
+        }
+      }
     }
   }
 }

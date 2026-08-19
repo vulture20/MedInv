@@ -13,7 +13,8 @@
       "libraries": "Biblioteche",
       "statistics": "Statistiche",
       "administration": "Amministrazione",
-      "toggleMenu": "Attiva/disattiva menu"
+      "toggleMenu": "Attiva/disattiva menu",
+      "reports": "Rapporti"
     },
     "dashboard": {
       "noLibraries": "Non hai ancora nessuna biblioteca visibile.",
@@ -108,7 +109,9 @@
         "director": "Regista",
         "production_year": "Anno di produzione",
         "runtime_minutes": "Durata (minuti)",
-        "runtime_seconds": "Durata (secondi)"
+        "runtime_seconds": "Durata (secondi)",
+        "cover_path": "Copertina",
+        "tracks": "Elenco tracce"
       },
       "tracklist": "Elenco tracce",
       "trackPosition": "Posizione",
@@ -203,6 +206,27 @@
         "noData": "Non ci sono ancora abbastanza dati per uno storico del valore.",
         "estimatedNoteUntil": "Lo storico precedente al {{date}} è stimato dalle date di acquisizione degli elementi e potrebbe non riflettere eliminazioni o variazioni di prezzo successive.",
         "estimatedNoteAll": "Tutto questo storico è stimato dalle date di acquisizione degli elementi — non è ancora stato eseguito alcuno snapshot giornaliero."
+      },
+      "sharing": {
+        "title": "Panoramica delle condivisioni",
+        "hint": "Quali biblioteche sono condivise, e con chi.",
+        "sharedWith": "Condivisa con",
+        "notShared": "Non condivisa",
+        "scope": {
+          "guest": "Ospiti",
+          "all_users": "Tutti gli utenti"
+        },
+        "accessLevel": {
+          "read": "lettura",
+          "write": "scrittura"
+        }
+      },
+      "userActivity": {
+        "title": "Attività per utente",
+        "hint": "Quanti elementi ha acquisito ciascun utente.",
+        "user": "Utente",
+        "unknownUser": "Sconosciuto (acquisito prima di questa funzione)",
+        "lastCaptured": "Ultima acquisizione"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Il Single Sign-On non è riuscito. Riprovare oppure utilizzare la password.",
       "oidc_no_account": "Non esiste ancora un account per questa identità. Contattare un amministratore.",
       "oidc_account_deactivated": "Questo account è stato disattivato."
+    },
+    "reports": {
+      "title": "Rapporti",
+      "subtitle": "Tabelle di elementi concreti in tutte le biblioteche: duplicati, qualità dei dati, classifiche, novità e origine dell'acquisizione.",
+      "none": "Ancora nulla da mostrare.",
+      "library": "Biblioteca",
+      "duplicates": {
+        "title": "Duplicati tra biblioteche",
+        "hint": "Lo stesso EAN acquisito in più biblioteche dello stesso tipo di supporto."
+      },
+      "dataQuality": {
+        "title": "Qualità dei dati",
+        "hint": "Elementi privi di copertina, descrizione, prezzo o un altro campo generalmente utile.",
+        "missingFields": "Campi mancanti"
+      },
+      "recentAdditions": {
+        "title": "Novità recenti",
+        "hint": "Gli elementi acquisiti più di recente in tutte le biblioteche.",
+        "addedAt": "Aggiunto"
+      },
+      "topLists": {
+        "title": "Classifiche",
+        "hint": "I valori più alti/bassi per alcuni campi in tutte le biblioteche.",
+        "mostExpensive": "Più costosi",
+        "cheapest": "Più economici",
+        "mostPages": "Più pagine",
+        "longestCdRuntime": "CD con la durata maggiore",
+        "shortestCdRuntime": "CD con la durata minore",
+        "longestDvdRuntime": "DVD/Blu-ray con la durata maggiore",
+        "shortestDvdRuntime": "DVD/Blu-ray con la durata minore",
+        "highestDiscCount": "Numero di dischi più alto",
+        "minutes_one": "{{count}} minuto",
+        "minutes_other": "{{count}} minuti"
+      },
+      "captureSource": {
+        "title": "Metodo di acquisizione e origine dei metadati",
+        "hint": "Come è stato acquisito ogni elemento, e quale/i provider di metadati ha/hanno fornito i dati.",
+        "method": {
+          "scan": "Scansione / acquisizione multipla",
+          "manual": "Inserimento manuale",
+          "unknown": "Sconosciuto (acquisito prima di questa funzione)"
+        }
+      }
     }
   }
 }

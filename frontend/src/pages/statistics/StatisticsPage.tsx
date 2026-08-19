@@ -35,6 +35,24 @@ interface ValueHistoryResponse {
   cutover_date: string | null
 }
 
+/** GET /statistics/sharing (GitHub issue #74) — mirrors StatisticsService::sharingFor(). Only includes libraries the requesting user can manage (owner/admin), same restriction LibraryController::show() already applies to its own `shares` field. */
+interface SharingRow {
+  library_id: number
+  library_name: string
+  media_type: string
+  is_shared: boolean
+  share_count: number
+  shares: { scope: 'guest' | 'all_users' | 'user'; access_level: 'read' | 'write'; user_name: string | null }[]
+}
+
+/** GET /statistics/user-activity (GitHub issue #74) — mirrors StatisticsService::userActivityFor(). `user_id`/`user_name` are null for items captured before this feature existed (no captured_by_user_id stored). */
+interface UserActivityRow {
+  user_id: number | null
+  user_name: string | null
+  item_count: number
+  last_captured_at: string | null
+}
+
 /** Bars beyond this many are folded into a "+N more" note rather than rendered (briefing 14., ">7 classes" per dataviz guidance). */
 const MAX_BARS = 8
 
@@ -181,10 +199,15 @@ function ValueHistoryChart({ title, points, cutoverDate }: { title: string; poin
 /**
  * Statistics overview (briefing 14.): per-library item count/value, the
  * genre/language/year/publisher-artist-director distributions
- * (GitHub issue #7), and the value-over-time chart (GitHub issue #30) —
- * one line per library plus an accumulated curve across every library
- * visible to the requesting user, both scoped through
- * LibraryAccessService like the rest of this page.
+ * (GitHub issue #7), the value-over-time chart (GitHub issue #30) — one
+ * line per library plus an accumulated curve — and, since GitHub issue #74,
+ * a sharing overview and per-user capture activity, both scoped through
+ * LibraryAccessService like the rest of this page. All of these are
+ * counts/charts with no reference to an individual media item — the
+ * item-level complement (duplicates, data quality, top lists, recent
+ * additions, capture method/metadata source) lives on its own "Auswertungen"
+ * page instead, ReportsPage.tsx, per #74's own clarifying comment on why
+ * that split exists.
  *
  * Card layout matches LibrariesPage.tsx's (.panel-page/.panel-card, see
  * index.css's shared docblock) — the accumulated chart and each library get
@@ -199,12 +222,16 @@ export function StatisticsPage() {
   const { t } = useTranslation()
   const [stats, setStats] = useState<LibraryStats[]>([])
   const [history, setHistory] = useState<ValueHistoryResponse | null>(null)
+  const [sharing, setSharing] = useState<SharingRow[]>([])
+  const [userActivity, setUserActivity] = useState<UserActivityRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     void Promise.all([
       apiClient.get<LibraryStats[]>('/statistics').then(({ data }) => setStats(data)),
       apiClient.get<ValueHistoryResponse>('/statistics/value-history').then(({ data }) => setHistory(data)),
+      apiClient.get<SharingRow[]>('/statistics/sharing').then(({ data }) => setSharing(data)),
+      apiClient.get<UserActivityRow[]>('/statistics/user-activity').then(({ data }) => setUserActivity(data)),
     ]).finally(() => setLoading(false))
   }, [])
 
@@ -265,6 +292,69 @@ export function StatisticsPage() {
                 </section>
               )
             })
+          )}
+
+          {/* GitHub issue #74: sharing overview / per-user activity — pure counts with no reference to an individual media item, hence Statistics rather than the Reports "Auswertungen" page (see ReportsService's docblock). */}
+          {sharing.length > 0 && (
+            <section className="panel-card">
+              <h2>{t('statistics.sharing.title')}</h2>
+              <p className="hint">{t('statistics.sharing.hint')}</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t('libraries.title')}</th>
+                    <th>{t('statistics.sharing.sharedWith')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sharing.map((row) => (
+                    <tr key={row.library_id}>
+                      <td>
+                        {row.library_name} <span className="media-type-badge">{t(`libraries.mediaType.${row.media_type}`)}</span>
+                      </td>
+                      <td>
+                        {row.is_shared ? (
+                          row.shares
+                            .map((share) => {
+                              const who = share.scope === 'user' ? (share.user_name ?? '?') : t(`statistics.sharing.scope.${share.scope}`)
+
+                              return `${who} (${t(`statistics.sharing.accessLevel.${share.access_level}`)})`
+                            })
+                            .join(', ')
+                        ) : (
+                          <span className="hint">{t('statistics.sharing.notShared')}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          )}
+
+          {userActivity.length > 0 && (
+            <section className="panel-card">
+              <h2>{t('statistics.userActivity.title')}</h2>
+              <p className="hint">{t('statistics.userActivity.hint')}</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t('statistics.userActivity.user')}</th>
+                    <th>{t('statistics.itemCount')}</th>
+                    <th>{t('statistics.userActivity.lastCaptured')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userActivity.map((row) => (
+                    <tr key={row.user_id ?? 'unknown'}>
+                      <td>{row.user_name ?? t('statistics.userActivity.unknownUser')}</td>
+                      <td>{row.item_count}</td>
+                      <td>{row.last_captured_at ? new Date(row.last_captured_at).toLocaleDateString() : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
           )}
         </>
       )}

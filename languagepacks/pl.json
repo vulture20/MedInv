@@ -13,7 +13,8 @@
       "libraries": "Biblioteki",
       "statistics": "Statystyki",
       "administration": "Administracja",
-      "toggleMenu": "Przełącz menu"
+      "toggleMenu": "Przełącz menu",
+      "reports": "Raporty"
     },
     "dashboard": {
       "noLibraries": "Nie masz jeszcze żadnych widocznych bibliotek.",
@@ -108,7 +109,9 @@
         "director": "Reżyser",
         "production_year": "Rok produkcji",
         "runtime_minutes": "Czas trwania (minuty)",
-        "runtime_seconds": "Czas trwania (sekundy)"
+        "runtime_seconds": "Czas trwania (sekundy)",
+        "cover_path": "Okładka",
+        "tracks": "Lista utworów"
       },
       "tracklist": "Lista utworów",
       "trackPosition": "Pozycja",
@@ -203,6 +206,27 @@
         "noData": "Wciąż za mało danych do wyświetlenia historii wartości.",
         "estimatedNoteUntil": "Historia sprzed {{date}} jest szacowana na podstawie dat rejestracji pozycji i może nie odzwierciedlać późniejszych usunięć lub zmian cen.",
         "estimatedNoteAll": "Cała ta historia jest szacowana na podstawie dat rejestracji pozycji — nie wykonano jeszcze żadnej dziennej migawki."
+      },
+      "sharing": {
+        "title": "Przegląd udostępniania",
+        "hint": "Które biblioteki są udostępnione i komu.",
+        "sharedWith": "Udostępniono dla",
+        "notShared": "Nie udostępniono",
+        "scope": {
+          "guest": "Goście",
+          "all_users": "Wszyscy użytkownicy"
+        },
+        "accessLevel": {
+          "read": "odczyt",
+          "write": "zapis"
+        }
+      },
+      "userActivity": {
+        "title": "Aktywność według użytkownika",
+        "hint": "Ile pozycji zarejestrował każdy użytkownik.",
+        "user": "Użytkownik",
+        "unknownUser": "Nieznany (zarejestrowano przed wprowadzeniem tej funkcji)",
+        "lastCaptured": "Ostatnio zarejestrowano"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Logowanie jednokrotne nie powiodło się. Spróbuj ponownie lub zaloguj się hasłem.",
       "oidc_no_account": "Dla tej tożsamości nie istnieje jeszcze konto. Skontaktuj się z administratorem.",
       "oidc_account_deactivated": "To konto zostało dezaktywowane."
+    },
+    "reports": {
+      "title": "Raporty",
+      "subtitle": "Tabele konkretnych pozycji ze wszystkich bibliotek: duplikaty, jakość danych, listy TOP, ostatnio dodane oraz źródło rejestracji.",
+      "none": "Jeszcze nic do pokazania.",
+      "library": "Biblioteka",
+      "duplicates": {
+        "title": "Duplikaty między bibliotekami",
+        "hint": "Ten sam EAN zarejestrowany w więcej niż jednej bibliotece tego samego typu mediów."
+      },
+      "dataQuality": {
+        "title": "Jakość danych",
+        "hint": "Pozycje bez okładki, opisu, ceny lub innego zwykle przydatnego pola.",
+        "missingFields": "Brakujące pola"
+      },
+      "recentAdditions": {
+        "title": "Ostatnio dodane",
+        "hint": "Najnowsze pozycje zarejestrowane we wszystkich Twoich bibliotekach.",
+        "addedAt": "Dodano"
+      },
+      "topLists": {
+        "title": "Listy TOP",
+        "hint": "Najwyższe/najniższe wartości kilku pól we wszystkich Twoich bibliotekach.",
+        "mostExpensive": "Najdroższe",
+        "cheapest": "Najtańsze",
+        "mostPages": "Najwięcej stron",
+        "longestCdRuntime": "Najdłuższy czas trwania CD",
+        "shortestCdRuntime": "Najkrótszy czas trwania CD",
+        "longestDvdRuntime": "Najdłuższy czas trwania DVD/Blu-ray",
+        "shortestDvdRuntime": "Najkrótszy czas trwania DVD/Blu-ray",
+        "highestDiscCount": "Największa liczba płyt",
+        "minutes_one": "{{count}} minuta",
+        "minutes_other": "{{count}} minuty"
+      },
+      "captureSource": {
+        "title": "Metoda rejestracji i źródło metadanych",
+        "hint": "Jak zarejestrowano każdą pozycję i który dostawca (dostawcy) metadanych dostarczył jej dane.",
+        "method": {
+          "scan": "Skan / rejestracja masowa",
+          "manual": "Ręczne wprowadzanie",
+          "unknown": "Nieznana (zarejestrowano przed wprowadzeniem tej funkcji)"
+        }
+      }
     }
   }
 }

@@ -99,6 +99,18 @@ class MetadataController extends Controller
         $data = $request->validate([
             'attributes' => ['required', 'array'],
             'cover_url' => ['nullable', 'string'],
+            // GitHub issue #74: which provider(s) actually contributed the
+            // confirmed fields (MetadataMergeReview.tsx's per-field
+            // MergedField.options[].provider_keys, unioned client-side across
+            // whichever fields/tracks/cover the user kept) — not part of
+            // `attributes` itself (see stripInternallyManagedFields()), since
+            // it isn't item data, it's metadata about this request. Not
+            // validated against a known-provider whitelist, same stance
+            // `currency` already takes (see MediaBook::casts() docblock) —
+            // this only records what the frontend reports, it doesn't drive
+            // any logic that would need it to be authoritative.
+            'metadata_providers' => ['nullable', 'array'],
+            'metadata_providers.*' => ['string'],
         ]);
 
         // Deliberately not an `attributes.ean` validation rule: combining a top-level
@@ -117,6 +129,15 @@ class MetadataController extends Controller
         // GitHub issue #64 — see CurrencyConversionService's docblock and
         // MediaItemController::store()'s matching call.
         $data['attributes'] = $this->currencyConversion->convertToDefaultCurrency($data['attributes']);
+
+        // GitHub issue #74: this endpoint is exclusively reached from
+        // MetadataMergeReview's confirm (CapturePage.tsx) — the automated
+        // scan/text-file capture pipeline, as opposed to
+        // MediaItemController::store()'s standalone manual-entry form — so
+        // capture_method is hardcoded here, not client-supplied.
+        $data['attributes']['capture_method'] = 'scan';
+        $data['attributes']['metadata_provider'] = $this->joinProviderKeys($data['metadata_providers'] ?? []);
+        $data['attributes']['captured_by_user_id'] = $request->user()->id;
 
         try {
             $item = $this->mediaItemService->create($library, $data['attributes']);
@@ -178,9 +199,19 @@ class MetadataController extends Controller
         $data = $request->validate([
             'attributes' => ['required', 'array'],
             'cover_url' => ['nullable', 'string'],
+            // GitHub issue #74 — see import()'s matching field for why this
+            // isn't part of `attributes`. Unlike import(), capture_method is
+            // deliberately NOT touched here: a metadata refresh doesn't
+            // change how the item was originally captured, only where its
+            // current field values came from.
+            'metadata_providers' => ['nullable', 'array'],
+            'metadata_providers.*' => ['string'],
         ]);
 
-        $this->mediaItemService->updateFromMetadata($record, $this->stripInternallyManagedFields($data['attributes']));
+        $attributes = $this->stripInternallyManagedFields($data['attributes']);
+        $attributes['metadata_provider'] = $this->joinProviderKeys($data['metadata_providers'] ?? []);
+
+        $this->mediaItemService->updateFromMetadata($record, $attributes);
 
         if (! empty($data['cover_url'])) {
             $oldCoverPath = $record->cover_path;
@@ -233,9 +264,26 @@ class MetadataController extends Controller
      */
     private function stripInternallyManagedFields(array $attributes): array
     {
-        unset($attributes['cover_path'], $attributes['library_id']);
+        unset(
+            $attributes['cover_path'], $attributes['library_id'],
+            // GitHub issue #74: same reasoning as cover_path/library_id above
+            // — these are set from server-computed facts about *this*
+            // request (which endpoint, which authenticated user, the
+            // separately-validated `metadata_providers` field), not from
+            // caller-supplied item data, so a value smuggled in through the
+            // otherwise-permissive `attributes` blob must never win.
+            $attributes['capture_method'], $attributes['metadata_provider'], $attributes['captured_by_user_id'],
+        );
 
         return $attributes;
+    }
+
+    /** GitHub issue #74 — comma-separated, matching the MediaDvdBluray::languages multi-value convention (see the migration that added metadata_provider). Empty/absent input becomes null, not an empty string, consistent with every other optional column here. */
+    private function joinProviderKeys(array $providerKeys): ?string
+    {
+        $unique = array_values(array_unique(array_filter($providerKeys, fn ($key) => $key !== '')));
+
+        return $unique === [] ? null : implode(',', $unique);
     }
 
     /**

@@ -13,7 +13,8 @@
       "libraries": "Bibliotek",
       "statistics": "Statistik",
       "administration": "Administration",
-      "toggleMenu": "Växla meny"
+      "toggleMenu": "Växla meny",
+      "reports": "Rapporter"
     },
     "dashboard": {
       "noLibraries": "Inga bibliotek är synliga för dig ännu.",
@@ -135,7 +136,9 @@
         "cast": "Skådespelare",
         "director": "Regissör",
         "production_year": "Produktionsår",
-        "runtime_minutes": "Speltid (minuter)"
+        "runtime_minutes": "Speltid (minuter)",
+        "cover_path": "Omslag",
+        "tracks": "Spårlista"
       }
     },
     "capture": {
@@ -203,6 +206,27 @@
         "noData": "Inte tillräckligt med data ännu för en värdehistorik.",
         "estimatedNoteUntil": "Historik före {{date}} är uppskattad utifrån posters registreringsdatum och kanske inte återspeglar senare borttagningar eller prisändringar.",
         "estimatedNoteAll": "Hela denna historik är uppskattad utifrån posters registreringsdatum — ingen daglig ögonblicksbild har körts ännu."
+      },
+      "sharing": {
+        "title": "Delningsöversikt",
+        "hint": "Vilka bibliotek som är delade, och med vem.",
+        "sharedWith": "Delat med",
+        "notShared": "Inte delat",
+        "scope": {
+          "guest": "Gäster",
+          "all_users": "Alla användare"
+        },
+        "accessLevel": {
+          "read": "läsning",
+          "write": "skrivning"
+        }
+      },
+      "userActivity": {
+        "title": "Aktivitet per användare",
+        "hint": "Hur många poster varje användare har registrerat.",
+        "user": "Användare",
+        "unknownUser": "Okänd (registrerad före denna funktion)",
+        "lastCaptured": "Senast registrerad"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Enkel inloggning misslyckades. Försök igen eller använd ditt lösenord i stället.",
       "oidc_no_account": "Det finns inget konto för den här identiteten ännu. Kontakta en administratör.",
       "oidc_account_deactivated": "Det här kontot har inaktiverats."
+    },
+    "reports": {
+      "title": "Rapporter",
+      "subtitle": "Tabeller med konkreta poster över alla dina bibliotek: dubbletter, datakvalitet, topplistor, senaste tillägg och registreringsmetod.",
+      "none": "Inget att visa än.",
+      "library": "Bibliotek",
+      "duplicates": {
+        "title": "Dubbletter mellan bibliotek",
+        "hint": "Samma EAN registrerad i fler än ett bibliotek av samma medietyp."
+      },
+      "dataQuality": {
+        "title": "Datakvalitet",
+        "hint": "Poster utan omslag, beskrivning, pris eller ett annat ofta användbart fält.",
+        "missingFields": "Saknade fält"
+      },
+      "recentAdditions": {
+        "title": "Senaste tillägg",
+        "hint": "De senast registrerade posterna över alla dina bibliotek.",
+        "addedAt": "Tillagd"
+      },
+      "topLists": {
+        "title": "Topplistor",
+        "hint": "De högsta/lägsta värdena för några fält över alla dina bibliotek.",
+        "mostExpensive": "Dyrast",
+        "cheapest": "Billigast",
+        "mostPages": "Flest sidor",
+        "longestCdRuntime": "Längsta CD-speltiden",
+        "shortestCdRuntime": "Kortaste CD-speltiden",
+        "longestDvdRuntime": "Längsta DVD/Blu-ray-speltiden",
+        "shortestDvdRuntime": "Kortaste DVD/Blu-ray-speltiden",
+        "highestDiscCount": "Flest skivor",
+        "minutes_one": "{{count}} minut",
+        "minutes_other": "{{count}} minuter"
+      },
+      "captureSource": {
+        "title": "Registreringsmetod & metadatakälla",
+        "hint": "Hur varje post registrerades, och vilken/vilka metadataleverantör(er) som bidrog med dess data.",
+        "method": {
+          "scan": "Skanning / massregistrering",
+          "manual": "Manuell inmatning",
+          "unknown": "Okänd (registrerad före denna funktion)"
+        }
+      }
     }
   }
 }

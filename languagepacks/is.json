@@ -13,7 +13,8 @@
       "libraries": "Söfn",
       "statistics": "Tölfræði",
       "administration": "Stjórnun",
-      "toggleMenu": "Víxla valmynd"
+      "toggleMenu": "Víxla valmynd",
+      "reports": "Skýrslur"
     },
     "dashboard": {
       "noLibraries": "Engin söfn eru sýnileg þér ennþá.",
@@ -135,7 +136,9 @@
         "cast": "Leikarar",
         "director": "Leikstjóri",
         "production_year": "Framleiðsluár",
-        "runtime_minutes": "Lengd (mínútur)"
+        "runtime_minutes": "Lengd (mínútur)",
+        "cover_path": "Kápa",
+        "tracks": "Lagalisti"
       }
     },
     "capture": {
@@ -203,6 +206,27 @@
         "noData": "Ekki nægjanleg gögn ennþá fyrir verðmætasögu.",
         "estimatedNoteUntil": "Saga fyrir {{date}} er áætluð út frá skráningardögum færslna og endurspeglar ef til vill ekki síðari eyðingar eða verðbreytingar.",
         "estimatedNoteAll": "Öll þessi saga er áætluð út frá skráningardögum færslna — engin dagleg mynd hefur enn verið tekin."
+      },
+      "sharing": {
+        "title": "Yfirlit yfir deilingu",
+        "hint": "Hvaða söfn eru deild, og með hverjum.",
+        "sharedWith": "Deilt með",
+        "notShared": "Ekki deilt",
+        "scope": {
+          "guest": "Gestir",
+          "all_users": "Allir notendur"
+        },
+        "accessLevel": {
+          "read": "lestur",
+          "write": "skrifun"
+        }
+      },
+      "userActivity": {
+        "title": "Virkni eftir notanda",
+        "hint": "Hversu margar færslur hver notandi hefur skráð.",
+        "user": "Notandi",
+        "unknownUser": "Óþekkt (skráð fyrir tilkomu þessa eiginleika)",
+        "lastCaptured": "Síðast skráð"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Einskráning mistókst. Reyndu aftur eða notaðu lykilorðið þitt í staðinn.",
       "oidc_no_account": "Enginn reikningur er til fyrir þetta auðkenni ennþá. Vinsamlegast hafðu samband við stjórnanda.",
       "oidc_account_deactivated": "Þessi reikningur hefur verið óvirkjaður."
+    },
+    "reports": {
+      "title": "Skýrslur",
+      "subtitle": "Töflur með áþreifanlegum færslum úr öllum söfnum þínum: tvítekningar, gagnagæði, vinsældalistar, nýjustu viðbætur og skráningaraðferð.",
+      "none": "Ekkert að sýna ennþá.",
+      "library": "Safn",
+      "duplicates": {
+        "title": "Tvítekningar milli safna",
+        "hint": "Sama EAN skráð í fleiri en eitt safn af sömu miðlategund."
+      },
+      "dataQuality": {
+        "title": "Gagnagæði",
+        "hint": "Færslur án kápu, lýsingar, verðs eða annars oft gagnlegs reits.",
+        "missingFields": "Vantar reiti"
+      },
+      "recentAdditions": {
+        "title": "Nýjustu viðbætur",
+        "hint": "Nýjustu skráðu færslurnar úr öllum söfnum þínum.",
+        "addedAt": "Bætt við"
+      },
+      "topLists": {
+        "title": "Vinsældalistar",
+        "hint": "Hæstu/lægstu gildi nokkurra reita í öllum söfnum þínum.",
+        "mostExpensive": "Dýrastar",
+        "cheapest": "Ódýrastar",
+        "mostPages": "Flestar síður",
+        "longestCdRuntime": "Lengsta geisladiskslengd",
+        "shortestCdRuntime": "Stysta geisladiskslengd",
+        "longestDvdRuntime": "Lengsta DVD/Blu-ray-lengd",
+        "shortestDvdRuntime": "Stysta DVD/Blu-ray-lengd",
+        "highestDiscCount": "Flestir diskar",
+        "minutes_one": "{{count}} mínúta",
+        "minutes_other": "{{count}} mínútur"
+      },
+      "captureSource": {
+        "title": "Skráningaraðferð og uppruni lýsigagna",
+        "hint": "Hvernig hver færsla var skráð, og hvaða lýsigagnaveitu(r) sáu fyrir gögnunum.",
+        "method": {
+          "scan": "Skönnun / magnskráning",
+          "manual": "Handvirk skráning",
+          "unknown": "Óþekkt (skráð fyrir tilkomu þessa eiginleika)"
+        }
+      }
     }
   }
 }

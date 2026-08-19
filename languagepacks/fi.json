@@ -13,7 +13,8 @@
       "libraries": "Kirjastot",
       "statistics": "Tilastot",
       "administration": "Hallinta",
-      "toggleMenu": "Vaihda valikko"
+      "toggleMenu": "Vaihda valikko",
+      "reports": "Raportit"
     },
     "dashboard": {
       "noLibraries": "Sinulle ei ole vielä näkyvissä kirjastoja.",
@@ -135,7 +136,9 @@
         "cast": "Näyttelijät",
         "director": "Ohjaaja",
         "production_year": "Tuotantovuosi",
-        "runtime_minutes": "Kesto (minuuttia)"
+        "runtime_minutes": "Kesto (minuuttia)",
+        "cover_path": "Kansikuva",
+        "tracks": "Kappaleluettelo"
       }
     },
     "capture": {
@@ -203,6 +206,27 @@
         "noData": "Arvohistoriaa varten ei ole vielä tarpeeksi tietoa.",
         "estimatedNoteUntil": "Historia ennen päivämäärää {{date}} on arvioitu kohteiden tallennuspäivien perusteella, eikä se välttämättä huomioi myöhempiä poistoja tai hintamuutoksia.",
         "estimatedNoteAll": "Koko tämä historia on arvioitu kohteiden tallennuspäivien perusteella — päivittäistä tilannevedosta ei ole vielä suoritettu."
+      },
+      "sharing": {
+        "title": "Jakamiskatsaus",
+        "hint": "Mitkä kirjastot on jaettu, ja kenelle.",
+        "sharedWith": "Jaettu käyttäjille",
+        "notShared": "Ei jaettu",
+        "scope": {
+          "guest": "Vierailijat",
+          "all_users": "Kaikki käyttäjät"
+        },
+        "accessLevel": {
+          "read": "luku",
+          "write": "kirjoitus"
+        }
+      },
+      "userActivity": {
+        "title": "Aktiivisuus käyttäjittäin",
+        "hint": "Kuinka monta kohdetta kukin käyttäjä on lisännyt.",
+        "user": "Käyttäjä",
+        "unknownUser": "Tuntematon (lisätty ennen tätä ominaisuutta)",
+        "lastCaptured": "Viimeksi lisätty"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Kertakirjautuminen epäonnistui. Yritä uudelleen tai käytä sen sijaan salasanaasi.",
       "oidc_no_account": "Tälle identiteetille ei ole vielä tiliä. Ota yhteyttä ylläpitäjään.",
       "oidc_account_deactivated": "Tämä tili on poistettu käytöstä."
+    },
+    "reports": {
+      "title": "Raportit",
+      "subtitle": "Taulukkoja konkreettisista kohteista kaikista kirjastoistasi: kaksoiskappaleet, tietojen laatu, kärkilistat, viimeisimmät lisäykset ja tallennustapa.",
+      "none": "Ei vielä mitään näytettävää.",
+      "library": "Kirjasto",
+      "duplicates": {
+        "title": "Kaksoiskappaleet kirjastojen välillä",
+        "hint": "Sama EAN tallennettu useampaan saman mediatyypin kirjastoon."
+      },
+      "dataQuality": {
+        "title": "Tietojen laatu",
+        "hint": "Kohteet, joilta puuttuu kansikuva, kuvaus, hinta tai muu yleensä hyödyllinen kenttä.",
+        "missingFields": "Puuttuvat kentät"
+      },
+      "recentAdditions": {
+        "title": "Viimeisimmät lisäykset",
+        "hint": "Viimeksi lisätyt kohteet kaikista kirjastoistasi.",
+        "addedAt": "Lisätty"
+      },
+      "topLists": {
+        "title": "Kärkilistat",
+        "hint": "Muutaman kentän korkeimmat/matalimmat arvot kaikissa kirjastoissasi.",
+        "mostExpensive": "Kalleimmat",
+        "cheapest": "Halvimmat",
+        "mostPages": "Eniten sivuja",
+        "longestCdRuntime": "Pisin CD-kesto",
+        "shortestCdRuntime": "Lyhin CD-kesto",
+        "longestDvdRuntime": "Pisin DVD/Blu-ray-kesto",
+        "shortestDvdRuntime": "Lyhin DVD/Blu-ray-kesto",
+        "highestDiscCount": "Eniten levyjä",
+        "minutes_one": "{{count}} minuutti",
+        "minutes_other": "{{count}} minuuttia"
+      },
+      "captureSource": {
+        "title": "Tallennustapa ja metatietojen lähde",
+        "hint": "Miten kukin kohde tallennettiin, ja mikä metatietopalvelu(t) toimitti(vat) sen tiedot.",
+        "method": {
+          "scan": "Skannaus / joukkotallennus",
+          "manual": "Manuaalinen syöttö",
+          "unknown": "Tuntematon (lisätty ennen tätä ominaisuutta)"
+        }
+      }
     }
   }
 }

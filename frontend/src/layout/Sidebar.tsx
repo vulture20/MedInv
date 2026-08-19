@@ -13,7 +13,9 @@ interface SidebarProps {
 
 /**
  * Left sidebar (briefing 11.2): Startseite, Erfassung, Bibliotheken,
- * Statistiken, Administration. "Erfassung" needs write access to at least
+ * Statistiken, Auswertungen (GitHub issue #74 — a separate item-level
+ * complement to Statistiken, see ReportsService's own docblock for why it's
+ * not folded into the Statistiken page), Administration. "Erfassung" needs write access to at least
  * one library — simplified here to "not a guest" (11.3); a guest never has
  * write access to anything, and a user/admin's actual per-library
  * permissions are re-checked backend-side regardless.
@@ -39,6 +41,7 @@ export function Sidebar({ open = false }: SidebarProps) {
       {user?.level !== 'guest' && <NavLink to="/capture">{t('nav.capture')}</NavLink>}
       <NavLink to="/libraries">{t('nav.libraries')}</NavLink>
       <NavLink to="/statistics">{t('nav.statistics')}</NavLink>
+      <NavLink to="/reports">{t('nav.reports')}</NavLink>
       {user?.level === 'admin' && <NavLink to="/admin">{t('nav.administration')}</NavLink>}
 
       <hr className="sidebar__divider" />

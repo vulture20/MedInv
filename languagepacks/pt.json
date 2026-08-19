@@ -13,7 +13,8 @@
       "libraries": "Bibliotecas",
       "statistics": "Estatísticas",
       "administration": "Administração",
-      "toggleMenu": "Alternar menu"
+      "toggleMenu": "Alternar menu",
+      "reports": "Relatórios"
     },
     "dashboard": {
       "noLibraries": "Você ainda não tem nenhuma biblioteca visível.",
@@ -108,7 +109,9 @@
         "director": "Diretor",
         "production_year": "Ano de produção",
         "runtime_minutes": "Duração (minutos)",
-        "runtime_seconds": "Duração (segundos)"
+        "runtime_seconds": "Duração (segundos)",
+        "cover_path": "Capa",
+        "tracks": "Lista de faixas"
       },
       "tracklist": "Lista de faixas",
       "trackPosition": "Posição",
@@ -203,6 +206,27 @@
         "noData": "Ainda não há dados suficientes para um histórico de valor.",
         "estimatedNoteUntil": "O histórico anterior a {{date}} é estimado a partir das datas de captura dos itens e pode não refletir exclusões ou alterações de preço posteriores.",
         "estimatedNoteAll": "Todo este histórico é estimado a partir das datas de captura dos itens — ainda não foi executado nenhum snapshot diário."
+      },
+      "sharing": {
+        "title": "Resumo de compartilhamento",
+        "hint": "Quais bibliotecas estão compartilhadas, e com quem.",
+        "sharedWith": "Compartilhada com",
+        "notShared": "Não compartilhada",
+        "scope": {
+          "guest": "Convidados",
+          "all_users": "Todos os usuários"
+        },
+        "accessLevel": {
+          "read": "leitura",
+          "write": "escrita"
+        }
+      },
+      "userActivity": {
+        "title": "Atividade por usuário",
+        "hint": "Quantos itens cada usuário capturou.",
+        "user": "Usuário",
+        "unknownUser": "Desconhecido (capturado antes deste recurso)",
+        "lastCaptured": "Última captura"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "O login único falhou. Tente novamente ou use sua senha.",
       "oidc_no_account": "Ainda não existe uma conta para esta identidade. Entre em contato com um administrador.",
       "oidc_account_deactivated": "Esta conta foi desativada."
+    },
+    "reports": {
+      "title": "Relatórios",
+      "subtitle": "Tabelas de itens concretos em todas as suas bibliotecas: duplicados, qualidade dos dados, listas em destaque, novidades e origem da captura.",
+      "none": "Ainda não há nada para mostrar.",
+      "library": "Biblioteca",
+      "duplicates": {
+        "title": "Duplicados entre bibliotecas",
+        "hint": "O mesmo EAN capturado em mais de uma biblioteca do mesmo tipo de mídia."
+      },
+      "dataQuality": {
+        "title": "Qualidade dos dados",
+        "hint": "Itens sem capa, descrição, preço ou outro campo geralmente útil.",
+        "missingFields": "Campos ausentes"
+      },
+      "recentAdditions": {
+        "title": "Novidades recentes",
+        "hint": "Os itens capturados mais recentemente em todas as suas bibliotecas.",
+        "addedAt": "Adicionado"
+      },
+      "topLists": {
+        "title": "Listas em destaque",
+        "hint": "Os valores mais altos/baixos de alguns campos em todas as suas bibliotecas.",
+        "mostExpensive": "Mais caros",
+        "cheapest": "Mais baratos",
+        "mostPages": "Mais páginas",
+        "longestCdRuntime": "CD com maior duração",
+        "shortestCdRuntime": "CD com menor duração",
+        "longestDvdRuntime": "DVD/Blu-ray com maior duração",
+        "shortestDvdRuntime": "DVD/Blu-ray com menor duração",
+        "highestDiscCount": "Maior número de discos",
+        "minutes_one": "{{count}} minuto",
+        "minutes_other": "{{count}} minutos"
+      },
+      "captureSource": {
+        "title": "Método de captura e origem dos metadados",
+        "hint": "Como cada item foi capturado, e qual(is) provedor(es) de metadados forneceu(ram) seus dados.",
+        "method": {
+          "scan": "Digitalização / captura em massa",
+          "manual": "Entrada manual",
+          "unknown": "Desconhecido (capturado antes deste recurso)"
+        }
+      }
     }
   }
 }

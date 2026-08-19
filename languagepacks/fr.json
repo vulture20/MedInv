@@ -13,7 +13,8 @@
       "libraries": "Bibliothèques",
       "statistics": "Statistiques",
       "administration": "Administration",
-      "toggleMenu": "Basculer le menu"
+      "toggleMenu": "Basculer le menu",
+      "reports": "Rapports"
     },
     "dashboard": {
       "noLibraries": "Aucune bibliothèque ne vous est encore visible.",
@@ -108,7 +109,9 @@
         "director": "Réalisateur",
         "production_year": "Année de production",
         "runtime_minutes": "Durée (minutes)",
-        "runtime_seconds": "Durée (secondes)"
+        "runtime_seconds": "Durée (secondes)",
+        "cover_path": "Couverture",
+        "tracks": "Liste des pistes"
       },
       "tracklist": "Liste des pistes",
       "trackPosition": "Position",
@@ -203,6 +206,27 @@
         "noData": "Pas encore assez de données pour un historique de valeur.",
         "estimatedNoteUntil": "L'historique antérieur au {{date}} est estimé à partir des dates de saisie des éléments et peut ne pas refléter les suppressions ou changements de prix ultérieurs.",
         "estimatedNoteAll": "Tout cet historique est estimé à partir des dates de saisie des éléments — aucun instantané quotidien n'a encore été effectué."
+      },
+      "sharing": {
+        "title": "Aperçu des partages",
+        "hint": "Quelles bibliothèques sont partagées, et avec qui.",
+        "sharedWith": "Partagée avec",
+        "notShared": "Non partagée",
+        "scope": {
+          "guest": "Invités",
+          "all_users": "Tous les utilisateurs"
+        },
+        "accessLevel": {
+          "read": "lecture",
+          "write": "écriture"
+        }
+      },
+      "userActivity": {
+        "title": "Activité par utilisateur",
+        "hint": "Combien d'éléments chaque utilisateur a capturés.",
+        "user": "Utilisateur",
+        "unknownUser": "Inconnu (capturé avant cette fonctionnalité)",
+        "lastCaptured": "Dernière capture"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "L'authentification unique a échoué. Veuillez réessayer ou utiliser votre mot de passe à la place.",
       "oidc_no_account": "Aucun compte n'existe encore pour cette identité. Veuillez contacter un administrateur.",
       "oidc_account_deactivated": "Ce compte a été désactivé."
+    },
+    "reports": {
+      "title": "Rapports",
+      "subtitle": "Tableaux d'éléments concrets sur toutes vos bibliothèques : doublons, qualité des données, classements, nouveautés et origine de la capture.",
+      "none": "Rien à afficher pour l'instant.",
+      "library": "Bibliothèque",
+      "duplicates": {
+        "title": "Doublons entre bibliothèques",
+        "hint": "Le même EAN capturé dans plusieurs bibliothèques du même type de média."
+      },
+      "dataQuality": {
+        "title": "Qualité des données",
+        "hint": "Éléments sans couverture, description, prix ou un autre champ généralement utile.",
+        "missingFields": "Champs manquants"
+      },
+      "recentAdditions": {
+        "title": "Nouveautés récentes",
+        "hint": "Les éléments capturés le plus récemment sur toutes vos bibliothèques.",
+        "addedAt": "Ajouté"
+      },
+      "topLists": {
+        "title": "Classements",
+        "hint": "Les valeurs les plus hautes/basses sur toutes vos bibliothèques pour quelques champs.",
+        "mostExpensive": "Les plus chers",
+        "cheapest": "Les moins chers",
+        "mostPages": "Le plus de pages",
+        "longestCdRuntime": "CD à la plus longue durée",
+        "shortestCdRuntime": "CD à la plus courte durée",
+        "longestDvdRuntime": "DVD/Blu-ray à la plus longue durée",
+        "shortestDvdRuntime": "DVD/Blu-ray à la plus courte durée",
+        "highestDiscCount": "Nombre de disques le plus élevé",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes"
+      },
+      "captureSource": {
+        "title": "Méthode de capture et origine des métadonnées",
+        "hint": "Comment chaque élément a été capturé, et quel(s) fournisseur(s) de métadonnées a/ont fourni ses données.",
+        "method": {
+          "scan": "Scan / capture en masse",
+          "manual": "Saisie manuelle",
+          "unknown": "Inconnu (capturé avant cette fonctionnalité)"
+        }
+      }
     }
   }
 }

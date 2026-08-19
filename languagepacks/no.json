@@ -13,7 +13,8 @@
       "libraries": "Biblioteker",
       "statistics": "Statistikk",
       "administration": "Administrasjon",
-      "toggleMenu": "Veksle meny"
+      "toggleMenu": "Veksle meny",
+      "reports": "Rapporter"
     },
     "dashboard": {
       "noLibraries": "Ingen biblioteker er synlige for deg ennå.",
@@ -135,7 +136,9 @@
         "cast": "Skuespillere",
         "director": "Regissør",
         "production_year": "Produksjonsår",
-        "runtime_minutes": "Spilletid (minutter)"
+        "runtime_minutes": "Spilletid (minutter)",
+        "cover_path": "Omslag",
+        "tracks": "Sporliste"
       }
     },
     "capture": {
@@ -203,6 +206,27 @@
         "noData": "Ikke nok data ennå for en verdihistorikk.",
         "estimatedNoteUntil": "Historikk før {{date}} er estimert ut fra registreringsdatoer for oppføringer og gjenspeiler kanskje ikke senere slettinger eller prisendringer.",
         "estimatedNoteAll": "Hele denne historikken er estimert ut fra registreringsdatoer for oppføringer — ingen daglig øyeblikksbilde er kjørt ennå."
+      },
+      "sharing": {
+        "title": "Delingsoversikt",
+        "hint": "Hvilke biblioteker som er delt, og med hvem.",
+        "sharedWith": "Delt med",
+        "notShared": "Ikke delt",
+        "scope": {
+          "guest": "Gjester",
+          "all_users": "Alle brukere"
+        },
+        "accessLevel": {
+          "read": "lesing",
+          "write": "skriving"
+        }
+      },
+      "userActivity": {
+        "title": "Aktivitet per bruker",
+        "hint": "Hvor mange elementer hver bruker har registrert.",
+        "user": "Bruker",
+        "unknownUser": "Ukjent (registrert før denne funksjonen)",
+        "lastCaptured": "Sist registrert"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Enkel pålogging mislyktes. Prøv igjen eller bruk passordet ditt i stedet.",
       "oidc_no_account": "Det finnes ingen konto for denne identiteten ennå. Vennligst kontakt en administrator.",
       "oidc_account_deactivated": "Denne kontoen er deaktivert."
+    },
+    "reports": {
+      "title": "Rapporter",
+      "subtitle": "Tabeller med konkrete elementer på tvers av alle biblioteker: duplikater, datakvalitet, topplister, nylig tilførte og registreringsmetode.",
+      "none": "Ingenting å vise ennå.",
+      "library": "Bibliotek",
+      "duplicates": {
+        "title": "Duplikater på tvers av biblioteker",
+        "hint": "Samme EAN registrert i mer enn ett bibliotek av samme medietype."
+      },
+      "dataQuality": {
+        "title": "Datakvalitet",
+        "hint": "Elementer uten omslag, beskrivelse, pris eller et annet ofte nyttig felt.",
+        "missingFields": "Manglende felt"
+      },
+      "recentAdditions": {
+        "title": "Nylig tilførte",
+        "hint": "De sist registrerte elementene på tvers av alle biblioteker.",
+        "addedAt": "Lagt til"
+      },
+      "topLists": {
+        "title": "Topplister",
+        "hint": "De høyeste/laveste verdiene for noen felt på tvers av alle biblioteker.",
+        "mostExpensive": "Dyrest",
+        "cheapest": "Billigst",
+        "mostPages": "Flest sider",
+        "longestCdRuntime": "Lengste CD-spilletid",
+        "shortestCdRuntime": "Korteste CD-spilletid",
+        "longestDvdRuntime": "Lengste DVD/Blu-ray-spilletid",
+        "shortestDvdRuntime": "Korteste DVD/Blu-ray-spilletid",
+        "highestDiscCount": "Flest plater",
+        "minutes_one": "{{count}} minutt",
+        "minutes_other": "{{count}} minutter"
+      },
+      "captureSource": {
+        "title": "Registreringsmetode og metadatakilde",
+        "hint": "Hvordan hvert element ble registrert, og hvilken(e) metadataleverandør(er) som ga dataene.",
+        "method": {
+          "scan": "Skanning / masseregistrering",
+          "manual": "Manuell registrering",
+          "unknown": "Ukjent (registrert før denne funksjonen)"
+        }
+      }
     }
   }
 }

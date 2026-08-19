@@ -13,7 +13,8 @@
       "libraries": "ライブラリ",
       "statistics": "統計",
       "administration": "管理",
-      "toggleMenu": "メニューの切り替え"
+      "toggleMenu": "メニューの切り替え",
+      "reports": "レポート"
     },
     "dashboard": {
       "noLibraries": "まだ表示できるライブラリがありません。",
@@ -108,7 +109,9 @@
         "director": "監督",
         "production_year": "制作年",
         "runtime_minutes": "上映時間（分）",
-        "runtime_seconds": "再生時間（秒）"
+        "runtime_seconds": "再生時間（秒）",
+        "cover_path": "カバー",
+        "tracks": "トラックリスト"
       },
       "tracklist": "トラックリスト",
       "trackPosition": "位置",
@@ -203,6 +206,27 @@
         "noData": "価値の推移を表示するにはデータが不足しています。",
         "estimatedNoteUntil": "{{date}} より前の履歴はアイテムの登録日から推定したものであり、その後の削除や価格変更が反映されていない場合があります。",
         "estimatedNoteAll": "この履歴はすべてアイテムの登録日から推定されたものです — 日次スナップショットはまだ実行されていません。"
+      },
+      "sharing": {
+        "title": "共有の概要",
+        "hint": "どのライブラリが誰と共有されているか。",
+        "sharedWith": "共有先",
+        "notShared": "共有されていません",
+        "scope": {
+          "guest": "ゲスト",
+          "all_users": "全ユーザー"
+        },
+        "accessLevel": {
+          "read": "閲覧",
+          "write": "編集"
+        }
+      },
+      "userActivity": {
+        "title": "ユーザー別アクティビティ",
+        "hint": "各ユーザーが登録したアイテム数。",
+        "user": "ユーザー",
+        "unknownUser": "不明（この機能導入前に登録）",
+        "lastCaptured": "最終登録日"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "シングルサインオンに失敗しました。もう一度お試しいただくか、代わりにパスワードでログインしてください。",
       "oidc_no_account": "このIDに対応するアカウントはまだ存在しません。管理者にお問い合わせください。",
       "oidc_account_deactivated": "このアカウントは無効化されています。"
+    },
+    "reports": {
+      "title": "レポート",
+      "subtitle": "すべてのライブラリにわたる具体的なアイテムの表 — 重複、データ品質、トップリスト、最近の追加、取得方法。",
+      "none": "まだ表示するものがありません。",
+      "library": "ライブラリ",
+      "duplicates": {
+        "title": "ライブラリ間の重複",
+        "hint": "同じ種類のメディアの複数のライブラリに登録された同一のEAN。"
+      },
+      "dataQuality": {
+        "title": "データ品質",
+        "hint": "カバー、説明、価格、その他よく使われる項目が欠けているアイテム。",
+        "missingFields": "不足している項目"
+      },
+      "recentAdditions": {
+        "title": "最近の追加",
+        "hint": "すべてのライブラリで最近登録されたアイテム。",
+        "addedAt": "追加日"
+      },
+      "topLists": {
+        "title": "トップリスト",
+        "hint": "すべてのライブラリにおける、いくつかの項目の最大値・最小値。",
+        "mostExpensive": "最も高価",
+        "cheapest": "最も安価",
+        "mostPages": "ページ数が最多",
+        "longestCdRuntime": "CDの最長再生時間",
+        "shortestCdRuntime": "CDの最短再生時間",
+        "longestDvdRuntime": "DVD/Blu-rayの最長再生時間",
+        "shortestDvdRuntime": "DVD/Blu-rayの最短再生時間",
+        "highestDiscCount": "ディスク枚数が最多",
+        "minutes_one": "{{count}}分",
+        "minutes_other": "{{count}}分"
+      },
+      "captureSource": {
+        "title": "取得方法とメタデータの出典",
+        "hint": "各アイテムがどのように取得されたか、どのメタデータ提供元がデータを提供したか。",
+        "method": {
+          "scan": "スキャン／一括取得",
+          "manual": "手動入力",
+          "unknown": "不明（この機能導入前に登録）"
+        }
+      }
     }
   }
 }

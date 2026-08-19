@@ -50,7 +50,16 @@ interface Props {
   ean: string
   mediaType: MediaType
   merged: MergedMetadata
-  onConfirm: (attributes: Record<string, unknown>, coverUrl: string | null) => void
+  /**
+   * `providerKeys` (GitHub issue #74) is the union of every field/tracks/
+   * cover option's `provider_keys` that actually ended up in `attributes`/
+   * `coverUrl` — computed in confirm() below from the exact option the user
+   * kept (or the sole agreed-upon one), not every provider that merely
+   * proposed *something* for this lookup. The caller forwards it as
+   * `metadata_providers` to POST .../metadata/import or .../metadata/refresh,
+   * which join it into MediaBook/MediaCd/MediaDvdBluray::metadata_provider.
+   */
+  onConfirm: (attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) => void
   onReject: () => void
 }
 
@@ -61,8 +70,17 @@ export interface ProviderStatus {
   candidate_count: number
 }
 
-/** "cd.discogs" -> "Discogs", "book.open_library" -> "Open Library" — a small generic formatter rather than a lookup table, since a provider's human-readable name (MetadataPlugin.name) is only exposed via the admin-only /admin/metadata/plugins endpoint and this page is usable by any user with library write access, not just admins. */
-function formatProviderKey(key: string): string {
+/**
+ * "cd.discogs" -> "Discogs", "book.open_library" -> "Open Library" — a small
+ * generic formatter rather than a lookup table, since a provider's
+ * human-readable name (MetadataPlugin.name) is only exposed via the
+ * admin-only /admin/metadata/plugins endpoint and this page is usable by
+ * any user with library write access, not just admins. Exported (GitHub
+ * issue #74) for ReportsPage.tsx's capture-source report, which renders the
+ * same provider_key values (MediaBook/MediaCd/MediaDvdBluray::
+ * metadata_provider) outside this component entirely.
+ */
+export function formatProviderKey(key: string): string {
   const withoutMediaType = key.includes('.') ? key.slice(key.indexOf('.') + 1) : key
   return withoutMediaType
     .split('_')
@@ -155,15 +173,43 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm
 
   function confirm() {
     const attributes: Record<string, unknown> = { ean }
+    // GitHub issue #74: which provider(s) actually contributed a field that
+    // ended up in `attributes`/the chosen cover — an agreed field's sole
+    // option lists every provider that agreed on it; a picked field's
+    // matching option (found by value, since a scalar option's `value`
+    // compares fine by `===`) lists just the one(s) behind that choice.
+    const providerKeys = new Set<string>()
+
     for (const spec of specs) {
       const field = merged.fields[spec.key]
       if (!field) continue
-      attributes[spec.key] = field.agreed ? field.value : (selectedValues[spec.key] ?? null)
+      if (field.agreed) {
+        attributes[spec.key] = field.value
+        field.options[0]?.provider_keys.forEach((key) => providerKeys.add(key))
+      } else {
+        const value = selectedValues[spec.key] ?? null
+        attributes[spec.key] = value
+        field.options.find((option) => option.value === value)?.provider_keys.forEach((key) => providerKeys.add(key))
+      }
     }
     if (tracksField) {
-      attributes.tracks = tracksField.agreed ? tracksField.value : selectedTracks
+      if (tracksField.agreed) {
+        attributes.tracks = tracksField.value
+        tracksField.options[0]?.provider_keys.forEach((key) => providerKeys.add(key))
+      } else if (selectedTracks) {
+        attributes.tracks = selectedTracks
+        // Reference equality, not structural: selectedTracks was set from this
+        // exact same in-memory option.value (see the radio's onChange below), so
+        // === finds it correctly even though Track[] can't be compared by value.
+        tracksField.options.find((option) => option.value === selectedTracks)?.provider_keys.forEach((key) => providerKeys.add(key))
+      }
     }
-    onConfirm(attributes, selectedCoverUrl)
+    if (selectedCoverUrl) {
+      const cover = merged.covers.find((c) => c.url === selectedCoverUrl)
+      if (cover) providerKeys.add(cover.provider_key)
+    }
+
+    onConfirm(attributes, selectedCoverUrl, Array.from(providerKeys))
   }
 
   return (

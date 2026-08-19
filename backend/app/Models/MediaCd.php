@@ -8,14 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * CD media item, attribute set fixed per briefing 6.2 — `tracks`/
- * `runtime_seconds`/`runtime_computed` (GitHub issue #48) and `currency`
- * (GitHub issue #58) are deliberate extensions beyond it, see the
- * migrations that added them for why.
+ * `runtime_seconds`/`runtime_computed` (GitHub issue #48), `currency`
+ * (GitHub issue #58) and `capture_method`/`metadata_provider`/
+ * `captured_by_user_id` (GitHub issue #74) are deliberate extensions
+ * beyond it, see the migrations that added them for why.
  */
 #[Fillable([
     'library_id', 'title', 'cover_path', 'description', 'artist', 'medium',
     'asin', 'disc_count', 'tracks', 'runtime_seconds', 'runtime_computed',
     'release_date', 'price', 'currency', 'ean',
+    'capture_method', 'metadata_provider', 'captured_by_user_id',
 ])]
 class MediaCd extends Model
 {
@@ -32,5 +34,11 @@ class MediaCd extends Model
     public function library(): BelongsTo
     {
         return $this->belongsTo(Library::class);
+    }
+
+    /** GitHub issue #74 — who was logged in when this item was captured, null for a pre-#74 item. */
+    public function capturedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'captured_by_user_id');
     }
 }

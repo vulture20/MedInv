@@ -219,13 +219,16 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   }
 
   /** Applies the user's per-field picks from MetadataMergeReview onto the existing item (POST, not the create-path's PUT-equivalent). */
-  async function confirmRefresh(attributes: Record<string, unknown>, coverUrl: string | null) {
+  async function confirmRefresh(attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) {
     if (!item) return
     setRefreshError(null)
     try {
       const { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items/${item.id}/metadata/refresh`, {
         attributes,
         cover_url: coverUrl ?? undefined,
+        // GitHub issue #74 — updates metadata_provider only, capture_method
+        // stays untouched (MetadataController::reimport()).
+        metadata_providers: providerKeys,
       })
       onUpdated(data)
       setRefreshStatus('idle')
@@ -463,7 +466,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
               ean={item.ean}
               mediaType={library.media_type}
               merged={refreshMerged}
-              onConfirm={(attributes, coverUrl) => void confirmRefresh(attributes, coverUrl)}
+              onConfirm={(attributes, coverUrl, providerKeys) => void confirmRefresh(attributes, coverUrl, providerKeys)}
               onReject={() => {
                 setRefreshStatus('idle')
                 setRefreshMerged(null)

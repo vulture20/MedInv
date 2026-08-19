@@ -13,7 +13,8 @@
       "libraries": "Kitaplıklar",
       "statistics": "İstatistikler",
       "administration": "Yönetim",
-      "toggleMenu": "Menüyü aç/kapat"
+      "toggleMenu": "Menüyü aç/kapat",
+      "reports": "Raporlar"
     },
     "dashboard": {
       "noLibraries": "Henüz görünür bir kitaplığınız yok.",
@@ -108,7 +109,9 @@
         "director": "Yönetmen",
         "production_year": "Yapım yılı",
         "runtime_minutes": "Süre (dakika)",
-        "runtime_seconds": "Süre (saniye)"
+        "runtime_seconds": "Süre (saniye)",
+        "cover_path": "Kapak",
+        "tracks": "Parça listesi"
       },
       "tracklist": "Parça listesi",
       "trackPosition": "Konum",
@@ -203,6 +206,27 @@
         "noData": "Değer geçmişi için henüz yeterli veri yok.",
         "estimatedNoteUntil": "{{date}} öncesindeki geçmiş, öğelerin kayıt tarihlerinden tahmin edilmiştir ve sonraki silmeleri veya fiyat değişikliklerini yansıtmayabilir.",
         "estimatedNoteAll": "Bu geçmişin tamamı öğelerin kayıt tarihlerinden tahmin edilmiştir — henüz günlük bir anlık görüntü çalıştırılmadı."
+      },
+      "sharing": {
+        "title": "Paylaşım özeti",
+        "hint": "Hangi kitaplıkların paylaşıldığı ve kiminle.",
+        "sharedWith": "Şununla paylaşıldı",
+        "notShared": "Paylaşılmadı",
+        "scope": {
+          "guest": "Misafirler",
+          "all_users": "Tüm kullanıcılar"
+        },
+        "accessLevel": {
+          "read": "okuma",
+          "write": "yazma"
+        }
+      },
+      "userActivity": {
+        "title": "Kullanıcıya göre etkinlik",
+        "hint": "Her kullanıcının kaç öğe eklediği.",
+        "user": "Kullanıcı",
+        "unknownUser": "Bilinmiyor (bu özellikten önce eklenmiş)",
+        "lastCaptured": "Son ekleme"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Tek oturum açma başarısız oldu. Lütfen tekrar deneyin veya bunun yerine parolanızı kullanın.",
       "oidc_no_account": "Bu kimlik için henüz bir hesap yok. Lütfen bir yöneticiyle iletişime geçin.",
       "oidc_account_deactivated": "Bu hesap devre dışı bırakıldı."
+    },
+    "reports": {
+      "title": "Raporlar",
+      "subtitle": "Tüm kitaplıklarınızdaki somut öğelerin tabloları: yinelenenler, veri kalitesi, en iyi listeler, son eklenenler ve ekleme yöntemi.",
+      "none": "Henüz gösterilecek bir şey yok.",
+      "library": "Kitaplık",
+      "duplicates": {
+        "title": "Kitaplıklar arası yinelenenler",
+        "hint": "Aynı medya türündeki birden fazla kitaplığa eklenmiş aynı EAN."
+      },
+      "dataQuality": {
+        "title": "Veri kalitesi",
+        "hint": "Kapak, açıklama, fiyat veya genellikle yararlı başka bir alanı eksik olan öğeler.",
+        "missingFields": "Eksik alanlar"
+      },
+      "recentAdditions": {
+        "title": "Son eklenenler",
+        "hint": "Tüm kitaplıklarınızda en son eklenen öğeler.",
+        "addedAt": "Eklendi"
+      },
+      "topLists": {
+        "title": "En iyi listeler",
+        "hint": "Tüm kitaplıklarınızda birkaç alan için en yüksek/en düşük değerler.",
+        "mostExpensive": "En pahalılar",
+        "cheapest": "En ucuzlar",
+        "mostPages": "En çok sayfa",
+        "longestCdRuntime": "En uzun CD süresi",
+        "shortestCdRuntime": "En kısa CD süresi",
+        "longestDvdRuntime": "En uzun DVD/Blu-ray süresi",
+        "shortestDvdRuntime": "En kısa DVD/Blu-ray süresi",
+        "highestDiscCount": "En yüksek disk sayısı",
+        "minutes_one": "{{count}} dakika",
+        "minutes_other": "{{count}} dakika"
+      },
+      "captureSource": {
+        "title": "Ekleme yöntemi ve meta veri kaynağı",
+        "hint": "Her öğenin nasıl eklendiği ve hangi meta veri sağlayıcısının/sağlayıcılarının verilerini sağladığı.",
+        "method": {
+          "scan": "Tarama / toplu ekleme",
+          "manual": "Manuel giriş",
+          "unknown": "Bilinmiyor (bu özellikten önce eklenmiş)"
+        }
+      }
     }
   }
 }

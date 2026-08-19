@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\MediaItemController;
 use App\Http\Controllers\Api\MetadataController;
 use App\Http\Controllers\Api\OidcAuthController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\ReportsController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\TemplateController;
@@ -110,6 +111,22 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // issue #30) — separate endpoint rather than folded into /statistics
     // above, keeping that response shape unchanged for existing consumers.
     Route::get('/statistics/value-history', [StatisticsController::class, 'valueHistory']);
+    // Per-library sharing overview (GitHub issue #74) and per-user capture
+    // activity (#74's second "größerer Aufwand" idea) — both pure counts
+    // with no individual-item reference, so they live in StatisticsService
+    // rather than ReportsService (see that service's docblock).
+    Route::get('/statistics/sharing', [StatisticsController::class, 'sharing']);
+    Route::get('/statistics/user-activity', [StatisticsController::class, 'userActivity']);
+
+    // "Auswertungen" (GitHub issue #74) — tables of concrete media items,
+    // deliberately a separate module from /statistics above (see
+    // ReportsService's docblock), scoped through LibraryAccessService the
+    // same way.
+    Route::get('/reports/duplicates', [ReportsController::class, 'duplicates']);
+    Route::get('/reports/data-quality', [ReportsController::class, 'dataQuality']);
+    Route::get('/reports/top-lists', [ReportsController::class, 'topLists']);
+    Route::get('/reports/recent-additions', [ReportsController::class, 'recentAdditions']);
+    Route::get('/reports/capture-source', [ReportsController::class, 'captureSource']);
 
     // Libraries — readable per LibraryAccessService; write endpoints re-check
     // ownership/admin inside the controller (5., 4.3). Guests never reach

@@ -9,6 +9,7 @@
     "capture": "Erfassung",
     "libraries": "Bibliotheken",
     "statistics": "Statistiken",
+    "reports": "Auswertungen",
     "administration": "Administration",
     "toggleMenu": "Menü öffnen/schließen"
   },
@@ -111,6 +112,7 @@
     "fields": {
       "title": "Titel",
       "ean": "EAN",
+      "cover_path": "Cover",
       "description": "Beschreibung",
       "release_date": "Erscheinungstermin",
       "price": "Preis",
@@ -128,6 +130,7 @@
       "asin": "ASIN",
       "disc_count": "Anzahl der Discs",
       "runtime_seconds": "Spieldauer (Sekunden)",
+      "tracks": "Titelliste",
       "languages": "Sprache(n)",
       "cast": "Besetzung",
       "director": "Regisseur",
@@ -200,6 +203,70 @@
       "noData": "Noch nicht genügend Daten für einen Wertverlauf.",
       "estimatedNoteUntil": "Der Verlauf vor dem {{date}} ist aus den Erfassungsdaten der Medien geschätzt und kann spätere Löschungen oder Preisänderungen nicht abbilden.",
       "estimatedNoteAll": "Dieser gesamte Verlauf ist aus den Erfassungsdaten geschätzt — es liegt noch kein echter täglicher Schnappschuss vor."
+    },
+    "sharing": {
+      "title": "Freigabe-Übersicht",
+      "hint": "Welche Ihrer Bibliotheken freigegeben sind, und für wen.",
+      "sharedWith": "Freigegeben für",
+      "notShared": "Nicht freigegeben",
+      "scope": {
+        "guest": "Gäste",
+        "all_users": "Alle Benutzer"
+      },
+      "accessLevel": {
+        "read": "lesend",
+        "write": "schreibend"
+      }
+    },
+    "userActivity": {
+      "title": "Aktivität je Benutzer",
+      "hint": "Wie viele Medien jeder Benutzer erfasst hat.",
+      "user": "Benutzer",
+      "unknownUser": "Unbekannt (vor Einführung dieser Funktion erfasst)",
+      "lastCaptured": "Zuletzt erfasst"
+    }
+  },
+  "reports": {
+    "title": "Auswertungen",
+    "subtitle": "Tabellen konkreter Medien über alle Ihre Bibliotheken hinweg — Dubletten, Datenqualität, Top-Listen, neueste Zugänge und Erfassungsart.",
+    "none": "Hier gibt es noch nichts anzuzeigen.",
+    "library": "Bibliothek",
+    "duplicates": {
+      "title": "Dubletten über Bibliotheken hinweg",
+      "hint": "Dieselbe EAN, erfasst in mehr als einer Ihrer Bibliotheken derselben Medienart."
+    },
+    "dataQuality": {
+      "title": "Datenqualität",
+      "hint": "Medien ohne Cover, Beschreibung, Preis oder ein anderes häufig nützliches Feld.",
+      "missingFields": "Fehlende Felder"
+    },
+    "recentAdditions": {
+      "title": "Neueste Zugänge",
+      "hint": "Die zuletzt erfassten Medien über alle Ihre Bibliotheken hinweg.",
+      "addedAt": "Hinzugefügt"
+    },
+    "topLists": {
+      "title": "Top-Listen",
+      "hint": "Die höchsten/niedrigsten Werte über alle Ihre Bibliotheken hinweg für einige Felder.",
+      "mostExpensive": "Teuerste",
+      "cheapest": "Günstigste",
+      "mostPages": "Umfangreichste Bücher",
+      "longestCdRuntime": "Längste CD-Spieldauer",
+      "shortestCdRuntime": "Kürzeste CD-Spieldauer",
+      "longestDvdRuntime": "Längste DVD/Blu-ray-Spieldauer",
+      "shortestDvdRuntime": "Kürzeste DVD/Blu-ray-Spieldauer",
+      "highestDiscCount": "Höchste Disc-Anzahl",
+      "minutes_one": "{{count}} Minute",
+      "minutes_other": "{{count}} Minuten"
+    },
+    "captureSource": {
+      "title": "Erfassungsart & Metadaten-Herkunft",
+      "hint": "Wie jedes Medium erfasst wurde, und welche Metadaten-Anbieter die Daten geliefert haben.",
+      "method": {
+        "scan": "Scan / Mehrfacherfassung",
+        "manual": "Manuelle Erfassung",
+        "unknown": "Unbekannt (vor Einführung dieser Funktion erfasst)"
+      }
     }
   },
   "settings": {

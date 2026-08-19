@@ -21,4 +21,16 @@ class StatisticsController extends Controller
     {
         return $this->statisticsService->valueHistoryFor($request->user());
     }
+
+    /** Sharing overview (GitHub issue #74) — see StatisticsService::sharingFor(). */
+    public function sharing(Request $request)
+    {
+        return $this->statisticsService->sharingFor($request->user());
+    }
+
+    /** Per-user capture activity (GitHub issue #74) — see StatisticsService::userActivityFor(). */
+    public function userActivity(Request $request)
+    {
+        return $this->statisticsService->userActivityFor($request->user());
+    }
 }

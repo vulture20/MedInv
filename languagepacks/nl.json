@@ -13,7 +13,8 @@
       "libraries": "Bibliotheken",
       "statistics": "Statistieken",
       "administration": "Beheer",
-      "toggleMenu": "Menu in-/uitschakelen"
+      "toggleMenu": "Menu in-/uitschakelen",
+      "reports": "Rapporten"
     },
     "dashboard": {
       "noLibraries": "Er zijn nog geen bibliotheken voor u zichtbaar.",
@@ -108,7 +109,9 @@
         "director": "Regisseur",
         "production_year": "Productiejaar",
         "runtime_minutes": "Speelduur (minuten)",
-        "runtime_seconds": "Speelduur (seconden)"
+        "runtime_seconds": "Speelduur (seconden)",
+        "cover_path": "Omslag",
+        "tracks": "Tracklist"
       },
       "tracklist": "Tracklist",
       "trackPosition": "Positie",
@@ -203,6 +206,27 @@
         "noData": "Nog niet genoeg gegevens voor een waardeverloop.",
         "estimatedNoteUntil": "De geschiedenis vóór {{date}} is geschat op basis van de registratiedata van items en kan latere verwijderingen of prijswijzigingen niet weergeven.",
         "estimatedNoteAll": "Dit hele verloop is geschat op basis van de registratiedata van items — er is nog geen dagelijkse momentopname uitgevoerd."
+      },
+      "sharing": {
+        "title": "Overzicht delen",
+        "hint": "Welke bibliotheken zijn gedeeld, en met wie.",
+        "sharedWith": "Gedeeld met",
+        "notShared": "Niet gedeeld",
+        "scope": {
+          "guest": "Gasten",
+          "all_users": "Alle gebruikers"
+        },
+        "accessLevel": {
+          "read": "lezen",
+          "write": "schrijven"
+        }
+      },
+      "userActivity": {
+        "title": "Activiteit per gebruiker",
+        "hint": "Hoeveel items elke gebruiker heeft vastgelegd.",
+        "user": "Gebruiker",
+        "unknownUser": "Onbekend (vastgelegd vóór deze functie)",
+        "lastCaptured": "Laatst vastgelegd"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "Single sign-on is mislukt. Probeer het opnieuw of gebruik in plaats daarvan uw wachtwoord.",
       "oidc_no_account": "Er bestaat nog geen account voor deze identiteit. Neem contact op met een beheerder.",
       "oidc_account_deactivated": "Dit account is gedeactiveerd."
+    },
+    "reports": {
+      "title": "Rapporten",
+      "subtitle": "Tabellen met concrete items over al uw bibliotheken: duplicaten, datakwaliteit, topoverzichten, recente toevoegingen en vastlegmethode.",
+      "none": "Nog niets om te tonen.",
+      "library": "Bibliotheek",
+      "duplicates": {
+        "title": "Duplicaten tussen bibliotheken",
+        "hint": "Dezelfde EAN vastgelegd in meer dan één bibliotheek van hetzelfde mediatype."
+      },
+      "dataQuality": {
+        "title": "Datakwaliteit",
+        "hint": "Items zonder omslag, beschrijving, prijs of een ander vaak nuttig veld.",
+        "missingFields": "Ontbrekende velden"
+      },
+      "recentAdditions": {
+        "title": "Recente toevoegingen",
+        "hint": "De meest recent vastgelegde items over al uw bibliotheken.",
+        "addedAt": "Toegevoegd"
+      },
+      "topLists": {
+        "title": "Topoverzichten",
+        "hint": "De hoogste/laagste waarden voor enkele velden over al uw bibliotheken.",
+        "mostExpensive": "Duurste",
+        "cheapest": "Goedkoopste",
+        "mostPages": "Meeste pagina's",
+        "longestCdRuntime": "Langste cd-speelduur",
+        "shortestCdRuntime": "Kortste cd-speelduur",
+        "longestDvdRuntime": "Langste dvd/blu-ray-speelduur",
+        "shortestDvdRuntime": "Kortste dvd/blu-ray-speelduur",
+        "highestDiscCount": "Hoogste aantal schijven",
+        "minutes_one": "{{count}} minuut",
+        "minutes_other": "{{count}} minuten"
+      },
+      "captureSource": {
+        "title": "Vastlegmethode & metadatabron",
+        "hint": "Hoe elk item is vastgelegd, en welke metadataprovider(s) de gegevens hebben geleverd.",
+        "method": {
+          "scan": "Scan / bulkinvoer",
+          "manual": "Handmatige invoer",
+          "unknown": "Onbekend (vastgelegd vóór deze functie)"
+        }
+      }
     }
   }
 }

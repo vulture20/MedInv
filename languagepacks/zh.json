@@ -13,7 +13,8 @@
       "libraries": "媒体库",
       "statistics": "统计",
       "administration": "管理",
-      "toggleMenu": "切换菜单"
+      "toggleMenu": "切换菜单",
+      "reports": "报表"
     },
     "dashboard": {
       "noLibraries": "您目前还看不到任何媒体库。",
@@ -108,7 +109,9 @@
         "director": "导演",
         "production_year": "制作年份",
         "runtime_minutes": "时长（分钟）",
-        "runtime_seconds": "时长（秒）"
+        "runtime_seconds": "时长（秒）",
+        "cover_path": "封面",
+        "tracks": "曲目列表"
       },
       "tracklist": "曲目列表",
       "trackPosition": "位置",
@@ -203,6 +206,27 @@
         "noData": "数据尚不足以生成价值历史记录。",
         "estimatedNoteUntil": "{{date}} 之前的历史记录是根据项目录入日期估算的，可能未反映之后的删除或价格变动。",
         "estimatedNoteAll": "此历史记录完全基于项目录入日期估算 — 尚未运行过每日快照。"
+      },
+      "sharing": {
+        "title": "共享概览",
+        "hint": "哪些媒体库已共享，以及共享给了谁。",
+        "sharedWith": "共享给",
+        "notShared": "未共享",
+        "scope": {
+          "guest": "访客",
+          "all_users": "所有用户"
+        },
+        "accessLevel": {
+          "read": "只读",
+          "write": "读写"
+        }
+      },
+      "userActivity": {
+        "title": "按用户统计的活动",
+        "hint": "每位用户添加了多少项目。",
+        "user": "用户",
+        "unknownUser": "未知（在此功能上线前添加）",
+        "lastCaptured": "最近添加时间"
       }
     },
     "settings": {
@@ -485,6 +509,49 @@
       "oidc_failed": "单点登录失败。请重试，或改用密码登录。",
       "oidc_no_account": "该身份尚不存在对应账户。请联系管理员。",
       "oidc_account_deactivated": "此账户已被停用。"
+    },
+    "reports": {
+      "title": "报表",
+      "subtitle": "跨所有媒体库的具体项目表格：重复项、数据质量、排行榜、最新添加以及录入方式。",
+      "none": "暂无可显示的内容。",
+      "library": "媒体库",
+      "duplicates": {
+        "title": "跨媒体库重复项",
+        "hint": "同一 EAN 在多个相同媒体类型的媒体库中被录入。"
+      },
+      "dataQuality": {
+        "title": "数据质量",
+        "hint": "缺少封面、简介、价格或其他常用字段的项目。",
+        "missingFields": "缺失字段"
+      },
+      "recentAdditions": {
+        "title": "最新添加",
+        "hint": "所有媒体库中最近添加的项目。",
+        "addedAt": "添加时间"
+      },
+      "topLists": {
+        "title": "排行榜",
+        "hint": "所有媒体库中若干字段的最高/最低值。",
+        "mostExpensive": "最贵",
+        "cheapest": "最便宜",
+        "mostPages": "页数最多",
+        "longestCdRuntime": "CD 时长最长",
+        "shortestCdRuntime": "CD 时长最短",
+        "longestDvdRuntime": "DVD/蓝光时长最长",
+        "shortestDvdRuntime": "DVD/蓝光时长最短",
+        "highestDiscCount": "光盘数量最多",
+        "minutes_one": "{{count}} 分钟",
+        "minutes_other": "{{count}} 分钟"
+      },
+      "captureSource": {
+        "title": "录入方式与元数据来源",
+        "hint": "每个项目是如何录入的，以及由哪些元数据提供方提供了数据。",
+        "method": {
+          "scan": "扫描 / 批量录入",
+          "manual": "手动录入",
+          "unknown": "未知（在此功能上线前添加）"
+        }
+      }
     }
   }
 }

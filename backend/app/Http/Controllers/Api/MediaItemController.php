@@ -172,6 +172,17 @@ class MediaItemController extends Controller
         // already matches the default.
         $data = $this->currencyConversion->convertToDefaultCurrency($data);
 
+        // GitHub issue #74: this endpoint is only ever reached from the
+        // standalone "Add manually" form (CreateMediaItemDialog.tsx) —
+        // MetadataController::import() is the one confirmed candidates
+        // route through, see that method's own capture_method='scan'. Not
+        // validated/client-supplied like the rest of $data, and not in
+        // rulesFor() either — an internally computed fact about *how* this
+        // request arrived, not item data a caller gets to assert.
+        $data['capture_method'] = 'manual';
+        $data['metadata_provider'] = null;
+        $data['captured_by_user_id'] = $request->user()->id;
+
         try {
             $item = $this->mediaItemService->create($library, $data);
         } catch (DuplicateEanException $e) {

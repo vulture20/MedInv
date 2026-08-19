@@ -160,10 +160,12 @@ export function CapturePage() {
     setFile(null)
   }
 
-  async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null) {
+  async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) {
     await apiClient.post(`/libraries/${result.library.id}/metadata/import`, {
       attributes,
       cover_url: coverUrl ?? undefined,
+      // GitHub issue #74 — see MetadataMergeReview's onConfirm docblock.
+      metadata_providers: providerKeys,
     })
     setResults((prev) => prev.filter((r) => r.id !== result.id))
   }
@@ -277,7 +279,7 @@ export function CapturePage() {
                     ean={result.ean}
                     mediaType={result.library.media_type}
                     merged={result.merged}
-                    onConfirm={(attributes, coverUrl) => void confirmMerged(result, attributes, coverUrl)}
+                    onConfirm={(attributes, coverUrl, providerKeys) => void confirmMerged(result, attributes, coverUrl, providerKeys)}
                     onReject={() => dismissResult(result.id)}
                   />
                 )}
