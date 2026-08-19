@@ -43,6 +43,7 @@
       "view": "查看",
       "delete": "删除",
       "noItems": "此媒体库中还没有任何项目。",
+      "exportPdf": "导出为 PDF",
       "itemsTitle_one": "{{count}} 个项目",
       "itemsTitle_other": "{{count}} 个项目",
       "confirmDelete": "删除媒体库“{{name}}”？此操作无法撤销。",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "项目数量",
+      "exportPdf": "导出为 PDF",
       "sharing": {
         "title": "共享概览",
         "hint": "哪些媒体库已共享，以及共享给了谁。",

@@ -43,6 +43,7 @@
       "view": "Afficher",
       "delete": "Supprimer",
       "noItems": "Cette bibliothèque ne contient encore aucun élément.",
+      "exportPdf": "Exporter en PDF",
       "itemsTitle_one": "{{count}} élément",
       "itemsTitle_other": "{{count}} éléments",
       "confirmDelete": "Supprimer la bibliothèque « {{name}} » ? Cette action est irréversible.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Nombre d'éléments",
+      "exportPdf": "Exporter en PDF",
       "sharing": {
         "title": "Aperçu des partages",
         "hint": "Quelles bibliothèques sont partagées, et avec qui.",

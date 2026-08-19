@@ -27,6 +27,18 @@ cd /var/www/backend
 mkdir -p storage/logs
 chown -R www-data:www-data storage/logs
 
+# Same class of bug, same fix, for barryvdh/laravel-dompdf's font cache
+# (GitHub issue #87's PDF export): config/dompdf.php's font_dir/font_cache
+# both point at storage_path('fonts'), and dompdf writes its font-metrics
+# cache there the first time it renders anything, from a php-fpm worker
+# running as www-data. storage/ as a whole is the persisted volume
+# (docker-compose.yml), so an otherwise-untouched fresh volume has no
+# storage/fonts at all yet, owned by whoever Docker created the volume
+# as — proactively creating and chowning it here means the very first PDF
+# export doesn't 500 the same way an unwritable log file used to.
+mkdir -p storage/fonts
+chown -R www-data:www-data storage/fonts
+
 # APP_KEY encrypts sessions/cookies — without it, Sanctum's stateful
 # middleware throws MissingAppKeyException on every request (including
 # login), which previously surfaced as a misleading generic error instead

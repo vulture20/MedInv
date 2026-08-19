@@ -28,4 +28,24 @@ abstract class Controller
             ...$context,
         ]);
     }
+
+    /**
+     * Strips everything that isn't filesystem-safe across every OS a
+     * generated download could land on, collapsing runs of it into a
+     * single "-" (e.g. "Sample Library – CDs" -> "Sample-Library-CDs").
+     * Keeps any Unicode letter/number (`\p{L}`/`\p{N}`, not just ASCII
+     * `A-Za-z0-9`) — library/report names are free text in whatever script
+     * an admin chose (this app is translated into a dozen languages,
+     * briefing 10./11.4), and letters like "ü" or "Ω" or non-Latin scripts
+     * are just as filesystem-safe as ASCII ones; only punctuation/symbols
+     * (the actually unsafe part, e.g. `/`, `:`, `*`) needs stripping.
+     *
+     * Originally private to ExportImportController (GitHub issues #31/#43);
+     * promoted here (GitHub issue #87) once LibraryController/
+     * ReportsController's PDF export filenames needed the exact same logic.
+     */
+    protected function sanitizeForFilename(string $name): string
+    {
+        return trim(preg_replace('/[^\p{L}\p{N}]+/u', '-', $name) ?? '', '-') ?: 'library';
+    }
 }

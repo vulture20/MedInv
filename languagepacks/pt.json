@@ -43,6 +43,7 @@
       "view": "Ver",
       "delete": "Excluir",
       "noItems": "Esta biblioteca ainda não contém nenhum item.",
+      "exportPdf": "Exportar como PDF",
       "itemsTitle_one": "{{count}} item",
       "itemsTitle_other": "{{count}} itens",
       "confirmDelete": "Excluir a biblioteca \"{{name}}\"? Esta ação não pode ser desfeita.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Número de itens",
+      "exportPdf": "Exportar como PDF",
       "sharing": {
         "title": "Resumo de compartilhamento",
         "hint": "Quais bibliotecas estão compartilhadas, e com quem.",

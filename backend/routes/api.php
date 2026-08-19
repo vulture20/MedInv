@@ -126,6 +126,15 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // ReportsService's docblock for why.
     Route::get('/reports/sharing', [ReportsController::class, 'sharing']);
     Route::get('/reports/user-activity', [ReportsController::class, 'userActivity']);
+    // PDF export (GitHub issue #87) of any report above — declared after
+    // every static /reports/<key> route, same reasoning GitHub issue #54's
+    // bulk-delete route ordering comment already documents: a route with a
+    // wildcard segment ({key}) needs to come after the more specific static
+    // ones it could otherwise shadow. Not applicable here in practice
+    // (every route above uses GET, this one has an extra /export/pdf
+    // suffix no other route shares), but kept in the same relative order
+    // for readability regardless.
+    Route::get('/reports/{key}/export/pdf', [ReportsController::class, 'exportPdf']);
 
     // Libraries — readable per LibraryAccessService; write endpoints re-check
     // ownership/admin inside the controller (5., 4.3). Guests never reach
@@ -147,6 +156,9 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('/libraries/{library}/items/{item}', [MediaItemController::class, 'show']);
     Route::get('/libraries/{library}/items/{item}/cover', [MediaItemController::class, 'cover']);
     Route::get('/libraries/{library}/items/{item}/cover/thumbnail', [MediaItemController::class, 'coverThumbnail']);
+    // Printable/archivable PDF inventory list (GitHub issue #87) — a read
+    // action like the routes just above, not a management one.
+    Route::get('/libraries/{library}/export/pdf', [LibraryController::class, 'exportPdf']);
 
     Route::middleware('level:user,admin')->group(function () {
         Route::post('/libraries', [LibraryController::class, 'store']);

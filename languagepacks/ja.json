@@ -43,6 +43,7 @@
       "view": "表示",
       "delete": "削除",
       "noItems": "このライブラリにはまだアイテムがありません。",
+      "exportPdf": "PDFとしてエクスポート",
       "itemsTitle_one": "{{count}} 件のアイテム",
       "itemsTitle_other": "{{count}} 件のアイテム",
       "confirmDelete": "ライブラリ「{{name}}」を削除しますか? この操作は元に戻せません。",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "アイテム数",
+      "exportPdf": "PDFとしてエクスポート",
       "sharing": {
         "title": "共有の概要",
         "hint": "どのライブラリが誰と共有されているか。",

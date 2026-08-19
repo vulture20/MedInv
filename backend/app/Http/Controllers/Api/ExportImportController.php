@@ -92,22 +92,6 @@ class ExportImportController extends Controller
     }
 
     /**
-     * Strips everything that isn't filesystem-safe across every OS this
-     * could be downloaded to, collapsing runs of it into a single "-" (e.g.
-     * "Sample Library – CDs" -> "Sample-Library-CDs"). Keeps any Unicode
-     * letter/number (`\p{L}`/`\p{N}`, not just ASCII `A-Za-z0-9`) — library
-     * names are free text in whatever script an admin chose (this app is
-     * translated into a dozen languages, briefing 10./11.4), and letters
-     * like "ü" or "Ω" or non-Latin scripts are just as filesystem-safe as
-     * ASCII ones; only punctuation/symbols (the actually unsafe part, e.g.
-     * `/`, `:`, `*`) needs stripping.
-     */
-    private function sanitizeForFilename(string $name): string
-    {
-        return trim(preg_replace('/[^\p{L}\p{N}]+/u', '-', $name) ?? '', '-') ?: 'library';
-    }
-
-    /**
      * Same conflict-resolution options as backup restore (briefing 9.1 + 9.3):
      * rename | merge | overwrite | skip per library name, or __all__=cancel.
      * `restore_settings` opts into also applying the file's system_settings/

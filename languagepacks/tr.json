@@ -43,6 +43,7 @@
       "view": "Görüntüle",
       "delete": "Sil",
       "noItems": "Bu kitaplıkta henüz öğe yok.",
+      "exportPdf": "PDF olarak dışa aktar",
       "itemsTitle_one": "{{count}} öğe",
       "itemsTitle_other": "{{count}} öğe",
       "confirmDelete": "\"{{name}}\" kitaplığı silinsin mi? Bu işlem geri alınamaz.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Öğe sayısı",
+      "exportPdf": "PDF olarak dışa aktar",
       "sharing": {
         "title": "Paylaşım özeti",
         "hint": "Hangi kitaplıkların paylaşıldığı ve kiminle.",

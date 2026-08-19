@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\ExportPdf\PdfExportService;
 use App\Domain\Libraries\LibraryAccessService;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
 use App\Models\LibraryShare;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +21,10 @@ use Illuminate\Validation\ValidationException;
  */
 class LibraryController extends Controller
 {
-    public function __construct(private readonly LibraryAccessService $access) {}
+    public function __construct(
+        private readonly LibraryAccessService $access,
+        private readonly PdfExportService $pdfExportService,
+    ) {}
 
     /**
      * GitHub issue #95: each library's item count, for LibrariesPage.tsx's
@@ -69,6 +74,23 @@ class LibraryController extends Controller
         }
 
         return $library;
+    }
+
+    /**
+     * A single library's contents as a printable/archivable PDF inventory
+     * list (GitHub issue #87) — same read gate as show()/the item routes
+     * above (LibraryAccessService::canRead()), a plain read action rather
+     * than a management one, so a guest with an explicitly shared library
+     * (briefing 4.2) can export it too, same as they can already browse it.
+     */
+    public function exportPdf(Request $request, Library $library)
+    {
+        abort_unless($this->access->canRead($request->user(), $library), 403);
+
+        $pdf = $this->pdfExportService->libraryInventoryPdf($library);
+        $filename = 'medinv-'.$this->sanitizeForFilename($library->name).'-'.SystemSetting::localNow()->format('Ymd-His').'.pdf';
+
+        return $pdf->download($filename);
     }
 
     /** Guests cannot create libraries (briefing 4.2) — enforced via ->middleware('level:user,admin'). */

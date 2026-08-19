@@ -43,6 +43,7 @@
       "view": "Skoða",
       "delete": "Eyða",
       "noItems": "Þetta safn inniheldur engar færslur ennþá.",
+      "exportPdf": "Flytja út sem PDF",
       "itemsTitle_one": "{{count}} færsla",
       "itemsTitle_other": "{{count}} færslur",
       "confirmDelete": "Eyða safninu „{{name}}“? Þessu er ekki hægt að afturkalla.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Fjöldi færslna",
+      "exportPdf": "Flytja út sem PDF",
       "sharing": {
         "title": "Yfirlit yfir deilingu",
         "hint": "Hvaða söfn eru deild, og með hverjum.",

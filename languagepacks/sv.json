@@ -43,6 +43,7 @@
       "view": "Visa",
       "delete": "Ta bort",
       "noItems": "Det här biblioteket innehåller inga poster ännu.",
+      "exportPdf": "Exportera som PDF",
       "itemsTitle_one": "{{count}} post",
       "itemsTitle_other": "{{count}} poster",
       "confirmDelete": "Ta bort biblioteket ”{{name}}”? Detta kan inte ångras.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Antal poster",
+      "exportPdf": "Exportera som PDF",
       "sharing": {
         "title": "Delningsöversikt",
         "hint": "Vilka bibliotek som är delade, och med vem.",

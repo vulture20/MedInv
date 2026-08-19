@@ -43,6 +43,7 @@
       "view": "Näytä",
       "delete": "Poista",
       "noItems": "Tässä kirjastossa ei ole vielä yhtään kohdetta.",
+      "exportPdf": "Vie PDF-tiedostona",
       "itemsTitle_one": "{{count}} kohde",
       "itemsTitle_other": "{{count}} kohdetta",
       "confirmDelete": "Poistetaanko kirjasto ”{{name}}”? Tätä ei voi perua.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Kohteiden määrä",
+      "exportPdf": "Vie PDF-tiedostona",
       "sharing": {
         "title": "Jakamiskatsaus",
         "hint": "Mitkä kirjastot on jaettu, ja kenelle.",

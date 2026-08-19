@@ -242,6 +242,22 @@ export function ReportDetailPage() {
       <header className="panel-page__header">
         <h1>{t(meta.titleKey)}</h1>
         <p className="hint">{t(meta.hintKey)}</p>
+        {/* GitHub issue #87: a fresh server-side render (PdfExportService),
+            not a client-side snapshot of what's currently loaded — a plain
+            navigation rather than an apiClient request, same
+            window.location.href pattern BackupsPage.tsx's download button
+            already uses for a GET file download, so the browser's normal
+            Content-Disposition handling (and the already-authenticated
+            session cookie) does the rest without any Blob/object-URL
+            plumbing. */}
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = `${apiClient.defaults.baseURL}/reports/${meta.key}/export/pdf`
+          }}
+        >
+          {t('reports.exportPdf')}
+        </button>
       </header>
 
       {error && <p role="alert">{error}</p>}

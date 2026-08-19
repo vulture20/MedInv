@@ -43,6 +43,7 @@
       "view": "Bekijken",
       "delete": "Verwijderen",
       "noItems": "Deze bibliotheek bevat nog geen items.",
+      "exportPdf": "Exporteren als PDF",
       "itemsTitle_one": "{{count}} item",
       "itemsTitle_other": "{{count}} items",
       "confirmDelete": "Bibliotheek \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Aantal items",
+      "exportPdf": "Exporteren als PDF",
       "sharing": {
         "title": "Overzicht delen",
         "hint": "Welke bibliotheken zijn gedeeld, en met wie.",

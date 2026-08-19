@@ -275,6 +275,21 @@ export function LibraryDetailPage() {
         <h2>{t('libraries.itemsTitle', { count: items?.total ?? 0 })}</h2>
 
         <div className="library-items-toolbar">
+          {/* GitHub issue #87: a printable/archivable PDF inventory list of
+              this library — a read action like the rest of this page, so
+              available regardless of canManage (a guest with read access to
+              a shared library can export it too, same as they can already
+              browse it). Plain navigation rather than an apiClient request,
+              same window.location.href pattern BackupsPage.tsx's download
+              button already uses for a GET file download. */}
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = `${apiClient.defaults.baseURL}/libraries/${library.id}/export/pdf`
+            }}
+          >
+            {t('libraries.exportPdf')}
+          </button>
           {canManage && (
             <button type="button" onClick={() => setCreating(true)}>
               {t('mediaItem.addManually')}

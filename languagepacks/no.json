@@ -43,6 +43,7 @@
       "view": "Vis",
       "delete": "Slett",
       "noItems": "Dette biblioteket inneholder ingen oppføringer ennå.",
+      "exportPdf": "Eksporter som PDF",
       "itemsTitle_one": "{{count}} oppføring",
       "itemsTitle_other": "{{count}} oppføringer",
       "confirmDelete": "Slette biblioteket «{{name}}»? Dette kan ikke angres.",
@@ -544,6 +545,7 @@
         }
       },
       "itemCount": "Antall oppføringer",
+      "exportPdf": "Eksporter som PDF",
       "sharing": {
         "title": "Delingsoversikt",
         "hint": "Hvilke biblioteker som er delt, og med hvem.",
