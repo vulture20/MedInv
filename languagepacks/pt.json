@@ -523,6 +523,8 @@
       "subtitle": "Tabelas de itens concretos em todas as suas bibliotecas: duplicados, qualidade dos dados, listas em destaque, novidades e origem da captura.",
       "none": "Ainda não há nada para mostrar.",
       "library": "Biblioteca",
+      "view": "Ver",
+      "notFound": "Relatório desconhecido.",
       "duplicates": {
         "title": "Duplicados entre bibliotecas",
         "hint": "O mesmo EAN capturado em mais de uma biblioteca do mesmo tipo de mídia."

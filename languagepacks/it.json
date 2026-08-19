@@ -523,6 +523,8 @@
       "subtitle": "Tabelle di elementi concreti in tutte le biblioteche: duplicati, qualità dei dati, classifiche, novità e origine dell'acquisizione.",
       "none": "Ancora nulla da mostrare.",
       "library": "Biblioteca",
+      "view": "Visualizza",
+      "notFound": "Rapporto sconosciuto.",
       "duplicates": {
         "title": "Duplicati tra biblioteche",
         "hint": "Lo stesso EAN acquisito in più biblioteche dello stesso tipo di supporto."

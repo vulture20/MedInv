@@ -239,6 +239,8 @@
     "subtitle": "Tables of concrete items across all your libraries — duplicates, data quality, top lists, recent additions, and capture source.",
     "none": "Nothing to show here yet.",
     "library": "Library",
+    "view": "View",
+    "notFound": "Unknown report.",
     "duplicates": {
       "title": "Duplicates across libraries",
       "hint": "The same EAN captured in more than one of your libraries of the same media type."

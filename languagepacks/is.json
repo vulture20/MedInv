@@ -523,6 +523,8 @@
       "subtitle": "Töflur með áþreifanlegum færslum úr öllum söfnum þínum: tvítekningar, gagnagæði, vinsældalistar, nýjustu viðbætur og skráningaraðferð.",
       "none": "Ekkert að sýna ennþá.",
       "library": "Safn",
+      "view": "Skoða",
+      "notFound": "Óþekkt skýrsla.",
       "duplicates": {
         "title": "Tvítekningar milli safna",
         "hint": "Sama EAN skráð í fleiri en eitt safn af sömu miðlategund."

@@ -523,6 +523,8 @@
       "subtitle": "Tabellen met concrete items over al uw bibliotheken: duplicaten, datakwaliteit, topoverzichten, recente toevoegingen en vastlegmethode.",
       "none": "Nog niets om te tonen.",
       "library": "Bibliotheek",
+      "view": "Bekijken",
+      "notFound": "Onbekend rapport.",
       "duplicates": {
         "title": "Duplicaten tussen bibliotheken",
         "hint": "Dezelfde EAN vastgelegd in meer dan één bibliotheek van hetzelfde mediatype."

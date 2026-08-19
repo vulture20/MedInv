@@ -523,6 +523,8 @@
       "subtitle": "Tabeller med konkrete elementer på tvers av alle biblioteker: duplikater, datakvalitet, topplister, nylig tilførte og registreringsmetode.",
       "none": "Ingenting å vise ennå.",
       "library": "Bibliotek",
+      "view": "Vis",
+      "notFound": "Ukjent rapport.",
       "duplicates": {
         "title": "Duplikater på tvers av biblioteker",
         "hint": "Samme EAN registrert i mer enn ett bibliotek av samme medietype."

@@ -239,6 +239,8 @@
     "subtitle": "Tabellen konkreter Medien über alle Ihre Bibliotheken hinweg — Dubletten, Datenqualität, Top-Listen, neueste Zugänge und Erfassungsart.",
     "none": "Hier gibt es noch nichts anzuzeigen.",
     "library": "Bibliothek",
+    "view": "Anzeigen",
+    "notFound": "Unbekannte Auswertung.",
     "duplicates": {
       "title": "Dubletten über Bibliotheken hinweg",
       "hint": "Dieselbe EAN, erfasst in mehr als einer Ihrer Bibliotheken derselben Medienart."

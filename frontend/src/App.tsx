@@ -12,6 +12,7 @@ import { LibrariesPage } from './pages/libraries/LibrariesPage'
 import { LibraryDetailPage } from './pages/libraries/LibraryDetailPage'
 import { StatisticsPage } from './pages/statistics/StatisticsPage'
 import { ReportsPage } from './pages/reports/ReportsPage'
+import { ReportDetailPage } from './pages/reports/ReportDetailPage'
 import { SearchPage } from './pages/search/SearchPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
@@ -50,6 +51,7 @@ function App() {
                 <Route path="libraries/:id" element={<LibraryDetailPage />} />
                 <Route path="statistics" element={<StatisticsPage />} />
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="reports/:key" element={<ReportDetailPage />} />
                 <Route path="search" element={<SearchPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route element={<RequireAdmin />}>

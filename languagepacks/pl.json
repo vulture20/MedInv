@@ -523,6 +523,8 @@
       "subtitle": "Tabele konkretnych pozycji ze wszystkich bibliotek: duplikaty, jakość danych, listy TOP, ostatnio dodane oraz źródło rejestracji.",
       "none": "Jeszcze nic do pokazania.",
       "library": "Biblioteka",
+      "view": "Wyświetl",
+      "notFound": "Nieznany raport.",
       "duplicates": {
         "title": "Duplikaty między bibliotekami",
         "hint": "Ten sam EAN zarejestrowany w więcej niż jednej bibliotece tego samego typu mediów."

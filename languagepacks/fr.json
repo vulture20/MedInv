@@ -523,6 +523,8 @@
       "subtitle": "Tableaux d'éléments concrets sur toutes vos bibliothèques : doublons, qualité des données, classements, nouveautés et origine de la capture.",
       "none": "Rien à afficher pour l'instant.",
       "library": "Bibliothèque",
+      "view": "Afficher",
+      "notFound": "Rapport inconnu.",
       "duplicates": {
         "title": "Doublons entre bibliothèques",
         "hint": "Le même EAN capturé dans plusieurs bibliothèques du même type de média."

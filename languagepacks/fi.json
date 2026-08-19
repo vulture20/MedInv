@@ -523,6 +523,8 @@
       "subtitle": "Taulukkoja konkreettisista kohteista kaikista kirjastoistasi: kaksoiskappaleet, tietojen laatu, kärkilistat, viimeisimmät lisäykset ja tallennustapa.",
       "none": "Ei vielä mitään näytettävää.",
       "library": "Kirjasto",
+      "view": "Näytä",
+      "notFound": "Tuntematon raportti.",
       "duplicates": {
         "title": "Kaksoiskappaleet kirjastojen välillä",
         "hint": "Sama EAN tallennettu useampaan saman mediatyypin kirjastoon."

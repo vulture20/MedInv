@@ -523,6 +523,8 @@
       "subtitle": "Tüm kitaplıklarınızdaki somut öğelerin tabloları: yinelenenler, veri kalitesi, en iyi listeler, son eklenenler ve ekleme yöntemi.",
       "none": "Henüz gösterilecek bir şey yok.",
       "library": "Kitaplık",
+      "view": "Görüntüle",
+      "notFound": "Bilinmeyen rapor.",
       "duplicates": {
         "title": "Kitaplıklar arası yinelenenler",
         "hint": "Aynı medya türündeki birden fazla kitaplığa eklenmiş aynı EAN."

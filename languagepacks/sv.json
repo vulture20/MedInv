@@ -523,6 +523,8 @@
       "subtitle": "Tabeller med konkreta poster över alla dina bibliotek: dubbletter, datakvalitet, topplistor, senaste tillägg och registreringsmetod.",
       "none": "Inget att visa än.",
       "library": "Bibliotek",
+      "view": "Visa",
+      "notFound": "Okänd rapport.",
       "duplicates": {
         "title": "Dubbletter mellan bibliotek",
         "hint": "Samma EAN registrerad i fler än ett bibliotek av samma medietyp."
