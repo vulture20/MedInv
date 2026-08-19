@@ -188,8 +188,11 @@
       "submit": "Пошук",
       "fuzzy": "Нечіткий пошук",
       "error": "Не вдалося виконати пошук. Спробуйте ще раз.",
+      "librariesError": "Не вдалося завантажити список бібліотек.",
       "noResults": "Збігів не знайдено.",
-      "library": "Бібліотека"
+      "library": "Бібліотека",
+      "resultsTitle_one": "{{count}} результат",
+      "resultsTitle_other": "{{count}} результатів"
     },
     "statistics": {
       "title": "Статистика",

@@ -188,8 +188,11 @@
       "submit": "Pesquisar",
       "fuzzy": "Pesquisa aproximada",
       "error": "A pesquisa falhou. Tente novamente.",
+      "librariesError": "Não foi possível carregar a lista de bibliotecas.",
       "noResults": "Nenhuma correspondência encontrada.",
-      "library": "Biblioteca"
+      "library": "Biblioteca",
+      "resultsTitle_one": "{{count}} resultado",
+      "resultsTitle_other": "{{count}} resultados"
     },
     "statistics": {
       "title": "Estatísticas",

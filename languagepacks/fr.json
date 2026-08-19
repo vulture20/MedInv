@@ -188,8 +188,11 @@
       "submit": "Rechercher",
       "fuzzy": "Recherche approximative",
       "error": "La recherche a échoué. Veuillez réessayer.",
+      "librariesError": "Le chargement de la liste des bibliothèques a échoué.",
       "noResults": "Aucun résultat trouvé.",
-      "library": "Bibliothèque"
+      "library": "Bibliothèque",
+      "resultsTitle_one": "{{count}} résultat",
+      "resultsTitle_other": "{{count}} résultats"
     },
     "statistics": {
       "title": "Statistiques",

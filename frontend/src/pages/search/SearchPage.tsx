@@ -11,7 +11,7 @@ interface SearchHit extends MediaItem {
   library: LibraryRef
 }
 
-type SortColumn = 'title' | 'ean' | 'library'
+type SortColumn = 'title' | 'ean' | 'library' | 'location'
 
 /**
  * Search results (briefing 13.). Reachable either via the header search box
@@ -21,10 +21,11 @@ type SortColumn = 'title' | 'ean' | 'library'
  * both entry points stay in sync and results stay bookmarkable/shareable.
  *
  * GitHub issue #100: results render as the same sortable table
- * LibraryDetailPage uses for a single library's items (cover, title, EAN —
- * plus a `library` column here, since a mixed result set needs it, and
- * minus the per-media-type subtitle/CD-only columns LibraryDetailPage has,
- * which only make sense for a single, known media type). Sorting is
+ * LibraryDetailPage uses for a single library's items (cover, title, EAN,
+ * location — plus a `library` column here, since a mixed result set needs
+ * it, and minus the per-media-type subtitle/CD-only columns
+ * LibraryDetailPage has, which only make sense for a single, known media
+ * type). Sorting is
  * client-side (SortableHeader is agnostic to that, see its own docblock) —
  * GET /search returns every match in one unpaginated response already, so
  * there's no server round trip to sort via, unlike LibraryDetailPage's
@@ -52,13 +53,39 @@ export function SearchPage() {
   const [selectedLibrary, setSelectedLibrary] = useState<LibraryRef | null>(null)
 
   useEffect(() => {
-    apiClient.get<LibraryRef[]>('/libraries').then(({ data }) => setLibraries(data))
-  }, [])
+    apiClient
+      .get<LibraryRef[]>('/libraries')
+      .then(({ data }) => setLibraries(data))
+      .catch((err) => {
+        // GitHub issue #109 — previously missing entirely, same gap already
+        // fixed on StatisticsPage.tsx/ReportDetailPage.tsx/LibraryDetailPage.tsx:
+        // a failed request just left `libraries` at its initial `[]` with no
+        // indication anything went wrong — here, that silently empties the
+        // detail dialog's "move to another library" dropdown instead of the
+        // whole page failing outright, so a distinct message from
+        // search.error (which is about the search itself, not this) matters.
+        console.error('Failed to load libraries:', err)
+        setError(t('search.librariesError'))
+      })
+  }, [t])
 
   // Keeps the input field in sync when `query` changes from elsewhere (e.g. a
   // new search from the header box while already on this page).
   useEffect(() => {
     setQueryInput(query)
+  }, [query])
+
+  // GitHub issue #109 — a genuinely new search shouldn't keep whatever sort
+  // order was picked for a previous, unrelated result set (title/ean/
+  // library/location always exist regardless of the search term, so this
+  // never breaks anything the way LibraryDetailPage's stale page/sort could
+  // — see GitHub issue #108 — but resetting on every new query is still the
+  // more expected default). Deliberately keyed on `query` alone, not
+  // `fuzzy`: toggling fuzzy matching is still the *same* search, just with
+  // different matching, so it doesn't reset the sort a user just picked.
+  useEffect(() => {
+    setSortBy(null)
+    setSortDir('asc')
   }, [query])
 
   useEffect(() => {
@@ -145,6 +172,8 @@ export function SearchPage() {
 
       {query && (
         <section className="panel-card">
+          {/* GitHub issue #109 — mirrors LibraryDetailPage's <h2>{itemsTitle}</h2>, shown even at 0 results (still followed by the noResults hint below), so a search never leaves the hit count to be counted by eye. */}
+          <h2>{t('search.resultsTitle', { count: sortedResults.length })}</h2>
           {results.length === 0 ? (
             <p className="hint">{t('search.noResults')}</p>
           ) : (
@@ -155,6 +184,8 @@ export function SearchPage() {
                   <SortableHeader column="title" label={t('mediaItem.fields.title')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader column="ean" label={t('mediaItem.fields.ean')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader column="library" label={t('search.library')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                  {/* location (GitHub issue #96) applies to every media type, so — unlike the per-media-type subtitle field above — it doesn't need special handling for a mixed result set. GitHub issue #109. */}
+                  <SortableHeader column="location" label={t('mediaItem.fields.location')} sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                 </tr>
               </thead>
               <tbody>
@@ -184,6 +215,7 @@ export function SearchPage() {
                     <td>
                       <span className="media-type-badge">{t(`libraries.mediaType.${hit.library.media_type}`)}</span> {hit.library.name}
                     </td>
+                    <td>{hit.location ?? ''}</td>
                   </tr>
                 ))}
               </tbody>

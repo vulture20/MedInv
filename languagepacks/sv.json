@@ -188,8 +188,11 @@
       "submit": "Sök",
       "fuzzy": "Fuzzy-sökning",
       "error": "Sökningen misslyckades. Försök igen.",
+      "librariesError": "Det gick inte att läsa in bibliotekslistan.",
       "noResults": "Inga träffar hittades.",
-      "library": "Bibliotek"
+      "library": "Bibliotek",
+      "resultsTitle_one": "{{count}} resultat",
+      "resultsTitle_other": "{{count}} resultat"
     },
     "statistics": {
       "title": "Statistik",

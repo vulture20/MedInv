@@ -188,8 +188,11 @@
       "submit": "Hae",
       "fuzzy": "Sumea haku",
       "error": "Haku epäonnistui. Yritä uudelleen.",
+      "librariesError": "Kirjastoluettelon lataaminen epäonnistui.",
       "noResults": "Osumia ei löytynyt.",
-      "library": "Kirjasto"
+      "library": "Kirjasto",
+      "resultsTitle_one": "{{count}} tulos",
+      "resultsTitle_other": "{{count}} tulosta"
     },
     "statistics": {
       "title": "Tilastot",

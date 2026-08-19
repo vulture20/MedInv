@@ -188,8 +188,11 @@
       "submit": "Leita",
       "fuzzy": "Óskörp leit",
       "error": "Leit mistókst. Reyndu aftur.",
+      "librariesError": "Ekki tókst að hlaða safnalistann.",
       "noResults": "Engar samsvaranir fundust.",
-      "library": "Safn"
+      "library": "Safn",
+      "resultsTitle_one": "{{count}} niðurstaða",
+      "resultsTitle_other": "{{count}} niðurstöður"
     },
     "statistics": {
       "title": "Tölfræði",

@@ -188,8 +188,11 @@
       "submit": "Ara",
       "fuzzy": "Bulanık arama",
       "error": "Arama başarısız oldu. Lütfen tekrar deneyin.",
+      "librariesError": "Kitaplık listesi yüklenemedi.",
       "noResults": "Eşleşme bulunamadı.",
-      "library": "Kitaplık"
+      "library": "Kitaplık",
+      "resultsTitle_one": "{{count}} sonuç",
+      "resultsTitle_other": "{{count}} sonuç"
     },
     "statistics": {
       "title": "İstatistikler",

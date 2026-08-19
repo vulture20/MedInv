@@ -185,8 +185,11 @@
     "submit": "Suchen",
     "fuzzy": "Fuzzy-Suche",
     "error": "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "librariesError": "Die Bibliotheksliste konnte nicht geladen werden.",
     "noResults": "Keine Treffer gefunden.",
-    "library": "Bibliothek"
+    "library": "Bibliothek",
+    "resultsTitle_one": "{{count}} Ergebnis",
+    "resultsTitle_other": "{{count}} Ergebnisse"
   },
   "statistics": {
     "title": "Statistiken",

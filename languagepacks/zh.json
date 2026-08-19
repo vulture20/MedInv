@@ -188,8 +188,11 @@
       "submit": "搜索",
       "fuzzy": "模糊搜索",
       "error": "搜索失败，请重试。",
+      "librariesError": "无法加载媒体库列表。",
       "noResults": "未找到匹配项。",
-      "library": "媒体库"
+      "library": "媒体库",
+      "resultsTitle_one": "{{count}} 个结果",
+      "resultsTitle_other": "{{count}} 个结果"
     },
     "statistics": {
       "title": "统计",

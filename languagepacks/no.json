@@ -188,8 +188,11 @@
       "submit": "Søk",
       "fuzzy": "Uklart søk",
       "error": "Søket mislyktes. Prøv igjen.",
+      "librariesError": "Kunne ikke laste biblioteklisten.",
       "noResults": "Ingen treff funnet.",
-      "library": "Bibliotek"
+      "library": "Bibliotek",
+      "resultsTitle_one": "{{count}} resultat",
+      "resultsTitle_other": "{{count}} resultater"
     },
     "statistics": {
       "title": "Statistikk",

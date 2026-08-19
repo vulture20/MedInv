@@ -188,8 +188,11 @@
       "submit": "Szukaj",
       "fuzzy": "Wyszukiwanie rozmyte",
       "error": "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
+      "librariesError": "Nie udało się wczytać listy bibliotek.",
       "noResults": "Nie znaleziono wyników.",
-      "library": "Biblioteka"
+      "library": "Biblioteka",
+      "resultsTitle_one": "{{count}} wynik",
+      "resultsTitle_other": "{{count}} wyników"
     },
     "statistics": {
       "title": "Statystyki",

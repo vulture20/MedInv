@@ -185,8 +185,11 @@
     "submit": "Search",
     "fuzzy": "Fuzzy search",
     "error": "Search failed. Please try again.",
+    "librariesError": "Failed to load the library list.",
     "noResults": "No matches found.",
-    "library": "Library"
+    "library": "Library",
+    "resultsTitle_one": "{{count}} result",
+    "resultsTitle_other": "{{count}} results"
   },
   "statistics": {
     "title": "Statistics",

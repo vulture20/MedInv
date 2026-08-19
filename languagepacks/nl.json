@@ -188,8 +188,11 @@
       "submit": "Zoeken",
       "fuzzy": "Fuzzy-zoeken",
       "error": "Zoeken mislukt. Probeer het opnieuw.",
+      "librariesError": "Laden van de bibliothekenlijst mislukt.",
       "noResults": "Geen overeenkomsten gevonden.",
-      "library": "Bibliotheek"
+      "library": "Bibliotheek",
+      "resultsTitle_one": "{{count}} resultaat",
+      "resultsTitle_other": "{{count}} resultaten"
     },
     "statistics": {
       "title": "Statistieken",
