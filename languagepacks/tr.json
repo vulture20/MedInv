@@ -92,6 +92,7 @@
         "release_date": "Yayın tarihi",
         "price": "Fiyat",
         "currency": "Para birimi",
+        "location": "Konum",
         "authors": "Yazar(lar)",
         "format": "Format",
         "genre": "Tür",

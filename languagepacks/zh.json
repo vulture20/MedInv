@@ -92,6 +92,7 @@
         "release_date": "发行日期",
         "price": "价格",
         "currency": "货币",
+        "location": "存放位置",
         "authors": "作者",
         "format": "版本",
         "genre": "类型",

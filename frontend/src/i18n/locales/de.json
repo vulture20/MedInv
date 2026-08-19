@@ -118,6 +118,7 @@
       "release_date": "Erscheinungstermin",
       "price": "Preis",
       "currency": "Währung",
+      "location": "Standort",
       "authors": "Autor(en)",
       "format": "Format",
       "genre": "Genre",

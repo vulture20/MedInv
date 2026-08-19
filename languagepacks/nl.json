@@ -92,6 +92,7 @@
         "release_date": "Releasedatum",
         "price": "Prijs",
         "currency": "Valuta",
+        "location": "Locatie",
         "authors": "Auteur(s)",
         "format": "Formaat",
         "genre": "Genre",

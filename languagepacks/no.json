@@ -120,6 +120,7 @@
         "release_date": "Utgivelsesdato",
         "price": "Pris",
         "currency": "Valuta",
+        "location": "Plassering",
         "authors": "Forfatter(e)",
         "format": "Format",
         "genre": "Sjanger",

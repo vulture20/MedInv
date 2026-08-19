@@ -120,6 +120,7 @@
         "release_date": "Útgáfudagur",
         "price": "Verð",
         "currency": "Gjaldmiðill",
+        "location": "Staðsetning",
         "authors": "Höfundur/-ar",
         "format": "Snið",
         "genre": "Tegund",

@@ -92,6 +92,7 @@
         "release_date": "発売日",
         "price": "価格",
         "currency": "通貨",
+        "location": "保管場所",
         "authors": "著者",
         "format": "形式",
         "genre": "ジャンル",

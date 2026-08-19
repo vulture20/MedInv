@@ -25,6 +25,8 @@ export interface MediaItem {
   price?: number | string | null
   /** ISO 4217 code (e.g. "USD"/"EUR") — a deliberate extension beyond briefing 6.1-6.3's fixed attribute set (GitHub issue #58), see the migration that added it for why. */
   currency?: string | null
+  /** Free text, e.g. "Regal 3, Fach 2" — a second deliberate extension beyond briefing 6.1-6.3's fixed attribute set (GitHub issue #96), see the migration that added it for why. */
+  location?: string | null
   // book
   authors?: string | null
   format?: string | null
@@ -86,6 +88,7 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'currency', type: 'text' },
     { key: 'isbn10', type: 'text' },
     { key: 'isbn13', type: 'text' },
+    { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
   ],
   cd: [
@@ -98,6 +101,7 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'release_date', type: 'date' },
     { key: 'price', type: 'number' },
     { key: 'currency', type: 'text' },
+    { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
   ],
   dvd_bluray: [
@@ -112,6 +116,7 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'production_year', type: 'number' },
     { key: 'price', type: 'number' },
     { key: 'currency', type: 'text' },
+    { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
   ],
 }

@@ -92,6 +92,7 @@
         "release_date": "Data di uscita",
         "price": "Prezzo",
         "currency": "Valuta",
+        "location": "Posizione",
         "authors": "Autore/i",
         "format": "Formato",
         "genre": "Genere",

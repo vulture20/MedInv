@@ -11,13 +11,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * deliberate extension beyond it (GitHub issue #58), see the migration
  * that added it for why. `capture_method`/`metadata_provider`/
  * `captured_by_user_id` are a second deliberate extension (GitHub issue
- * #74), see the migration that added them.
+ * #74), and `location` a third (GitHub issue #96), see the migrations
+ * that added them.
  */
 #[Fillable([
     'library_id', 'title', 'cover_path', 'description', 'authors', 'format',
     'genre', 'page_count', 'language', 'publisher', 'release_date', 'price',
     'currency', 'isbn10', 'isbn13', 'ean',
-    'capture_method', 'metadata_provider', 'captured_by_user_id',
+    'capture_method', 'metadata_provider', 'captured_by_user_id', 'location',
 ])]
 class MediaBook extends Model
 {

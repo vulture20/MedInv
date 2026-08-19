@@ -25,8 +25,14 @@ class SearchService
      *
      * Public (not just used by search() itself): the pg_trgm migration
      * (database/migrations/*_add_pg_trgm_indexes_for_media_search.php)
-     * iterates this exact list to build its GIN trigram indexes, rather
-     * than keeping a second, driftable copy of the same column list.
+     * iterated this exact list, at the time it ran, to build its GIN
+     * trigram indexes, rather than keeping a second, driftable copy of the
+     * same column list — a column added to this array *after* that
+     * migration already ran (e.g. `location`, GitHub issue #96) needs its
+     * own small follow-up migration for the trigram index specifically
+     * (2026_08_19_100001_add_pg_trgm_index_for_media_location.php), since
+     * Laravel never re-runs an already-applied migration's up() against
+     * an existing database.
      *
      * MediaCd::tracks (a JSON array, see MediaCd::casts()) is deliberately
      * NOT listed here — it isn't a plain text column, so it can't go
@@ -34,9 +40,9 @@ class SearchService
      * matched separately via JSON_ARRAY_SEARCHABLE_FIELDS below.
      */
     public const SEARCHABLE_COLUMNS = [
-        MediaBook::class => ['title', 'description', 'authors', 'format', 'genre', 'language', 'publisher', 'isbn10', 'isbn13', 'ean'],
-        MediaCd::class => ['title', 'description', 'artist', 'medium', 'asin', 'ean'],
-        MediaDvdBluray::class => ['title', 'description', 'medium', 'languages', 'cast', 'director', 'ean'],
+        MediaBook::class => ['title', 'description', 'authors', 'format', 'genre', 'language', 'publisher', 'isbn10', 'isbn13', 'ean', 'location'],
+        MediaCd::class => ['title', 'description', 'artist', 'medium', 'asin', 'ean', 'location'],
+        MediaDvdBluray::class => ['title', 'description', 'medium', 'languages', 'cast', 'director', 'ean', 'location'],
     ];
 
     /**

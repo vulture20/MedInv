@@ -393,6 +393,10 @@ class MediaItemController extends Controller
                 'currency' => ['nullable', 'string', 'max:3'],
                 'isbn10' => ['nullable', 'string', 'max:10'],
                 'isbn13' => ['nullable', 'string', 'max:13'],
+                // GitHub issue #96: free text, not validated against a fixed
+                // list — same "records whatever the user says" stance
+                // `currency` above already takes.
+                'location' => ['nullable', 'string'],
             ],
             'cd' => [
                 'title' => ['required', 'string', 'max:255'],
@@ -418,6 +422,8 @@ class MediaItemController extends Controller
                 // validated against an actual currency list — this only
                 // records what the admin/provider says it is.
                 'currency' => ['nullable', 'string', 'max:3'],
+                // GitHub issue #96.
+                'location' => ['nullable', 'string'],
             ],
             'dvd_bluray' => [
                 'title' => ['required', 'string', 'max:255'],
@@ -436,6 +442,8 @@ class MediaItemController extends Controller
                 // validated against an actual currency list — this only
                 // records what the admin/provider says it is.
                 'currency' => ['nullable', 'string', 'max:3'],
+                // GitHub issue #96.
+                'location' => ['nullable', 'string'],
             ],
         };
     }

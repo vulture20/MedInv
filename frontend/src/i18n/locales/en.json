@@ -118,6 +118,7 @@
       "release_date": "Release date",
       "price": "Price",
       "currency": "Currency",
+      "location": "Location",
       "authors": "Author(s)",
       "format": "Format",
       "genre": "Genre",

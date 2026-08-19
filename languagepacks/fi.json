@@ -120,6 +120,7 @@
         "release_date": "Julkaisupäivä",
         "price": "Hinta",
         "currency": "Valuutta",
+        "location": "Sijainti",
         "authors": "Tekijä(t)",
         "format": "Muoto",
         "genre": "Genre",

@@ -120,6 +120,7 @@
         "release_date": "Utgivningsdatum",
         "price": "Pris",
         "currency": "Valuta",
+        "location": "Plats",
         "authors": "Författare",
         "format": "Format",
         "genre": "Genre",

@@ -92,6 +92,7 @@
         "release_date": "Data wydania",
         "price": "Cena",
         "currency": "Waluta",
+        "location": "Lokalizacja",
         "authors": "Autor(zy)",
         "format": "Format",
         "genre": "Gatunek",

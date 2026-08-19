@@ -92,6 +92,7 @@
         "release_date": "Дата виходу",
         "price": "Ціна",
         "currency": "Валюта",
+        "location": "Розташування",
         "authors": "Автор(и)",
         "format": "Формат",
         "genre": "Жанр",
