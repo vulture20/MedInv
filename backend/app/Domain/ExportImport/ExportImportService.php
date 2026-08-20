@@ -11,6 +11,7 @@ use App\Models\MetadataPlugin;
 use App\Models\SavedSearch;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -111,6 +112,12 @@ class ExportImportService
                 // Currently inconsequential (nothing else in the app reads
                 // this flag yet), but still real data loss.
                 'is_sample_library' => $library->is_sample_library,
+                // GitHub issue #154: previously missing (like every other
+                // created_at/updated_at below) — see insertItems()'s own
+                // docblock on applyHistoricalTimestamps() for the full
+                // reasoning shared across every entity this file restores.
+                'created_at' => $library->created_at?->toIso8601String(),
+                'updated_at' => $library->updated_at?->toIso8601String(),
                 'shares' => $library->shares->map(fn (LibraryShare $s) => [
                     'scope' => $s->scope,
                     'user_email' => $s->user?->email,
@@ -118,6 +125,9 @@ class ExportImportService
                     // restoreShares() (GitHub issue #80) when $restoreShares
                     // is true; see that method's docblock.
                     'access_level' => $s->access_level,
+                    // GitHub issue #154.
+                    'created_at' => $s->created_at?->toIso8601String(),
+                    'updated_at' => $s->updated_at?->toIso8601String(),
                 ])->all(),
                 // GitHub issue #148: the raw `captured_by_user_id` (GitHub
                 // issue #74) is instance-local exactly like `id`/
@@ -178,7 +188,10 @@ class ExportImportService
                         // makeHidden() takes the relation's own method name
                         // (`capturedBy`), not the snake_cased key it would
                         // render under.
-                        ...$item->makeHidden(['id', 'library_id', 'created_at', 'updated_at', 'captured_by_user_id', 'capturedBy'])->toArray(),
+                        // GitHub issue #154: created_at/updated_at are no
+                        // longer hidden here — see insertItems()'s own
+                        // docblock on applyHistoricalTimestamps().
+                        ...$item->makeHidden(['id', 'library_id', 'captured_by_user_id', 'capturedBy'])->toArray(),
                         ...($includeUsers ? ['captured_by_email' => $item->capturedBy?->email] : []),
                     ]
                 )->all(),
@@ -218,9 +231,15 @@ class ExportImportService
                 'is_protected' => $user->is_protected,
                 'preferred_language' => $user->preferred_language,
                 'preferred_template' => $user->preferred_template,
+                // GitHub issue #154.
+                'created_at' => $user->created_at?->toIso8601String(),
+                'updated_at' => $user->updated_at?->toIso8601String(),
                 'saved_searches' => $user->savedSearches->map(fn (SavedSearch $s) => [
                     'name' => $s->name,
                     'filters' => $s->filters,
+                    // GitHub issue #154.
+                    'created_at' => $s->created_at?->toIso8601String(),
+                    'updated_at' => $s->updated_at?->toIso8601String(),
                 ])->all(),
             ])->all();
 
@@ -231,6 +250,9 @@ class ExportImportService
                 'enabled' => $plugin->enabled,
                 'priority' => $plugin->priority,
                 'config' => $plugin->config,
+                // GitHub issue #154.
+                'created_at' => $plugin->created_at?->toIso8601String(),
+                'updated_at' => $plugin->updated_at?->toIso8601String(),
             ])->all();
         }
 
@@ -427,6 +449,8 @@ class ExportImportService
                     'preferred_language' => $userData['preferred_language'] ?? 'de',
                     'preferred_template' => $userData['preferred_template'] ?? 'light',
                 ]);
+                // GitHub issue #154.
+                $this->applyHistoricalTimestamps($user, $userData);
                 $result['users_restored'][] = $userData['email'];
 
                 // GitHub issue #125 — nested under this user (see
@@ -439,11 +463,13 @@ class ExportImportService
                     SavedSearch::query()->where('user_id', $user->id)->delete();
 
                     foreach ($userData['saved_searches'] as $searchData) {
-                        SavedSearch::query()->create([
+                        $savedSearch = SavedSearch::query()->create([
                             'user_id' => $user->id,
                             'name' => $searchData['name'] ?? '',
                             'filters' => $searchData['filters'] ?? [],
                         ]);
+                        // GitHub issue #154.
+                        $this->applyHistoricalTimestamps($savedSearch, $searchData);
                         $result['saved_searches_restored']++;
                     }
                 }
@@ -452,13 +478,15 @@ class ExportImportService
 
         if ($restoreSettings && ! empty($data['metadata_plugins'])) {
             foreach ($data['metadata_plugins'] as $pluginData) {
-                MetadataPlugin::query()->updateOrCreate(['provider_key' => $pluginData['provider_key']], [
+                $plugin = MetadataPlugin::query()->updateOrCreate(['provider_key' => $pluginData['provider_key']], [
                     'name' => $pluginData['name'],
                     'media_type' => $pluginData['media_type'],
                     'enabled' => $pluginData['enabled'],
                     'priority' => $pluginData['priority'] ?? 0,
                     'config' => $pluginData['config'] ?? null,
                 ]);
+                // GitHub issue #154.
+                $this->applyHistoricalTimestamps($plugin, $pluginData);
                 $result['plugins_restored'][] = $pluginData['provider_key'];
             }
         }
@@ -540,6 +568,8 @@ class ExportImportService
             'owner_id' => $this->resolveLibraryOwner($libraryData, $owner)->id,
             'is_sample_library' => $libraryData['is_sample_library'] ?? false,
         ]);
+        // GitHub issue #154.
+        $this->applyHistoricalTimestamps($library, $libraryData);
 
         $this->insertItems($library, $libraryData['items'] ?? []);
 
@@ -651,15 +681,56 @@ class ExportImportService
                 $userId = $user->id;
             }
 
-            LibraryShare::query()->create([
+            $share = LibraryShare::query()->create([
                 'library_id' => $library->id,
                 'scope' => $scope,
                 'user_id' => $userId,
                 'access_level' => $scope !== 'guest' && ($shareData['access_level'] ?? 'read') === 'write' ? 'write' : 'read',
             ]);
+            // GitHub issue #154.
+            $this->applyHistoricalTimestamps($share, $shareData);
         }
 
         return $skipped;
+    }
+
+    /**
+     * GitHub issue #154, reported by the user: a restore/import used to
+     * silently set `created_at`/`updated_at` to the current time for every
+     * entity it (re-)creates — a media item's own `created_at` (shown as
+     * "Hinzugefügt" in the Recent Additions report) always showed the
+     * restore time instead of when it was actually originally added.
+     * Root cause was the same across every entity this class restores:
+     * neither timestamp is in any model's `#[Fillable(...)]` list (a
+     * caller going through an *ordinary* capture/creation path must never
+     * be able to spoof either one — that's deliberate and stays exactly
+     * as it was), and exportLibraries() never included them either, so
+     * they simply never reached create()/updateOrCreate() at all, and
+     * Eloquent's own "set both to now on insert" default silently won
+     * every time. Called explicitly, right after create()/updateOrCreate(),
+     * only from this class's own restore/import call sites —
+     * `forceFill()` bypasses mass assignment entirely (the column staying
+     * out of `$fillable` is what keeps every *other* caller of
+     * MediaItemService::create()/etc. safe), and `saveQuietly()` (not
+     * `save()`) avoids firing model events for what is, semantically,
+     * still "the original creation" being reproduced, not a genuine
+     * update something should react to. A `$data` with neither key
+     * present (an ordinary, non-timestamp-carrying payload, or an export
+     * from before this field existed) is a no-op — the record simply
+     * keeps whatever Eloquent's own default already set.
+     */
+    private function applyHistoricalTimestamps(Model $model, array $data): void
+    {
+        $timestamps = array_filter([
+            'created_at' => $data['created_at'] ?? null,
+            'updated_at' => $data['updated_at'] ?? null,
+        ], fn (?string $value) => $value !== null);
+
+        if ($timestamps === []) {
+            return;
+        }
+
+        $model->forceFill($timestamps)->saveQuietly();
     }
 
     /**
@@ -696,7 +767,8 @@ class ExportImportService
     {
         foreach ($items as $item) {
             $capturedByEmail = $item['captured_by_email'] ?? null;
-            unset($item['captured_by_user_id'], $item['captured_by_email']);
+            $timestamps = ['created_at' => $item['created_at'] ?? null, 'updated_at' => $item['updated_at'] ?? null];
+            unset($item['captured_by_user_id'], $item['captured_by_email'], $item['created_at'], $item['updated_at']);
             $item['captured_by_user_id'] = (is_string($capturedByEmail) && $capturedByEmail !== '')
                 ? User::query()->where('email', $capturedByEmail)->value('id')
                 : null;
@@ -709,7 +781,8 @@ class ExportImportService
             }
 
             try {
-                $this->mediaItemService->create($library, $item);
+                $created = $this->mediaItemService->create($library, $item);
+                $this->applyHistoricalTimestamps($created, $timestamps);
             } catch (DuplicateEanException) {
                 // Already present — consistent with the strict-rejection rule in 5.1.
             }
