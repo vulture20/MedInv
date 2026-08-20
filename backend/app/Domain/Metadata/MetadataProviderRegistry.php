@@ -10,16 +10,19 @@ use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
 use App\Domain\Metadata\Providers\Book\OpenAiBookProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
+use App\Domain\Metadata\Providers\Book\ThaliaBookProvider;
 use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
 use App\Domain\Metadata\Providers\Cd\ClaudeCdProvider;
 use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
 use App\Domain\Metadata\Providers\Cd\GeminiCdProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use App\Domain\Metadata\Providers\Cd\OpenAiCdProvider;
+use App\Domain\Metadata\Providers\Cd\ThaliaCdProvider;
 use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\ClaudeDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\GeminiDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\OpenAiDvdBlurayProvider;
+use App\Domain\Metadata\Providers\DvdBluray\ThaliaDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Collection;
@@ -36,13 +39,14 @@ class MetadataProviderRegistry
     /**
      * Provider keys that must stay *disabled* until an admin explicitly
      * turns them on, unlike every other default provider (GitHub issue
-     * #50): the three Amazon scrapers are Beta and carry a real ToS/legal
-     * consideration (see AmazonScraping's docblock) that no other source
-     * in this app has — enabling scraping traffic against a third party on
-     * an operator's behalf, silently, just because they installed MedInv,
-     * would be presumptuous in a way "on by default" isn't for a
-     * documented public API. See syncToDatabase() below for where this is
-     * actually applied.
+     * #50): the three Amazon scrapers — and, for the identical reason, the
+     * three Thalia ones (GitHub issue #129) — are Beta and carry a real
+     * ToS/legal consideration (see AmazonScraping's/ThaliaScraping's own
+     * docblocks) that no other source in this app has — enabling scraping
+     * traffic against a third party on an operator's behalf, silently,
+     * just because they installed MedInv, would be presumptuous in a way
+     * "on by default" isn't for a documented public API. See
+     * syncToDatabase() below for where this is actually applied.
      *
      * The three Claude providers (GitHub issue #59), the three
      * OpenAI-backed ones (GitHub issue #65), and the three Gemini-backed
@@ -60,6 +64,7 @@ class MetadataProviderRegistry
         'book.claude', 'cd.claude', 'dvd_bluray.claude',
         'book.openai', 'cd.openai', 'dvd_bluray.openai',
         'book.gemini', 'cd.gemini', 'dvd_bluray.gemini',
+        'book.thalia', 'cd.thalia', 'dvd_bluray.thalia',
     ];
 
     /** @return class-string<MetadataProviderInterface>[] */
@@ -73,17 +78,20 @@ class MetadataProviderRegistry
             ClaudeBookProvider::class,
             OpenAiBookProvider::class,
             GeminiBookProvider::class,
+            ThaliaBookProvider::class,
             MusicBrainzProvider::class,
             DiscogsProvider::class,
             AmazonCdProvider::class,
             ClaudeCdProvider::class,
             OpenAiCdProvider::class,
             GeminiCdProvider::class,
+            ThaliaCdProvider::class,
             UpcMdbProvider::class,
             AmazonDvdBlurayProvider::class,
             ClaudeDvdBlurayProvider::class,
             OpenAiDvdBlurayProvider::class,
             GeminiDvdBlurayProvider::class,
+            ThaliaDvdBlurayProvider::class,
             // TODO: EmunationProvider (briefing 8.2 — DVD/Blu-ray)
         ];
     }

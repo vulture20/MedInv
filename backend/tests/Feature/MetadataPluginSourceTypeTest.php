@@ -30,10 +30,14 @@ class MetadataPluginSourceTypeTest extends TestCase
         $this->assertSame('api', $sourceTypes->get('cd.musicbrainz'));
         $this->assertSame('api', $sourceTypes->get('cd.discogs'));
         $this->assertSame('api', $sourceTypes->get('dvd_bluray.upcmdb'));
-        // GitHub issue #50: the three Amazon scrapers are the only 'scraping' providers.
+        // GitHub issue #50, GitHub issue #129: the three Amazon scrapers and
+        // the three Thalia ones are the only 'scraping' providers.
         $this->assertSame('scraping', $sourceTypes->get('book.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('cd.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('dvd_bluray.amazon'));
+        $this->assertSame('scraping', $sourceTypes->get('book.thalia'));
+        $this->assertSame('scraping', $sourceTypes->get('cd.thalia'));
+        $this->assertSame('scraping', $sourceTypes->get('dvd_bluray.thalia'));
         // GitHub issue #59, GitHub issue #65, GitHub issue #66: the three
         // Claude providers, the three OpenAI-backed ones, and the three
         // Gemini-backed ones are the only 'llm' providers.

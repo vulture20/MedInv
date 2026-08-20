@@ -80,6 +80,17 @@ class DatabaseSeederTest extends TestCase
         $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.gemini', 'enabled' => false]);
     }
 
+    /** GitHub issue #129: same reasoning as the Amazon providers above — Thalia is a second Beta scraping vendor and must not be enabled just because the app was installed either. */
+    public function test_seeding_creates_the_thalia_providers_disabled(): void
+    {
+        $this->seed();
+
+        $table = (new MetadataPlugin)->getTable();
+        $this->assertDatabaseHas($table, ['provider_key' => 'book.thalia', 'enabled' => false]);
+        $this->assertDatabaseHas($table, ['provider_key' => 'cd.thalia', 'enabled' => false]);
+        $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.thalia', 'enabled' => false]);
+    }
+
     public function test_seeding_twice_does_not_duplicate_metadata_plugin_rows(): void
     {
         $this->seed();
