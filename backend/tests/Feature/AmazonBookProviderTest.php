@@ -9,13 +9,17 @@ use Tests\TestCase;
 
 /**
  * AmazonBookProvider (briefing 8.2, GitHub issue #50) — Beta, see
- * AmazonScraping's docblock for why this couldn't be live-verified against
- * the real amazon.com the way every other provider in this codebase was.
- * Fixtures below are hand-built HTML modeled on Amazon's historically
- * documented product-page structure (confirmed representative via general
- * knowledge of that markup, not a live fetch) — they exist to prove the
- * *parsing logic* behaves correctly against a plausible input shape, not
- * to guarantee the real site still looks like this today.
+ * AmazonScraping's docblock for why this was, for a long time, never
+ * live-verified against the real amazon.com the way every other provider
+ * in this codebase was, and for the single, deliberate one-time exception
+ * GitHub issue #137 made to that stance. Fixtures below are hand-built
+ * HTML — some (the original ones) modeled on Amazon's historically
+ * documented product-page structure never actually confirmed live at the
+ * time, others (added for #137) reproducing the real shapes that one-time
+ * check found (the `twister-plus-buying-options-price-data` JSON blob,
+ * `#bookDescription_feature_div`) — they exist to prove the *parsing
+ * logic* behaves correctly against a plausible input shape, not to
+ * guarantee the real site still looks like this today.
  */
 class AmazonBookProviderTest extends TestCase
 {
@@ -131,6 +135,86 @@ class AmazonBookProviderTest extends TestCase
 
         $this->assertNull($candidate->attributes['price']);
         $this->assertNull($candidate->attributes['currency']);
+    }
+
+    /**
+     * GitHub issue #137: the real buy-box price now loads client-side —
+     * `#corePrice_feature_div` is genuinely empty on a real page — but a
+     * hidden JSON blob seeding that same render is still present in the
+     * static HTML and is read instead, taking priority over the legacy
+     * markup below when both are present. Reproduces the real JSON shape
+     * (including the auto-generated-looking `desktop_buybox_group_1` key)
+     * confirmed on a real product page during that issue's live check.
+     */
+    public function test_price_and_currency_are_read_from_the_hidden_json_price_blob(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune</span>'
+                .'<div id="corePrice_feature_div"></div>'
+                .'<div class="a-section aok-hidden twister-plus-buying-options-price-data">'
+                .'{"desktop_buybox_group_1":[{"displayPrice":"EUR 8.85","priceAmount":8.85,"currencySymbol":"EUR"}]}'
+                .'</div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        // GitHub issue #137: confirms currency is no longer hardcoded to 'USD' — a real page checked showed EUR, evidently geo-adapted by Amazon independently of the amazon.com TLD.
+        $this->assertSame(8.85, $candidate->attributes['price']);
+        $this->assertSame('EUR', $candidate->attributes['currency']);
+    }
+
+    /** GitHub issue #137: when the JSON price blob is absent (its markup shape wasn't confirmed for every category/page), the legacy DOM-based extraction — assumed USD, see AmazonScraping::amazonPriceAndCurrency()'s own docblock — still applies as a fallback. */
+    public function test_falls_back_to_legacy_price_markup_when_the_json_blob_is_absent(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response($this->productPageHtml(), 200),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertSame(10.49, $candidate->attributes['price']);
+        $this->assertSame('USD', $candidate->attributes['currency']);
+    }
+
+    /** GitHub issue #137: a real page's #bylineInfo was found to also embed a trailing "Format: {value}" segment in the same container as the actual byline, with no separating punctuation to split on. */
+    public function test_authors_strips_a_trailing_format_label_bleeding_into_the_byline(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune</span>'
+                .'<div id="bylineInfo">by Frank Herbert (Author) Format: Paperback</div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertSame('by Frank Herbert (Author)', $candidate->attributes['authors']);
+    }
+
+    /** GitHub issue #137: a real book page checked had no #feature-bullets/#productDescription at all — only #bookDescription_feature_div, a book-category-specific container this trait didn't know about, silently leaving description always null for books. */
+    public function test_description_falls_back_to_the_book_specific_container(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune</span>'
+                .'<div id="bookDescription_feature_div">A stunning blend of adventure and mysticism.</div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertStringContainsString('adventure and mysticism', $candidate->attributes['description']);
     }
 
     public function test_lookup_by_code_requests_the_search_page_with_the_code_as_the_query(): void

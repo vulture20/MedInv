@@ -55,15 +55,30 @@ use Illuminate\Support\Facades\Log;
  *   ids have — but this is still meaningfully more fragile than any API
  *   integration in this codebase, and every field is optional/nullable
  *   for exactly that reason.
- * - **Not live-verified**: every other provider in this codebase was
- *   confirmed against the real service during development (see e.g.
- *   DiscogsProvider's/MusicBrainzProvider's docblocks). Repeatedly
- *   scraping the real amazon.com purely to develop/verify this class
- *   would itself be exactly the kind of scraping traffic this feature's
- *   own risk profile is about — so, uniquely among this app's providers,
- *   this one is built and tested only against hand-built HTML fixtures
- *   representative of Amazon's historically documented markup, never
- *   against the live site. Expect it to need real-world adjustment.
+ * - **Originally not live-verified, later checked once, deliberately**:
+ *   every other provider in this codebase was confirmed against the real
+ *   service during development (see e.g. DiscogsProvider's/
+ *   MusicBrainzProvider's docblocks); this one originally wasn't, on the
+ *   reasoning that repeatedly scraping the real amazon.com purely to
+ *   develop/verify this class would itself be exactly the kind of
+ *   scraping traffic this feature's own risk profile is about — built and
+ *   tested only against hand-built HTML fixtures representative of
+ *   Amazon's historically documented markup instead. GitHub issue #137
+ *   deliberately made a single, one-time exception to that stance, at the
+ *   requesting user's own explicit direction after weighing the same
+ *   trade-off this docblock names: **one** real product-page fetch (not a
+ *   search, not a second page, not a repeated check) to re-verify the
+ *   fixtures this class had never actually been checked against — the
+ *   same reasoning already applied once before for ThaliaScraping's own
+ *   development (GitHub issue #129) and, in a narrower form, to diagnose
+ *   #132's Cloudflare finding. That check found real, confirmed drift
+ *   from the original fixtures (see `amazonPriceAndCurrency()`'s and
+ *   `amazonProductPage()`'s own docblocks) — concretely bearing out the
+ *   "expect this to need real-world adjustment" caution this docblock
+ *   already carried — and was not repeated beyond that single fetch; the
+ *   rest of this trait's fields remain unconfirmed against live markup,
+ *   and are not to be re-checked without the same explicit, one-time
+ *   authorization this exception required.
  *
  * `en-US`/`en-GB` is explicitly requested (Accept-Language) since field
  * extraction matches English label text — a different Amazon locale would
@@ -142,15 +157,20 @@ trait AmazonScraping
      * lookup against it, so this stays a dumb, order-preserving map rather
      * than trying to normalize labels itself.
      *
-     * `price` (GitHub issue #58) is a plain float — BASE_URL is hardcoded
-     * to amazon.com, so this is always USD; `currency` is set to the
-     * literal string `'USD'` alongside it (null, not `'USD'`, when no
-     * price was found at all — an unset price has no currency to report
-     * either) rather than left for the caller to assume, now that `price`
-     * columns actually carry a `currency` field of their own (#58
-     * follow-up) instead of a bare, currency-less decimal. If BASE_URL
-     * ever became configurable per-deployment/region, this hardcoded
-     * 'USD' would need to become a real per-domain lookup instead.
+     * `price`/`currency` (GitHub issue #58, re-verified for GitHub issue
+     * #137) come from `amazonPriceAndCurrency()` below — see its own
+     * docblock for why `currency` is no longer hardcoded to `'USD'`.
+     *
+     * `description` additionally checks `#bookDescription_feature_div`
+     * (GitHub issue #137) — a real book-category-specific container
+     * confirmed on a real product page during that issue's live
+     * re-check; `#feature-bullets`/`#productDescription` were not found
+     * there at all, so without this the description was silently always
+     * null for books specifically.
+     *
+     * `byline` is passed through `stripAmazonFormatSuffix()` (GitHub
+     * issue #137) — see that method's own docblock for the real trailing
+     * "Format: {value}" text confirmed bleeding into it otherwise.
      *
      * @return array{title: ?string, cover_url: ?string, byline: ?string, description: ?string, bullets: array<string, string>, price: ?float, currency: ?string}|null Null when the page couldn't be fetched/parsed at all (blocked, network failure, ...).
      */
@@ -165,17 +185,18 @@ trait AmazonScraping
         $xpath = $this->xpathFor($html);
 
         $title = $this->cleanText($xpath->query('//*[@id="productTitle"]')->item(0)?->textContent);
-        $byline = $this->cleanText($xpath->query('//*[@id="bylineInfo"]')->item(0)?->textContent);
+        $byline = $this->stripAmazonFormatSuffix($this->cleanText($xpath->query('//*[@id="bylineInfo"]')->item(0)?->textContent));
         $description = $this->cleanText(
             $xpath->query('//*[@id="feature-bullets"]')->item(0)?->textContent
                 ?? $xpath->query('//*[@id="productDescription"]')->item(0)?->textContent
+                ?? $xpath->query('//*[@id="bookDescription_feature_div"]')->item(0)?->textContent
         );
 
         $coverNode = $xpath->query('//*[@id="landingImage" or @id="imgBlkFront"]')->item(0);
         $coverUrl = $coverNode instanceof DOMElement
             ? ($coverNode->getAttribute('data-old-hires') ?: $coverNode->getAttribute('src') ?: null)
             : null;
-        $price = $this->parseAmazonPrice($this->amazonPriceText($xpath));
+        $offer = $this->amazonPriceAndCurrency($xpath);
 
         return [
             'title' => $title,
@@ -183,43 +204,105 @@ trait AmazonScraping
             'byline' => $byline,
             'description' => $description,
             'bullets' => $this->amazonDetailBullets($xpath),
-            'price' => $price,
-            'currency' => $price !== null ? 'USD' : null,
+            'price' => $offer['price'],
+            'currency' => $offer['currency'],
         ];
     }
 
     /**
-     * Amazon has shown the buy-box price under several different
-     * containers over the years — #corePrice_feature_div (current) wraps
-     * it in a visually-split price (whole/fraction spans) plus a single
-     * screen-reader-only `.a-offscreen` span carrying the complete,
-     * already-formatted text ("$24.99") that this reads instead of
-     * reassembling the split parts itself; #priceblock_ourprice/
-     * #priceblock_dealprice are the older, pre-corePrice_feature_div ids.
-     * Deliberately scoped to these specific containers rather than a bare
-     * `.a-offscreen` anywhere on the page — that class also appears on
-     * unrelated prices elsewhere (e.g. "other sellers", related-products
-     * carousels), and the first one in document order isn't reliably the
-     * buy-box price.
+     * GitHub issue #137: `#corePrice_feature_div` and even the wider
+     * buy-box wrapper around it (`#desktop_qualifiedBuyBox`) were found
+     * genuinely *empty* in the real, live static HTML this class actually
+     * fetches — Amazon renders the buy-box price client-side via
+     * JavaScript now, so the price text this trait originally looked for
+     * simply isn't in the server-rendered response at all any more (the
+     * markup shape itself, once matched, is confirmed still accurate —
+     * this is a template change elsewhere on the page, not a wrong
+     * selector). What the static HTML *does* still carry: a hidden
+     * `<div class="… twister-plus-buying-options-price-data">{JSON}</div>`
+     * seeding that same client-side render, confirmed on a real product
+     * page — its JSON holds a `priceAmount` (a plain float, already
+     * decimal-parsed, no `"$24.99"`-style text parsing needed at all any
+     * more) and a `currencySymbol` (despite the name, a 3-letter ISO code
+     * like `"EUR"`, not a `€`/`$` glyph). That `currencySymbol` also
+     * disproves this trait's own former assumption that a hardcoded
+     * `amazon.com` URL always means USD pricing — the real page checked
+     * for #137 actually showed `EUR`, evidently geo-adapted by Amazon
+     * independently of the TLD. `currency` is therefore read from this
+     * JSON now, never hardcoded.
+     *
+     * The legacy `#corePrice_feature_div`/`#priceblock_ourprice`/
+     * `#priceblock_dealprice` DOM-based extraction (and its accompanying
+     * `"$24.99"`-style text parsing) is kept as a fallback for exactly
+     * the reason every other field in this trait stays defensive — a
+     * page that doesn't happen to carry the JSON blob (a different
+     * category, a stale cached response, a future markup change) still
+     * gets a chance at a price via the older mechanism, on the (still
+     * unverified beyond this one page) assumption that a fallback hit
+     * means USD, the only currency ever confirmed reachable that way.
+     *
+     * @return array{price: ?float, currency: ?string}
      */
-    private function amazonPriceText(DOMXPath $xpath): ?string
+    private function amazonPriceAndCurrency(DOMXPath $xpath): array
     {
-        $node = $xpath->query(
+        $node = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " twister-plus-buying-options-price-data ")]')->item(0);
+
+        if ($node instanceof DOMElement) {
+            $offer = $this->firstAmazonJsonOffer(json_decode($node->textContent ?? '', true));
+
+            if ($offer !== null) {
+                return [
+                    'price' => (float) $offer['priceAmount'],
+                    'currency' => is_string($offer['currencySymbol'] ?? null) ? $offer['currencySymbol'] : null,
+                ];
+            }
+        }
+
+        $legacyPriceNode = $xpath->query(
             '//*[@id="corePrice_feature_div"]//span[contains(@class, "a-offscreen")]
              | //*[@id="priceblock_ourprice"]
              | //*[@id="priceblock_dealprice"]'
         )->item(0);
+        $price = $this->parseAmazonPrice($this->cleanText($legacyPriceNode?->textContent));
 
-        return $this->cleanText($node?->textContent);
+        return ['price' => $price, 'currency' => $price !== null ? 'USD' : null];
     }
 
     /**
-     * Amazon formats a price as e.g. "$24.99" or "$1,299.00" — strips the
-     * currency symbol/thousands separators and parses the remaining
-     * decimal number. Deliberately not locale-aware (no "24,99 €" comma-
-     * decimal handling): BASE_URL is hardcoded to amazon.com, which always
-     * formats prices the US way regardless of the requesting client's own
-     * locale (Accept-Language only affects text, not number formatting).
+     * Recursively searches a decoded `twister-plus-buying-options-price-
+     * data` JSON structure for the first object carrying both
+     * `priceAmount` and `currencySymbol` — the real structure nests that
+     * object under a top-level key (e.g. `"desktop_buybox_group_1"`)
+     * whose exact name looks auto-generated/unstable, so this doesn't
+     * depend on it.
+     */
+    private function firstAmazonJsonOffer(mixed $decoded): ?array
+    {
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        if (isset($decoded['priceAmount'], $decoded['currencySymbol']) && is_numeric($decoded['priceAmount'])) {
+            return $decoded;
+        }
+
+        foreach ($decoded as $value) {
+            $found = $this->firstAmazonJsonOffer($value);
+            if ($found !== null) {
+                return $found;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Amazon formats a legacy DOM-extracted price as e.g. "$24.99" or
+     * "$1,299.00" — strips the currency symbol/thousands separators and
+     * parses the remaining decimal number. Deliberately not locale-aware
+     * (no "24,99 €" comma-decimal handling): this path is only reached
+     * when amazonPriceAndCurrency() falls back to it, at which point
+     * `currency` is assumed to be USD (see that method's own docblock).
      */
     private function parseAmazonPrice(?string $text): ?float
     {
@@ -410,5 +493,27 @@ trait AmazonScraping
         $withoutEdition = preg_replace('/;.*$/', '', $withoutDate) ?? $withoutDate;
 
         return $this->cleanText($withoutEdition) ?? $this->cleanText($text);
+    }
+
+    /**
+     * GitHub issue #137: a real product page's `#bylineInfo` was found to
+     * also embed a trailing "Format: {value}" segment (e.g. "by Frank
+     * Herbert (Author) Format: Paperback") inside the very same container
+     * as the actual byline — separated only by an icon element with no
+     * text of its own, so the two run together in `textContent` with
+     * nothing to split on except this label itself. Strips it so
+     * `authors`/`artist` don't carry an unrelated format string. Returns
+     * the original trimmed string unchanged if it doesn't match that
+     * shape.
+     */
+    private function stripAmazonFormatSuffix(?string $text): ?string
+    {
+        if ($text === null) {
+            return null;
+        }
+
+        $withoutFormat = preg_replace('/\s*Format:.*$/u', '', $text) ?? $text;
+
+        return $this->cleanText($withoutFormat) ?? $this->cleanText($text);
     }
 }
