@@ -125,7 +125,7 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame('Mamacita (New Version)', $candidate->attributes['tracks'][1]['title']);
     }
 
-    /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Pink Floyd: The Wall (remastered) (180g) (2 LPs) – jpc.de", a real multi-disc vinyl release, including that the earlier, unrelated "(180g)" parenthesized segment must not be mistaken for the format/disc-count one. */
+    /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Pink Floyd: The Wall (remastered) (180g) (2 LPs) – jpc.de", a real multi-disc vinyl release, including that the earlier, unrelated "(180g)" parenthesized segment must not be mistaken for the format/disc-count one. GitHub issue #138: "medium" no longer redundantly repeats the count disc_count already carries — "2 LPs" becomes just "LP". */
     public function test_a_multi_disc_release_derives_disc_count_from_the_format_string(): void
     {
         Http::fake([
@@ -140,7 +140,7 @@ class JpcCdProviderTest extends TestCase
 
         $this->assertSame('Pink Floyd', $candidate->attributes['artist']);
         $this->assertSame('The Wall (remastered) (180g)', $candidate->attributes['title']);
-        $this->assertSame('2 LPs', $candidate->attributes['medium']);
+        $this->assertSame('LP', $candidate->attributes['medium']);
         $this->assertSame(2, $candidate->attributes['disc_count']);
     }
 

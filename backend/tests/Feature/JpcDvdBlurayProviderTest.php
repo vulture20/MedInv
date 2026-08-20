@@ -82,7 +82,7 @@ class JpcDvdBlurayProviderTest extends TestCase
         $this->assertArrayNotHasKey('cast', $candidate->attributes);
     }
 
-    /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Hogfather (Special Edition) (2 DVDs) – jpc.de" (EAN 4009750242353), the exact real title tag the reporting user's example resolved to. */
+    /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Hogfather (Special Edition) (2 DVDs) – jpc.de" (EAN 4009750242353), the exact real title tag the reporting user's example resolved to. GitHub issue #138: "medium" no longer redundantly repeats the count disc_count already carries — "2 DVDs" becomes just "DVD". */
     public function test_a_multi_disc_release_derives_disc_count_from_the_format_string(): void
     {
         Http::fake([
@@ -96,8 +96,25 @@ class JpcDvdBlurayProviderTest extends TestCase
         $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('4009750242353')[0];
 
         $this->assertSame('Hogfather (Special Edition)', $candidate->attributes['title']);
-        $this->assertSame('2 DVDs', $candidate->attributes['medium']);
+        $this->assertSame('DVD', $candidate->attributes['medium']);
         $this->assertSame(2, $candidate->attributes['disc_count']);
+    }
+
+    /** GitHub issue #138: an explicit "1 DVD" (not confirmed live, but a plausible shape) strips down to "DVD" too — no trailing "s" to remove since "DVD" was never pluralized in the first place, unlike "2 DVDs". */
+    public function test_an_explicit_single_disc_count_also_strips_the_leading_number(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Some Film (1 DVD) – jpc.de</title></head><body></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('0000000000000')[0];
+
+        $this->assertSame('DVD', $candidate->attributes['medium']);
+        $this->assertSame(1, $candidate->attributes['disc_count']);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void

@@ -272,15 +272,21 @@ trait JpcScraping
         return [
             'title' => $fromTitleTag['title'],
             'byline' => $fromTitleTag['byline'],
-            'format' => $fromTitleTag['format'],
+            // GitHub issue #138: `format` (→ `medium`) no longer carries
+            // the leading disc count — see stripJpcDiscCount()'s own
+            // docblock for why that was redundant now that disc_count
+            // (below) already carries it as its own field.
+            'format' => $this->stripJpcDiscCount($fromTitleTag['format']),
             // GitHub issue #136: jpc.de has no dedicated disc-count label
-            // at all — the count lives only inside this same
+            // at all — the count lives only inside the same
             // title-tag-derived format string (e.g. "2 DVDs", "2 LPs"),
             // confirmed on real multi-disc DVD and LP releases; a
             // single-disc format ("CD", "Blu-ray", "Blu-ray & DVD im
             // Steelbook") has no leading digit, so this stays null there
             // — the same parseLeadingInt() reuse every other leading-
-            // number field in this trait already uses.
+            // number field in this trait already uses. Deliberately reads
+            // the *original*, unstripped format string, not the one
+            // above.
             'disc_count' => $this->parseLeadingInt($fromTitleTag['format']),
             'ean' => $ean !== null ? preg_replace('/\D/', '', $ean) ?: null : null,
             'release_date' => $this->parseJpcDate($this->jpcDetailValue($xpath, 'Erscheinungstermin:')),
@@ -422,6 +428,31 @@ trait JpcScraping
         }
 
         return null;
+    }
+
+    /**
+     * GitHub issue #138: once `disc_count` (see `jpcProductPage()`'s own
+     * docblock) started carrying the leading number from a format string
+     * like "2 DVDs" as its own field, leaving that same number in
+     * `medium` too (e.g. "medium: 2 DVDs" *and* "disc_count: 2") became a
+     * pointless, confusing redundancy — this strips it back down to just
+     * "DVD". Confirmed real examples are simple English plurals ("2
+     * DVDs" → "DVD", "2 LPs" → "LP"), so this strips a leading "{n} " and
+     * then a trailing "s" from what's left, best-effort (same
+     * disclosed-limitation spirit as every other regex-based field in
+     * this trait — a hypothetical format that doesn't pluralize with a
+     * bare "s" isn't handled specially). A format with no leading number
+     * at all (a single-disc format like "CD"/"Blu-ray", or a compound
+     * description like "Blu-ray & DVD im Steelbook" with no disc-count
+     * prefix to begin with) is returned unchanged.
+     */
+    private function stripJpcDiscCount(?string $format): ?string
+    {
+        if ($format === null || ! preg_match('/^\d+\s+(.+)$/u', $format, $matches)) {
+            return $format;
+        }
+
+        return preg_replace('/s$/u', '', $matches[1]) ?? $matches[1];
     }
 
     /** A confirmed `Verlag:` value is `"{Verlag}, MM/YYYY"` (e.g. "DuMont Buchverlag GmbH, 07/2022") — strips the trailing date so `publisher` doesn't carry it too (`release_date` already comes from the separate, more precise `Erscheinungstermin:` row). Returns the original trimmed string unchanged if it doesn't match that shape, same restraint as AmazonScraping::stripPublisherSuffix(). */

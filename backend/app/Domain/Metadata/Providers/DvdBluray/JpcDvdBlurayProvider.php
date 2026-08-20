@@ -15,10 +15,12 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * jpc.de pages and which are best-effort guesses. `cast` is deliberately
  * never set — see JpcScraping's own docblock for why.
  *
- * `disc_count` (GitHub issue #136) is parsed out of the same title-tag
- * format string `medium` already comes from (e.g. "2 DVDs") rather than
- * from any dedicated label — jpc.de has none — see
- * `JpcScraping::jpcProductPage()`'s own docblock for why.
+ * `disc_count` (GitHub issue #136) is parsed out of the *original*
+ * title-tag format string (e.g. "2 DVDs") rather than from any dedicated
+ * label — jpc.de has none — see `JpcScraping::jpcProductPage()`'s own
+ * docblock for why. `medium` itself no longer repeats that count
+ * (GitHub issue #138: "2 DVDs" → "DVD") — see `stripJpcDiscCount()`'s
+ * own docblock.
  */
 class JpcDvdBlurayProvider implements MetadataProviderInterface
 {
