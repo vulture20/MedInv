@@ -12,6 +12,11 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * (briefing 8.2 — GitHub issue #50) — **Beta**, see AmazonScraping's
  * docblock for the full legal/technical/reliability picture this is
  * built under.
+ *
+ * `cast` (GitHub issue #139: a user reported "Format: DVD" landing here)
+ * is passed through `AmazonScraping::stripAmazonFormatContamination()` —
+ * see that method's own docblock for why this specific case couldn't be
+ * confirmed live the way #137's book-side fix was.
  */
 class AmazonDvdBlurayProvider implements MetadataProviderInterface
 {
@@ -96,7 +101,11 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
                 'medium' => $this->amazonBullet($bullets, 'Format'),
                 'runtime_minutes' => $this->parseLeadingInt($this->amazonBullet($bullets, 'Run time', 'Runtime')),
                 'languages' => $this->amazonBullet($bullets, 'Language', 'Language:', 'Languages'),
-                'cast' => $this->amazonBullet($bullets, 'Actors') ?? $page['byline'],
+                // GitHub issue #139: stripAmazonFormatContamination() —
+                // $page['byline'] is already stripped by amazonProductPage()
+                // itself, but the "Actors" bullet value isn't, so it needs
+                // the same defensive treatment here too.
+                'cast' => $this->stripAmazonFormatContamination($this->amazonBullet($bullets, 'Actors')) ?? $page['byline'],
                 'director' => $this->amazonBullet($bullets, 'Director', 'Directors'),
                 'release_date' => $releaseDate,
                 'production_year' => $releaseDate ? (int) substr($releaseDate, 0, 4) : null,

@@ -168,7 +168,7 @@ trait AmazonScraping
      * there at all, so without this the description was silently always
      * null for books specifically.
      *
-     * `byline` is passed through `stripAmazonFormatSuffix()` (GitHub
+     * `byline` is passed through `stripAmazonFormatContamination()` (GitHub
      * issue #137) — see that method's own docblock for the real trailing
      * "Format: {value}" text confirmed bleeding into it otherwise.
      *
@@ -185,7 +185,7 @@ trait AmazonScraping
         $xpath = $this->xpathFor($html);
 
         $title = $this->cleanText($xpath->query('//*[@id="productTitle"]')->item(0)?->textContent);
-        $byline = $this->stripAmazonFormatSuffix($this->cleanText($xpath->query('//*[@id="bylineInfo"]')->item(0)?->textContent));
+        $byline = $this->stripAmazonFormatContamination($this->cleanText($xpath->query('//*[@id="bylineInfo"]')->item(0)?->textContent));
         $description = $this->cleanText(
             $xpath->query('//*[@id="feature-bullets"]')->item(0)?->textContent
                 ?? $xpath->query('//*[@id="productDescription"]')->item(0)?->textContent
@@ -497,22 +497,34 @@ trait AmazonScraping
 
     /**
      * GitHub issue #137: a real product page's `#bylineInfo` was found to
-     * also embed a trailing "Format: {value}" segment (e.g. "by Frank
-     * Herbert (Author) Format: Paperback") inside the very same container
-     * as the actual byline — separated only by an icon element with no
-     * text of its own, so the two run together in `textContent` with
-     * nothing to split on except this label itself. Strips it so
-     * `authors`/`artist` don't carry an unrelated format string. Returns
-     * the original trimmed string unchanged if it doesn't match that
-     * shape.
+     * also embed a "Format: {value}" segment (e.g. "by Frank Herbert
+     * (Author) Format: Paperback") inside the very same container as the
+     * actual byline — separated only by an icon element with no text of
+     * its own, so the two run together in `textContent` with nothing to
+     * split on except this label itself. Strips it so `authors`/`artist`
+     * don't carry an unrelated format string.
+     *
+     * GitHub issue #139: a user-reported case put "Format: DVD" under
+     * `cast` instead — same underlying contamination, but not
+     * independently confirmed live for a DVD/Blu-ray page the way #137's
+     * book case was (both attempted live re-checks for #139 were blocked
+     * by Amazon, unlike #137's own successful one-off check). Widened
+     * defensively from a trailing-only match to anywhere in the string
+     * (a DVD's byline/cast text plausibly has more after the format
+     * segment, e.g. a cast list, unlike a book's, where it was always
+     * last) and applied to the `cast` bullet value too (`amazonBullet()`'s
+     * "Actors" result), not just `byline` — since #139 couldn't be
+     * confirmed live, this is deliberately a broader, unverified
+     * hardening rather than a targeted fix for a confirmed shape.
+     * Returns the original trimmed string unchanged if it doesn't match.
      */
-    private function stripAmazonFormatSuffix(?string $text): ?string
+    private function stripAmazonFormatContamination(?string $text): ?string
     {
         if ($text === null) {
             return null;
         }
 
-        $withoutFormat = preg_replace('/\s*Format:.*$/u', '', $text) ?? $text;
+        $withoutFormat = preg_replace('/\s*Format:\s*\S+/u', '', $text) ?? $text;
 
         return $this->cleanText($withoutFormat) ?? $this->cleanText($text);
     }
