@@ -213,6 +213,62 @@ class ExportImportCoverTest extends TestCase
         $this->assertFalse(Storage::disk('local')->exists('etc/pwned.jpg'));
     }
 
+    /**
+     * GitHub issue #148: `captured_by_user_id` (GitHub issue #74) is
+     * instance-local like `id`/`library_id` — an ordinary library export
+     * must not carry the exporting instance's raw internal user ID.
+     */
+    public function test_export_does_not_include_captured_by_user_id(): void
+    {
+        $admin = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $admin->id]);
+        MediaBook::query()->create([
+            'library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001',
+            'captured_by_user_id' => $admin->id,
+        ]);
+
+        $export = app(ExportImportService::class)->exportLibraries(null);
+
+        $this->assertArrayNotHasKey('captured_by_user_id', $export['libraries'][0]['items'][0]);
+    }
+
+    /**
+     * GitHub issue #148: even a hand-crafted import file that explicitly
+     * sets `captured_by_user_id` to a real account's ID on the *importing*
+     * instance must not have that value trusted — it would otherwise
+     * falsely attribute an item that account never captured to it.
+     */
+    public function test_import_ignores_a_captured_by_user_id_supplied_in_the_import_file(): void
+    {
+        $this->actingAsAdmin();
+        $unrelatedUser = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $export = app(ExportImportService::class)->exportLibraries(null);
+        $export['libraries'][] = [
+            'name' => 'Novels',
+            'description' => null,
+            'media_type' => 'book',
+            'shares' => [],
+            'items' => [[
+                'title' => 'Dune',
+                'ean' => '9780000000001',
+                'captured_by_user_id' => $unrelatedUser->id,
+            ]],
+        ];
+
+        $tmpZip = tempnam(sys_get_temp_dir(), 'import-test');
+        $zip = new ZipArchive;
+        $zip->open($tmpZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFromString('manifest.json', json_encode($export));
+        $zip->close();
+
+        $file = new UploadedFile($tmpZip, 'export.zip', 'application/zip', null, true);
+
+        $this->postJson('/api/admin/import', ['file' => $file])->assertOk();
+
+        $imported = MediaBook::query()->where('ean', '9780000000001')->firstOrFail();
+        $this->assertNull($imported->captured_by_user_id);
+    }
+
     public function test_import_rejects_a_bare_json_export_even_when_well_formed(): void
     {
         $admin = $this->actingAsAdmin();

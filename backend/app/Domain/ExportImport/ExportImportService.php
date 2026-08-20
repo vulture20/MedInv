@@ -98,8 +98,24 @@ class ExportImportService
                     // is true; see that method's docblock.
                     'access_level' => $s->access_level,
                 ])->all(),
+                // GitHub issue #148: `captured_by_user_id` (GitHub issue
+                // #74) is instance-local exactly like `id`/`library_id` —
+                // a raw foreign key with no meaning on a different
+                // instance's own `users` table, and unlike every other
+                // personal-data field, wasn't already gated behind
+                // $includeUsers. Left in, it would (a) leak the exporting
+                // instance's internal user ID in an *ordinary* library
+                // export, and (b) get blindly trusted on import, wrongly
+                // attributing an imported item's capture history to
+                // whichever real, unrelated account happens to share that
+                // ID on the receiving instance (most commonly ID 1, the
+                // seeded admin). Dropping it here leaves the imported
+                // item's `captured_by_user_id` null — already an
+                // anticipated, handled case (see
+                // ReportsService::userActivityFor()'s own docblock on a
+                // pre-#74 item grouping under "unknown").
                 'items' => $library->mediaItems()->get()->map(
-                    fn ($item) => $item->makeHidden(['id', 'library_id', 'created_at', 'updated_at'])->toArray()
+                    fn ($item) => $item->makeHidden(['id', 'library_id', 'created_at', 'updated_at', 'captured_by_user_id'])->toArray()
                 )->all(),
             ])->all(),
         ];
@@ -546,9 +562,25 @@ class ExportImportService
         return $skipped;
     }
 
+    /**
+     * GitHub issue #148: `captured_by_user_id` is stripped from *every*
+     * imported item, not just omitted from exportLibraries()'s own output
+     * — the same defense-in-depth reasoning MediaItemController::store()/
+     * MetadataController::import() already apply against a client-supplied
+     * value on the ordinary capture paths (CaptureAttributionTest::
+     * test_store_ignores_an_attacker_supplied_capture_method()), just
+     * applied here too: an imported item's source file isn't necessarily
+     * one this app's own export ever produced (a hand-crafted or
+     * third-party-modified upload could still carry the field), and a
+     * value that happens to match a real account on *this* instance would
+     * otherwise falsely attribute that account with having captured an
+     * item it never touched.
+     */
     private function insertItems(Library $library, array $items, bool $skipExistingEans = false): void
     {
         foreach ($items as $item) {
+            unset($item['captured_by_user_id']);
+
             if ($skipExistingEans) {
                 $modelClass = $this->mediaItemService->modelClassFor($library->media_type);
                 if ($modelClass::query()->where('library_id', $library->id)->where('ean', $item['ean'])->exists()) {
