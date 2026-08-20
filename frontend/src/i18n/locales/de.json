@@ -199,6 +199,9 @@
     "resultsTitle_other": "{{count}} Ergebnisse",
     "filters": {
       "heading": "Filter",
+      "query": "Suchbegriff",
+      "summaryTitle": "Filterkriterien",
+      "noneActive": "Keine Filterkriterien — zeigt alle sichtbaren Einträge.",
       "fieldLabel": "Suchen in",
       "field": {
         "all": "Alle Felder",

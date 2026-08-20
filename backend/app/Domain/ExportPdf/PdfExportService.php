@@ -4,6 +4,8 @@ namespace App\Domain\ExportPdf;
 
 use App\Domain\Languages\Translator;
 use App\Domain\Reports\ReportsService;
+use App\Domain\Search\SearchFilters;
+use App\Domain\Search\SearchService;
 use App\Models\Library;
 use App\Models\SystemSetting;
 use App\Models\User;
@@ -16,14 +18,13 @@ use NumberFormatter;
 
 /**
  * PDF export (GitHub issue #87) for the "Auswertungen" (ReportsService's
- * item-level reports) and for a single library's own inventory
- * (LibraryController::exportPdf()) — the two concrete deliverables #87
- * scoped in. Deliberately *not* the older aggregate overview
- * (StatisticsPage.tsx/StatisticsService::overviewFor(), see #87's own
- * text for why) and deliberately not search results either yet — #87's
- * "Zusatzidee" for that was folded into GitHub issue #73 instead (a
- * filter-less freetext search has little worth exporting; see #73's
- * addendum), not implemented here.
+ * item-level reports), for a single library's own inventory
+ * (LibraryController::exportPdf()), and for the search mask's current
+ * result set (SearchController::exportPdf(), GitHub issue #121 — a #73
+ * comment's addendum, deliberately not folded into #73 itself since it's
+ * a separate, clearly scoped feature). Deliberately *not* the older
+ * aggregate overview (StatisticsPage.tsx/StatisticsService::overviewFor(),
+ * see #87's own text for why).
  *
  * Renders via barryvdh/laravel-dompdf, a pure-PHP HTML->PDF renderer with
  * no external binary dependency (unlike a wkhtmltopdf-based approach would
@@ -52,6 +53,7 @@ class PdfExportService
     public function __construct(
         private readonly ReportsService $reportsService,
         private readonly Translator $translator,
+        private readonly SearchService $searchService,
     ) {}
 
     public function reportPdf(User $user, string $key): PdfDocument
@@ -296,6 +298,159 @@ class PdfExportService
             'emptyLibraryText' => $this->tr($lang, 'libraries.noItems'),
             'rows' => $rows,
         ]);
+    }
+
+    /**
+     * The search mask's current result set (GitHub issue #121), scoped
+     * exactly the way SearchPage.tsx's own results are — this just hands
+     * $filters straight to SearchService::search(), the same call GET
+     * /search itself makes, so a saved PDF can never show more than the
+     * requesting user could see on screen. A bare list of items with no
+     * indication of what was actually searched for would be close to
+     * meaningless once printed/archived, so filterSummaryLines() renders
+     * every active criterion above the table — reusing the exact same
+     * labels SearchFilterPanel.tsx shows for each one, not a fresh set of
+     * wording invented for this one view.
+     */
+    public function searchResultsPdf(User $user, SearchFilters $filters): PdfDocument
+    {
+        $lang = $this->languageFor($user);
+        $hits = $this->searchService->search($user, $filters);
+
+        $rows = $hits->map(fn (Model $item) => [
+            'title' => $item->title,
+            'ean' => $item->ean,
+            'library_name' => $item->library->name,
+            'media_type' => $item->library->media_type,
+            'extra' => $item->location,
+        ])->all();
+
+        return $this->render('pdf.search-results', $lang, [
+            'title' => $filters->hasQuery()
+                ? $this->tr($lang, 'search.resultsFor', ['query' => $filters->query])
+                : $this->tr($lang, 'nav.search'),
+            'filterSummaryTitle' => $this->tr($lang, 'search.filters.summaryTitle'),
+            'filterLines' => $this->filterSummaryLines($filters, $lang),
+            'noFiltersText' => $this->tr($lang, 'search.filters.noneActive'),
+            'locationHeader' => $this->tr($lang, 'mediaItem.fields.location'),
+            'rows' => $rows,
+        ]);
+    }
+
+    /**
+     * One line per active filter criterion, in the same top-to-bottom
+     * order SearchFilterPanel.tsx presents them — an inactive filter
+     * (empty array, both range bounds null) contributes nothing, so this
+     * only ever lists what actually narrowed the result set.
+     *
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function filterSummaryLines(SearchFilters $filters, string $lang): array
+    {
+        $lines = [];
+
+        if ($filters->hasQuery()) {
+            $value = $filters->query;
+            if ($filters->fuzzy) {
+                $value .= ' ('.$this->tr($lang, 'search.fuzzy').')';
+            }
+            $lines[] = ['label' => $this->tr($lang, 'search.filters.query'), 'value' => $value];
+        }
+
+        if ($filters->mediaTypes !== []) {
+            $mediaTypeLabels = $this->mediaTypeLabels($lang);
+            $lines[] = [
+                'label' => $this->tr($lang, 'libraries.mediaTypeLabel'),
+                'value' => implode(', ', array_map(fn (string $type) => $mediaTypeLabels[$type] ?? $type, $filters->mediaTypes)),
+            ];
+        }
+
+        if ($filters->libraryIds !== []) {
+            // Deliberately not re-checked against LibraryAccessService here:
+            // $filters->libraryIds only ever narrows what SearchService::
+            // search() above already scoped to $user's visible libraries —
+            // an id for a library $user can't see simply matched nothing
+            // there, so this can only ever name libraries whose items might
+            // actually appear in $rows.
+            $names = Library::query()->whereIn('id', $filters->libraryIds)->pluck('name');
+            if ($names->isNotEmpty()) {
+                $lines[] = ['label' => $this->tr($lang, 'libraries.title'), 'value' => $names->implode(', ')];
+            }
+        }
+
+        if ($filters->field !== 'all') {
+            $lines[] = ['label' => $this->tr($lang, 'search.filters.fieldLabel'), 'value' => $this->searchFieldLabel($filters->field, $lang)];
+        }
+
+        // GitHub issue #123's own reasoning, reused here: an attribute
+        // filter only ever applies to a subset of media types, so its
+        // label names which one(s) — same "Sprache (Buch)" vs.
+        // "Sprache(n) (DVD/Blu-ray)" disambiguation SearchFilterPanel.tsx's
+        // labelWithMediaTypes() already provides client-side.
+        foreach ([
+            ['field' => 'genre', 'values' => $filters->genre, 'types' => ['book']],
+            ['field' => 'format', 'values' => $filters->format, 'types' => ['book']],
+            ['field' => 'language', 'values' => $filters->language, 'types' => ['book']],
+            ['field' => 'medium', 'values' => $filters->medium, 'types' => ['cd', 'dvd_bluray']],
+            ['field' => 'languages', 'values' => $filters->languages, 'types' => ['dvd_bluray']],
+        ] as $attribute) {
+            if ($attribute['values'] === []) {
+                continue;
+            }
+            $lines[] = [
+                'label' => $this->attributeFilterLabel($attribute['field'], $attribute['types'], $lang),
+                'value' => implode(', ', $attribute['values']),
+            ];
+        }
+
+        foreach ([
+            ['label' => $this->tr($lang, 'mediaItem.fields.price'), 'min' => $filters->priceMin, 'max' => $filters->priceMax],
+            ['label' => $this->tr($lang, 'search.filters.year'), 'min' => $filters->yearMin, 'max' => $filters->yearMax],
+            ['label' => $this->tr($lang, 'mediaItem.fields.page_count'), 'min' => $filters->pageCountMin, 'max' => $filters->pageCountMax],
+            ['label' => $this->tr($lang, 'mediaItem.fields.disc_count'), 'min' => $filters->discCountMin, 'max' => $filters->discCountMax],
+            ['label' => $this->tr($lang, 'mediaItem.runtime'), 'min' => $filters->runtimeMin, 'max' => $filters->runtimeMax],
+        ] as $range) {
+            $value = $this->formatRange($range['min'], $range['max']);
+            if ($value !== null) {
+                $lines[] = ['label' => $range['label'], 'value' => $value];
+            }
+        }
+
+        return $lines;
+    }
+
+    /** "Sprache (Buch)" — same reasoning/labels SearchFilterPanel.tsx's labelWithMediaTypes() already uses (GitHub issue #123). */
+    private function attributeFilterLabel(string $field, array $mediaTypes, string $lang): string
+    {
+        $mediaTypeLabels = $this->mediaTypeLabels($lang);
+        $types = implode(', ', array_map(fn (string $type) => $mediaTypeLabels[$type] ?? $type, $mediaTypes));
+
+        return $this->tr($lang, "mediaItem.fields.$field")." ({$types})";
+    }
+
+    /** Mirrors SearchFilterPanel.tsx's inline `field === '...'` <option> labels for the `field` param's value (not its own 'fieldLabel', which names the *control*, not the currently chosen scope). */
+    private function searchFieldLabel(string $field, string $lang): string
+    {
+        return match ($field) {
+            'title' => $this->tr($lang, 'mediaItem.fields.title'),
+            'creator' => $this->tr($lang, 'search.filters.field.creator'),
+            'description' => $this->tr($lang, 'mediaItem.fields.description'),
+            'identifier' => $this->tr($lang, 'search.filters.field.identifier'),
+            'location' => $this->tr($lang, 'mediaItem.fields.location'),
+            'tracks' => $this->tr($lang, 'mediaItem.tracklist'),
+            default => $this->tr($lang, 'search.filters.field.all'),
+        };
+    }
+
+    /** "10 – 50" (both bounds), "≥ 10" / "≤ 50" (only one), or null (neither — the caller skips the line entirely). Values are already plain numbers a user typed into a filter input, not currency, so no locale-aware NumberFormatter pass — unlike formatPrice() above, this isn't displaying a media item's own price. */
+    private function formatRange(int|float|null $min, int|float|null $max): ?string
+    {
+        return match (true) {
+            $min !== null && $max !== null => $min.' – '.$max,
+            $min !== null => '≥ '.$min,
+            $max !== null => '≤ '.$max,
+            default => null,
+        };
     }
 
     /**

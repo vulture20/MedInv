@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} tulosta",
       "filters": {
         "heading": "Suodattimet",
+        "query": "Hakusana",
+        "summaryTitle": "Suodatinehdot",
+        "noneActive": "Ei suodatinehtoja — näytetään kaikki näkyvät kohteet.",
         "fieldLabel": "Hae kohteesta",
         "field": {
           "all": "Kaikki kentät",

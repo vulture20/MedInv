@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} 件の結果",
       "filters": {
         "heading": "フィルター",
+        "query": "検索語",
+        "summaryTitle": "フィルター条件",
+        "noneActive": "フィルター条件はありません — 表示可能なすべての項目を表示しています。",
         "fieldLabel": "検索対象",
         "field": {
           "all": "すべてのフィールド",

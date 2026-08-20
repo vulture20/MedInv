@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} 个结果",
       "filters": {
         "heading": "筛选条件",
+        "query": "搜索词",
+        "summaryTitle": "筛选条件",
+        "noneActive": "未设置筛选条件 — 显示所有可见项目。",
         "fieldLabel": "搜索范围",
         "field": {
           "all": "所有字段",

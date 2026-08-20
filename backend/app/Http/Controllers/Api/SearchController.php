@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\ExportPdf\PdfExportService;
 use App\Domain\Search\SearchFilters;
 use App\Domain\Search\SearchService;
 use App\Http\Controllers\Controller;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -15,9 +17,37 @@ use Illuminate\Validation\Rule;
  */
 class SearchController extends Controller
 {
-    public function __construct(private readonly SearchService $searchService) {}
+    public function __construct(
+        private readonly SearchService $searchService,
+        private readonly PdfExportService $pdfExportService,
+    ) {}
 
     public function search(Request $request)
+    {
+        $filters = $this->filtersFromRequest($request);
+
+        return $this->searchService->search($request->user(), $filters);
+    }
+
+    /** GitHub issue #73 — populates SearchPage.tsx's attribute filter <select>s with the values that actually occur in the visible collection. */
+    public function filterOptions(Request $request)
+    {
+        return $this->searchService->filterOptionsFor($request->user());
+    }
+
+    /** GitHub issue #121 — the current search result set as a PDF, same filter params as search() above (a plain GET, matching how SearchPage.tsx's own request-building already works) so the export always reflects exactly the criteria that were actually applied, not a second, separately-tracked "what was last searched for". */
+    public function exportPdf(Request $request)
+    {
+        $filters = $this->filtersFromRequest($request);
+
+        $pdf = $this->pdfExportService->searchResultsPdf($request->user(), $filters);
+        $filename = 'medinv-search-'.SystemSetting::localNow()->format('Ymd-His').'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /** Shared by search()/exportPdf() — the exact same filter params drive both, so a PDF export always matches what's on screen. */
+    private function filtersFromRequest(Request $request): SearchFilters
     {
         $data = $request->validate([
             // No longer `required` (GitHub issue #73) — a request can now
@@ -59,14 +89,6 @@ class SearchController extends Controller
         // unchecked/false) with no visible error, since SearchPage.tsx's request
         // had no .catch() — see the fix there. Request::boolean() handles the
         // common string representations ("true"/"false"/"1"/"0"/...) instead.
-        $filters = SearchFilters::fromValidated($data, $request->boolean('fuzzy'));
-
-        return $this->searchService->search($request->user(), $filters);
-    }
-
-    /** GitHub issue #73 — populates SearchPage.tsx's attribute filter <select>s with the values that actually occur in the visible collection. */
-    public function filterOptions(Request $request)
-    {
-        return $this->searchService->filterOptionsFor($request->user());
+        return SearchFilters::fromValidated($data, $request->boolean('fuzzy'));
     }
 }

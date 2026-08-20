@@ -310,6 +310,25 @@ export function SearchPage() {
                 <option value="created_at">{t('reports.recentAdditions.addedAt')}</option>
               </select>
             </label>
+            {/* GitHub issue #121 — a plain GET navigation (same window.location.href
+                pattern LibraryDetailPage.tsx/ReportDetailPage.tsx's own PDF export
+                buttons already use, so the browser's normal Content-Disposition
+                handling and already-authenticated session cookie do the rest), built
+                with the exact same filter params as the results just fetched above —
+                the export always matches what's currently on screen, not a second,
+                separately-tracked "last search". apiClient.getUri() (not the
+                setSearchParams-oriented filtersToSearchParamsInit()) since this needs
+                the bracket-style array serialization (`media_types[]=...`) the
+                backend's query-string parsing actually expects, the same shape
+                apiClient's own GET /search request already sends. */}
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = apiClient.getUri({ url: '/search/export/pdf', params: filtersToRequestParams(appliedFilters) })
+              }}
+            >
+              {t('reports.exportPdf')}
+            </button>
           </div>
           {results.length === 0 ? (
             <p className="hint">{t('search.noResults')}</p>

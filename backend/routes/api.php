@@ -117,6 +117,9 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // GitHub issue #73 — the values SearchPage.tsx's attribute filter
     // <select>s offer, scoped the same way search itself is.
     Route::get('/search/filter-options', [SearchController::class, 'filterOptions']);
+    // GitHub issue #121 — the current result set as a PDF, same filter
+    // params search() above accepts (see SearchController::filtersFromRequest()).
+    Route::get('/search/export/pdf', [SearchController::class, 'exportPdf']);
     // GitHub issue #73's "nice to have": named, reusable filter
     // combinations, personal to the requesting user (not shared/library-
     // scoped, so no LibraryAccessService check beyond the ordinary

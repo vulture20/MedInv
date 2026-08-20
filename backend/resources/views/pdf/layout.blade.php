@@ -24,6 +24,8 @@
         .meta { color: #666; font-size: 9px; margin: 0 0 14px; }
         .hint { color: #888; font-style: italic; }
         .badge { color: #666; font-size: 9px; }
+        ul { margin: 0 0 8px; padding-left: 16px; }
+        li { margin-bottom: 2px; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
         th, td { text-align: left; padding: 3px 6px; border-bottom: 1px solid #ddd; vertical-align: top; }
         th { background: #f0f0f0; font-weight: bold; }

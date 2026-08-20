@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} resultat",
       "filters": {
         "heading": "Filter",
+        "query": "Sökterm",
+        "summaryTitle": "Filterkriterier",
+        "noneActive": "Inga filterkriterier — visar alla synliga objekt.",
         "fieldLabel": "Sök i",
         "field": {
           "all": "Alla fält",

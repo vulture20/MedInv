@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} resultater",
       "filters": {
         "heading": "Filtre",
+        "query": "Søkeord",
+        "summaryTitle": "Filterkriterier",
+        "noneActive": "Ingen filterkriterier — viser alle synlige elementer.",
         "fieldLabel": "Søk i",
         "field": {
           "all": "Alle felt",

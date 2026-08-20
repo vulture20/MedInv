@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} resultaten",
       "filters": {
         "heading": "Filters",
+        "query": "Zoekterm",
+        "summaryTitle": "Filtercriteria",
+        "noneActive": "Geen filtercriteria — alle zichtbare items worden getoond.",
         "fieldLabel": "Zoeken in",
         "field": {
           "all": "Alle velden",

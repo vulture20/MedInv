@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} sonuç",
       "filters": {
         "heading": "Filtreler",
+        "query": "Arama terimi",
+        "summaryTitle": "Filtre kriterleri",
+        "noneActive": "Filtre kriteri yok — görünen tüm ögeler gösteriliyor.",
         "fieldLabel": "Şurada ara",
         "field": {
           "all": "Tüm alanlar",

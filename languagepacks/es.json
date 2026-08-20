@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} resultados",
       "filters": {
         "heading": "Filtros",
+        "query": "Término de búsqueda",
+        "summaryTitle": "Criterios de filtro",
+        "noneActive": "Sin criterios de filtro: se muestran todos los elementos visibles.",
         "fieldLabel": "Buscar en",
         "field": {
           "all": "Todos los campos",

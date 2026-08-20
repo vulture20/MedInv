@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} wyników",
       "filters": {
         "heading": "Filtry",
+        "query": "Wyszukiwane hasło",
+        "summaryTitle": "Kryteria filtrowania",
+        "noneActive": "Brak kryteriów filtrowania — pokazano wszystkie widoczne pozycje.",
         "fieldLabel": "Szukaj w",
         "field": {
           "all": "Wszystkie pola",

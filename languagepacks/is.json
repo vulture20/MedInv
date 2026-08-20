@@ -202,6 +202,9 @@
       "resultsTitle_other": "{{count}} niðurstöður",
       "filters": {
         "heading": "Síur",
+        "query": "Leitarorð",
+        "summaryTitle": "Síuskilyrði",
+        "noneActive": "Engin síuskilyrði — sýnir alla sýnilega hluti.",
         "fieldLabel": "Leita í",
         "field": {
           "all": "Öllum reitum",
