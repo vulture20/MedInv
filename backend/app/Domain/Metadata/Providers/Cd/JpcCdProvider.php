@@ -19,6 +19,11 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * omission, jpc.de exposes one via real `schema.org/MusicRecording`
  * microdata; see `JpcScraping::jpcTracks()`'s own docblock for exactly
  * what it does and doesn't carry (no duration).
+ *
+ * `disc_count` (GitHub issue #136) is parsed out of the same title-tag
+ * format string `medium` already comes from (e.g. "2 LPs") rather than
+ * from any dedicated label — jpc.de has none — see
+ * `JpcScraping::jpcProductPage()`'s own docblock for why.
  */
 class JpcCdProvider implements MetadataProviderInterface
 {
@@ -97,6 +102,7 @@ class JpcCdProvider implements MetadataProviderInterface
                 'title' => $page['title'],
                 'artist' => $page['byline'],
                 'medium' => $page['format'],
+                'disc_count' => $page['disc_count'],
                 'release_date' => $page['release_date'],
                 'tracks' => $page['tracks'],
                 // The originally-scanned code, same as

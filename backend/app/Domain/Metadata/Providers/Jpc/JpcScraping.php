@@ -253,7 +253,7 @@ trait JpcScraping
      * detail-row label too, but isn't extracted here at all: no in-scope
      * model has a fillable column it would map to — extracting a value
      * with nowhere to put it would just be dead code.
-     * @return array{title: ?string, byline: ?string, format: ?string, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
+     * @return array{title: ?string, byline: ?string, format: ?string, disc_count: ?int, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
      */
     private function jpcProductPage(string $url, bool $splitTitleOnDash = false): ?array
     {
@@ -273,6 +273,15 @@ trait JpcScraping
             'title' => $fromTitleTag['title'],
             'byline' => $fromTitleTag['byline'],
             'format' => $fromTitleTag['format'],
+            // GitHub issue #136: jpc.de has no dedicated disc-count label
+            // at all — the count lives only inside this same
+            // title-tag-derived format string (e.g. "2 DVDs", "2 LPs"),
+            // confirmed on real multi-disc DVD and LP releases; a
+            // single-disc format ("CD", "Blu-ray", "Blu-ray & DVD im
+            // Steelbook") has no leading digit, so this stays null there
+            // — the same parseLeadingInt() reuse every other leading-
+            // number field in this trait already uses.
+            'disc_count' => $this->parseLeadingInt($fromTitleTag['format']),
             'ean' => $ean !== null ? preg_replace('/\D/', '', $ean) ?: null : null,
             'release_date' => $this->parseJpcDate($this->jpcDetailValue($xpath, 'Erscheinungstermin:')),
             'runtime_minutes' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Spieldauer ca.:')),

@@ -108,6 +108,8 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame('Back Into The Sun', $candidate->attributes['title']);
         $this->assertSame('Mark Medlock (DSDS)', $candidate->attributes['artist']);
         $this->assertSame('CD', $candidate->attributes['medium']);
+        // GitHub issue #136: no leading number in the format string here, so disc_count stays null (falls back to the DB's own default of 1) rather than a wrong guess.
+        $this->assertNull($candidate->attributes['disc_count']);
         $this->assertSame('2026-08-14', $candidate->attributes['release_date']);
         $this->assertSame('4029759218739', $candidate->attributes['ean']);
         // GitHub issue #135: cover URL derivation depends on EAN extraction, which the <b>-wrapped-label bug silently broke — this is the "cover is missing" bug report, now fixed. Also now w2400 (full resolution), not w468.
@@ -121,6 +123,25 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame('Back Into The Sun', $candidate->attributes['tracks'][0]['title']);
         $this->assertNull($candidate->attributes['tracks'][0]['duration_seconds']);
         $this->assertSame('Mamacita (New Version)', $candidate->attributes['tracks'][1]['title']);
+    }
+
+    /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Pink Floyd: The Wall (remastered) (180g) (2 LPs) – jpc.de", a real multi-disc vinyl release, including that the earlier, unrelated "(180g)" parenthesized segment must not be mistaken for the format/disc-count one. */
+    public function test_a_multi_disc_release_derives_disc_count_from_the_format_string(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Pink Floyd: The Wall (remastered) (180g) (2 LPs) – jpc.de</title></head><body></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcCdProvider::class)->lookupByCode('0602488213288')[0];
+
+        $this->assertSame('Pink Floyd', $candidate->attributes['artist']);
+        $this->assertSame('The Wall (remastered) (180g)', $candidate->attributes['title']);
+        $this->assertSame('2 LPs', $candidate->attributes['medium']);
+        $this->assertSame(2, $candidate->attributes['disc_count']);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void

@@ -64,6 +64,8 @@ class JpcDvdBlurayProviderTest extends TestCase
 
         $this->assertSame('Das wandelnde Schloss', $candidate->attributes['title']);
         $this->assertSame('Blu-ray & DVD im Steelbook', $candidate->attributes['medium']);
+        // GitHub issue #136: no leading number in the format string here, so disc_count stays null (falls back to the DB's own default of 1) rather than a wrong guess.
+        $this->assertNull($candidate->attributes['disc_count']);
         $this->assertSame(119, $candidate->attributes['runtime_minutes']);
         $this->assertSame('Hayao Miyazaki', $candidate->attributes['director']);
         $this->assertSame('Deutsch, Japanisch', $candidate->attributes['languages']);
@@ -78,6 +80,24 @@ class JpcDvdBlurayProviderTest extends TestCase
         $this->assertSame('EUR', $candidate->attributes['currency']);
         // No confirmed "Darsteller" label — see this provider's docblock.
         $this->assertArrayNotHasKey('cast', $candidate->attributes);
+    }
+
+    /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Hogfather (Special Edition) (2 DVDs) – jpc.de" (EAN 4009750242353), the exact real title tag the reporting user's example resolved to. */
+    public function test_a_multi_disc_release_derives_disc_count_from_the_format_string(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Hogfather (Special Edition) (2 DVDs) – jpc.de</title></head><body></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('4009750242353')[0];
+
+        $this->assertSame('Hogfather (Special Edition)', $candidate->attributes['title']);
+        $this->assertSame('2 DVDs', $candidate->attributes['medium']);
+        $this->assertSame(2, $candidate->attributes['disc_count']);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void
