@@ -5,6 +5,7 @@ namespace App\Domain\Metadata;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Domain\Metadata\Providers\Book\AmazonBookProvider;
 use App\Domain\Metadata\Providers\Book\ClaudeBookProvider;
+use App\Domain\Metadata\Providers\Book\GeminiBookProvider;
 use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
 use App\Domain\Metadata\Providers\Book\OpenAiBookProvider;
@@ -12,10 +13,12 @@ use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
 use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
 use App\Domain\Metadata\Providers\Cd\ClaudeCdProvider;
 use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
+use App\Domain\Metadata\Providers\Cd\GeminiCdProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use App\Domain\Metadata\Providers\Cd\OpenAiCdProvider;
 use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\ClaudeDvdBlurayProvider;
+use App\Domain\Metadata\Providers\DvdBluray\GeminiDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\OpenAiDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
@@ -41,9 +44,10 @@ class MetadataProviderRegistry
      * documented public API. See syncToDatabase() below for where this is
      * actually applied.
      *
-     * The three Claude providers (GitHub issue #59) and the three
-     * OpenAI-backed ones (GitHub issue #65, offering the same LLM-as-
-     * metadata-source concept via a second vendor) are added here for a
+     * The three Claude providers (GitHub issue #59), the three
+     * OpenAI-backed ones (GitHub issue #65), and the three Gemini-backed
+     * ones (GitHub issue #66) — offering the same LLM-as-metadata-source
+     * concept via a second and third vendor — are added here for a
      * related but distinct reason: an LLM-backed source costs real money
      * per lookup (unlike every non-Beta provider above, which is free or
      * has a generous free tier) and carries a hallucination risk that, per
@@ -55,6 +59,7 @@ class MetadataProviderRegistry
         'book.amazon', 'cd.amazon', 'dvd_bluray.amazon',
         'book.claude', 'cd.claude', 'dvd_bluray.claude',
         'book.openai', 'cd.openai', 'dvd_bluray.openai',
+        'book.gemini', 'cd.gemini', 'dvd_bluray.gemini',
     ];
 
     /** @return class-string<MetadataProviderInterface>[] */
@@ -67,15 +72,18 @@ class MetadataProviderRegistry
             AmazonBookProvider::class,
             ClaudeBookProvider::class,
             OpenAiBookProvider::class,
+            GeminiBookProvider::class,
             MusicBrainzProvider::class,
             DiscogsProvider::class,
             AmazonCdProvider::class,
             ClaudeCdProvider::class,
             OpenAiCdProvider::class,
+            GeminiCdProvider::class,
             UpcMdbProvider::class,
             AmazonDvdBlurayProvider::class,
             ClaudeDvdBlurayProvider::class,
             OpenAiDvdBlurayProvider::class,
+            GeminiDvdBlurayProvider::class,
             // TODO: EmunationProvider (briefing 8.2 — DVD/Blu-ray)
         ];
     }

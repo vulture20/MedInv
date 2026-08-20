@@ -34,14 +34,18 @@ class MetadataPluginSourceTypeTest extends TestCase
         $this->assertSame('scraping', $sourceTypes->get('book.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('cd.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('dvd_bluray.amazon'));
-        // GitHub issue #59, GitHub issue #65: the three Claude providers and
-        // the three OpenAI-backed ones are the only 'llm' providers.
+        // GitHub issue #59, GitHub issue #65, GitHub issue #66: the three
+        // Claude providers, the three OpenAI-backed ones, and the three
+        // Gemini-backed ones are the only 'llm' providers.
         $this->assertSame('llm', $sourceTypes->get('book.claude'));
         $this->assertSame('llm', $sourceTypes->get('cd.claude'));
         $this->assertSame('llm', $sourceTypes->get('dvd_bluray.claude'));
         $this->assertSame('llm', $sourceTypes->get('book.openai'));
         $this->assertSame('llm', $sourceTypes->get('cd.openai'));
         $this->assertSame('llm', $sourceTypes->get('dvd_bluray.openai'));
+        $this->assertSame('llm', $sourceTypes->get('book.gemini'));
+        $this->assertSame('llm', $sourceTypes->get('cd.gemini'));
+        $this->assertSame('llm', $sourceTypes->get('dvd_bluray.gemini'));
     }
 
     public function test_plugins_endpoint_attaches_a_source_type_to_each_row(): void
