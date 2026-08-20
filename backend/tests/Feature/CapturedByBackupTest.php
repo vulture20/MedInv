@@ -45,6 +45,12 @@ class CapturedByBackupTest extends TestCase
 
         $this->assertSame('captor@example.com', $export['libraries'][0]['items'][0]['captured_by_email']);
         $this->assertArrayNotHasKey('captured_by_user_id', $export['libraries'][0]['items'][0]);
+        // Reported by the user: Eloquent's toArray() auto-serializes any
+        // *loaded* relation under its own key unless hidden too -- eager
+        // loading capturedBy to read its ->email above used to leak a
+        // second, redundant "captured_by": {"id": ..., "email": ...} —
+        // re-exposing the exact raw id captured_by_email exists to avoid.
+        $this->assertArrayNotHasKey('captured_by', $export['libraries'][0]['items'][0]);
     }
 
     public function test_an_ordinary_export_includes_neither_field_at_all(): void

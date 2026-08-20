@@ -161,7 +161,16 @@ class ExportImportService
                     fn ($query) => $query->with('capturedBy:id,email')
                 )->get()->map(
                     fn ($item) => [
-                        ...$item->makeHidden(['id', 'library_id', 'created_at', 'updated_at', 'captured_by_user_id'])->toArray(),
+                        // Eloquent's toArray() auto-serializes any *loaded*
+                        // relation as its own key (here: a nested
+                        // "captured_by": {"id": ..., "email": ...} —
+                        // re-leaking the exact raw internal id captured_by_email
+                        // below exists specifically to avoid exposing) unless
+                        // it's hidden too, same as any other attribute —
+                        // makeHidden() takes the relation's own method name
+                        // (`capturedBy`), not the snake_cased key it would
+                        // render under.
+                        ...$item->makeHidden(['id', 'library_id', 'created_at', 'updated_at', 'captured_by_user_id', 'capturedBy'])->toArray(),
                         ...($includeUsers ? ['captured_by_email' => $item->capturedBy?->email] : []),
                     ]
                 )->all(),
