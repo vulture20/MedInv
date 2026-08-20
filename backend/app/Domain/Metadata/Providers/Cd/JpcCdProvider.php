@@ -14,10 +14,11 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * including exactly which parts were confirmed against real jpc.de pages
  * and which are best-effort guesses.
  *
- * Deliberately doesn't attempt a track listing (GitHub issue #48's
- * `tracks` field) — same reasoning as AmazonCdProvider's own identical
- * omission: nothing this trait extracts reliably exposes one in a stable,
- * machine-parseable shape.
+ * Does attempt a track listing (GitHub issue #48's `tracks` field, added
+ * for GitHub issue #135) — unlike AmazonCdProvider's own identical
+ * omission, jpc.de exposes one via real `schema.org/MusicRecording`
+ * microdata; see `JpcScraping::jpcTracks()`'s own docblock for exactly
+ * what it does and doesn't carry (no duration).
  */
 class JpcCdProvider implements MetadataProviderInterface
 {
@@ -97,11 +98,14 @@ class JpcCdProvider implements MetadataProviderInterface
                 'artist' => $page['byline'],
                 'medium' => $page['format'],
                 'release_date' => $page['release_date'],
+                'tracks' => $page['tracks'],
                 // The originally-scanned code, same as
                 // AmazonBookProvider::mapProductPageToCandidate()'s own
                 // 'ean' field — not the page-derived one, which may be
                 // formatted differently or simply absent.
                 'ean' => $code,
+                'price' => $page['price'],
+                'currency' => $page['currency'],
             ],
             coverUrls: ($cover = $this->jpcCoverUrl($page['ean'])) ? [$cover] : [],
         );

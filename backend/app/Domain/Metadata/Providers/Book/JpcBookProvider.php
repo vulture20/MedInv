@@ -112,6 +112,8 @@ class JpcBookProvider implements MetadataProviderInterface
                 'isbn13' => $digits !== null && strlen($digits) === 13 ? $digits : null,
                 // The originally-scanned code — see JpcCdProvider::mapProductPageToCandidate()'s matching comment.
                 'ean' => $code,
+                'price' => $page['price'],
+                'currency' => $page['currency'],
             ],
             coverUrls: ($cover = $this->jpcCoverUrl($page['ean'])) ? [$cover] : [],
         );

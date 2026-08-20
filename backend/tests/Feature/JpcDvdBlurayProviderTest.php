@@ -23,20 +23,31 @@ class JpcDvdBlurayProviderTest extends TestCase
             HTML;
     }
 
-    /** Detail rows in "label is its own element, value is the next sibling" shape (jpcDetailValue()'s second branch) — the other confirmed real shape, exercised here rather than duplicating JpcCdProviderTest's first-branch fixture. */
+    /**
+     * Trimmed down from real, byte-exact jpc.de HTML fetched for GitHub
+     * issue #135 — every label here is wrapped in `<b>` (the actual real
+     * shape on the DVD/Blu-ray page checked, unlike the CD page's mix of
+     * wrapped and bare labels), which the pre-#135 version of
+     * jpcDetailValue() failed to resolve entirely — see that method's own
+     * docblock.
+     */
     private function productPageHtml(): string
     {
         return <<<'HTML'
             <html><head>
             <title>Das wandelnde Schloss (Blu-ray & DVD im Steelbook) – jpc.de</title>
             </head><body>
+            <span itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                <meta itemprop="price" content="29.99"/>
+                <meta itemprop="priceCurrency" content="EUR"/>
+            </span>
             <dl>
-              <dt>Herkunftsland:</dt><dd>Japan, 2004</dd>
-              <dt>UPC/EAN:</dt><dd>0889853970292</dd>
-              <dt>Erscheinungstermin:</dt><dd>5.5.2017</dd>
-              <dt>Spieldauer ca.:</dt><dd>119 Min.</dd>
-              <dt>Regie:</dt><dd>Hayao Miyazaki</dd>
-              <dt>Sprache:</dt><dd>Deutsch, Japanisch</dd>
+              <dt><b>Herkunftsland:</b></dt><dd>Japan, 2004</dd>
+              <dt><b>UPC/EAN:</b></dt><dd><span itemprop="productID">0889853970292</span></dd>
+              <dt><b>Erscheinungstermin:</b></dt><dd>5.5.2017</dd>
+              <dt><b>Spieldauer ca.:</b></dt><dd>119 Min.</dd>
+              <dt><b>Regie:</b></dt><dd>Hayao Miyazaki</dd>
+              <dt><b>Sprache:</b></dt><dd>Deutsch, Japanisch</dd>
             </dl>
             </body></html>
             HTML;
@@ -59,11 +70,14 @@ class JpcDvdBlurayProviderTest extends TestCase
         $this->assertSame('2017-05-05', $candidate->attributes['release_date']);
         $this->assertSame(2017, $candidate->attributes['production_year']);
         $this->assertSame('0889853970292', $candidate->attributes['ean']);
-        $this->assertSame(['https://media1.jpc.de/image/w468/front/0/0889853970292.jpg'], $candidate->coverUrls);
+        // GitHub issue #135: cover URL derivation depends on EAN extraction, which the <b>-wrapped-label bug silently broke — this is the "cover is missing" bug report, now fixed. Also now w2400 (full resolution), not w468.
+        $this->assertSame(['https://media1.jpc.de/image/w2400/front/0/0889853970292.jpg'], $candidate->coverUrls);
         $this->assertSame('6171414', $candidate->sourceId);
+        // GitHub issue #135: price/currency now extracted via confirmed schema.org Microdata.
+        $this->assertSame(29.99, $candidate->attributes['price']);
+        $this->assertSame('EUR', $candidate->attributes['currency']);
         // No confirmed "Darsteller" label — see this provider's docblock.
         $this->assertArrayNotHasKey('cast', $candidate->attributes);
-        $this->assertArrayNotHasKey('price', $candidate->attributes);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void

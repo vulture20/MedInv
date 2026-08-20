@@ -98,6 +98,8 @@ class JpcDvdBlurayProvider implements MetadataProviderInterface
                 'production_year' => $page['release_date'] ? (int) substr($page['release_date'], 0, 4) : null,
                 // The originally-scanned code — see JpcCdProvider::mapProductPageToCandidate()'s matching comment.
                 'ean' => $code,
+                'price' => $page['price'],
+                'currency' => $page['currency'],
             ],
             coverUrls: ($cover = $this->jpcCoverUrl($page['ean'])) ? [$cover] : [],
         );

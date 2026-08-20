@@ -30,22 +30,39 @@ class JpcBookProviderTest extends TestCase
             HTML;
     }
 
-    /** Detail rows in the "label and value share one element's text" shape, same as JpcCdProviderTest's fixture. */
+    /**
+     * Trimmed down from real, byte-exact jpc.de HTML fetched for GitHub
+     * issue #135 — deliberately keeps the real inconsistency (a bare
+     * `<dt>Verlag:</dt>` alongside every other label wrapped in `<b>`,
+     * e.g. `<dt><b>Einband:</b></dt>`) and the real price Microdata, same
+     * reasoning as JpcCdProviderTest's own fixture.
+     */
     private function productPageHtml(): string
     {
         return <<<'HTML'
             <html><head>
             <title>Kummer aller Art - Mariana Leky (Buch) – jpc.de</title>
             </head><body>
-            <table>
-              <tr><td>Verlag: DuMont Buchverlag GmbH, 07/2022</td></tr>
-              <tr><td>Einband: Gebunden</td></tr>
-              <tr><td>Sprache: Deutsch</td></tr>
-              <tr><td>ISBN-13: 9783832182168</td></tr>
-              <tr><td>Artikelnummer: 10927986</td></tr>
-              <tr><td>Umfang: 176 Seiten</td></tr>
-              <tr><td>Erscheinungstermin: 19.7.2022</td></tr>
-            </table>
+            <span itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                <meta itemprop="price" content="22.00"/>
+                <meta itemprop="priceCurrency" content="EUR"/>
+            </span>
+            <dl>
+                <dt>Verlag:</dt>
+                <dd>DuMont Buchverlag GmbH, 07/2022</dd>
+                <dt><b>Einband:</b></dt>
+                <dd>Gebunden</dd>
+                <dt><b>Sprache:</b></dt>
+                <dd>Deutsch</dd>
+                <dt><b>ISBN-13:</b></dt>
+                <dd><span itemprop="productID">9783832182168</span></dd>
+                <dt><b>Artikelnummer:</b></dt>
+                <dd><span id="hnum" itemprop="sku">10927986</span></dd>
+                <dt><b>Umfang:</b></dt>
+                <dd>176 Seiten</dd>
+                <dt><b>Erscheinungstermin:</b></dt>
+                <dd>19.7.2022</dd>
+            </dl>
             </body></html>
             HTML;
     }
@@ -69,11 +86,14 @@ class JpcBookProviderTest extends TestCase
         $this->assertSame('9783832182168', $candidate->attributes['isbn13']);
         $this->assertNull($candidate->attributes['isbn10']);
         $this->assertSame('9783832182168', $candidate->attributes['ean']);
-        $this->assertSame(['https://media1.jpc.de/image/w468/front/0/9783832182168.jpg'], $candidate->coverUrls);
+        // GitHub issue #135: cover URL derivation depends on ISBN-13 extraction, which the <b>-wrapped-label bug silently broke for most labels — this is the "cover is missing" bug report, now fixed. Also now w2400 (full resolution), not w468.
+        $this->assertSame(['https://media1.jpc.de/image/w2400/front/0/9783832182168.jpg'], $candidate->coverUrls);
         $this->assertSame('10927986', $candidate->sourceId);
+        // GitHub issue #135: price/currency now extracted via confirmed schema.org Microdata.
+        $this->assertSame(22.00, $candidate->attributes['price']);
+        $this->assertSame('EUR', $candidate->attributes['currency']);
         // Never populated for JPC at all — see JpcScraping's docblock.
         $this->assertArrayNotHasKey('description', $candidate->attributes);
-        $this->assertArrayNotHasKey('price', $candidate->attributes);
     }
 
     /** A book title tag has no confirmed byline-signal in the title tag other than the trailing " - {Autor}" segment — since a title itself could legitimately contain " - ", this asserts the *last* occurrence is what's split on, not the first. */

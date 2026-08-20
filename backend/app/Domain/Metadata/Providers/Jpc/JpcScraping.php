@@ -27,15 +27,24 @@ use Illuminate\Support\Facades\Log;
  *
  * ## What's confirmed vs. guessed here — read this before trusting any of it
  *
- * Unlike thalia.de (#129), jpc.de did **not** block a direct, one-time,
- * read-only fetch during this check — homepage, robots.txt, and several
- * real product pages all loaded normally, which made it possible to
- * confirm meaningfully more here than for Thalia, though a full raw-HTML
- * dump was never available either way (only a summarized read of each
- * fetched page) — so even the "confirmed" items below are read from a
- * summary of the real page, not a byte-for-byte markup diff. Confirmed,
- * independently, across three real, distinct product pages (one CD, one
- * Blu-ray/DVD, one book — the book page checked separately for #131):
+ * jpc.de does **not** block a direct fetch — homepage, robots.txt, and
+ * product pages all load normally over a plain HTTP GET, confirmed with
+ * both this app's own `Http::` client and a standalone `curl` request.
+ * That said, GitHub issue #135 is the reason this docblock exists in its
+ * current, much more confident form: the WebFetch-style research tool
+ * used for the *original* #130/#131 implementation converts a page to
+ * Markdown before answering questions about it, which turned out to
+ * silently misrepresent DOM structure it was asked to quote "verbatim"
+ * (plausible-looking but partly reconstructed HTML, not the real byte
+ * source) — the root cause of a real bug reported in production (see
+ * `jpcDetailValue()`'s own docblock). #135 re-verified everything below
+ * against real, byte-exact HTML fetched directly (`curl`, no Markdown
+ * conversion in between) across three real, distinct product pages (one
+ * CD, one Blu-ray/DVD, one book), and confirmed meaningfully more as a
+ * result — including that jpc.de embeds real schema.org **Microdata**
+ * (`itemscope`/`itemtype`/`itemprop` attributes), not JSON-LD, which
+ * several fields below now read from directly rather than guessing at
+ * label text alone:
  *  - **Product-detail URLs** follow `/jpcng/{category}/detail/-/art/
  *    {slug}/hnum/{id}` (category e.g. `poprock`, `movie`, `books`, `jazz`,
  *    `classic`, `vinyl` — irrelevant to parsing here, since a found
@@ -58,10 +67,25 @@ use Illuminate\Support\Facades\Log;
  *    subtitle separator (e.g. a fictional "El Topo - Director's Cut")
  *    that JpcDvdBlurayProvider must not misread as a byline.
  *  - **The cover image URL is directly derivable from the EAN/ISBN-13**:
- *    `https://media1.jpc.de/image/w468/front/0/{ean-or-isbn13}.jpg`,
- *    confirmed on two real product pages (one CD by EAN, one book by
- *    ISBN-13) — unlike Amazon/Thalia, this needs no `<img>`/`og:image`
- *    extraction at all once a code is known.
+ *    `https://media1.jpc.de/image/w2400/front/0/{ean-or-isbn13}.jpg` —
+ *    re-confirmed on all three real pages checked for #135, this time
+ *    against the actual `<img src>`/enclosing `<a href>` pair rather than
+ *    a single earlier read, which also surfaced that `w2400` (not the
+ *    `w468` originally used) is the real, full-resolution version linked
+ *    from the same image, consistently across all three media types —
+ *    unlike Amazon/Thalia, this needs no `<img>`/`og:image` extraction at
+ *    all once a code is known.
+ *  - **`price`/`currency`** — reversing #130's own original decision not
+ *    to extract these at all (see `jpcPrice()`'s own docblock for the
+ *    full story): real, confirmed `<meta itemprop="price" content="...">`
+ *    / `<meta itemprop="priceCurrency" content="...">` pairs inside a
+ *    `schema.org/Offer`-typed block, present on all three real pages
+ *    checked for #135.
+ *  - **A CD's track listing** — also reversing an original decision not
+ *    to extract it (see `jpcTracks()`'s own docblock): real
+ *    `schema.org/MusicRecording` microdata items, each carrying a track
+ *    title (`itemprop="name"`) and a plain visible position number, no
+ *    duration.
  *  - **The search endpoint**: `/jpcng/home/search?fastsearch={query}` —
  *    confirmed live for GitHub issue #133 after the original guess
  *    (`/jpcng/search`, a path that turned out not to exist at all) was
@@ -92,51 +116,36 @@ use Illuminate\Support\Facades\Log;
  *    more useful book `format` value than the generic "(Buch)" the title
  *    tag itself carries, so this is preferred over it), `Sprache:`,
  *    `ISBN-13:` (no `ISBN-10:` label was observed), `Artikelnummer:`,
- *    `Umfang:` (page count, e.g. "176 Seiten"), `Erscheinungstermin:`. No
- *    `<script type="application/ld+json">` block or `og:*` meta tags were
- *    found on any page checked — unlike ThaliaScraping, there's no
- *    schema.org/Open Graph fallback to lean on here, so every field below
- *    comes from the title tag or these label rows alone. Notably, no
- *    description/blurb of any kind was found on the one real book page
- *    checked either — `description` is never populated for any of the
- *    three media types this trait supports, not just cd/dvd_bluray.
+ *    `Umfang:` (page count, e.g. "176 Seiten"), `Erscheinungstermin:`.
+ *    **The exact DOM shape around a label is now confirmed too, and it
+ *    isn't consistent**: real markup mixes bare `<dt>Verlag:</dt>` with
+ *    `<dt><b>UPC/EAN:</b></dt>` (label text wrapped in an inline `<b>`)
+ *    on the very same page — see `jpcDetailValue()`'s own docblock for
+ *    why that inconsistency was the actual root cause of GitHub issue
+ *    #135's "very few attributes, no cover" report, and how it's now
+ *    handled. A meta `<meta name="description" ... itemprop="description">`
+ *    exists on every page type but is generic marketing boilerplate
+ *    ("jetzt für X Euro kaufen"), not a real synopsis — deliberately
+ *    still never used as `description`, now a *confirmed* content
+ *    judgment rather than an absence-of-evidence one.
  *
- * What was **not** confirmed and is a deliberate best-effort guess or
- * omission:
- *  - **The exact DOM shape around a confirmed label** (e.g. whether
- *    `Regie:` and its value share one element's text, or sit in separate
- *    `dt`/`dd`-style siblings) was never actually visible — only that the
- *    label *text* appears somewhere on the page. `jpcDetailValue()` below
- *    therefore tries both shapes generically rather than assuming either
- *    one, the same "structure-agnostic by design" reasoning
- *    ThaliaScraping's `/artikeldetails/`-anchor search matching uses.
- *  - **`jpcSearch()`'s results-page markup** — never seen directly (only
- *    a summarized read of it, same caveat as every other page checked
- *    here), so this matches generically on any anchor whose `href`
- *    contains the one confirmed constant, `/detail/-/art/` (itself
- *    re-confirmed present on the real `fastsearch` results page), rather
- *    than guessing at a results-container class.
- *  - **Price/currency are deliberately never extracted at all** — unlike
- *    every field above, no confirmed label or container for the price
- *    was found on any real page checked (it showed up only in an
- *    already-summarized page read, with no indication of where in the
- *    markup it actually lives), and a blind whole-document regex for
- *    "EUR d+,dd" risks silently grabbing an unrelated price elsewhere on
- *    the page (a shipping note, a related-product carousel, ...) — a
- *    wrong price is a worse outcome than a missing one, so this simply
- *    isn't attempted, the same restraint AmazonCdProvider already applies
- *    to `tracks` for a field it can't confirm reliably.
+ * What remains an unconfirmed guess:
+ *  - **`jpcSearch()`'s results-page markup** — never actually seen (the
+ *    search endpoint's own real response HTML wasn't part of #135's
+ *    re-verification), so this still matches generically on any anchor
+ *    whose `href` contains the one confirmed constant, `/detail/-/art/`,
+ *    rather than guessing at a results-container class.
  *  - **`cast` (DVD/Blu-ray)** — no "Darsteller"/"Besetzung"-style label
- *    was observed on the one real film page checked, so, unlike
- *    AmazonDvdBlurayProvider (which has a confirmed "Actors" bullet and a
- *    byline fallback), JpcDvdBlurayProvider never sets this field at all
- *    rather than guessing at an unconfirmed label.
+ *    or microdata was observed on the one real film page checked, so,
+ *    unlike AmazonDvdBlurayProvider (which has a confirmed "Actors"
+ *    bullet and a byline fallback), JpcDvdBlurayProvider never sets this
+ *    field at all rather than guessing at an unconfirmed label.
  *  - **`Label:` (record label)** was confirmed as a real CD detail-row
  *    label but is never extracted — neither `MediaCd` nor any other
  *    in-scope model has a fillable column it would map to.
  *
  * Every field extracted here is nullable/best-effort for the same reason
- * AmazonScraping's/ThaliaScraping's fields are.
+ * AmazonScraping's fields are.
  *
  * `de-DE` is requested (Accept-Language) since jpc.de is a German-market
  * site and every confirmed label above is German.
@@ -233,19 +242,18 @@ trait JpcScraping
     /**
      * Parses one product page — see this trait's own docblock for exactly
      * which parts are confirmed (the `<title>` tag; the German detail-row
-     * labels) vs. best-effort (the DOM shape around those labels; the
-     * EAN/ISBN-derived cover URL always attempted regardless of whether
-     * the page actually has that product's image).
+     * labels; `price`/`currency`/track-listing microdata) vs. best-effort
+     * (the EAN/ISBN-derived cover URL, always attempted regardless of
+     * whether the page actually has that product's image).
      *
      * @param  bool  $splitTitleOnDash  Opt into the confirmed book-only `{Titel} - {Autor}` title-tag convention — see this trait's own docblock for why this isn't applied unconditionally to every media type. Only JpcBookProvider passes true.
      *
-     * `price`/`currency` and `description` are deliberately never
-     * populated — see this trait's own docblock. `Label:` (record label)
-     * was confirmed as a real CD detail-row label too, but isn't
-     * extracted here at all: no in-scope model has a fillable column it
-     * would map to — extracting a value with nowhere to put it would just
-     * be dead code.
-     * @return array{title: ?string, byline: ?string, format: ?string, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
+     * `description` is deliberately never populated — see this trait's
+     * own docblock. `Label:` (record label) was confirmed as a real CD
+     * detail-row label too, but isn't extracted here at all: no in-scope
+     * model has a fillable column it would map to — extracting a value
+     * with nowhere to put it would just be dead code.
+     * @return array{title: ?string, byline: ?string, format: ?string, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
      */
     private function jpcProductPage(string $url, bool $splitTitleOnDash = false): ?array
     {
@@ -259,6 +267,7 @@ trait JpcScraping
         $fromTitleTag = $this->parseJpcTitleTag($xpath->query('//title')->item(0)?->textContent, $splitTitleOnDash);
         // UPC/EAN: (CD/film) or ISBN-13: (book, no UPC/EAN row observed there) — see this trait's own docblock.
         $ean = $this->jpcDetailValue($xpath, 'UPC/EAN:') ?? $this->jpcDetailValue($xpath, 'ISBN-13:');
+        $offer = $this->jpcPrice($xpath);
 
         return [
             'title' => $fromTitleTag['title'],
@@ -273,6 +282,9 @@ trait JpcScraping
             'publisher' => $this->stripJpcPublisherSuffix($this->jpcDetailValue($xpath, 'Verlag:')),
             'page_count' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Umfang:')),
             'binding' => $this->jpcDetailValue($xpath, 'Einband:'),
+            'price' => $offer['price'],
+            'currency' => $offer['currency'],
+            'tracks' => $this->jpcTracks($xpath),
         ];
     }
 
@@ -320,16 +332,29 @@ trait JpcScraping
     }
 
     /**
-     * Finds the value for a confirmed real label (e.g. `"Regie:"`) without
-     * assuming which of two plausible DOM shapes it's actually in — see
-     * this trait's own docblock for why neither shape was confirmed:
+     * Finds the value for a confirmed real label (e.g. `"Regie:"`) — see
+     * this trait's own docblock for the two real DOM shapes GitHub issue
+     * #135's byte-exact `curl` re-verification actually found (mixed on
+     * the very same page):
      *
-     *  1. Label and value share one element's text (e.g. a `<td>Regie:
+     *  1. Label and value share one element's own text (e.g. a `<td>Regie:
      *     Hayao Miyazaki</td>`) — the element's own text, with the label
      *     prefix stripped, is the value.
-     *  2. The label is its own element (e.g. a `<dt>`/`<th>`) and the
-     *     value is the next sibling *element*'s text (skipping over
-     *     whitespace-only text nodes in between).
+     *  2. The label is its own `<dt>`/`<th>`, real markup shows both a
+     *     bare `<dt>Verlag:</dt>` and a `<dt><b>UPC/EAN:</b></dt>` (label
+     *     text wrapped in an inline tag), and the value is that `<dt>`'s
+     *     next sibling *element*'s text (skipping over whitespace-only
+     *     text nodes in between). GitHub issue #135: the previous version
+     *     of this method matched on any element's own direct `text()`
+     *     node here, which — for a `<b>`-wrapped label — matched the
+     *     inner `<b>` itself rather than the enclosing `<dt>`; `<b>` has
+     *     no next sibling *inside* `<dt>`, so the value lookup silently
+     *     found nothing for every label jpc.de happens to wrap that way,
+     *     which turned out to be most of them. Fixed by matching
+     *     specifically on `<dt>`/`<th>` elements (never on an inner
+     *     inline-formatting tag) using each one's full, descendant-
+     *     inclusive text (`string(.)`, not `text()`) — correct whether or
+     *     not that element wraps its own label text in a `<b>`.
      *
      * Returns null when neither shape matches anywhere on the page,
      * exactly like every other opportunistic field source in this app.
@@ -348,7 +373,7 @@ trait JpcScraping
             }
         }
 
-        foreach ($xpath->query('//*[normalize-space(text())="'.$escapedLabel.'"]') as $node) {
+        foreach ($xpath->query('//dt[normalize-space(string(.))="'.$escapedLabel.'"] | //th[normalize-space(string(.))="'.$escapedLabel.'"]') as $node) {
             $sibling = $node->nextSibling;
             while ($sibling !== null && ! $sibling instanceof DOMElement) {
                 $sibling = $sibling->nextSibling;
@@ -402,10 +427,95 @@ trait JpcScraping
         return $this->cleanText($withoutDate) ?? $this->cleanText($text);
     }
 
-    /** The confirmed EAN/ISBN-13-derived cover URL pattern — see this trait's own docblock. Always attempted whenever a code is known; never verified to actually resolve to a real image for every product (a missing cover would simply 404 client-side like any other broken image). */
+    /**
+     * The confirmed EAN/ISBN-13-derived cover URL pattern — see this
+     * trait's own docblock. `w2400` (GitHub issue #135, replacing the
+     * originally-used `w468`): the real main-image `<a href>` on all
+     * three real pages re-checked for #135 links to a `w2400` version of
+     * the same image, the actual full-resolution cover rather than a
+     * pre-shrunk thumbnail. Always attempted whenever a code is known;
+     * never verified to actually resolve to a real image for every
+     * product (a missing cover would simply 404 client-side like any
+     * other broken image).
+     */
     private function jpcCoverUrl(?string $ean): ?string
     {
-        return $ean !== null ? "https://media1.jpc.de/image/w468/front/0/{$ean}.jpg" : null;
+        return $ean !== null ? "https://media1.jpc.de/image/w2400/front/0/{$ean}.jpg" : null;
+    }
+
+    /**
+     * GitHub issue #135: reverses #130's original decision not to extract
+     * price/currency at all — that decision was based on incomplete
+     * research (see this trait's own docblock), and a byte-exact re-check
+     * found a real, confirmed source: a `schema.org/Offer`-typed block
+     * (`itemprop="offers"`) carrying `<meta itemprop="price" content="…">`
+     * / `<meta itemprop="priceCurrency" content="…">`, present on every
+     * real page checked. Explicitly excludes any such `meta` tag nested
+     * inside an `itemprop="isSimilarTo"` block (jpc.de shows related
+     * editions of the same release further down the page, each with its
+     * own nested Offer) so a related edition's price is never mistaken
+     * for this product's own.
+     *
+     * @return array{price: ?float, currency: ?string}
+     */
+    private function jpcPrice(DOMXPath $xpath): array
+    {
+        $priceNode = $xpath->query('//meta[@itemprop="price"][not(ancestor::*[@itemprop="isSimilarTo"])]')->item(0);
+        $currencyNode = $xpath->query('//meta[@itemprop="priceCurrency"][not(ancestor::*[@itemprop="isSimilarTo"])]')->item(0);
+
+        $price = $priceNode instanceof DOMElement ? $priceNode->getAttribute('content') : null;
+        $currency = $currencyNode instanceof DOMElement ? $this->cleanText($currencyNode->getAttribute('content')) : null;
+
+        return [
+            'price' => is_numeric($price) ? (float) $price : null,
+            'currency' => $currency,
+        ];
+    }
+
+    /**
+     * GitHub issue #135: reverses #130's original decision not to attempt
+     * a CD track listing (`AmazonCdProvider`'s own "can't confirm this
+     * reliably" restraint, applied here too at the time on the same
+     * assumption) — a byte-exact re-check found a real, confirmed source:
+     * `<li itemscope itemtype="https://schema.org/MusicRecording"
+     * itemprop="track">` items, each with a plain visible position number
+     * and a title (`itemprop="name"`). No duration is present anywhere in
+     * this markup, so `duration_seconds` is always null — matching the
+     * MediaCd `tracks` shape (`position`/`title`/`duration_seconds`) every
+     * other provider that populates this field already uses, just with
+     * this one column always empty here. Same `isSimilarTo` exclusion as
+     * jpcPrice() — irrelevant in practice (a related edition's own track
+     * listing isn't shown inline), kept for the same defensive reason.
+     * Returns null (not an empty array) when the page has no track
+     * microdata at all (a book or film page, or a CD page that simply
+     * doesn't expose one) — distinguishing "no track data on this page"
+     * from "confirmed zero tracks", which callers should treat as
+     * uninformative either way.
+     *
+     * @return array<int, array{position: ?string, title: ?string, duration_seconds: ?int}>|null
+     */
+    private function jpcTracks(DOMXPath $xpath): ?array
+    {
+        $nodes = $xpath->query('//li[@itemtype="https://schema.org/MusicRecording"][not(ancestor::*[@itemprop="isSimilarTo"])]');
+
+        if ($nodes->length === 0) {
+            return null;
+        }
+
+        $tracks = [];
+
+        foreach ($nodes as $node) {
+            $positionNode = $xpath->query('.//div[contains(concat(" ", normalize-space(@class), " "), " tracks ")]/b', $node)->item(0);
+            $nameNode = $xpath->query('.//*[@itemprop="name"]', $node)->item(0);
+
+            $tracks[] = [
+                'position' => $positionNode instanceof DOMElement ? $this->cleanText($positionNode->textContent) : null,
+                'title' => $nameNode instanceof DOMElement ? $this->cleanText($nameNode->textContent) : null,
+                'duration_seconds' => null,
+            ];
+        }
+
+        return $tracks;
     }
 
     /** Extracts the numeric `hnum` product identifier this trait's own docblock confirms is embedded in every product URL — falls back to the full URL if a page doesn't follow that shape. */

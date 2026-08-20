@@ -9,16 +9,20 @@ use Tests\TestCase;
 
 /**
  * JpcCdProvider (GitHub issue #130, analogous to Amazon's #50). jpc.de did
- * not block a direct, one-time, read-only check during development,
- * unlike thalia.de (a since-removed provider — GitHub issue #134,
- * thalia.de turned out to be permanently blocked by Cloudflare
- * bot-management) — these fixtures combine what was actually confirmed on
- * real jpc.de pages (the `<title>` tag shape, the German detail-row
- * labels, the EAN-derived cover URL, and — since GitHub issue #133 — the
- * real search endpoint itself) — see JpcScraping's own docblock for
- * exactly which parts are confirmed vs. guessed. These fixtures exist to
- * prove the *parsing logic* behaves correctly against a plausible input
- * shape, not to guarantee the real site still looks like this today.
+ * not block a direct fetch during development, unlike thalia.de (a
+ * since-removed provider — GitHub issue #134, thalia.de turned out to be
+ * permanently blocked by Cloudflare bot-management) — but the *research
+ * tool* used for #130/#131's original implementation converted pages to
+ * Markdown before answering questions about them, which silently
+ * misrepresented DOM structure (see GitHub issue #135, JpcScraping's own
+ * docblock, and jpcDetailValue()'s own docblock for the real bug this
+ * caused in production). These fixtures were rebuilt from byte-exact HTML
+ * fetched directly (`curl`, no Markdown conversion) for #135 — including
+ * the real, inconsistent `<dt>`/`<dt><b>` label wrapping and the real
+ * schema.org Microdata (price, track listing) jpc.de actually embeds —
+ * not to guarantee the real site still looks like this today, but to
+ * actually exercise the parsing logic against a *confirmed* real shape
+ * this time, not a reconstructed one.
  */
 class JpcCdProviderTest extends TestCase
 {
@@ -38,20 +42,56 @@ class JpcCdProviderTest extends TestCase
             HTML;
     }
 
-    /** Detail rows in "label and value share one element's text" shape (jpcDetailValue()'s first branch) — the shape actually confirmed on the real CD page checked. */
+    /**
+     * Trimmed down from real, byte-exact jpc.de HTML fetched for GitHub
+     * issue #135 — deliberately keeps the real inconsistency (a bare
+     * `<dt>Label:</dt>` alongside `<dt><b>UPC/EAN:</b></dt>`) and the real
+     * schema.org Microdata shape (price, track listing) rather than a
+     * cleaned-up version, since that inconsistency is exactly what #135's
+     * fix needs to handle correctly.
+     */
     private function productPageHtml(): string
     {
         return <<<'HTML'
             <html><head>
             <title>Mark Medlock (DSDS): Back Into The Sun (CD) – jpc.de</title>
             </head><body>
-            <table>
-              <tr><td>Label: Stars by Edel</td></tr>
-              <tr><td>Aufnahmejahr ca.: 2026</td></tr>
-              <tr><td>Artikelnummer: 12765025</td></tr>
-              <tr><td>UPC/EAN: 4029759218739</td></tr>
-              <tr><td>Erscheinungstermin: 14.8.2026</td></tr>
-            </table>
+            <span itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                <meta itemprop="price" content="18.99"/>
+                <meta itemprop="priceCurrency" content="EUR"/>
+            </span>
+            <dl class="textlink">
+                <dt>Label:</dt>
+                <dd><a href="/s/Stars+by+Edel?searchtype=label" class="search-link textlink">Stars by Edel</a></dd>
+                <dt><b>Aufnahmejahr ca.:</b></dt>
+                <dd>2026</dd>
+                <dt><b>Artikelnummer:</b></dt>
+                <dd><span id="hnum" itemprop="sku">12765025</span></dd>
+                <dt><b>UPC/EAN:</b></dt>
+                <dd><span itemprop="productID">4029759218739</span></dd>
+                <dt><b>Erscheinungstermin:</b></dt>
+                <dd>14.8.2026</dd>
+            </dl>
+            <li itemscope itemtype="https://schema.org/MusicRecording" itemprop="track" class="odd">
+                <meta content="Back Into The Sun" itemprop="inAlbum" />
+                <div class="tracks">
+                    <b>1</b>
+                    <span><span itemprop="name">Back Into The Sun</span></span>
+                </div>
+            </li>
+            <li itemscope itemtype="https://schema.org/MusicRecording" itemprop="track" class="even">
+                <meta content="Back Into The Sun" itemprop="inAlbum" />
+                <div class="tracks">
+                    <b>2</b>
+                    <span><span itemprop="name">Mamacita (New Version)</span></span>
+                </div>
+            </li>
+            <tr itemprop="isSimilarTo" itemscope itemtype="https://schema.org/Product">
+                <span class="offers" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                    <meta itemprop="priceCurrency" content="EUR" />
+                    <meta itemprop="price" content="36.99" />
+                </span>
+            </tr>
             </body></html>
             HTML;
     }
@@ -70,12 +110,17 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame('CD', $candidate->attributes['medium']);
         $this->assertSame('2026-08-14', $candidate->attributes['release_date']);
         $this->assertSame('4029759218739', $candidate->attributes['ean']);
-        $this->assertSame(['https://media1.jpc.de/image/w468/front/0/4029759218739.jpg'], $candidate->coverUrls);
+        // GitHub issue #135: cover URL derivation depends on EAN extraction, which the <b>-wrapped-label bug silently broke — this is the "cover is missing" bug report, now fixed. Also now w2400 (full resolution), not w468.
+        $this->assertSame(['https://media1.jpc.de/image/w2400/front/0/4029759218739.jpg'], $candidate->coverUrls);
         $this->assertSame('12765025', $candidate->sourceId);
-        // Deliberately never a track listing — see this provider's docblock.
-        $this->assertArrayNotHasKey('tracks', $candidate->attributes);
-        // Never extracted at all — see JpcScraping's docblock.
-        $this->assertArrayNotHasKey('price', $candidate->attributes);
+        // GitHub issue #135: price/currency and tracks are now extracted via confirmed schema.org Microdata.
+        $this->assertSame(18.99, $candidate->attributes['price']);
+        $this->assertSame('EUR', $candidate->attributes['currency']);
+        $this->assertCount(2, $candidate->attributes['tracks']);
+        $this->assertSame('1', $candidate->attributes['tracks'][0]['position']);
+        $this->assertSame('Back Into The Sun', $candidate->attributes['tracks'][0]['title']);
+        $this->assertNull($candidate->attributes['tracks'][0]['duration_seconds']);
+        $this->assertSame('Mamacita (New Version)', $candidate->attributes['tracks'][1]['title']);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void
