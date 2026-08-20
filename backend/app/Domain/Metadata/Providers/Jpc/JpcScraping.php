@@ -57,6 +57,25 @@ use Illuminate\Support\Facades\Log;
  *    confirmed on two real product pages (one CD by EAN, one book by
  *    ISBN-13) — unlike Amazon/Thalia, this needs no `<img>`/`og:image`
  *    extraction at all once a code is known.
+ *  - **The search endpoint**: `/jpcng/home/search?fastsearch={query}` —
+ *    confirmed live for GitHub issue #133 after the original guess
+ *    (`/jpcng/search`, a path that turned out not to exist at all) was
+ *    reported as returning zero results in production. `/jpcng/home/
+ *    searchform` (the page originally found) turned out to be a real,
+ *    but merely adjacent, "advanced search" landing page rather than the
+ *    results endpoint itself. The actual parameter name (`fastsearch`)
+ *    was recovered from a real `<input type="search" name="fastsearch"
+ *    ...>` element on jpc.de's own header search box, shared directly by
+ *    the reporting user — every previously-tried parameter name
+ *    (`searchtext`, `q`, `query`, `suchbegriff`) silently returned the
+ *    same ~3.38M-item unfiltered full catalog regardless of the query
+ *    value, which is what originally made this so hard to notice by
+ *    trial and error alone (a wrong path/param 404s or errors somewhere
+ *    else in this app's providers; here it silently "succeeded" with
+ *    irrelevant results instead). `?fastsearch=queen` was confirmed to
+ *    return "Ihre Suche nach 'Queen' ... ergab 46345 Treffer" with actual
+ *    Queen albums, and `?fastsearch={ean}` was confirmed to resolve an
+ *    exact EAN barcode straight to its matching product.
  *  - **Product detail rows** use real, confirmed German labels — for a
  *    CD: `Label:`, `Aufnahmejahr ca.:`, `Artikelnummer:`, `UPC/EAN:`,
  *    `Erscheinungstermin:`; for a film, additionally: `Herkunftsland:`,
@@ -86,23 +105,12 @@ use Illuminate\Support\Facades\Log;
  *    therefore tries both shapes generically rather than assuming either
  *    one, the same "structure-agnostic by design" reasoning
  *    ThaliaScraping's `/artikeldetails/`-anchor search matching uses.
- *  - **The search endpoint** — `/jpcng/home/searchform` is a real,
- *    confirmed "advanced search" landing page, but not the actual
- *    results endpoint a query submits to; several plausible guesses
- *    (`/jpcng/search?q=`, `/jpcng/quicksearch?searchterm=`, `/jpcng/
- *    search/-/query/`) were tried directly and either 404'd or hit an
- *    inconclusive 503, so SEARCH_PATH/SEARCH_QUERY_PARAM below remain an
- *    honest guess, not a confirmed dead end ruled out for a *specific*
- *    reason the way those three attempts were. This — even more than for
- *    Thalia, where at least a real search *page* was confirmed to exist
- *    — is the single most likely reason this provider might return
- *    nothing at all on a real deployment.
- *  - **`jpcSearch()`'s results-page markup** — never seen at all (the
- *    search endpoint itself couldn't be confirmed), so, like
- *    ThaliaScraping::thaliaSearch(), this matches generically on any
- *    anchor whose `href` contains the one confirmed constant,
- *    `/detail/-/art/`, rather than guessing at a results-container
- *    class.
+ *  - **`jpcSearch()`'s results-page markup** — never seen directly (only
+ *    a summarized read of it, same caveat as every other page checked
+ *    here), so this matches generically on any anchor whose `href`
+ *    contains the one confirmed constant, `/detail/-/art/` (itself
+ *    re-confirmed present on the real `fastsearch` results page), rather
+ *    than guessing at a results-container class.
  *  - **Price/currency are deliberately never extracted at all** — unlike
  *    every field above, no confirmed label or container for the price
  *    was found on any real page checked (it showed up only in an
@@ -132,11 +140,24 @@ trait JpcScraping
 {
     private const BASE_URL = 'https://www.jpc.de';
 
-    /** Unverified guess — see this trait's own docblock. */
-    private const SEARCH_PATH = '/jpcng/search';
+    /**
+     * GitHub issue #133: confirmed live, replacing the original unverified
+     * guess (`/jpcng/search`, which never actually existed) — a real
+     * `<input type="search" name="fastsearch" ...>` element on jpc.de's
+     * own search box, shared by the reporting user, revealed the true
+     * query parameter name; `/jpcng/home/search` was independently
+     * confirmed as the real results endpoint by testing it directly
+     * (`?fastsearch=queen` returns "Ihre Suche nach 'Queen' ... ergab
+     * 46345 Treffer" with actual Queen albums, as opposed to every
+     * previously-tried parameter name, which silently returned the same
+     * ~3.38M-item unfiltered full catalog regardless of the query value —
+     * also confirmed to resolve an exact EAN barcode straight to its
+     * matching product).
+     */
+    private const SEARCH_PATH = '/jpcng/home/search';
 
-    /** Unverified guess — see this trait's own docblock. */
-    private const SEARCH_QUERY_PARAM = 'searchtext';
+    /** GitHub issue #133 — see SEARCH_PATH's own docblock. */
+    private const SEARCH_QUERY_PARAM = 'fastsearch';
 
     private const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 

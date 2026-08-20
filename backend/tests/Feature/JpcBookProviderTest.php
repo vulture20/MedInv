@@ -17,7 +17,7 @@ use Tests\TestCase;
  */
 class JpcBookProviderTest extends TestCase
 {
-    private const SEARCH_API = 'https://www.jpc.de/jpcng/search*';
+    private const SEARCH_API = 'https://www.jpc.de/jpcng/home/search*';
 
     private const PRODUCT_API = 'https://www.jpc.de/jpcng/*/detail/-/art/*';
 

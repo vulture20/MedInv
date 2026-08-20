@@ -22,7 +22,7 @@ use Tests\TestCase;
  */
 class JpcCdProviderTest extends TestCase
 {
-    private const SEARCH_API = 'https://www.jpc.de/jpcng/search*';
+    private const SEARCH_API = 'https://www.jpc.de/jpcng/home/search*';
 
     private const PRODUCT_API = 'https://www.jpc.de/jpcng/*/detail/-/art/*';
 
@@ -126,6 +126,16 @@ class JpcCdProviderTest extends TestCase
         app(JpcCdProvider::class)->lookupByCode('4029759218739');
 
         Http::assertSent(fn ($request) => str_contains($request->header('User-Agent')[0] ?? '', 'Mozilla'));
+    }
+
+    /** GitHub issue #133: the search request goes to the confirmed real endpoint/parameter (/jpcng/home/search?fastsearch=...), not the original unverified guess (/jpcng/search?searchtext=..., a path that turned out not to exist at all) — see JpcScraping::SEARCH_PATH's own docblock. */
+    public function test_the_search_request_uses_the_confirmed_endpoint_and_parameter(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response('<html></html>', 200)]);
+
+        app(JpcCdProvider::class)->lookupByCode('4029759218739');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.jpc.de/jpcng/home/search?') && $request['fastsearch'] === '4029759218739');
     }
 
     public function test_configuration_requires_no_api_key(): void

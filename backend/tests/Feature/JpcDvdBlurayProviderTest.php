@@ -10,7 +10,7 @@ use Tests\TestCase;
 /** JpcDvdBlurayProvider (GitHub issue #130) — see JpcCdProviderTest's docblock for the fixture-based testing approach and why. */
 class JpcDvdBlurayProviderTest extends TestCase
 {
-    private const SEARCH_API = 'https://www.jpc.de/jpcng/search*';
+    private const SEARCH_API = 'https://www.jpc.de/jpcng/home/search*';
 
     private const PRODUCT_API = 'https://www.jpc.de/jpcng/*/detail/-/art/*';
 
