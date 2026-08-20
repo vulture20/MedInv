@@ -21,7 +21,7 @@ use Tests\TestCase;
  */
 class ThaliaBookProviderTest extends TestCase
 {
-    private const SEARCH_API = 'https://www.thalia.de/shop/home/suche*';
+    private const SEARCH_API = 'https://www.thalia.de/suche*';
 
     private const PRODUCT_API = 'https://www.thalia.de/shop/home/artikeldetails/*';
 
@@ -135,7 +135,7 @@ class ThaliaBookProviderTest extends TestCase
 
         app(ThaliaBookProvider::class)->lookupByCode('9780441013593');
 
-        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.thalia.de/shop/home/suche?') && $request['sq'] === '9780441013593');
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.thalia.de/suche?') && $request['sq'] === '9780441013593');
     }
 
     public function test_a_desktop_user_agent_is_sent(): void

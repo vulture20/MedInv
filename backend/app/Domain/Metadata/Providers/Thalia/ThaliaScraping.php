@@ -50,17 +50,43 @@ use Illuminate\Support\Facades\Log;
  *    book and Blu-ray listings, making it the single most reliable
  *    extraction anchor available here, parsed by parseThaliaTitleTag()
  *    below.
- *  - **A search page exists** at `/shop/home/suche`, its own page title
- *    explicitly advertising search "nach Artikel, Autor oder ISBN".
+ *  - **A search page exists** at `/shop/home/suche` (not the same path as
+ *    SEARCH_PATH below — see the #132 update further down for why these
+ *    two now differ), its own page title explicitly advertising search
+ *    "nach Artikel, Autor oder ISBN".
+ *
+ * **GitHub issue #132 update**: the reporting user confirmed live
+ * production requests through this provider return no results at all,
+ * and — separately from suggesting the SEARCH_PATH/SEARCH_QUERY_PARAM
+ * values below — asked whether the 403s above could be worked around via
+ * a plain `curl` request with a spoofed desktop-browser User-Agent.
+ * Tried, and it revealed *why* none of these direct-fetch attempts ever
+ * worked: the response is Cloudflare's own "Sicherheits-Check" challenge
+ * page (`cf-mitigated: challenge`, `server: cloudflare`, and a set of
+ * requested `Sec-CH-UA-*` Client Hints), not a simple User-Agent
+ * allowlist — real bot-management, checking things (TLS/JA3 fingerprint,
+ * browser behavior) a plain HTTP client fundamentally cannot fake by
+ * changing request headers alone. This class deliberately does not
+ * attempt to actually defeat that challenge (matching the same
+ * no-evasion stance AmazonScraping's own docblock already commits to for
+ * a *simpler* bot-detection category) — so, independent of whether
+ * SEARCH_PATH/SEARCH_QUERY_PARAM below happen to be correct, this
+ * provider may simply remain non-functional against thalia.de's current
+ * bot-management, from any IP this sandbox or a similarly-reputationed
+ * network is fetched from. A self-hosted MedInv deployment's own outbound
+ * IP may or may not trigger the same challenge — Cloudflare's bot scoring
+ * weighs IP/ASN reputation alongside the request itself — so this can't
+ * be ruled definitively broken from here either; only confirmed unusable
+ * from *this* environment specifically.
  *
  * What was **not** confirmed and is a deliberate best-effort guess:
  *  - **The search query parameter** (SEARCH_QUERY_PARAM below) — no
  *    fetchable page ever revealed it. `sq` was chosen as a plausible
- *    guess (a pattern seen on other, unrelated retail platforms), but
- *    this is genuinely unverified and the single most likely reason this
- *    provider might return nothing at all on a real deployment; an
- *    operator/admin hitting that is the expected first real-world
- *    adjustment this class will need.
+ *    guess (a pattern seen on other, unrelated retail platforms) and
+ *    later reaffirmed by the reporting user's own suggestion for #132,
+ *    but this is still genuinely unverified — see the #132 update above
+ *    for why it couldn't be confirmed the way GitHub issue #133's
+ *    equivalent JPC fix was.
  *  - **thaliaSearch()'s results-page markup** — since no real
  *    search-results HTML was ever seen (search itself 403's the same as
  *    everything else), this doesn't guess at any specific container/
@@ -93,9 +119,20 @@ trait ThaliaScraping
 {
     private const BASE_URL = 'https://www.thalia.de';
 
-    private const SEARCH_PATH = '/shop/home/suche';
+    /**
+     * GitHub issue #132: updated from the original `/shop/home/suche`
+     * guess to `/suche` per the reporting user's own suggestion — still
+     * *not* independently confirmed the way GitHub issue #133's JPC fix
+     * was, since thalia.de's Cloudflare bot-management challenge (see
+     * this trait's own docblock) blocks every fetch attempt regardless of
+     * path, including a plain `curl` request with a real desktop-browser
+     * User-Agent tried specifically to verify this. Kept as the current
+     * best guess on the user's own authority rather than reverted, but
+     * genuinely unverified either way.
+     */
+    private const SEARCH_PATH = '/suche';
 
-    /** Unverified best guess — see this trait's own docblock. */
+    /** Unverified best guess, reaffirmed by the reporting user's own suggestion for GitHub issue #132 — see this trait's own docblock. */
     private const SEARCH_QUERY_PARAM = 'sq';
 
     private const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';

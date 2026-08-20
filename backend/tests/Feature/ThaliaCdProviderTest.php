@@ -10,7 +10,7 @@ use Tests\TestCase;
 /** ThaliaCdProvider (GitHub issue #129) — see ThaliaBookProviderTest's docblock for the fixture-based testing approach and why. */
 class ThaliaCdProviderTest extends TestCase
 {
-    private const SEARCH_API = 'https://www.thalia.de/shop/home/suche*';
+    private const SEARCH_API = 'https://www.thalia.de/suche*';
 
     private const PRODUCT_API = 'https://www.thalia.de/shop/home/artikeldetails/*';
 
