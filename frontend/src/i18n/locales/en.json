@@ -6,6 +6,7 @@
   },
   "nav": {
     "home": "Home",
+    "search": "Search",
     "capture": "Capture",
     "libraries": "Libraries",
     "statistics": "Statistics",

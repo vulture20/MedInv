@@ -9,6 +9,7 @@
     },
     "nav": {
       "home": "Inicio",
+      "search": "Búsqueda",
       "capture": "Captura",
       "libraries": "Bibliotecas",
       "statistics": "Estadísticas",

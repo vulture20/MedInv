@@ -9,6 +9,7 @@
     },
     "nav": {
       "home": "Start",
+      "search": "Zoeken",
       "capture": "Registratie",
       "libraries": "Bibliotheken",
       "statistics": "Statistieken",

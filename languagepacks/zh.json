@@ -9,6 +9,7 @@
     },
     "nav": {
       "home": "首页",
+      "search": "搜索",
       "capture": "采集",
       "libraries": "媒体库",
       "statistics": "统计",

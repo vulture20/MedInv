@@ -9,6 +9,7 @@
     },
     "nav": {
       "home": "ホーム",
+      "search": "検索",
       "capture": "登録",
       "libraries": "ライブラリ",
       "statistics": "統計",

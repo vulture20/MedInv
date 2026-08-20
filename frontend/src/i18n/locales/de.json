@@ -6,6 +6,7 @@
   },
   "nav": {
     "home": "Startseite",
+    "search": "Suche",
     "capture": "Erfassung",
     "libraries": "Bibliotheken",
     "statistics": "Statistiken",
