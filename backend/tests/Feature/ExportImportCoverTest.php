@@ -168,6 +168,51 @@ class ExportImportCoverTest extends TestCase
         $this->assertSame('covers/book/dune-AbCdEfGh.jpg', $imported->cover_path);
     }
 
+    /**
+     * GitHub issue #147 (a follow-up to the #146 security review): Flysystem's
+     * local adapter already refuses to write outside its own root for a
+     * path-traversal zip entry name (`League\Flysystem\PathTraversalDetected`)
+     * — this asserts that exception is now caught and the entry simply
+     * skipped, rather than aborting the whole import with a 500, while an
+     * unrelated well-formed cover in the same zip still restores normally.
+     */
+    public function test_import_skips_a_path_traversal_cover_entry_instead_of_failing_the_whole_import(): void
+    {
+        Storage::fake('local');
+        $admin = $this->actingAsAdmin();
+        $export = app(ExportImportService::class)->exportLibraries(null);
+        $export['libraries'][] = [
+            'name' => 'Novels',
+            'description' => null,
+            'media_type' => 'book',
+            'shares' => [],
+            'items' => [[
+                'title' => 'Dune',
+                'ean' => '9780000000001',
+                'cover_path' => 'covers/book/dune-AbCdEfGh.jpg',
+            ]],
+        ];
+
+        $tmpZip = tempnam(sys_get_temp_dir(), 'import-test');
+        $zip = new ZipArchive;
+        $zip->open($tmpZip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->addFromString('manifest.json', json_encode($export));
+        $zip->addFromString('covers/book/dune-AbCdEfGh.jpg', 'fake-cover-bytes');
+        // A ZipArchive entry name can carry "../" segments even though a
+        // real zip tool wouldn't normally produce one — exactly the kind of
+        // input a hand-crafted malicious upload would use.
+        $zip->addFromString('covers/../../../../etc/pwned.jpg', 'malicious-bytes');
+        $zip->close();
+
+        $file = new UploadedFile($tmpZip, 'export.zip', 'application/zip', null, true);
+
+        $response = $this->postJson('/api/admin/import', ['file' => $file]);
+
+        $response->assertOk()->assertJson(['created' => ['Novels']]);
+        $this->assertTrue(Storage::disk('local')->exists('covers/book/dune-AbCdEfGh.jpg'));
+        $this->assertFalse(Storage::disk('local')->exists('etc/pwned.jpg'));
+    }
+
     public function test_import_rejects_a_bare_json_export_even_when_well_formed(): void
     {
         $admin = $this->actingAsAdmin();

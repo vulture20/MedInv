@@ -12,7 +12,9 @@ use App\Models\SavedSearch;
 use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\FilesystemException;
 use ZipArchive;
 
 /**
@@ -202,6 +204,18 @@ class ExportImportService
      * robust than correlating the two, at the cost of occasionally leaving
      * an unreferenced file behind for a library that was skipped, no worse
      * than any other orphaned-cover case.
+     *
+     * GitHub issue #147 (a follow-up to the #146 security review): `$name`
+     * is an attacker-controllable entry name straight out of an uploaded
+     * zip — Flysystem's local adapter already refuses to write outside its
+     * root for a path-traversal name like `covers/../../../../etc/x`
+     * (`League\Flysystem\PathTraversalDetected`, confirmed live), so this
+     * was never an actual arbitrary-file-write vulnerability, but letting
+     * that exception escape uncaught used to abort the *entire*
+     * import/restore with a 500 instead of just skipping the one bad/
+     * unwritable entry and completing the rest — the same "best effort,
+     * logged, never bubble up" stance JpcScraping::jpcGet() already takes
+     * toward unreliable external input.
      */
     public function restoreCoverFilesFromZip(ZipArchive $zip): void
     {
@@ -214,8 +228,14 @@ class ExportImportService
 
             $contents = $zip->getFromIndex($i);
 
-            if ($contents !== false) {
+            if ($contents === false) {
+                continue;
+            }
+
+            try {
                 Storage::disk(self::DISK)->put($name, $contents);
+            } catch (FilesystemException $e) {
+                Log::warning('Skipped a cover file entry while restoring from zip.', ['name' => $name, 'error' => $e->getMessage()]);
             }
         }
     }
