@@ -2,13 +2,25 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
-import { FIELD_SPECS, payloadFromValues, type LibraryRef, type MediaItem, type Track } from './mediaItemFields'
+import { FIELD_SPECS, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem, type Track } from './mediaItemFields'
 import { TrackListEditor } from './TrackListEditor'
 
 interface Props {
   library: LibraryRef
   /** Set when opened from CapturePage's `no_match` dead-end (briefing 7.1/7.2) — pre-fills the scanned code so it doesn't have to be retyped. Left editable regardless, since a hardware/camera scan can misread a digit. */
   initialEan?: string
+  /**
+   * GitHub issue #151: set when opened from CapturePage's free-text
+   * metadata-search result ("erfassen ohne EAN") — pre-fills every
+   * FIELD_SPECS value (and `tracks` for a CD) from the chosen candidate's
+   * own `attributes`, the same shape MetadataMergeReview.tsx already deals
+   * in. `ean` is deliberately *not* read from here even if the candidate
+   * happens to carry one (a free-text search result's `ean` is always
+   * null per every MetadataProviderInterface::search() implementation) —
+   * left for the user to fill in if they actually know a real one, and
+   * auto-generated as a `NoEAN-...` placeholder server-side otherwise.
+   */
+  initialAttributes?: Record<string, unknown>
   open: boolean
   onClose: () => void
   onCreated: (item: MediaItem) => void
@@ -17,12 +29,13 @@ interface Props {
 /**
  * Manual single-item capture (briefing 7.1): GET /libraries/{library}/items
  * already had a working create endpoint (MediaItemController::store()) with
- * no frontend caller anywhere — this is that caller. Two entry points reuse
- * it: LibraryDetailPage's "add item manually" button (no prefill) and
- * CapturePage's `no_match` result (EAN prefilled from the scan), see
- * GitHub issue #17.
+ * no frontend caller anywhere — this is that caller. Three entry points
+ * reuse it: LibraryDetailPage's "add item manually" button (no prefill),
+ * CapturePage's `no_match` result (EAN prefilled from the scan, GitHub
+ * issue #17), and CapturePage's free-text search result (fields prefilled
+ * from the chosen candidate, no EAN — GitHub issue #151).
  */
-export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCreated }: Props) {
+export function CreateMediaItemDialog({ library, initialEan, initialAttributes, open, onClose, onCreated }: Props) {
   const { t, i18n } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [ean, setEan] = useState('')
@@ -47,17 +60,22 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
   useEffect(() => {
     if (open) {
       setEan(initialEan ?? '')
-      setValues({})
+      // GitHub issue #151: valuesFromItem() already does exactly the
+      // per-spec-key extraction+stringification a candidate's `attributes`
+      // needs here too — it only ever reads `item[f.key]`, tolerant of a
+      // candidate not carrying every MediaItem field a real saved item
+      // would, hence the cast rather than a second, near-identical helper.
+      setValues(initialAttributes ? valuesFromItem(initialAttributes as unknown as MediaItem, specs) : {})
       setError(null)
       setSaving(false)
       setCoverFile(null)
-      setTracks([])
+      setTracks((initialAttributes?.tracks as Track[] | undefined) ?? [])
       dialogRef.current?.showModal()
     } else {
       dialogRef.current?.close()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialEan])
+  }, [open, initialEan, initialAttributes])
 
   function describeApiError(err: unknown): string {
     if (!isAxiosError(err)) return t('errors.generic')
@@ -138,7 +156,8 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
             </div>
             <label>
               {t('mediaItem.fields.ean')}
-              <input value={ean} onChange={(e) => setEan(e.target.value)} required />
+              {/* GitHub issue #151: no longer required — MediaItemController::store() generates a NoEAN-... placeholder when this is left empty. */}
+              <input value={ean} onChange={(e) => setEan(e.target.value)} placeholder={t('mediaItem.eanOptionalHint')} />
             </label>
             {specs.map((field) => (
               <label key={field.key}>

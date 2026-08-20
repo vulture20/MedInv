@@ -5,7 +5,7 @@ import { Spinner } from '../../components/Spinner'
 import { describeError } from '../admin/adminErrors'
 import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
 import type { LibraryRef, MediaItem } from '../libraries/mediaItemFields'
-import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from './MetadataMergeReview'
+import { formatProviderKey, MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from './MetadataMergeReview'
 
 // The barcode decoder (@zxing/library) is a heavy dependency (~800KB) that
 // most captures never touch — hardware-scanner and manual entry cover the
@@ -66,6 +66,25 @@ interface PendingLookup {
 }
 
 /**
+ * GitHub issue #151: one raw result of GET .../metadata/search?query=... —
+ * matches MetadataCandidate::toArray() exactly, the same shape every
+ * provider's search() (as opposed to lookupByCode()) implementation
+ * produces. Deliberately *not* MetadataMergeReview's MergedMetadata shape:
+ * that's a field-by-field merge across every provider for one confirmed
+ * EAN match, which doesn't make sense here — a free-text query can
+ * legitimately turn up several distinct real items, not several sources'
+ * opinions about the same one, so each candidate is kept separate and the
+ * user picks exactly one to prefill CreateMediaItemDialog with, rather
+ * than merging fields across possibly-unrelated results.
+ */
+interface MetadataSearchCandidate {
+  provider_key: string
+  source_id: string
+  attributes: Record<string, unknown>
+  cover_urls: string[]
+}
+
+/**
  * How long a repeat scan of the *same* EAN is ignored. A hardware barcode
  * scanner "types" its code and presses Enter on its own (see this
  * component's own docblock) — some double-fire on a single trigger pull,
@@ -111,6 +130,19 @@ export function CapturePage() {
   // since a misread digit is exactly the kind of thing that causes a
   // no_match in the first place).
   const [creatingForEan, setCreatingForEan] = useState<string | null>(null)
+  // GitHub issue #151: "erfassen ohne EAN" — a free-text metadata search,
+  // independent of the EAN-based scan flow above. `textSearchResults` is
+  // `null` before any search has run yet (nothing to show) vs. `[]` after
+  // one that genuinely found nothing (an explicit "no results" message),
+  // the same distinction PendingLookup/ScanResult already draw for the
+  // EAN path. Picking a result sets `creatingFromSearch` to that
+  // candidate's own `attributes`, opening the same CreateMediaItemDialog
+  // creatingForEan already does, just prefilled differently — see that
+  // dialog's own `initialAttributes` docblock.
+  const [textQuery, setTextQuery] = useState('')
+  const [textSearching, setTextSearching] = useState(false)
+  const [textSearchResults, setTextSearchResults] = useState<MetadataSearchCandidate[] | null>(null)
+  const [creatingFromSearch, setCreatingFromSearch] = useState<Record<string, unknown> | null>(null)
   // See EAN_SCAN_THROTTLE_MS above. A ref, not state — updating it must never
   // itself trigger a re-render, and scanCode() needs its current value
   // synchronously on every call, not just after the next render.
@@ -230,6 +262,36 @@ export function CapturePage() {
     }
   }
 
+  /**
+   * GitHub issue #151: the free-text counterpart to scanCode() above —
+   * GET .../metadata/search?query=... instead of the EAN-based
+   * .../capture/scan, for a media item with no barcode to scan at all.
+   * Every enabled provider's own search() runs server-side
+   * (MetadataImportService::search()); the response is a flat list of
+   * distinct candidates, not a merge, so there's no ScanResult-style
+   * status to branch on here — just render whatever came back (possibly
+   * empty).
+   */
+  async function searchByText(e: React.FormEvent) {
+    e.preventDefault()
+    const library = libraries.find((l) => l.id === libraryId)
+    const query = textQuery.trim()
+    if (!library || !query) return
+
+    setTextSearching(true)
+    setError(null)
+    try {
+      const { data } = await apiClient.get<MetadataSearchCandidate[]>(`/libraries/${library.id}/metadata/search`, {
+        params: { query },
+      })
+      setTextSearchResults(data)
+    } catch (err) {
+      setError(describeError(err, t))
+    } finally {
+      setTextSearching(false)
+    }
+  }
+
   async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) {
     setError(null)
     try {
@@ -322,6 +384,59 @@ export function CapturePage() {
         </div>
       </section>
 
+      {/*
+        GitHub issue #151: "erfassen ohne EAN" — a separate card, not folded
+        into capture-alt-methods above, since it produces its own list of
+        distinct candidates to pick from rather than a single pending scan
+        result. Uses GET .../metadata/search?query=..., previously
+        implemented server-side (every provider's search()) but never
+        actually reachable from the frontend at all.
+      */}
+      <section className="panel-card">
+        <h2>{t('capture.noEanTitle')}</h2>
+        <p className="hint">{t('capture.noEanHint')}</p>
+
+        <form className="capture-scan-form" onSubmit={(e) => void searchByText(e)}>
+          <input
+            className="panel-select capture-scan-form__input"
+            value={textQuery}
+            onChange={(e) => setTextQuery(e.target.value)}
+            placeholder={t('capture.noEanQueryPlaceholder')}
+            aria-label={t('capture.noEanSearch')}
+          />
+          <button type="submit" disabled={textSearching || !textQuery.trim()}>
+            {t('capture.noEanSearch')}
+          </button>
+        </form>
+
+        {textSearching && (
+          <p className="hint">
+            <Spinner /> {t('capture.searching')}
+          </p>
+        )}
+
+        {!textSearching && textSearchResults && textSearchResults.length === 0 && <p className="hint">{t('capture.noMatch')}</p>}
+
+        {!textSearching && textSearchResults && textSearchResults.length > 0 && (
+          <ul className="capture-results">
+            {textSearchResults.map((candidate, index) => (
+              <li key={`${candidate.provider_key}-${candidate.source_id}-${index}`} className="capture-result">
+                <div className="capture-result__header">
+                  {candidate.cover_urls[0] && (
+                    <img src={candidate.cover_urls[0]} alt="" className="capture-result__cover" />
+                  )}
+                  <span className="capture-result__ean">{String(candidate.attributes.title ?? '')}</span>
+                  <span className="hint">{formatProviderKey(candidate.provider_key)}</span>
+                  <button type="button" onClick={() => setCreatingFromSearch(candidate.attributes)}>
+                    {t('capture.noEanUseResult')}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {(results.length > 0 || pendingLookups.length > 0) && (
         <section className="panel-card">
           <h2>{t('capture.resultsTitle', { count: results.length })}</h2>
@@ -387,10 +502,16 @@ export function CapturePage() {
         <CreateMediaItemDialog
           library={activeLibrary}
           initialEan={creatingForEan ?? undefined}
-          open={creatingForEan !== null}
-          onClose={() => setCreatingForEan(null)}
+          // GitHub issue #151 — see this dialog's own `initialAttributes` docblock.
+          initialAttributes={creatingFromSearch ?? undefined}
+          open={creatingForEan !== null || creatingFromSearch !== null}
+          onClose={() => {
+            setCreatingForEan(null)
+            setCreatingFromSearch(null)
+          }}
           onCreated={(item: MediaItem) => {
             setCreatingForEan(null)
+            setCreatingFromSearch(null)
             setResults((prev) => prev.filter((r) => r.ean !== item.ean))
           }}
         />

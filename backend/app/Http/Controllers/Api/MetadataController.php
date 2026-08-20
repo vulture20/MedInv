@@ -14,7 +14,6 @@ use App\Models\Library;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Metadata search/import (briefing 8.). Chosen-candidate confirmation
@@ -113,15 +112,17 @@ class MetadataController extends Controller
             'metadata_providers.*' => ['string'],
         ]);
 
-        // Deliberately not an `attributes.ean` validation rule: combining a top-level
-        // 'array' rule with a rule on one specific nested key makes Laravel treat
-        // `attributes` as "structured" and silently drop every OTHER key from
-        // validate()'s output (title, authors, ... — everything except `ean` itself)
-        // instead of passing them through to MediaItemService::create() below, which
-        // needs the full, media-type-varying attribute set, not just `ean`. Confirmed
-        // via a failing NOT NULL constraint in testing before this was caught.
+        // GitHub issue #151: a candidate found via free-text metadata search
+        // (as opposed to an EAN/barcode lookup) genuinely has no `ean` at
+        // all — MetadataProviderInterface::search() implementations always
+        // report `null` for it, since there was no scanned code to attach.
+        // Generating a placeholder here, rather than rejecting the request
+        // the way this used to (see git history for the previous
+        // `attributes.ean` presence check this replaced), is what actually
+        // lets that flow reach MediaItemService::create() at all — every
+        // media table's `ean` column is NOT NULL.
         if (empty($data['attributes']['ean']) || ! is_string($data['attributes']['ean'])) {
-            throw ValidationException::withMessages(['attributes.ean' => 'The attributes.ean field is required.']);
+            $data['attributes']['ean'] = $this->mediaItemService->generateNoEanPlaceholder($library);
         }
 
         $data['attributes'] = $this->stripInternallyManagedFields($data['attributes']);

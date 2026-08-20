@@ -57,6 +57,59 @@ class MediaItemService
     }
 
     /**
+     * GitHub issue #151: an item captured without a real, known EAN (manual
+     * entry with the field left blank, or a metadata candidate found via
+     * free-text search rather than an EAN/barcode lookup) still needs a
+     * value for the `ean` column — it's part of this app's own per-library
+     * uniqueness rule (briefing 5.1, enforced by create() above) and every
+     * media table's `ean` column is `NOT NULL`. Rather than leaving it
+     * genuinely empty, a `NoEAN-{13 random digits}` placeholder (19
+     * characters — see the migration that widened the `ean` column to fit
+     * it) makes the fact "this item has no real EAN" visible and greppable
+     * in the data itself, instead of an empty string that looks like a
+     * data-entry mistake.
+     *
+     * Collisions are checked the same way create() itself already scopes
+     * EAN uniqueness — per library, not globally — regenerating and
+     * re-checking until a free one is found. 13 random digits is a
+     * 10^13-sized keyspace, so a real collision is astronomically unlikely
+     * for any one library's realistic size, but explicitly checked and
+     * retried anyway rather than just trusted, per the feature's own
+     * request; only capped at a small number of attempts as a defensive
+     * bound against a pathological/misbehaving random source, not because
+     * a real collision is actually expected to occur.
+     */
+    public function generateNoEanPlaceholder(Library $library): string
+    {
+        $modelClass = $this->modelClassFor($library->media_type);
+
+        for ($attempt = 0; $attempt < 20; $attempt++) {
+            $candidate = $this->randomNoEanCandidate();
+
+            if (! $modelClass::query()->where('library_id', $library->id)->where('ean', $candidate)->exists()) {
+                return $candidate;
+            }
+        }
+
+        // Never realistically reached (see this method's own docblock on
+        // just how large the keyspace is) — a hard failure here is more
+        // honest than silently returning a colliding value that create()
+        // would just reject with a confusing DuplicateEanException anyway.
+        throw new \RuntimeException('Could not generate a unique NoEAN placeholder after 20 attempts.');
+    }
+
+    /**
+     * Split out of generateNoEanPlaceholder() above purely so a test can
+     * override just this one seam (a partial mock on a real PHP CSPRNG call
+     * can't otherwise be made to deterministically collide) to exercise the
+     * retry loop itself — not because anything else calls this on its own.
+     */
+    protected function randomNoEanCandidate(): string
+    {
+        return 'NoEAN-'.str_pad((string) random_int(0, 9999999999999), 13, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Applies a re-run metadata lookup's user-picked fields onto an
      * *existing* item (GitHub issue #56) — the update-path counterpart to
      * create(). EAN is deliberately dropped rather than validated for a

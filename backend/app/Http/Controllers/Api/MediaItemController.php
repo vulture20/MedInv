@@ -169,6 +169,14 @@ class MediaItemController extends Controller
         $data['metadata_provider'] = null;
         $data['captured_by_user_id'] = $request->user()->id;
 
+        // GitHub issue #151: EAN is now optional on this form (rulesFor()
+        // below) — a media item genuinely without one still needs a value
+        // for the NOT NULL, per-library-unique `ean` column, so an empty
+        // submission gets a generated placeholder instead.
+        if (empty($data['ean'])) {
+            $data['ean'] = $this->mediaItemService->generateNoEanPlaceholder($library);
+        }
+
         try {
             $item = $this->mediaItemService->create($library, $data);
         } catch (DuplicateEanException $e) {
@@ -363,7 +371,9 @@ class MediaItemController extends Controller
         return match ($mediaType) {
             'book' => [
                 'title' => ['required', 'string', 'max:255'],
-                'ean' => ['required', 'string', 'max:13'],
+                // GitHub issue #151: optional — an empty submission gets a
+                // generated NoEAN-{...} placeholder, see store()'s own comment.
+                'ean' => ['nullable', 'string', 'max:13'],
                 'description' => ['nullable', 'string'],
                 'authors' => ['nullable', 'string'],
                 'format' => ['nullable', 'string'],
@@ -386,7 +396,9 @@ class MediaItemController extends Controller
             ],
             'cd' => [
                 'title' => ['required', 'string', 'max:255'],
-                'ean' => ['required', 'string', 'max:13'],
+                // GitHub issue #151: optional — an empty submission gets a
+                // generated NoEAN-{...} placeholder, see store()'s own comment.
+                'ean' => ['nullable', 'string', 'max:13'],
                 'description' => ['nullable', 'string'],
                 'artist' => ['nullable', 'string'],
                 'medium' => ['nullable', 'string'],
@@ -413,7 +425,9 @@ class MediaItemController extends Controller
             ],
             'dvd_bluray' => [
                 'title' => ['required', 'string', 'max:255'],
-                'ean' => ['required', 'string', 'max:13'],
+                // GitHub issue #151: optional — an empty submission gets a
+                // generated NoEAN-{...} placeholder, see store()'s own comment.
+                'ean' => ['nullable', 'string', 'max:13'],
                 'description' => ['nullable', 'string'],
                 'medium' => ['nullable', 'string'],
                 'disc_count' => ['nullable', 'integer', 'min:1'],

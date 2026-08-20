@@ -1569,6 +1569,16 @@ td {
   gap: 0.6rem;
 }
 
+/* GitHub issue #151: a free-text search result's cover, sized to sit inline in .capture-result__header alongside its title/provider/button rather than as a standalone thumbnail grid — smaller than .metadata-merge__cover-thumb, which is the latter. */
+.capture-result__cover {
+  width: 2rem;
+  height: 2.75rem;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  flex: none;
+}
+
 /* Barcodes are numbers meant to be compared/skimmed at a glance — tabular-nums keeps
    digits aligned the same way .media-item-dialog__track-duration already does for durations. */
 .capture-result__ean {
