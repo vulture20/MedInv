@@ -137,6 +137,12 @@ use Illuminate\Support\Facades\Log;
  *    ("jetzt für X Euro kaufen"), not a real synopsis — deliberately
  *    still never used as `description`, now a *confirmed* content
  *    judgment rather than an absence-of-evidence one.
+ *  - **`absoluteJpcUrl()` only follows an absolute href that stays on
+ *    jpc.de itself** (GitHub issue #146, a security-review finding) —
+ *    that URL is fetched server-side by jpcProductPage(), so an
+ *    unrestricted absolute href out of jpc.de's own search-results
+ *    markup would be a server-side-request-forgery primitive; see
+ *    absoluteJpcUrl()'s own docblock.
  *
  * What remains an unconfirmed guess:
  *  - **`jpcSearch()`'s results-page markup** — never actually seen (the
@@ -650,6 +656,23 @@ trait JpcScraping
         return preg_match('#/hnum/(\d+)#', $url, $matches) ? $matches[1] : $url;
     }
 
+    /**
+     * GitHub issue #146: an absolute `http(s)://` href is only accepted
+     * when it actually stays on jpc.de itself — this URL is later fetched
+     * server-side by jpcProductPage()/jpcGet(), so blindly trusting an
+     * absolute href straight out of jpc.de's own search-results markup
+     * would let a malicious/compromised page turn this into a
+     * server-side-request-forgery primitive (an internal service, a cloud
+     * metadata endpoint, ...). AmazonScraping avoids this structurally —
+     * it never trusts a scraped href as a fetch target at all, only a
+     * `data-asin` ID reassembled against the fixed amazon.com host — but
+     * JPC's product URL includes a slug only obtainable from the page
+     * itself, so some form of href-following can't be avoided entirely
+     * here; restricting it to jpc.de's own host is the narrowest fix that
+     * still lets a genuine result through. A rejected href returns null,
+     * the same "skip this result" handling an unresolvable relative path
+     * already gets.
+     */
     private function absoluteJpcUrl(string $href): ?string
     {
         if ($href === '') {
@@ -657,10 +680,20 @@ trait JpcScraping
         }
 
         if (str_starts_with($href, 'http://') || str_starts_with($href, 'https://')) {
-            return $href;
+            $host = parse_url($href, PHP_URL_HOST);
+
+            return is_string($host) && $this->isJpcHost($host) ? $href : null;
         }
 
         return str_starts_with($href, '/') ? self::BASE_URL.$href : null;
+    }
+
+    /** jpc.de itself or a subdomain of it — case-insensitive, matching how DNS hostnames are compared generally. */
+    private function isJpcHost(string $host): bool
+    {
+        $host = strtolower($host);
+
+        return $host === 'jpc.de' || str_ends_with($host, '.jpc.de');
     }
 
     /**

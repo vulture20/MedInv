@@ -175,6 +175,38 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame('Strangers by nature', $candidate->attributes['tracks'][0]['title']);
     }
 
+    /**
+     * GitHub issue #146: absoluteJpcUrl() must never follow an absolute
+     * href pointing off jpc.de — jpcProductPage() fetches that URL
+     * server-side, so an unrestricted absolute href would be a
+     * server-side-request-forgery primitive. The malicious result here
+     * sorts first in document order, so if the host check were missing,
+     * lookupByCode() would fetch the attacker's URL instead of (or as
+     * well as) the real jpc.de one.
+     */
+    public function test_search_ignores_an_absolute_href_pointing_off_jpc_de(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response(
+                '<html><body>'
+                .'<a href="https://evil.example.com/detail/-/art/malicious/hnum/1"><img src="https://evil.example.com/x.jpg" /></a>'
+                .'<a href="https://evil.example.com/detail/-/art/malicious/hnum/1">Malicious External Result</a>'
+                .'<div class="result">'
+                .'<a href="/jpcng/poprock/detail/-/art/mark-medlock-dsds-back-into-the-sun/hnum/12765025"><img src="https://media1.jpc.de/image/w98/front/0/4029759218739.jpg" /></a>'
+                .'<a href="/jpcng/poprock/detail/-/art/mark-medlock-dsds-back-into-the-sun/hnum/12765025">Mark Medlock (DSDS): Back Into The Sun</a>'
+                .'</div>'
+                .'</body></html>',
+                200
+            ),
+            self::PRODUCT_API => Http::response($this->productPageHtml(), 200),
+        ]);
+
+        $candidate = app(JpcCdProvider::class)->lookupByCode('4029759218739')[0];
+
+        $this->assertSame('Back Into The Sun', $candidate->attributes['title']);
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'evil.example.com'));
+    }
+
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void
     {
         Http::fake([
