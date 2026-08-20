@@ -9,11 +9,14 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
 
 /**
  * DVD/Blu-ray metadata via scraping jpc.de's search/product pages (GitHub
- * issue #130, analogous to Amazon's #50) — **Beta**, see JpcScraping's
- * docblock for the full legal/technical/reliability picture this is built
- * under, including exactly which parts were confirmed against real
- * jpc.de pages and which are best-effort guesses. `cast` is deliberately
- * never set — see JpcScraping's own docblock for why.
+ * issue #130, analogous to Amazon's #50). No longer Beta and enabled by
+ * default (GitHub issue #145 — see JpcBookProvider's own docblock for
+ * the full reasoning) — unlike AmazonDvdBlurayProvider, which stays
+ * Beta/opt-in. See JpcScraping's docblock for the full legal/technical/
+ * reliability picture this is still built under, including exactly which
+ * parts were confirmed against real jpc.de pages and which are
+ * best-effort guesses. `cast` is deliberately never set — see
+ * JpcScraping's own docblock for why.
  *
  * `disc_count` (GitHub issue #136) is parsed out of the *original*
  * title-tag format string (e.g. "2 DVDs") rather than from any dedicated
@@ -55,9 +58,10 @@ class JpcDvdBlurayProvider implements MetadataProviderInterface
         return [];
     }
 
+    /** GitHub issue #145: no longer Beta — see this class's own docblock. */
     public function version(): string
     {
-        return 'v0.1-beta';
+        return 'v1.0';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes jpc.de's pages, see JpcScraping's docblock. */

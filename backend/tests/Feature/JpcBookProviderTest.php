@@ -158,13 +158,14 @@ class JpcBookProviderTest extends TestCase
         $this->assertSame([], app(JpcBookProvider::class)->configFields());
     }
 
-    public function test_name_key_and_version_identify_this_as_the_beta_jpc_provider(): void
+    /** GitHub issue #145: no longer Beta. */
+    public function test_name_key_and_version_identify_this_as_the_jpc_provider(): void
     {
         $provider = app(JpcBookProvider::class);
 
         $this->assertSame('JPC', $provider->name());
         $this->assertSame('book.jpc', $provider->key());
-        $this->assertSame('v0.1-beta', $provider->version());
+        $this->assertSame('v1.0', $provider->version());
         $this->assertSame('scraping', $provider->sourceType());
     }
 }

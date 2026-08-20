@@ -10,10 +10,14 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
 /**
  * Book metadata via scraping jpc.de's search/product pages (GitHub issue
  * #131 — #130's original JPC implementation wrongly assumed JPC doesn't
- * sell books; it does) — **Beta**, see JpcScraping's docblock for the
- * full legal/technical/reliability picture this is built under, including
- * exactly which parts were confirmed against a real jpc.de book page and
- * which are best-effort guesses.
+ * sell books; it does). No longer Beta and enabled by default (GitHub
+ * issue #145, an explicit user decision after the string of fixes
+ * #133/#135/#136/#138/#140/#143/#144 made JPC reliable enough for
+ * everyday use) — unlike AmazonScraping, which stays Beta/opt-in. See
+ * JpcScraping's docblock for the full legal/technical/reliability
+ * picture this is still built under, including exactly which parts were
+ * confirmed against a real jpc.de book page and which are best-effort
+ * guesses — promotion out of Beta doesn't mean every field is confirmed.
  *
  * `description` is never set — see JpcScraping's own docblock (no
  * blurb/description of any kind was found on the one real book page
@@ -58,9 +62,10 @@ class JpcBookProvider implements MetadataProviderInterface
         return [];
     }
 
+    /** GitHub issue #145: no longer Beta — see this class's own docblock. */
     public function version(): string
     {
-        return 'v0.1-beta';
+        return 'v1.0';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes jpc.de's pages, see JpcScraping's docblock. */

@@ -9,10 +9,12 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
 
 /**
  * CD metadata via scraping jpc.de's search/product pages (GitHub issue
- * #130, analogous to Amazon's #50) — **Beta**, see JpcScraping's docblock
- * for the full legal/technical/reliability picture this is built under,
- * including exactly which parts were confirmed against real jpc.de pages
- * and which are best-effort guesses.
+ * #130, analogous to Amazon's #50). No longer Beta and enabled by
+ * default (GitHub issue #145 — see JpcBookProvider's own docblock for
+ * the full reasoning) — unlike AmazonCdProvider, which stays Beta/opt-in.
+ * See JpcScraping's docblock for the full legal/technical/reliability
+ * picture this is still built under, including exactly which parts were
+ * confirmed against real jpc.de pages and which are best-effort guesses.
  *
  * Does attempt a track listing (GitHub issue #48's `tracks` field, added
  * for GitHub issue #135) — unlike AmazonCdProvider's own identical
@@ -53,9 +55,10 @@ class JpcCdProvider implements MetadataProviderInterface
         return [];
     }
 
+    /** GitHub issue #145: no longer Beta — see this class's own docblock. */
     public function version(): string
     {
-        return 'v0.1-beta';
+        return 'v1.0';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes jpc.de's pages, see JpcScraping's docblock. */

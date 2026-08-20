@@ -39,16 +39,25 @@ class MetadataProviderRegistry
     /**
      * Provider keys that must stay *disabled* until an admin explicitly
      * turns them on, unlike every other default provider (GitHub issue
-     * #50): the three Amazon scrapers — and, for the identical reason, the
-     * three JPC ones (GitHub issue #130, extended from cd/dvd_bluray-only
-     * to include books by GitHub issue #131, since JPC does sell books
-     * after all) — are Beta and carry a real ToS/legal consideration (see
-     * AmazonScraping's/JpcScraping's own docblocks) that no other source
-     * in this app has — enabling scraping traffic against a third party on
-     * an operator's behalf, silently, just because they installed MedInv,
-     * would be presumptuous in a way "on by default" isn't for a
+     * #50): the three Amazon scrapers are Beta and carry a real ToS/legal
+     * consideration (see AmazonScraping's own docblock) that no other
+     * source in this app has — enabling scraping traffic against a third
+     * party on an operator's behalf, silently, just because they installed
+     * MedInv, would be presumptuous in a way "on by default" isn't for a
      * documented public API. See syncToDatabase() below for where this is
      * actually applied.
+     *
+     * The three JPC providers (GitHub issue #130, extended from
+     * cd/dvd_bluray-only to include books by GitHub issue #131) started
+     * out disabled here for the identical reason, but were promoted out of
+     * that list by GitHub issue #145 — an explicit user decision made
+     * after the string of real-world fixes (#133, #135, #136, #138, #140,
+     * #143, #144) made JPC reliable enough to enable by default, unlike
+     * Amazon, which remains Beta/opt-in. `database/migrations/*_enable_jpc_metadata_plugins_by_default.php`
+     * flips `enabled` for any `metadata_plugins` row that already existed
+     * from before this change, the same "reach every existing install, not
+     * just a fresh one" concern `syncToDatabase()`'s own docblock already
+     * documents for `name`/`media_type`.
      *
      * A fourth scraper, Thalia (GitHub issue #129), was implemented and
      * shipped the same way but removed again by GitHub issue #134: it
@@ -77,7 +86,6 @@ class MetadataProviderRegistry
         'book.claude', 'cd.claude', 'dvd_bluray.claude',
         'book.openai', 'cd.openai', 'dvd_bluray.openai',
         'book.gemini', 'cd.gemini', 'dvd_bluray.gemini',
-        'book.jpc', 'cd.jpc', 'dvd_bluray.jpc',
     ];
 
     /** @return class-string<MetadataProviderInterface>[] */

@@ -174,11 +174,12 @@ class JpcDvdBlurayProviderTest extends TestCase
         app(JpcDvdBlurayProvider::class)->lookupByCode('0000000000000');
     }
 
-    public function test_name_and_version_flag_this_as_beta_without_a_redundant_name_suffix(): void
+    /** GitHub issue #145: no longer Beta. */
+    public function test_name_and_version_have_no_redundant_beta_suffix(): void
     {
         $provider = app(JpcDvdBlurayProvider::class);
 
         $this->assertSame('JPC', $provider->name());
-        $this->assertSame('v0.1-beta', $provider->version());
+        $this->assertSame('v1.0', $provider->version());
     }
 }

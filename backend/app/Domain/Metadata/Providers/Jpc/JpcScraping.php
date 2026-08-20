@@ -19,11 +19,20 @@ use Illuminate\Support\Facades\Log;
  * are kept as accurate history of how this class was built, even though
  * that sibling class no longer exists in the codebase to link to): jpc.de
  * has no public lookup API either, so this scrapes the same product/
- * search pages a browser would load — **explicitly a Beta feature**,
- * disabled by default, for the same legal/technical/maintenance reasons
- * AmazonScraping's own docblock lays out in full (not repeated here).
- * Like Thalia was, jpc.de isn't a briefing-listed source — added purely
- * because it was explicitly requested.
+ * search pages a browser would load — originally shipped as an
+ * **explicitly Beta, disabled-by-default feature** for the same legal/
+ * technical/maintenance reasons AmazonScraping's own docblock lays out
+ * in full (not repeated here), but promoted out of Beta and enabled by
+ * default by GitHub issue #145 — an explicit user decision, made after
+ * the string of real-world fixes below (#133, #135, #136, #138, #140,
+ * #143, #144) made JPC reliable enough for everyday use, unlike
+ * AmazonScraping, which remains Beta/opt-in. The legal caveat
+ * (scraping a third-party site not covered by a documented API,
+ * ToS/markup-stability risk) still applies exactly as before — "no
+ * longer Beta" reflects an accepted risk/reliability trade-off, not that
+ * the underlying approach became any less of a scrape. Like Thalia was,
+ * jpc.de isn't a briefing-listed source — added purely because it was
+ * explicitly requested.
  *
  * ## What's confirmed vs. guessed here — read this before trusting any of it
  *
