@@ -8,6 +8,7 @@ use App\Domain\Metadata\Providers\Book\ClaudeBookProvider;
 use App\Domain\Metadata\Providers\Book\GeminiBookProvider;
 use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
+use App\Domain\Metadata\Providers\Book\JpcBookProvider;
 use App\Domain\Metadata\Providers\Book\OpenAiBookProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
 use App\Domain\Metadata\Providers\Book\ThaliaBookProvider;
@@ -42,15 +43,16 @@ class MetadataProviderRegistry
      * Provider keys that must stay *disabled* until an admin explicitly
      * turns them on, unlike every other default provider (GitHub issue
      * #50): the three Amazon scrapers — and, for the identical reason, the
-     * three Thalia ones (GitHub issue #129) and the two JPC ones (GitHub
-     * issue #130, cd/dvd_bluray only per that issue's own scoping — JPC
-     * doesn't sell books) — are Beta and carry a real ToS/legal
-     * consideration (see AmazonScraping's/ThaliaScraping's/JpcScraping's
-     * own docblocks) that no other source in this app has — enabling
-     * scraping traffic against a third party on an operator's behalf,
-     * silently, just because they installed MedInv, would be presumptuous
-     * in a way "on by default" isn't for a documented public API. See
-     * syncToDatabase() below for where this is actually applied.
+     * three Thalia ones (GitHub issue #129) and the three JPC ones (GitHub
+     * issue #130, extended from cd/dvd_bluray-only to include books by
+     * GitHub issue #131, since JPC does sell books after all) — are Beta
+     * and carry a real ToS/legal consideration (see AmazonScraping's/
+     * ThaliaScraping's/JpcScraping's own docblocks) that no other source
+     * in this app has — enabling scraping traffic against a third party on
+     * an operator's behalf, silently, just because they installed MedInv,
+     * would be presumptuous in a way "on by default" isn't for a
+     * documented public API. See syncToDatabase() below for where this is
+     * actually applied.
      *
      * The three Claude providers (GitHub issue #59), the three
      * OpenAI-backed ones (GitHub issue #65), and the three Gemini-backed
@@ -69,7 +71,7 @@ class MetadataProviderRegistry
         'book.openai', 'cd.openai', 'dvd_bluray.openai',
         'book.gemini', 'cd.gemini', 'dvd_bluray.gemini',
         'book.thalia', 'cd.thalia', 'dvd_bluray.thalia',
-        'cd.jpc', 'dvd_bluray.jpc',
+        'book.jpc', 'cd.jpc', 'dvd_bluray.jpc',
     ];
 
     /** @return class-string<MetadataProviderInterface>[] */
@@ -84,6 +86,7 @@ class MetadataProviderRegistry
             OpenAiBookProvider::class,
             GeminiBookProvider::class,
             ThaliaBookProvider::class,
+            JpcBookProvider::class,
             MusicBrainzProvider::class,
             DiscogsProvider::class,
             AmazonCdProvider::class,

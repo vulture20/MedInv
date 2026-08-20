@@ -9,16 +9,16 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Shared HTTP + HTML parsing for the two JPC providers (JpcCd/
- * JpcDvdBlurayProvider — GitHub issue #130, cd/dvd_bluray only, per the
- * issue's own scoping — JPC doesn't sell books). Structural sibling of
- * AmazonScraping (#50) and ThaliaScraping (#129): jpc.de has no public
- * lookup API either, so this scrapes the same product/search pages a
- * browser would load — **explicitly a Beta feature**, disabled by
- * default, for the same legal/technical/maintenance reasons
- * AmazonScraping's own docblock lays out in full (not repeated here).
- * Like Thalia, jpc.de isn't a briefing-listed source — added purely
- * because it was explicitly requested.
+ * Shared HTTP + HTML parsing for the three JPC providers (JpcBook/JpcCd/
+ * JpcDvdBlurayProvider — GitHub issue #130, extended to books by GitHub
+ * issue #131 after #130 itself wrongly assumed JPC doesn't sell books —
+ * it does). Structural sibling of AmazonScraping (#50) and ThaliaScraping
+ * (#129): jpc.de has no public lookup API either, so this scrapes the
+ * same product/search pages a browser would load — **explicitly a Beta
+ * feature**, disabled by default, for the same legal/technical/
+ * maintenance reasons AmazonScraping's own docblock lays out in full (not
+ * repeated here). Like Thalia, jpc.de isn't a briefing-listed source —
+ * added purely because it was explicitly requested.
  *
  * ## What's confirmed vs. guessed here — read this before trusting any of it
  *
@@ -29,32 +29,53 @@ use Illuminate\Support\Facades\Log;
  * dump was never available either way (only a summarized read of each
  * fetched page) — so even the "confirmed" items below are read from a
  * summary of the real page, not a byte-for-byte markup diff. Confirmed,
- * independently, across two real, distinct product pages (one CD, one
- * Blu-ray/DVD):
+ * independently, across three real, distinct product pages (one CD, one
+ * Blu-ray/DVD, one book — the book page checked separately for #131):
  *  - **Product-detail URLs** follow `/jpcng/{category}/detail/-/art/
- *    {slug}/hnum/{id}` (category e.g. `poprock`, `movie`, `jazz`,
+ *    {slug}/hnum/{id}` (category e.g. `poprock`, `movie`, `books`, `jazz`,
  *    `classic`, `vinyl` — irrelevant to parsing here, since a found
  *    product's own URL is used as-is, never reconstructed).
- *  - **The `<title>` tag** follows `{Artist}: {Titel} ({Format}) –
- *    jpc.de` for a CD (e.g. "Mark Medlock (DSDS): Back Into The Sun
- *    (CD) – jpc.de") and `{Titel} ({Format}) – jpc.de` for a film with no
- *    artist/byline segment (e.g. "El Topo (Blu-ray) – jpc.de") — parsed
- *    by parseJpcTitleTag() below, which handles both shapes generically
- *    (an optional "X: " prefix before the title).
- *  - **The cover image URL is directly derivable from the EAN**:
- *    `https://media1.jpc.de/image/w468/front/0/{ean}.jpg`, confirmed on
- *    a real product page — unlike Amazon/Thalia, this needs no `<img>`/
- *    `og:image` extraction at all once an EAN is known.
+ *  - **The `<title>` tag** follows one of two confirmed shapes, both
+ *    always ending `({Format}) – jpc.de`: `{Artist}: {Titel} ({Format})
+ *    – jpc.de` for a CD (e.g. "Mark Medlock (DSDS): Back Into The Sun
+ *    (CD) – jpc.de", byline *before* the title, colon-separated) and
+ *    `{Titel} - {Autor} ({Format}) – jpc.de` for a book (e.g. "Kummer
+ *    aller Art - Mariana Leky (Buch) – jpc.de", byline *after* the title,
+ *    hyphen-separated — the reverse order and a different separator from
+ *    the CD shape) — a film has no byline segment at all (e.g. "El Topo
+ *    (Blu-ray) – jpc.de"). parseJpcTitleTag() below handles the
+ *    parenthesized-format part generically for all three, but the two
+ *    *conflicting* byline conventions are deliberately not both applied
+ *    unconditionally: colon-splitting is always tried (safe — no
+ *    confirmed film/book title contains ": "), but hyphen-splitting is
+ *    opt-in per caller (only JpcBookProvider passes `splitTitleOnDash:
+ *    true`), since a film title can legitimately contain its own " - "
+ *    subtitle separator (e.g. a fictional "El Topo - Director's Cut")
+ *    that JpcDvdBlurayProvider must not misread as a byline.
+ *  - **The cover image URL is directly derivable from the EAN/ISBN-13**:
+ *    `https://media1.jpc.de/image/w468/front/0/{ean-or-isbn13}.jpg`,
+ *    confirmed on two real product pages (one CD by EAN, one book by
+ *    ISBN-13) — unlike Amazon/Thalia, this needs no `<img>`/`og:image`
+ *    extraction at all once a code is known.
  *  - **Product detail rows** use real, confirmed German labels — for a
  *    CD: `Label:`, `Aufnahmejahr ca.:`, `Artikelnummer:`, `UPC/EAN:`,
  *    `Erscheinungstermin:`; for a film, additionally: `Herkunftsland:`,
  *    `Altersfreigabe:`, `Serie:`, `Genre:`, `Spieldauer ca.:`, `Regie:`,
  *    `Filmmusik:`, `Originaltitel:`, `Sprache:`, `Tonformat:`, `Bild:`,
- *    `Untertitel:`. No `<script type="application/ld+json">` block or
- *    `og:*` meta tags were found on either page checked — unlike
- *    ThaliaScraping, there's no schema.org/Open Graph fallback to lean
- *    on here, so every field below comes from the title tag or these
- *    label rows alone.
+ *    `Untertitel:`; for a book: `Verlag:` (publisher, but combined with a
+ *    trailing `, MM/YYYY` that stripJpcPublisherSuffix() below strips
+ *    off), `Einband:` (the specific binding, e.g. "Gebunden" — a much
+ *    more useful book `format` value than the generic "(Buch)" the title
+ *    tag itself carries, so this is preferred over it), `Sprache:`,
+ *    `ISBN-13:` (no `ISBN-10:` label was observed), `Artikelnummer:`,
+ *    `Umfang:` (page count, e.g. "176 Seiten"), `Erscheinungstermin:`. No
+ *    `<script type="application/ld+json">` block or `og:*` meta tags were
+ *    found on any page checked — unlike ThaliaScraping, there's no
+ *    schema.org/Open Graph fallback to lean on here, so every field below
+ *    comes from the title tag or these label rows alone. Notably, no
+ *    description/blurb of any kind was found on the one real book page
+ *    checked either — `description` is never populated for any of the
+ *    three media types this trait supports, not just cd/dvd_bluray.
  *
  * What was **not** confirmed and is a deliberate best-effort guess or
  * omission:
@@ -84,7 +105,7 @@ use Illuminate\Support\Facades\Log;
  *    class.
  *  - **Price/currency are deliberately never extracted at all** — unlike
  *    every field above, no confirmed label or container for the price
- *    was found on either real page checked (it showed up only in an
+ *    was found on any real page checked (it showed up only in an
  *    already-summarized page read, with no indication of where in the
  *    markup it actually lives), and a blind whole-document regex for
  *    "EUR d+,dd" risks silently grabbing an unrelated price elsewhere on
@@ -97,6 +118,9 @@ use Illuminate\Support\Facades\Log;
  *    AmazonDvdBlurayProvider (which has a confirmed "Actors" bullet and a
  *    byline fallback), JpcDvdBlurayProvider never sets this field at all
  *    rather than guessing at an unconfirmed label.
+ *  - **`Label:` (record label)** was confirmed as a real CD detail-row
+ *    label but is never extracted — neither `MediaCd` nor any other
+ *    in-scope model has a fillable column it would map to.
  *
  * Every field extracted here is nullable/best-effort for the same reason
  * AmazonScraping's/ThaliaScraping's fields are.
@@ -184,20 +208,20 @@ trait JpcScraping
      * Parses one product page — see this trait's own docblock for exactly
      * which parts are confirmed (the `<title>` tag; the German detail-row
      * labels) vs. best-effort (the DOM shape around those labels; the
-     * EAN-derived cover URL always attempted regardless of whether the
-     * page actually has that product's image).
+     * EAN/ISBN-derived cover URL always attempted regardless of whether
+     * the page actually has that product's image).
      *
-     * `price`/`currency` are deliberately never populated — see this
-     * trait's own docblock. `label`/`genre` were both confirmed as real
-     * detail-row labels too, but aren't extracted here at all: neither
-     * `MediaCd` nor `MediaDvdBluray` (this issue's scope, #130) has a
-     * fillable column either would map to (`MediaCd::artist`/`medium` and
-     * `MediaDvdBluray`'s own fields cover everything actually usable) —
-     * extracting a value with nowhere to put it would just be dead code.
+     * @param  bool  $splitTitleOnDash  Opt into the confirmed book-only `{Titel} - {Autor}` title-tag convention — see this trait's own docblock for why this isn't applied unconditionally to every media type. Only JpcBookProvider passes true.
      *
-     * @return array{title: ?string, byline: ?string, format: ?string, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, director: ?string}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
+     * `price`/`currency` and `description` are deliberately never
+     * populated — see this trait's own docblock. `Label:` (record label)
+     * was confirmed as a real CD detail-row label too, but isn't
+     * extracted here at all: no in-scope model has a fillable column it
+     * would map to — extracting a value with nowhere to put it would just
+     * be dead code.
+     * @return array{title: ?string, byline: ?string, format: ?string, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
      */
-    private function jpcProductPage(string $url): ?array
+    private function jpcProductPage(string $url, bool $splitTitleOnDash = false): ?array
     {
         $html = $this->jpcGet($url);
 
@@ -206,8 +230,9 @@ trait JpcScraping
         }
 
         $xpath = $this->xpathFor($html);
-        $fromTitleTag = $this->parseJpcTitleTag($xpath->query('//title')->item(0)?->textContent);
-        $ean = $this->jpcDetailValue($xpath, 'UPC/EAN:');
+        $fromTitleTag = $this->parseJpcTitleTag($xpath->query('//title')->item(0)?->textContent, $splitTitleOnDash);
+        // UPC/EAN: (CD/film) or ISBN-13: (book, no UPC/EAN row observed there) — see this trait's own docblock.
+        $ean = $this->jpcDetailValue($xpath, 'UPC/EAN:') ?? $this->jpcDetailValue($xpath, 'ISBN-13:');
 
         return [
             'title' => $fromTitleTag['title'],
@@ -218,18 +243,27 @@ trait JpcScraping
             'runtime_minutes' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Spieldauer ca.:')),
             'languages' => $this->jpcDetailValue($xpath, 'Sprache:'),
             'director' => $this->jpcDetailValue($xpath, 'Regie:'),
+            'genre' => $this->jpcDetailValue($xpath, 'Genre:'),
+            'publisher' => $this->stripJpcPublisherSuffix($this->jpcDetailValue($xpath, 'Verlag:')),
+            'page_count' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Umfang:')),
+            'binding' => $this->jpcDetailValue($xpath, 'Einband:'),
         ];
     }
 
     /**
-     * The confirmed `{Artist}: {Titel} ({Format}) – jpc.de` / `{Titel}
-     * ({Format}) – jpc.de` shape — see this trait's own docblock. The
-     * leading "{Artist}: " segment is optional; when absent, the whole
-     * pre-parenthesis text is the title with no byline.
+     * The confirmed `{Artist}: {Titel} ({Format}) – jpc.de` / `{Titel} -
+     * {Autor} ({Format}) – jpc.de` / `{Titel} ({Format}) – jpc.de` shapes
+     * — see this trait's own docblock for exactly which media type uses
+     * which. Colon-splitting (byline first) is always tried; hyphen-
+     * splitting (byline last) only when `$splitTitleOnDash` is true, and
+     * on the *last* " - " occurrence specifically (a book title itself
+     * could plausibly contain its own " - ", but an author name
+     * essentially never does, so anchoring on the last occurrence is the
+     * safer of the two ends to split on).
      *
      * @return array{title: ?string, byline: ?string, format: ?string}
      */
-    private function parseJpcTitleTag(?string $titleTag): array
+    private function parseJpcTitleTag(?string $titleTag, bool $splitTitleOnDash = false): array
     {
         $empty = ['title' => null, 'byline' => null, 'format' => null];
 
@@ -244,9 +278,13 @@ trait JpcScraping
 
         $mainText = trim($matches[1]);
         $format = $this->cleanText($matches[2]);
+        $dashPosition = $splitTitleOnDash ? mb_strrpos($mainText, ' - ') : false;
 
         if (str_contains($mainText, ': ')) {
             [$byline, $title] = array_map('trim', explode(': ', $mainText, 2));
+        } elseif ($dashPosition !== false) {
+            $title = mb_substr($mainText, 0, $dashPosition);
+            $byline = mb_substr($mainText, $dashPosition + 3);
         } else {
             $byline = null;
             $title = $mainText;
@@ -326,7 +364,19 @@ trait JpcScraping
         return null;
     }
 
-    /** The confirmed EAN-derived cover URL pattern — see this trait's own docblock. Always attempted whenever an EAN is known; never verified to actually resolve to a real image for every product (a missing cover would simply 404 client-side like any other broken image). */
+    /** A confirmed `Verlag:` value is `"{Verlag}, MM/YYYY"` (e.g. "DuMont Buchverlag GmbH, 07/2022") — strips the trailing date so `publisher` doesn't carry it too (`release_date` already comes from the separate, more precise `Erscheinungstermin:` row). Returns the original trimmed string unchanged if it doesn't match that shape, same restraint as AmazonScraping::stripPublisherSuffix(). */
+    private function stripJpcPublisherSuffix(?string $text): ?string
+    {
+        if ($text === null) {
+            return null;
+        }
+
+        $withoutDate = preg_replace('#,\s*\d{1,2}/\d{4}\s*$#', '', $text) ?? $text;
+
+        return $this->cleanText($withoutDate) ?? $this->cleanText($text);
+    }
+
+    /** The confirmed EAN/ISBN-13-derived cover URL pattern — see this trait's own docblock. Always attempted whenever a code is known; never verified to actually resolve to a real image for every product (a missing cover would simply 404 client-side like any other broken image). */
     private function jpcCoverUrl(?string $ean): ?string
     {
         return $ean !== null ? "https://media1.jpc.de/image/w468/front/0/{$ean}.jpg" : null;

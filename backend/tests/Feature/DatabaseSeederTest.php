@@ -91,12 +91,13 @@ class DatabaseSeederTest extends TestCase
         $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.thalia', 'enabled' => false]);
     }
 
-    /** GitHub issue #130: same reasoning as the Amazon/Thalia providers above — JPC is a third Beta scraping vendor and must not be enabled just because the app was installed either. cd/dvd_bluray only — JPC doesn't sell books (see this issue's own scoping). */
+    /** GitHub issue #130 (extended to books by GitHub issue #131 — JPC does sell books after all): same reasoning as the Amazon/Thalia providers above — JPC is a third Beta scraping vendor and must not be enabled just because the app was installed either. */
     public function test_seeding_creates_the_jpc_providers_disabled(): void
     {
         $this->seed();
 
         $table = (new MetadataPlugin)->getTable();
+        $this->assertDatabaseHas($table, ['provider_key' => 'book.jpc', 'enabled' => false]);
         $this->assertDatabaseHas($table, ['provider_key' => 'cd.jpc', 'enabled' => false]);
         $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.jpc', 'enabled' => false]);
     }
