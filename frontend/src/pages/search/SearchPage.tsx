@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
@@ -22,6 +22,11 @@ import {
 /** GET /search's response shape: a full media item (SearchService returns the whole Eloquent model, no field selection) plus its owning library — unlike LibraryDetailPage's item list, results can span several libraries/media types at once, so each hit carries its own `library` rather than the page having one fixed library for all of them. */
 interface SearchHit extends MediaItem {
   library: LibraryRef
+}
+
+/** GitHub issue #122's auto-scroll-to-results respects `prefers-reduced-motion`, same care index.css's own CSS-only checks (e.g. DashboardPage.tsx's carousel animation) already take — `scrollIntoView`'s `behavior` has no CSS equivalent, so this is a JS-level check instead, same `window.matchMedia` primitive ThemeContext.tsx already uses for its own (unrelated) dark-mode detection. */
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 /**
@@ -71,6 +76,16 @@ export function SearchPage() {
   const [filterOptions, setFilterOptions] = useState<SearchFilterOptions | null>(null)
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [savedSearchError, setSavedSearchError] = useState<string | null>(null)
+
+  // GitHub issue #122 — the filter panel above the results table (#73)
+  // pushed results far enough down that submitting a search left the page
+  // at its old scroll position, with nothing visibly different above the
+  // fold. `searchCompletedAt` is bumped only when a search actually
+  // finishes (see the fetch effect below) and consumed by its own
+  // useEffect further down, which scrolls resultsRef into view once the
+  // results <section> has actually re-rendered.
+  const resultsRef = useRef<HTMLElement>(null)
+  const [searchCompletedAt, setSearchCompletedAt] = useState(0)
 
   // Every library visible to this user (GET /libraries) — both the filter
   // panel's own library <select> and the detail dialog's "move to another
@@ -149,7 +164,16 @@ export function SearchPage() {
     setError(null)
     apiClient
       .get<SearchHit[]>('/search', { params: filtersToRequestParams(appliedFilters) })
-      .then(({ data }) => setResults(data))
+      .then(({ data }) => {
+        setResults(data)
+        // GitHub issue #122 — a dedicated counter rather than scrolling
+        // right here or from a plain `useEffect(..., [results])`: `results`
+        // also changes from MediaItemDetailDialog's onUpdated/onDeleted/
+        // onMoved handlers below (editing/removing/moving an item while
+        // browsing results), which must NOT re-trigger a scroll — only an
+        // actual completed search should.
+        setSearchCompletedAt(Date.now())
+      })
       .catch((err) => {
         // Previously missing entirely — any failed request (a validation
         // error, a session hiccup, ...) left `results` at its initial `[]`
@@ -161,6 +185,19 @@ export function SearchPage() {
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appliedFilters, t])
+
+  // GitHub issue #122 — runs after the results <section> above has
+  // actually re-rendered with the new data (a plain effect, not the fetch
+  // callback itself, guarantees resultsRef.current is up to date). The
+  // `searchCompletedAt === 0` guard only excludes the component's very
+  // first render (before any fetch has ever completed) — a search that's
+  // already in the URL on mount (e.g. via the header search box, or a
+  // bookmarked/shared search URL) still scrolls once it resolves, same as
+  // clicking "Suchen" directly on this page would.
+  useEffect(() => {
+    if (searchCompletedAt === 0) return
+    resultsRef.current?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+  }, [searchCompletedAt])
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -258,7 +295,7 @@ export function SearchPage() {
       {error && <p role="alert">{error}</p>}
 
       {hasResults && (
-        <section className="panel-card">
+        <section className="panel-card" ref={resultsRef}>
           <div className="search-results__header">
             {/* GitHub issue #109 — mirrors LibraryDetailPage's <h2>{itemsTitle}</h2>, shown even at 0 results (still followed by the noResults hint below), so a search never leaves the hit count to be counted by eye. */}
             <h2>{t('search.resultsTitle', { count: sortedResults.length })}</h2>
