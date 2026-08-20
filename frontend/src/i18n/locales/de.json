@@ -401,9 +401,7 @@
       "confirm": "Backup „{{filename}}“ wiederherstellen? Dies kann nicht rückgängig gemacht werden.",
       "success": "Wiederherstellung abgeschlossen: {{created}} neu angelegt, {{overwritten}} überschrieben, {{merged}} zusammengeführt, {{skipped}} übersprungen.",
       "sharesSkipped_one": "{{count}} Freigabe übersprungen (kein passender Benutzer).",
-      "sharesSkipped_other": "{{count}} Freigaben übersprungen (kein passender Benutzer).",
-      "savedSearchesSkipped_one": "{{count}} gespeicherte Suche übersprungen (kein passender Benutzer).",
-      "savedSearchesSkipped_other": "{{count}} gespeicherte Suchen übersprungen (kein passender Benutzer)."
+      "sharesSkipped_other": "{{count}} Freigaben übersprungen (kein passender Benutzer)."
     },
     "exportImportPage": {
       "exportTitle": "Export",

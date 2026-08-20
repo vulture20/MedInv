@@ -335,9 +335,7 @@
         "confirm": "Endurheimta öryggisafritið „{{filename}}“? Þessu er ekki hægt að afturkalla.",
         "success": "Endurheimt lokið: {{created}} búin til, {{overwritten}} yfirskrifuð, {{merged}} sameinuð, {{skipped}} sleppt.",
         "sharesSkipped_one": "{{count}} deiling sleppt (enginn samsvarandi reikningur).",
-        "sharesSkipped_other": "{{count}} deilingar sleppt (enginn samsvarandi reikningur).",
-        "savedSearchesSkipped_one": "{{count}} vistuð leit sleppt (enginn samsvarandi reikningur).",
-        "savedSearchesSkipped_other": "{{count}} vistaðar leitir sleppt (enginn samsvarandi reikningur)."
+        "sharesSkipped_other": "{{count}} deilingar sleppt (enginn samsvarandi reikningur)."
       },
       "exportImportPage": {
         "exportTitle": "Útflutningur",

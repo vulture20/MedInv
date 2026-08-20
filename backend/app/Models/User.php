@@ -74,4 +74,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(LibraryShare::class);
     }
+
+    /** Named, reusable search-mask filter combinations (GitHub issue #73's "nice to have"). */
+    public function savedSearches(): HasMany
+    {
+        return $this->hasMany(SavedSearch::class);
+    }
 }

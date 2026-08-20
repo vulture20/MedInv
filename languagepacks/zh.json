@@ -334,9 +334,7 @@
         "confirm": "恢复备份“{{filename}}”？此操作无法撤销。",
         "success": "恢复完成：新建 {{created}} 个，覆盖 {{overwritten}} 个，合并 {{merged}} 个，跳过 {{skipped}} 个。",
         "sharesSkipped_one": "跳过了 {{count}} 个共享设置(没有匹配的账户)。",
-        "sharesSkipped_other": "跳过了 {{count}} 个共享设置(没有匹配的账户)。",
-        "savedSearchesSkipped_one": "跳过了 {{count}} 个已保存的搜索(没有匹配的账户)。",
-        "savedSearchesSkipped_other": "跳过了 {{count}} 个已保存的搜索(没有匹配的账户)。"
+        "sharesSkipped_other": "跳过了 {{count}} 个共享设置(没有匹配的账户)。"
       },
       "exportImportPage": {
         "exportTitle": "导出",

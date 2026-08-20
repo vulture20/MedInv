@@ -337,7 +337,6 @@ class BackupService
             'plugins_restored' => count($result['plugins_restored'] ?? []),
             'shares_skipped' => $result['shares_skipped'] ?? 0,
             'saved_searches_restored' => $result['saved_searches_restored'] ?? 0,
-            'saved_searches_skipped' => $result['saved_searches_skipped'] ?? 0,
         ]);
 
         return $result;

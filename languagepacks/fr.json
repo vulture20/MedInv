@@ -334,9 +334,7 @@
         "confirm": "Restaurer la sauvegarde « {{filename}} » ? Cette action est irréversible.",
         "success": "Restauration terminée : {{created}} créée(s), {{overwritten}} écrasée(s), {{merged}} fusionnée(s), {{skipped}} ignorée(s).",
         "sharesSkipped_one": "{{count}} partage ignoré (aucun compte correspondant).",
-        "sharesSkipped_other": "{{count}} partages ignorés (aucun compte correspondant).",
-        "savedSearchesSkipped_one": "{{count}} recherche enregistrée ignorée (aucun compte correspondant).",
-        "savedSearchesSkipped_other": "{{count}} recherches enregistrées ignorées (aucun compte correspondant)."
+        "sharesSkipped_other": "{{count}} partages ignorés (aucun compte correspondant)."
       },
       "exportImportPage": {
         "exportTitle": "Export",

@@ -18,13 +18,17 @@ use ZipArchive;
  * lost every user's saved filter combinations. Rides along on the same
  * includeUsers/restoreSettings opt-in as user accounts/metadata_plugins
  * (BackupPluginConfigTest.php's own precedent), since a saved search is
- * meaningless orphaned data without the user it belongs to.
+ * meaningless orphaned data without the user it belongs to — and, per
+ * that same reasoning, nested as `saved_searches` under the owning user's
+ * own entry in `users` (same shape `libraries[].shares` already uses for
+ * "this collection belongs to the entity it's embedded in") rather than a
+ * separate top-level list correlated by an email/id key.
  */
 class BackupSavedSearchesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_backup_includes_saved_searches_keyed_by_user_email(): void
+    public function test_backup_nests_saved_searches_under_their_owning_user(): void
     {
         Storage::fake('local');
         $user = User::factory()->create(['email' => 'owner@example.com']);
@@ -37,10 +41,12 @@ class BackupSavedSearchesTest extends TestCase
         $backup = app(BackupService::class)->create();
         $manifest = $this->readManifest($backup->filename);
 
-        $this->assertArrayHasKey('saved_searches', $manifest);
-        $saved = collect($manifest['saved_searches'])->firstWhere('name', 'Cheap sci-fi books');
-        $this->assertSame('owner@example.com', $saved['user_email']);
+        $exportedUser = collect($manifest['users'])->firstWhere('email', 'owner@example.com');
+        $this->assertNotNull($exportedUser);
+        $saved = collect($exportedUser['saved_searches'])->firstWhere('name', 'Cheap sci-fi books');
         $this->assertSame(['book'], $saved['filters']['media_types']);
+        // Nested under the user — no separate correlation key needed on the entry itself.
+        $this->assertArrayNotHasKey('user_email', $saved);
     }
 
     public function test_ordinary_export_does_not_include_saved_searches(): void
@@ -50,25 +56,29 @@ class BackupSavedSearchesTest extends TestCase
 
         $export = app(ExportImportService::class)->exportLibraries(null);
 
-        $this->assertArrayNotHasKey('saved_searches', $export);
+        $this->assertArrayNotHasKey('users', $export);
     }
 
-    public function test_restoring_with_restore_settings_recreates_saved_searches_by_user_email(): void
+    public function test_restoring_with_restore_settings_recreates_saved_searches_for_the_matching_user(): void
     {
         $admin = User::factory()->create(['level' => 'admin']);
         $target = User::factory()->create(['email' => 'someone@example.com']);
 
         $data = [
             'libraries' => [],
-            'saved_searches' => [
-                ['user_email' => 'someone@example.com', 'name' => 'My search', 'filters' => ['query' => 'foo']],
+            'users' => [
+                [
+                    'name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'hashed', 'level' => 'user', 'is_active' => true,
+                    'saved_searches' => [
+                        ['name' => 'My search', 'filters' => ['query' => 'foo']],
+                    ],
+                ],
             ],
         ];
 
         $result = app(ExportImportService::class)->importLibraries($data, $admin, restoreSettings: true);
 
         $this->assertSame(1, $result['saved_searches_restored']);
-        $this->assertSame(0, $result['saved_searches_skipped']);
         $this->assertDatabaseHas((new SavedSearch)->getTable(), [
             'user_id' => $target->id, 'name' => 'My search',
         ]);
@@ -81,8 +91,8 @@ class BackupSavedSearchesTest extends TestCase
 
         $data = [
             'libraries' => [],
-            'saved_searches' => [
-                ['user_email' => 'someone@example.com', 'name' => 'My search', 'filters' => []],
+            'users' => [
+                ['name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'hashed', 'level' => 'user', 'is_active' => true, 'saved_searches' => [['name' => 'My search', 'filters' => []]]],
             ],
         ];
 
@@ -100,8 +110,11 @@ class BackupSavedSearchesTest extends TestCase
 
         $data = [
             'libraries' => [],
-            'saved_searches' => [
-                ['user_email' => 'someone@example.com', 'name' => 'Fresh search', 'filters' => ['query' => 'foo']],
+            'users' => [
+                [
+                    'name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'hashed', 'level' => 'user', 'is_active' => true,
+                    'saved_searches' => [['name' => 'Fresh search', 'filters' => ['query' => 'foo']]],
+                ],
             ],
         ];
 
@@ -113,27 +126,8 @@ class BackupSavedSearchesTest extends TestCase
         $this->assertSame(['Fresh search'], SavedSearch::query()->where('user_id', $target->id)->pluck('name')->all());
     }
 
-    /** A saved search belonging to a user this instance doesn't have (e.g. a since-deleted account on the source instance) is skipped, same tolerance restoreShares() already has for a stale scope=user email. */
-    public function test_restoring_skips_a_saved_search_whose_user_email_matches_no_account(): void
-    {
-        $admin = User::factory()->create(['level' => 'admin']);
-
-        $data = [
-            'libraries' => [],
-            'saved_searches' => [
-                ['user_email' => 'nobody@example.com', 'name' => 'Orphaned', 'filters' => []],
-            ],
-        ];
-
-        $result = app(ExportImportService::class)->importLibraries($data, $admin, restoreSettings: true);
-
-        $this->assertSame(0, $result['saved_searches_restored']);
-        $this->assertSame(1, $result['saved_searches_skipped']);
-        $this->assertSame(0, SavedSearch::query()->count());
-    }
-
-    /** A user's saved searches are left alone entirely when the backup contains none for them — restoring only ever clears what it's about to replace. */
-    public function test_a_user_with_no_saved_searches_in_the_backup_keeps_their_own_untouched(): void
+    /** A user with no saved_searches key in the backup at all keeps their own untouched — restoring only ever clears what it's about to replace, and never runs for a user not present in the payload to begin with. */
+    public function test_a_user_absent_from_the_backup_keeps_their_own_saved_searches_untouched(): void
     {
         $admin = User::factory()->create(['level' => 'admin']);
         $untouchedUser = User::factory()->create(['email' => 'untouched@example.com']);
@@ -142,8 +136,8 @@ class BackupSavedSearchesTest extends TestCase
         $otherUser = User::factory()->create(['email' => 'someone@example.com']);
         $data = [
             'libraries' => [],
-            'saved_searches' => [
-                ['user_email' => 'someone@example.com', 'name' => 'Restored', 'filters' => []],
+            'users' => [
+                ['name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'hashed', 'level' => 'user', 'is_active' => true, 'saved_searches' => [['name' => 'Restored', 'filters' => []]]],
             ],
         ];
 
@@ -151,6 +145,19 @@ class BackupSavedSearchesTest extends TestCase
 
         $this->assertDatabaseHas((new SavedSearch)->getTable(), ['user_id' => $untouchedUser->id, 'name' => 'Keep me']);
         $this->assertDatabaseHas((new SavedSearch)->getTable(), ['user_id' => $otherUser->id, 'name' => 'Restored']);
+    }
+
+    /** A user with no saved searches of their own exports (and round-trips) an empty array, not a missing key — nothing downstream needs to special-case its absence. */
+    public function test_a_user_with_no_saved_searches_exports_an_empty_array(): void
+    {
+        Storage::fake('local');
+        User::factory()->create(['email' => 'nobody-saved-anything@example.com']);
+
+        $backup = app(BackupService::class)->create();
+        $manifest = $this->readManifest($backup->filename);
+
+        $exportedUser = collect($manifest['users'])->firstWhere('email', 'nobody-saved-anything@example.com');
+        $this->assertSame([], $exportedUser['saved_searches']);
     }
 
     private function readManifest(string $filename): array

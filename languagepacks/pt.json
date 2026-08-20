@@ -334,9 +334,7 @@
         "confirm": "Restaurar o backup \"{{filename}}\"? Esta ação não pode ser desfeita.",
         "success": "Restauração concluída: {{created}} criada(s), {{overwritten}} sobrescrita(s), {{merged}} mesclada(s), {{skipped}} ignorada(s).",
         "sharesSkipped_one": "{{count}} compartilhamento ignorado (nenhuma conta correspondente).",
-        "sharesSkipped_other": "{{count}} compartilhamentos ignorados (nenhuma conta correspondente).",
-        "savedSearchesSkipped_one": "{{count}} pesquisa salva ignorada (nenhuma conta correspondente).",
-        "savedSearchesSkipped_other": "{{count}} pesquisas salvas ignoradas (nenhuma conta correspondente)."
+        "sharesSkipped_other": "{{count}} compartilhamentos ignorados (nenhuma conta correspondente)."
       },
       "exportImportPage": {
         "exportTitle": "Exportar",

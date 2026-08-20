@@ -335,9 +335,7 @@
         "confirm": "Gjenopprette sikkerhetskopi \"{{filename}}\"? Dette kan ikke angres.",
         "success": "Gjenoppretting fullført: {{created}} opprettet, {{overwritten}} overskrevet, {{merged}} slått sammen, {{skipped}} hoppet over.",
         "sharesSkipped_one": "{{count}} deling hoppet over (ingen matchende konto).",
-        "sharesSkipped_other": "{{count}} delinger hoppet over (ingen matchende konto).",
-        "savedSearchesSkipped_one": "{{count}} lagret søk hoppet over (ingen matchende konto).",
-        "savedSearchesSkipped_other": "{{count}} lagrede søk hoppet over (ingen matchende konto)."
+        "sharesSkipped_other": "{{count}} delinger hoppet over (ingen matchende konto)."
       },
       "exportImportPage": {
         "exportTitle": "Eksport",
