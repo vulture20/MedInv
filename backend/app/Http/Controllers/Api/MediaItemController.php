@@ -419,8 +419,12 @@ class MediaItemController extends Controller
                 'disc_count' => ['nullable', 'integer', 'min:1'],
                 'runtime_minutes' => ['nullable', 'integer'],
                 'languages' => ['nullable', 'string'],
+                // GitHub issue #140.
+                'subtitles' => ['nullable', 'string'],
                 'cast' => ['nullable', 'string'],
                 'director' => ['nullable', 'string'],
+                // GitHub issue #140 — same free-text shape as MediaBook::genre.
+                'genre' => ['nullable', 'string'],
                 'release_date' => ['nullable', 'date'],
                 'production_year' => ['nullable', 'integer'],
                 'price' => ['nullable', 'numeric'],

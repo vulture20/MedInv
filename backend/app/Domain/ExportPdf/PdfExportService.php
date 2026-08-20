@@ -439,7 +439,8 @@ class PdfExportService
         // "Sprache(n) (DVD/Blu-ray)" disambiguation SearchFilterPanel.tsx's
         // labelWithMediaTypes() already provides client-side.
         foreach ([
-            ['field' => 'genre', 'values' => $filters->genre, 'types' => ['book']],
+            // GitHub issue #140: genre now spans book and DVD/Blu-ray.
+            ['field' => 'genre', 'values' => $filters->genre, 'types' => ['book', 'dvd_bluray']],
             ['field' => 'format', 'values' => $filters->format, 'types' => ['book']],
             ['field' => 'language', 'values' => $filters->language, 'types' => ['book']],
             ['field' => 'medium', 'values' => $filters->medium, 'types' => ['cd', 'dvd_bluray']],

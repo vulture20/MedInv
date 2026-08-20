@@ -98,6 +98,13 @@ class UpcMdbProviderTest extends TestCase
             'medium' => 'DVD (Repackaged)',
             'director' => 'Stanley Kubrick',
             'cast' => 'Matthew Modine, R. Lee Ermey, Vincent D\'Onofrio',
+            // GitHub issue #140: 'genre' was already present in the
+            // documented response fixture above but never mapped until now.
+            'genre' => 'Drama, War',
+            // Not part of UPCMDB's documented response — see this
+            // provider's own docblock — so absent from sampleResponse()
+            // and expected to stay null here.
+            'subtitles' => null,
             'production_year' => 1987,
             'runtime_minutes' => 116,
             'ean' => '853901163114',

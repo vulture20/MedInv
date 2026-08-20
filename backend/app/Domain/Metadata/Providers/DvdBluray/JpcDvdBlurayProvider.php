@@ -21,6 +21,13 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * docblock for why. `medium` itself no longer repeats that count
  * (GitHub issue #138: "2 DVDs" → "DVD") — see `stripJpcDiscCount()`'s
  * own docblock.
+ *
+ * `genre`/`subtitles` (GitHub issue #140) come from confirmed real
+ * `Genre:`/`Untertitel:` detail-row labels — `genre` was already
+ * extracted by `JpcScraping::jpcProductPage()` (used by
+ * `JpcBookProvider` since MediaBook was the only model with a `genre`
+ * column at the time), just never mapped here until `MediaDvdBluray`
+ * gained one too.
  */
 class JpcDvdBlurayProvider implements MetadataProviderInterface
 {
@@ -101,7 +108,10 @@ class JpcDvdBlurayProvider implements MetadataProviderInterface
                 'disc_count' => $page['disc_count'],
                 'runtime_minutes' => $page['runtime_minutes'],
                 'languages' => $page['languages'],
+                // GitHub issue #140.
+                'subtitles' => $page['subtitles'],
                 'director' => $page['director'] ?? $page['byline'],
+                'genre' => $page['genre'],
                 'release_date' => $page['release_date'],
                 'production_year' => $page['release_date'] ? (int) substr($page['release_date'], 0, 4) : null,
                 // The originally-scanned code — see JpcCdProvider::mapProductPageToCandidate()'s matching comment.

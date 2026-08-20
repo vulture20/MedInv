@@ -59,7 +59,8 @@ class SearchService
     public const SEARCHABLE_COLUMNS = [
         MediaBook::class => ['title', 'description', 'authors', 'format', 'genre', 'language', 'publisher', 'isbn10', 'isbn13', 'ean', 'location'],
         MediaCd::class => ['title', 'description', 'artist', 'medium', 'asin', 'ean', 'location'],
-        MediaDvdBluray::class => ['title', 'description', 'medium', 'languages', 'cast', 'director', 'ean', 'location'],
+        // GitHub issue #140: 'genre'/'subtitles' added alongside the columns they were added next to.
+        MediaDvdBluray::class => ['title', 'description', 'medium', 'languages', 'subtitles', 'cast', 'director', 'genre', 'ean', 'location'],
     ];
 
     /**
@@ -176,7 +177,7 @@ class SearchService
      * every visible library at once rather than counts grouped per
      * library. Feeds SearchPage.tsx's filter <select>s.
      *
-     * @return array{book: array{genre: string[], format: string[], language: string[]}, cd: array{medium: string[]}, dvd_bluray: array{medium: string[], languages: string[]}}
+     * @return array{book: array{genre: string[], format: string[], language: string[]}, cd: array{medium: string[]}, dvd_bluray: array{medium: string[], languages: string[], genre: string[]}}
      */
     public function filterOptionsFor(User $user): array
     {
@@ -197,6 +198,8 @@ class SearchService
                 // (e.g. "Deutsch, Englisch") — same split StatisticsService::
                 // multiValueDistribution() already does, just without counts.
                 'languages' => $this->distinctMultiValues(MediaDvdBluray::class, 'languages', $visibleLibraryIds),
+                // GitHub issue #140: shares SearchFilters::$genre with book's own entry above — SearchFilterPanel.tsx merges both option lists into one <select>, same as it already does for medium (cd+dvd_bluray).
+                'genre' => $this->distinctValues(MediaDvdBluray::class, 'genre', $visibleLibraryIds),
             ],
         ];
     }
@@ -363,13 +366,14 @@ class SearchService
             }
         }
 
-        $bookAttributeActive = $filters->genre !== [] || $filters->format !== [] || $filters->language !== []
+        // `format`/`language`/`page_count` remain book-only.
+        $bookOnlyAttributeActive = $filters->format !== [] || $filters->language !== []
             || $filters->pageCountMin !== null || $filters->pageCountMax !== null;
-        if ($bookAttributeActive && $modelClass !== MediaBook::class) {
+        if ($bookOnlyAttributeActive && $modelClass !== MediaBook::class) {
             return null;
         }
         if ($modelClass === MediaBook::class) {
-            foreach (['genre' => $filters->genre, 'format' => $filters->format, 'language' => $filters->language] as $column => $values) {
+            foreach (['format' => $filters->format, 'language' => $filters->language] as $column => $values) {
                 if ($values !== []) {
                     $query->whereIn($column, $values);
                 }
@@ -380,6 +384,18 @@ class SearchService
             if ($filters->pageCountMax !== null) {
                 $query->where('page_count', '<=', $filters->pageCountMax);
             }
+        }
+
+        // GitHub issue #140: `genre` is shared by book and DVD/Blu-ray
+        // (both have a `genre` column) — the one attribute filter that
+        // isn't exclusively book-only, so it's handled separately from
+        // the book-only group above rather than excluding DVD/Blu-ray
+        // from the whole search whenever a genre filter is active.
+        if ($filters->genre !== [] && $modelClass === MediaCd::class) {
+            return null;
+        }
+        if ($filters->genre !== [] && $modelClass !== MediaCd::class) {
+            $query->whereIn('genre', $filters->genre);
         }
 
         if ($filters->languages !== [] && $modelClass !== MediaDvdBluray::class) {

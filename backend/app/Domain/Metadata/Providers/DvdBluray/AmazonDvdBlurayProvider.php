@@ -17,6 +17,14 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * is passed through `AmazonScraping::stripAmazonFormatContamination()` —
  * see that method's own docblock for why this specific case couldn't be
  * confirmed live the way #137's book-side fix was.
+ *
+ * `genre`/`subtitles` (GitHub issue #140) are best-effort `amazonBullet()`
+ * label guesses ("Genre"/"Genres", "Subtitles") — unlike JPC's equivalent
+ * fields, neither label was ever seen on a real Amazon page (the one live
+ * check this provider ever got, #137, was a book page, and #139's two DVD
+ * re-check attempts were both blocked by Amazon's bot detection before
+ * any markup could be inspected), so treat these two specifically as
+ * unconfirmed even by this provider's own already-cautious standards.
  */
 class AmazonDvdBlurayProvider implements MetadataProviderInterface
 {
@@ -107,6 +115,14 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
                 // the same defensive treatment here too.
                 'cast' => $this->stripAmazonFormatContamination($this->amazonBullet($bullets, 'Actors')) ?? $page['byline'],
                 'director' => $this->amazonBullet($bullets, 'Director', 'Directors'),
+                // GitHub issue #140: unconfirmed guesses — neither label
+                // was seen on the one real Amazon page ever checked
+                // (#137's book page, a different category), so this is a
+                // plausible-label attempt rather than a confirmed
+                // extraction, same restraint as every other Amazon field
+                // that's never been individually re-verified.
+                'genre' => $this->amazonBullet($bullets, 'Genre', 'Genres'),
+                'subtitles' => $this->amazonBullet($bullets, 'Subtitles', 'Subtitles:'),
                 'release_date' => $releaseDate,
                 'production_year' => $releaseDate ? (int) substr($releaseDate, 0, 4) : null,
                 'ean' => $code,

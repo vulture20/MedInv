@@ -22,7 +22,8 @@ class ClaudeDvdBlurayProvider implements MetadataProviderInterface
      * ClaudeMetadataProvider's docblock). `languages` is a plain
      * free-text column (see the media_dvd_blurays migration), not a JSON
      * array — same shape UpcMdbProvider/AmazonDvdBlurayProvider already
-     * produce, e.g. "English, German".
+     * produce, e.g. "English, German". `genre`/`subtitles` (GitHub issue
+     * #140) follow that same free-text shape.
      */
     private const ITEM_FIELDS = [
         'title' => 'string',
@@ -31,8 +32,10 @@ class ClaudeDvdBlurayProvider implements MetadataProviderInterface
         'disc_count' => 'integer',
         'runtime_minutes' => 'integer',
         'languages' => 'string',
+        'subtitles' => 'string',
         'cast' => 'string',
         'director' => 'string',
+        'genre' => 'string',
         'release_date' => 'string',
         'production_year' => 'integer',
     ];
@@ -85,8 +88,10 @@ class ClaudeDvdBlurayProvider implements MetadataProviderInterface
                 'disc_count' => $item['disc_count'] ?? null,
                 'runtime_minutes' => $item['runtime_minutes'] ?? null,
                 'languages' => $item['languages'] ?? null,
+                'subtitles' => $item['subtitles'] ?? null,
                 'cast' => $item['cast'] ?? null,
                 'director' => $item['director'] ?? null,
+                'genre' => $item['genre'] ?? null,
                 'release_date' => $item['release_date'] ?? null,
                 'production_year' => $item['production_year'] ?? null,
                 'ean' => $ean,

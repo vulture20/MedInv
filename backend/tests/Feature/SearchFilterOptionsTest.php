@@ -54,6 +54,21 @@ class SearchFilterOptionsTest extends TestCase
         $this->assertEqualsCanonicalizing(['English', 'German'], $response->json('dvd_bluray.languages'));
     }
 
+    /** GitHub issue #140: `genre` now has its own distinct-values list for DVD/Blu-ray too, alongside book's own (SearchFilterPanel.tsx merges both into one combined `<select>`, the same pattern `medium` already uses for cd+dvd_bluray). */
+    public function test_returns_distinct_dvd_bluray_genre_values_separately_from_books(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $owner->id]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'Metropolis', 'ean' => '9780000000004', 'genre' => 'Sci-Fi']);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'Casablanca', 'ean' => '9780000000006', 'genre' => 'Drama']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Drama', 'Sci-Fi'], $response->json('dvd_bluray.genre'));
+        $this->assertSame([], $response->json('book.genre'));
+    }
+
     /** Same "not shared -> not findable" rule as search/statistics — an unshared library's genre must not leak into the options list either. */
     public function test_an_unshared_librarys_values_are_excluded(): void
     {

@@ -16,7 +16,7 @@ class OpenAiDvdBlurayProvider implements MetadataProviderInterface
 {
     use OpenAiMetadataProvider;
 
-    /** Identical to ClaudeDvdBlurayProvider::ITEM_FIELDS — see its own docblock. */
+    /** Identical to ClaudeDvdBlurayProvider::ITEM_FIELDS (including GitHub issue #140's `genre`/`subtitles`) — see its own docblock. */
     private const ITEM_FIELDS = [
         'title' => 'string',
         'description' => 'string',
@@ -24,8 +24,10 @@ class OpenAiDvdBlurayProvider implements MetadataProviderInterface
         'disc_count' => 'integer',
         'runtime_minutes' => 'integer',
         'languages' => 'string',
+        'subtitles' => 'string',
         'cast' => 'string',
         'director' => 'string',
+        'genre' => 'string',
         'release_date' => 'string',
         'production_year' => 'integer',
     ];
@@ -78,8 +80,10 @@ class OpenAiDvdBlurayProvider implements MetadataProviderInterface
                 'disc_count' => $item['disc_count'] ?? null,
                 'runtime_minutes' => $item['runtime_minutes'] ?? null,
                 'languages' => $item['languages'] ?? null,
+                'subtitles' => $item['subtitles'] ?? null,
                 'cast' => $item['cast'] ?? null,
                 'director' => $item['director'] ?? null,
+                'genre' => $item['genre'] ?? null,
                 'release_date' => $item['release_date'] ?? null,
                 'production_year' => $item['production_year'] ?? null,
                 'ean' => $ean,

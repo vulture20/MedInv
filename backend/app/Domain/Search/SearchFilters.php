@@ -28,7 +28,7 @@ final class SearchFilters
     /**
      * @param  string[]  $mediaTypes  Subset of ['book','cd','dvd_bluray']; empty = all.
      * @param  int[]  $libraryIds  Empty = every visible library.
-     * @param  string[]  $genre  Book-only.
+     * @param  string[]  $genre  Book and DVD/Blu-ray (GitHub issue #140 added the column to the latter) — not CD, which has no `genre` column.
      * @param  string[]  $format  Book-only.
      * @param  string[]  $language  Book-only.
      * @param  string[]  $medium  CD/DVD-Blu-ray.

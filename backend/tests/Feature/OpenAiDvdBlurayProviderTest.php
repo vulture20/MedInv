@@ -54,8 +54,10 @@ class OpenAiDvdBlurayProviderTest extends TestCase
             'disc_count' => 1,
             'runtime_minutes' => 136,
             'languages' => 'English, German',
+            'subtitles' => 'English, German',
             'cast' => 'Keanu Reeves, Laurence Fishburne',
             'director' => 'Lana Wachowski, Lilly Wachowski',
+            'genre' => 'Science Fiction',
             'release_date' => '1999-03-31',
             'production_year' => 1999,
         ]), 200)]);
@@ -66,6 +68,9 @@ class OpenAiDvdBlurayProviderTest extends TestCase
         $this->assertSame('7321900219658', $candidate->attributes['ean']);
         $this->assertSame(136, $candidate->attributes['runtime_minutes']);
         $this->assertSame('English, German', $candidate->attributes['languages']);
+        // GitHub issue #140.
+        $this->assertSame('English, German', $candidate->attributes['subtitles']);
+        $this->assertSame('Science Fiction', $candidate->attributes['genre']);
         $this->assertSame(1999, $candidate->attributes['production_year']);
         $this->assertSame([], $candidate->coverUrls);
     }
@@ -92,7 +97,7 @@ class OpenAiDvdBlurayProviderTest extends TestCase
         $this->configureApiKey();
         Http::fake([self::API_URL => Http::response($this->responsesApiResponse([
             'items' => [
-                ['found' => true, 'title' => 'The Matrix Reloaded', 'description' => null, 'medium' => null, 'disc_count' => null, 'runtime_minutes' => null, 'languages' => null, 'cast' => null, 'director' => null, 'release_date' => null, 'production_year' => null],
+                ['found' => true, 'title' => 'The Matrix Reloaded', 'description' => null, 'medium' => null, 'disc_count' => null, 'runtime_minutes' => null, 'languages' => null, 'subtitles' => null, 'cast' => null, 'director' => null, 'genre' => null, 'release_date' => null, 'production_year' => null],
             ],
         ]), 200)]);
 

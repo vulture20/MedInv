@@ -253,7 +253,7 @@ trait JpcScraping
      * detail-row label too, but isn't extracted here at all: no in-scope
      * model has a fillable column it would map to — extracting a value
      * with nowhere to put it would just be dead code.
-     * @return array{title: ?string, byline: ?string, format: ?string, disc_count: ?int, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
+     * @return array{title: ?string, byline: ?string, format: ?string, disc_count: ?int, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, subtitles: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
      */
     private function jpcProductPage(string $url, bool $splitTitleOnDash = false): ?array
     {
@@ -292,7 +292,15 @@ trait JpcScraping
             'release_date' => $this->parseJpcDate($this->jpcDetailValue($xpath, 'Erscheinungstermin:')),
             'runtime_minutes' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Spieldauer ca.:')),
             'languages' => $this->jpcDetailValue($xpath, 'Sprache:'),
+            // GitHub issue #140: confirmed real label, but never mapped
+            // into JpcDvdBlurayProvider's own attributes until now.
+            'subtitles' => $this->jpcDetailValue($xpath, 'Untertitel:'),
             'director' => $this->jpcDetailValue($xpath, 'Regie:'),
+            // GitHub issue #140: was already extracted here (confirmed
+            // real "Genre:" label) but never mapped into
+            // JpcDvdBlurayProvider's own attributes until now — MediaBook
+            // is the only model with a `genre` column at the time this
+            // extraction was first added.
             'genre' => $this->jpcDetailValue($xpath, 'Genre:'),
             'publisher' => $this->stripJpcPublisherSuffix($this->jpcDetailValue($xpath, 'Verlag:')),
             'page_count' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Umfang:')),

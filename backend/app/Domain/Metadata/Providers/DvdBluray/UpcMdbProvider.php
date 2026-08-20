@@ -23,6 +23,15 @@ use Illuminate\Support\Facades\Http;
  * this — metadata_plugins.config (see MetadataController::updatePlugin()) —
  * rather than a new system_settings entry or MEDINV_* env var, since it's
  * already exactly the place this app stores per-provider configuration.
+ *
+ * `genre` (GitHub issue #140) *is* one of UPCMDB's documented response
+ * fields — it was already present in this class's own test fixture (built
+ * from the real API reference) but never mapped into a candidate until
+ * MediaDvdBluray gained a `genre` column to map it onto. `subtitles` isn't
+ * documented anywhere in that same reference, so `$item['subtitles']` is a
+ * best-effort key guess that simply stays null if wrong, the same
+ * "plausible guess, not a confirmed field" caution this session applied to
+ * Amazon's equivalent field.
  */
 class UpcMdbProvider implements MetadataProviderInterface
 {
@@ -143,6 +152,15 @@ class UpcMdbProvider implements MetadataProviderInterface
                 'medium' => $item['format'] ?? null,
                 'director' => $item['director'] ?? null,
                 'cast' => $item['actors'] ?? null,
+                // GitHub issue #140: `genre` *is* a documented UPCMDB
+                // response field (see this class's own test fixture,
+                // already modeled on the real API reference, which already
+                // carried a 'genre' => 'Drama, War' entry nobody had mapped
+                // yet) — `subtitles` is not documented anywhere in that
+                // same reference, so it's a best-effort key guess that
+                // simply stays null if wrong.
+                'genre' => $item['genre'] ?? null,
+                'subtitles' => $item['subtitles'] ?? null,
                 'production_year' => $item['year'] ?? null,
                 'runtime_minutes' => $this->parseRuntimeMinutes($item['runtime'] ?? null),
                 'ean' => $ean ?? $item['upc'] ?? null,

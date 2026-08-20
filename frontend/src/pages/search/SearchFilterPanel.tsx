@@ -6,7 +6,7 @@ import type { SearchField, SearchFiltersState } from './searchFilters'
 export interface SearchFilterOptions {
   book: { genre: string[]; format: string[]; language: string[] }
   cd: { medium: string[] }
-  dvd_bluray: { medium: string[]; languages: string[] }
+  dvd_bluray: { medium: string[]; languages: string[]; genre: string[] }
 }
 
 const MEDIA_TYPES: MediaType[] = ['book', 'cd', 'dvd_bluray']
@@ -103,6 +103,9 @@ export function SearchFilterPanel({
   // rather than two separate ones for what's the exact same filter param.
   const mediumOptions = Array.from(new Set([...(filterOptions?.cd.medium ?? []), ...(filterOptions?.dvd_bluray.medium ?? [])])).sort()
 
+  // `genre` (GitHub issue #140) applies to book and DVD-Blu-ray alike — same combined-<select> pattern as `medium` above.
+  const genreOptions = Array.from(new Set([...(filterOptions?.book.genre ?? []), ...(filterOptions?.dvd_bluray.genre ?? [])])).sort()
+
   /**
    * GitHub issue #123 — every attribute filter here only ever applies to a
    * subset of media types (mediaItem.fields.* labels are shared with
@@ -177,8 +180,8 @@ export function SearchFilterPanel({
 
       <div className="search-filters__row">
         <MultiSelect
-          label={labelWithMediaTypes('mediaItem.fields.genre', ['book'])}
-          options={filterOptions?.book.genre ?? []}
+          label={labelWithMediaTypes('mediaItem.fields.genre', ['book', 'dvd_bluray'])}
+          options={genreOptions}
           value={draft.genre}
           onChange={(genre) => onChange({ genre })}
         />

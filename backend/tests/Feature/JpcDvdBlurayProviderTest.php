@@ -47,7 +47,9 @@ class JpcDvdBlurayProviderTest extends TestCase
               <dt><b>Erscheinungstermin:</b></dt><dd>5.5.2017</dd>
               <dt><b>Spieldauer ca.:</b></dt><dd>119 Min.</dd>
               <dt><b>Regie:</b></dt><dd>Hayao Miyazaki</dd>
+              <dt><b>Genre:</b></dt><dd>Anime</dd>
               <dt><b>Sprache:</b></dt><dd>Deutsch, Japanisch</dd>
+              <dt><b>Untertitel:</b></dt><dd>Deutsch</dd>
             </dl>
             </body></html>
             HTML;
@@ -69,6 +71,9 @@ class JpcDvdBlurayProviderTest extends TestCase
         $this->assertSame(119, $candidate->attributes['runtime_minutes']);
         $this->assertSame('Hayao Miyazaki', $candidate->attributes['director']);
         $this->assertSame('Deutsch, Japanisch', $candidate->attributes['languages']);
+        // GitHub issue #140.
+        $this->assertSame('Anime', $candidate->attributes['genre']);
+        $this->assertSame('Deutsch', $candidate->attributes['subtitles']);
         $this->assertSame('2017-05-05', $candidate->attributes['release_date']);
         $this->assertSame(2017, $candidate->attributes['production_year']);
         $this->assertSame('0889853970292', $candidate->attributes['ean']);

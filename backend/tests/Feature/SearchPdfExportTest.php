@@ -97,7 +97,8 @@ class SearchPdfExportTest extends TestCase
         $text = $this->pdfText($response);
         $this->assertStringContainsString('Search term: Dune', $text);
         $this->assertStringContainsString('Media type: Book', $text);
-        $this->assertStringContainsString('Genre (Book): Sci-Fi', $text);
+        // GitHub issue #140: genre now spans book and DVD/Blu-ray.
+        $this->assertStringContainsString('Genre (Book, DVD/Blu-ray): Sci-Fi', $text);
         $this->assertStringContainsString('Price: ≥ 5', $text);
     }
 

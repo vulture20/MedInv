@@ -32,6 +32,7 @@ export interface MediaItem {
   // book
   authors?: string | null
   format?: string | null
+  /** Book and, since GitHub issue #140, DVD/Blu-ray too — the same column concept on both, not two unrelated fields that happen to share a name. */
   genre?: string | null
   page_count?: number | null
   language?: string | null
@@ -56,6 +57,8 @@ export interface MediaItem {
   medium?: string | null
   runtime_minutes?: number | null
   languages?: string | null
+  /** GitHub issue #140 — e.g. "Deutsch, Englisch", the same free-text comma-separated shape `languages` already uses on this media type. */
+  subtitles?: string | null
   cast?: string | null
   director?: string | null
   production_year?: number | null
@@ -146,8 +149,10 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'disc_count', type: 'number' },
     { key: 'runtime_minutes', type: 'number' },
     { key: 'languages', type: 'text' },
+    { key: 'subtitles', type: 'text' },
     { key: 'cast', type: 'text' },
     { key: 'director', type: 'text' },
+    { key: 'genre', type: 'text' },
     { key: 'release_date', type: 'date' },
     { key: 'production_year', type: 'number' },
     { key: 'price', type: 'number' },

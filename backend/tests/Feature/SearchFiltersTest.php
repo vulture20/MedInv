@@ -133,7 +133,7 @@ class SearchFiltersTest extends TestCase
         $this->assertSame(['Metropolis'], $this->titles($response));
     }
 
-    public function test_genre_filter_matches_only_books_with_that_genre_and_excludes_other_media_types(): void
+    public function test_genre_filter_matches_a_book_with_that_genre_and_excludes_cd(): void
     {
         $owner = $this->actingAsUser();
         $this->seedOneOfEach($owner);
@@ -150,6 +150,32 @@ class SearchFiltersTest extends TestCase
         $this->seedOneOfEach($owner);
 
         $response = $this->getJson('/api/search?genre[]=Romance');
+
+        $response->assertOk();
+        $this->assertCount(0, $response->json());
+    }
+
+    /** GitHub issue #140: `genre` now spans book and DVD/Blu-ray (both have a `genre` column) — not just book. */
+    public function test_genre_filter_also_matches_a_dvd_bluray_item_with_that_genre(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+        MediaDvdBluray::query()->where('title', 'Metropolis')->update(['genre' => 'Sci-Fi']);
+
+        $response = $this->getJson('/api/search?genre[]=Sci-Fi');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Dune', 'Metropolis'], $this->titles($response));
+    }
+
+    /** GitHub issue #140: `genre` still excludes CD — MediaCd has no `genre` column at all. */
+    public function test_genre_filter_still_excludes_cd_even_when_a_cd_titles_matches_incidentally(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+        MediaDvdBluray::query()->where('title', 'Metropolis')->update(['genre' => 'Sci-Fi']);
+
+        $response = $this->getJson('/api/search?genre[]=Sci-Fi&media_types[]=cd');
 
         $response->assertOk();
         $this->assertCount(0, $response->json());

@@ -41,6 +41,8 @@ class AmazonDvdBlurayProviderTest extends TestCase
                 <li><span class="a-list-item"><span class="a-text-bold">Run time &rlm;: &lrm;</span><span>117 minutes</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Director &rlm;: &lrm;</span><span>Ridley Scott</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Language &rlm;: &lrm;</span><span>English</span></span></li>
+                <li><span class="a-list-item"><span class="a-text-bold">Genre &rlm;: &lrm;</span><span>Science Fiction</span></span></li>
+                <li><span class="a-list-item"><span class="a-text-bold">Subtitles &rlm;: &lrm;</span><span>English</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Release Date &rlm;: &lrm;</span><span>October 4, 2007</span></span></li>
               </ul>
             </div>
@@ -62,6 +64,9 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertSame(117, $candidate->attributes['runtime_minutes']);
         $this->assertSame('Ridley Scott', $candidate->attributes['director']);
         $this->assertSame('English', $candidate->attributes['languages']);
+        // GitHub issue #140: unconfirmed guesses — see this provider's own docblock.
+        $this->assertSame('Science Fiction', $candidate->attributes['genre']);
+        $this->assertSame('English', $candidate->attributes['subtitles']);
         $this->assertSame('2007-10-04', $candidate->attributes['release_date']);
         $this->assertSame(2007, $candidate->attributes['production_year']);
         $this->assertSame('012569783680', $candidate->attributes['ean']);
