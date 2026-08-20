@@ -124,6 +124,7 @@
       "fields": {
         "title": "Tittel",
         "ean": "EAN",
+        "library": "Bibliotek",
         "description": "Beskrivelse",
         "release_date": "Utgivelsesdato",
         "price": "Pris",

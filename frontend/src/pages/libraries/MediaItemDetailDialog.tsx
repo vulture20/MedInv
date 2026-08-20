@@ -370,6 +370,11 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                     </dd>
                   </div>
                 ))}
+              {/* The item's current library (GitHub issue #117) — not a FIELD_SPECS entry: it's the `library` prop, not one of the item's own attributes, and isn't editable here (moving to a different library already has its own dedicated "move" flow below). Placed last, after `description` (FIELD_SPECS' own last field for every media type) and before the CD track listing rendered just below this <dl>. */}
+              <div className="media-item-dialog__row">
+                <dt>{t('mediaItem.fields.library')}</dt>
+                <dd>{library.name}</dd>
+              </div>
             </dl>
           )}
 

@@ -94,6 +94,7 @@
       "fields": {
         "title": "タイトル",
         "ean": "EAN",
+        "library": "ライブラリ",
         "description": "説明",
         "release_date": "発売日",
         "price": "価格",

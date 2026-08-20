@@ -124,6 +124,7 @@
       "fields": {
         "title": "Titill",
         "ean": "EAN",
+        "library": "Safn",
         "description": "Lýsing",
         "release_date": "Útgáfudagur",
         "price": "Verð",

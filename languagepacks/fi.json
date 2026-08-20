@@ -124,6 +124,7 @@
       "fields": {
         "title": "Nimike",
         "ean": "EAN",
+        "library": "Kirjasto",
         "description": "Kuvaus",
         "release_date": "Julkaisupäivä",
         "price": "Hinta",

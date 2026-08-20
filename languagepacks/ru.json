@@ -94,6 +94,7 @@
       "fields": {
         "title": "Название",
         "ean": "EAN",
+        "library": "Библиотека",
         "description": "Описание",
         "release_date": "Дата выхода",
         "price": "Цена",

@@ -121,6 +121,7 @@
     "fields": {
       "title": "Title",
       "ean": "EAN",
+      "library": "Library",
       "cover_path": "Cover",
       "description": "Description",
       "release_date": "Release date",

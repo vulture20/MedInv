@@ -94,6 +94,7 @@
       "fields": {
         "title": "Titel",
         "ean": "EAN",
+        "library": "Bibliotheek",
         "description": "Beschrijving",
         "release_date": "Releasedatum",
         "price": "Prijs",

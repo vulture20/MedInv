@@ -94,6 +94,7 @@
       "fields": {
         "title": "标题",
         "ean": "EAN",
+        "library": "媒体库",
         "description": "描述",
         "release_date": "发行日期",
         "price": "价格",
