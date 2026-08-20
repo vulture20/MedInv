@@ -296,6 +296,39 @@ export function SearchPage() {
 
       {hasResults && (
         <section className="panel-card" ref={resultsRef}>
+          {/* GitHub issue #121, GitHub issue #127 — left, above the results
+              count (same .library-items-toolbar wrapper shape
+              LibraryDetailPage.tsx's own export button sits in, just above
+              instead of below the count here per explicit request). A plain
+              GET navigation (same window.location.href pattern
+              LibraryDetailPage.tsx/ReportDetailPage.tsx's own PDF export
+              buttons already use, so the browser's normal
+              Content-Disposition handling and already-authenticated session
+              cookie do the rest), built with the exact same filter params as
+              the results just fetched above — the export always matches
+              what's currently on screen, not a second, separately-tracked
+              "last search". apiClient.getUri() (not the
+              setSearchParams-oriented filtersToSearchParamsInit()) since
+              this needs the bracket-style array serialization
+              (`media_types[]=...`) the backend's query-string parsing
+              actually expects, the same shape apiClient's own GET /search
+              request already sends. sort_by/sort_dir ride along too (GitHub
+              issue #127) so the exported row order matches whatever's
+              currently on screen, whether set via the "Sortieren nach"
+              <select> below or by clicking a column header. */}
+          <div className="search-results__toolbar">
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = apiClient.getUri({
+                  url: '/search/export/pdf',
+                  params: { ...filtersToRequestParams(appliedFilters), ...(sortBy ? { sort_by: sortBy, sort_dir: sortDir } : {}) },
+                })
+              }}
+            >
+              {t('reports.exportPdf')}
+            </button>
+          </div>
           <div className="search-results__header">
             {/* GitHub issue #109 — mirrors LibraryDetailPage's <h2>{itemsTitle}</h2>, shown even at 0 results (still followed by the noResults hint below), so a search never leaves the hit count to be counted by eye. */}
             <h2>{t('search.resultsTitle', { count: sortedResults.length })}</h2>
@@ -310,25 +343,6 @@ export function SearchPage() {
                 <option value="created_at">{t('reports.recentAdditions.addedAt')}</option>
               </select>
             </label>
-            {/* GitHub issue #121 — a plain GET navigation (same window.location.href
-                pattern LibraryDetailPage.tsx/ReportDetailPage.tsx's own PDF export
-                buttons already use, so the browser's normal Content-Disposition
-                handling and already-authenticated session cookie do the rest), built
-                with the exact same filter params as the results just fetched above —
-                the export always matches what's currently on screen, not a second,
-                separately-tracked "last search". apiClient.getUri() (not the
-                setSearchParams-oriented filtersToSearchParamsInit()) since this needs
-                the bracket-style array serialization (`media_types[]=...`) the
-                backend's query-string parsing actually expects, the same shape
-                apiClient's own GET /search request already sends. */}
-            <button
-              type="button"
-              onClick={() => {
-                window.location.href = apiClient.getUri({ url: '/search/export/pdf', params: filtersToRequestParams(appliedFilters) })
-              }}
-            >
-              {t('reports.exportPdf')}
-            </button>
           </div>
           {results.length === 0 ? (
             <p className="hint">{t('search.noResults')}</p>

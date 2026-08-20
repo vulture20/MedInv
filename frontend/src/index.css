@@ -2050,6 +2050,15 @@ td {
   color: var(--color-accent);
 }
 
+/* GitHub issue #127 — the PDF export button's own row, above .search-results__header (same shape .library-items-toolbar already has, LibraryDetailPage.tsx's own PDF export button lives in one too, just below its item count there instead of above). */
+.search-results__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
 .search-results__header {
   display: flex;
   flex-wrap: wrap;

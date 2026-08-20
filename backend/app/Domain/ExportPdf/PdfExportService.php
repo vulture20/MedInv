@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\PDF as PdfDocument;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use NumberFormatter;
 
 /**
@@ -312,10 +313,10 @@ class PdfExportService
      * labels SearchFilterPanel.tsx shows for each one, not a fresh set of
      * wording invented for this one view.
      */
-    public function searchResultsPdf(User $user, SearchFilters $filters): PdfDocument
+    public function searchResultsPdf(User $user, SearchFilters $filters, ?string $sortBy = null, string $sortDir = 'asc'): PdfDocument
     {
         $lang = $this->languageFor($user);
-        $hits = $this->searchService->search($user, $filters);
+        $hits = $this->sortHits($this->searchService->search($user, $filters), $sortBy, $sortDir);
 
         $rows = $hits->map(fn (Model $item) => [
             'title' => $item->title,
@@ -335,6 +336,43 @@ class PdfExportService
             'locationHeader' => $this->tr($lang, 'mediaItem.fields.location'),
             'rows' => $rows,
         ]);
+    }
+
+    /**
+     * GitHub issue #127 — mirrors SearchPage.tsx's own client-side
+     * `sortedResults` (the exact same seven columns: title/ean/library/
+     * location/release_date/price/created_at) so the exported PDF's row
+     * order matches whatever's currently on screen, whether that was set
+     * via the "Sortieren nach" <select> or by clicking a column header —
+     * both write to the same sortBy/sortDir state there, and both are
+     * forwarded here as one pair of query params (SearchController::
+     * exportPdf()). `strnatcasecmp` (case-insensitive, numeric-aware) is
+     * the closest built-in PHP equivalent to the frontend's own
+     * `localeCompare(..., { numeric: true })` — not a byte-for-byte
+     * identical collation (true locale-aware sorting differs subtly by
+     * language), but close enough that a title beginning "10 ..." still
+     * sorts after "9 ..." rather than before it, matching the frontend's
+     * own stated intent rather than plain lexicographic ordering.
+     *
+     * `$sortBy === null` (no sort requested at all) returns $hits
+     * unchanged — the same "natural", unsorted order the export always
+     * had before this issue.
+     */
+    private function sortHits(Collection $hits, ?string $sortBy, string $sortDir): Collection
+    {
+        if ($sortBy === null) {
+            return $hits;
+        }
+
+        $valueOf = fn (Model $item) => match ($sortBy) {
+            'library' => $item->library->name,
+            'release_date', 'created_at' => (string) ($item->{$sortBy}?->toDateString() ?? ''),
+            default => (string) ($item->{$sortBy} ?? ''),
+        };
+
+        $sorted = $hits->sort(fn (Model $a, Model $b) => strnatcasecmp($valueOf($a), $valueOf($b)));
+
+        return $sortDir === 'desc' ? $sorted->reverse()->values() : $sorted->values();
     }
 
     /**

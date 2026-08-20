@@ -57,6 +57,16 @@ class SearchPdfExportTest extends TestCase
         $response->assertStatus(422);
     }
 
+    /** GitHub issue #127 — sort_by is validated against the same seven columns SearchPage.tsx's SortColumn union offers. */
+    public function test_an_invalid_sort_by_422s(): void
+    {
+        $this->actingAsUser();
+
+        $response = $this->get('/api/search/export/pdf?sort_by=not-a-real-column');
+
+        $response->assertStatus(422);
+    }
+
     private function pdfText(TestResponse $response): string
     {
         $tmp = tempnam(sys_get_temp_dir(), 'medinv-pdf-test');
@@ -124,6 +134,26 @@ class SearchPdfExportTest extends TestCase
         $this->assertStringContainsString('Shelf 3', $text);
         // media_types[]=book excludes the CD from the result set entirely.
         $this->assertStringNotContainsString('OK Computer', $text);
+    }
+
+    /** GitHub issue #127 — the exported row order must match sort_by/sort_dir, the same params SearchPage.tsx now sends whether the sort was set via its "Sortieren nach" <select> or by clicking a column header. */
+    public function test_sort_by_and_sort_dir_control_the_exported_row_order(): void
+    {
+        $this->skipUnlessPdftotextAvailable();
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Zebra', 'ean' => '9780000000001']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Apple', 'ean' => '9780000000002']);
+
+        $ascResponse = $this->get('/api/search/export/pdf?sort_by=title&sort_dir=asc');
+        $ascResponse->assertOk();
+        $ascending = $this->pdfText($ascResponse);
+        $this->assertLessThan(strpos($ascending, 'Zebra'), strpos($ascending, 'Apple'));
+
+        $descResponse = $this->get('/api/search/export/pdf?sort_by=title&sort_dir=desc');
+        $descResponse->assertOk();
+        $descending = $this->pdfText($descResponse);
+        $this->assertLessThan(strpos($descending, 'Apple'), strpos($descending, 'Zebra'));
     }
 
     /** Same "not shared -> not findable" rule search/statistics already enforce end-to-end (LibraryVisibilityInSearchAndStatisticsTest.php) — the PDF export must not become a side door around it. */

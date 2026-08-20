@@ -35,12 +35,30 @@ class SearchController extends Controller
         return $this->searchService->filterOptionsFor($request->user());
     }
 
-    /** GitHub issue #121 — the current search result set as a PDF, same filter params as search() above (a plain GET, matching how SearchPage.tsx's own request-building already works) so the export always reflects exactly the criteria that were actually applied, not a second, separately-tracked "what was last searched for". */
+    /**
+     * GitHub issue #121 — the current search result set as a PDF, same
+     * filter params as search() above (a plain GET, matching how
+     * SearchPage.tsx's own request-building already works) so the export
+     * always reflects exactly the criteria that were actually applied, not
+     * a second, separately-tracked "what was last searched for".
+     *
+     * `sort_by`/`sort_dir` (GitHub issue #127) are validated separately
+     * from filtersFromRequest()'s shared rule set — they're presentation
+     * order, not a filter criterion, and search() itself has no use for
+     * them at all (GET /search's results are sorted client-side, see
+     * SearchPage.tsx's own sortedResults). Both optional: an export with
+     * no explicit sort renders in whatever order SearchService::search()
+     * itself returns, same as before this issue.
+     */
     public function exportPdf(Request $request)
     {
         $filters = $this->filtersFromRequest($request);
+        $sort = $request->validate([
+            'sort_by' => ['nullable', Rule::in(['title', 'ean', 'library', 'location', 'release_date', 'price', 'created_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
+        ]);
 
-        $pdf = $this->pdfExportService->searchResultsPdf($request->user(), $filters);
+        $pdf = $this->pdfExportService->searchResultsPdf($request->user(), $filters, $sort['sort_by'] ?? null, $sort['sort_dir'] ?? 'asc');
         $filename = 'medinv-search-'.SystemSetting::localNow()->format('Ymd-His').'.pdf';
 
         return $pdf->download($filename);
