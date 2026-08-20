@@ -153,8 +153,8 @@ class JpcCdProviderTest extends TestCase
      * that text genuinely sits inside the same `itemprop="name"` element
      * this fixture models could not be confirmed, so this is deliberately
      * a defensive, unverified-shape test — the same treatment
-     * AmazonDvdBlurayProviderTest::test_cast_strips_format_contamination_from_the_actors_bullet()
-     * got for GitHub issue #139.
+     * AmazonDvdBlurayProvider's own `cast` field got for GitHub issue
+     * #139, before that field was removed entirely by GitHub issue #150.
      */
     public function test_track_titles_strip_a_hoerprobe_preview_annotation(): void
     {

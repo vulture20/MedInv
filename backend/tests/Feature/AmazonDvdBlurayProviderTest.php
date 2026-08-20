@@ -74,28 +74,28 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertSame(19.99, $candidate->attributes['price']);
         $this->assertSame('USD', $candidate->attributes['currency']);
         $this->assertSame(['https://m.media-amazon.com/images/I/br-large.jpg'], $candidate->coverUrls);
-        // No dedicated "Actors" bullet in this fixture — falls back to bylineInfo.
-        $this->assertSame('Starring: Harrison Ford, Rutger Hauer', $candidate->attributes['cast']);
+        // GitHub issue #150: cast is deliberately never set — see this provider's own docblock.
+        $this->assertArrayNotHasKey('cast', $candidate->attributes);
     }
 
     /**
-     * GitHub issue #139: a user reported "Format: DVD" landing in `cast`
-     * for a real item — not independently confirmed live (both re-check
-     * attempts were blocked by Amazon this time, unlike #137's own
-     * successful one-off check), so this is deliberately a defensive,
-     * unverified-shape test: the contamination sits in the *middle* of
-     * the "Actors" bullet value here, not just at the end like #137's
-     * confirmed book-byline case, proving the widened
-     * stripAmazonFormatContamination() handles that too.
+     * GitHub issue #150: #139 already fixed one confirmed contamination
+     * pattern in `cast`, but a further report that the field is wrong in
+     * general — combined with #141's live re-check being blocked before
+     * the underlying "Actors" bullet label could even be inspected — left
+     * no way to actually fix it with any confidence, so the field was
+     * removed entirely instead. This asserts that holds even when a real
+     * "Actors" bullet (the field's own original, unconfirmed source) is
+     * present on the page.
      */
-    public function test_cast_strips_format_contamination_from_the_actors_bullet(): void
+    public function test_cast_is_never_set_even_when_an_actors_bullet_is_present(): void
     {
         Http::fake([
             self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
             self::PRODUCT_API => Http::response(
                 '<html><body><span id="productTitle">Hogfather</span>'
                 .'<div id="detailBullets_feature_div"><ul>'
-                .'<li><span class="a-list-item"><span class="a-text-bold">Actors &rlm;: &lrm;</span><span>David Warner, Ian Richardson Format: DVD Michelle Dockery</span></span></li>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Actors &rlm;: &lrm;</span><span>David Warner, Ian Richardson, Michelle Dockery</span></span></li>'
                 .'</ul></div></body></html>',
                 200
             ),
@@ -103,7 +103,7 @@ class AmazonDvdBlurayProviderTest extends TestCase
 
         $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('4009750242353')[0];
 
-        $this->assertSame('David Warner, Ian Richardson Michelle Dockery', $candidate->attributes['cast']);
+        $this->assertArrayNotHasKey('cast', $candidate->attributes);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void

@@ -13,10 +13,18 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * docblock for the full legal/technical/reliability picture this is
  * built under.
  *
- * `cast` (GitHub issue #139: a user reported "Format: DVD" landing here)
- * is passed through `AmazonScraping::stripAmazonFormatContamination()` —
- * see that method's own docblock for why this specific case couldn't be
- * confirmed live the way #137's book-side fix was.
+ * `cast` is deliberately never set (GitHub issue #150) — #139 already
+ * found and fixed one confirmed contamination pattern ("Format: DVD"
+ * bleeding into this field), but a further user report that the field
+ * comes out wrong in general, combined with #141's live re-check attempt
+ * (against three different real pages) being blocked before the actual
+ * "Actors" bullet label could even be inspected, meant there was no way
+ * left to pin down what was actually still wrong or fix it with any
+ * confidence. Removed rather than guessed at further, the same "no
+ * confirmed label, don't set the field at all" stance
+ * `JpcDvdBlurayProvider` already takes for this exact field. Can be
+ * reintroduced later if a more reliable source is found or a live check
+ * is ever possible again.
  *
  * `genre`/`subtitles` (GitHub issue #140) are best-effort `amazonBullet()`
  * label guesses ("Genre"/"Genres", "Subtitles") — unlike JPC's equivalent
@@ -113,11 +121,6 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
                 'medium' => $this->amazonBullet($bullets, 'Format'),
                 'runtime_minutes' => $this->parseLeadingInt($this->amazonBullet($bullets, 'Run time', 'Runtime')),
                 'languages' => $this->amazonBullet($bullets, 'Language', 'Language:', 'Languages'),
-                // GitHub issue #139: stripAmazonFormatContamination() —
-                // $page['byline'] is already stripped by amazonProductPage()
-                // itself, but the "Actors" bullet value isn't, so it needs
-                // the same defensive treatment here too.
-                'cast' => $this->stripAmazonFormatContamination($this->amazonBullet($bullets, 'Actors')) ?? $page['byline'],
                 'director' => $this->amazonBullet($bullets, 'Director', 'Directors'),
                 // GitHub issue #140: unconfirmed guesses — neither label
                 // was seen on the one real Amazon page ever checked
