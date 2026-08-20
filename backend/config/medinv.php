@@ -5,7 +5,17 @@
  * files. `version` is the single source of truth for the app version shown
  * in the UI (login screen, app footer) — see routes/api.php's public
  * `/api/version` endpoint and frontend/src/components/VersionBadge.tsx.
- * Bump it here on release; nothing else needs to change.
+ * Bump it here on release.
+ *
+ * `frontend/package.json`'s own `version` field (unrelated to anything the
+ * running app actually reads or displays — no code, build step, or Vite
+ * `define` pulls it in) should still be bumped to match on the same
+ * release, in npm's required plain-semver form (e.g. this file's "v0.5" ->
+ * package.json's "0.5.0") rather than the "vX.Y" form used here — npm
+ * itself requires `version` to be valid semver with no leading "v" and
+ * conventionally three components. There's no automated check tying the
+ * two together (a mismatch breaks nothing at runtime), so this is a
+ * "please remember" note, not an enforced invariant.
  */
 return [
     'name' => 'MedInv',
