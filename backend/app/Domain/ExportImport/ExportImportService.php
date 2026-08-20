@@ -119,24 +119,51 @@ class ExportImportService
                     // is true; see that method's docblock.
                     'access_level' => $s->access_level,
                 ])->all(),
-                // GitHub issue #148: `captured_by_user_id` (GitHub issue
-                // #74) is instance-local exactly like `id`/`library_id` —
-                // a raw foreign key with no meaning on a different
-                // instance's own `users` table, and unlike every other
-                // personal-data field, wasn't already gated behind
-                // $includeUsers. Left in, it would (a) leak the exporting
-                // instance's internal user ID in an *ordinary* library
-                // export, and (b) get blindly trusted on import, wrongly
-                // attributing an imported item's capture history to
-                // whichever real, unrelated account happens to share that
-                // ID on the receiving instance (most commonly ID 1, the
-                // seeded admin). Dropping it here leaves the imported
-                // item's `captured_by_user_id` null — already an
-                // anticipated, handled case (see
-                // ReportsService::userActivityFor()'s own docblock on a
-                // pre-#74 item grouping under "unknown").
-                'items' => $library->mediaItems()->get()->map(
-                    fn ($item) => $item->makeHidden(['id', 'library_id', 'created_at', 'updated_at', 'captured_by_user_id'])->toArray()
+                // GitHub issue #148: the raw `captured_by_user_id` (GitHub
+                // issue #74) is instance-local exactly like `id`/
+                // `library_id` — a plain foreign key with no meaning on a
+                // different instance's own `users` table, and unlike every
+                // other personal-data field, wasn't already gated behind
+                // $includeUsers. Always hidden here, never the raw ID
+                // itself — trusting a foreign instance's own internal ID
+                // straight into this instance's `users` table would (a)
+                // leak it into an *ordinary* library export, and (b) risk
+                // wrongly attributing an imported item's capture history
+                // to whichever real, unrelated account happens to share
+                // that ID here (most commonly ID 1, the seeded admin), or
+                // fail an insert outright on a genuinely fresh instance
+                // where no user has that ID at all (the column has a real
+                // NOT NULL-adjacent foreign key).
+                //
+                // GitHub issue #152 (follow-up, explicit user request):
+                // `captured_by_email` carries the same information the
+                // *deliberately* unconditional `shares[].user_email`/
+                // `owner_email` above already do — resolved by email
+                // against a real account, not a raw cross-instance ID —
+                // but specifically gated behind $includeUsers (a real
+                // backup) rather than being unconditional like those two:
+                // "who captured this" is meaningfully private in a way
+                // "this library is shared with/owned by" isn't, so an
+                // ordinary library export (never $includeUsers) still
+                // leaks nothing here at all, matching `system_settings`/
+                // `users`/`metadata_plugins`'s own precedent instead.
+                // Read back by insertItems() below, only ever trusted when
+                // $restoreSettings is also true on import (the same "the
+                // matching users were actually just restored in this same
+                // operation" signal already gates `users`/
+                // `metadata_plugins` themselves) — an ordinary import
+                // (`$restoreSettings` always false, since ExportImportPage.tsx
+                // never sends it, see ExportImportController::import()'s
+                // own docblock) simply never restores it, no matter what a
+                // hand-crafted file might claim.
+                'items' => $library->mediaItems()->when(
+                    $includeUsers,
+                    fn ($query) => $query->with('capturedBy:id,email')
+                )->get()->map(
+                    fn ($item) => [
+                        ...$item->makeHidden(['id', 'library_id', 'created_at', 'updated_at', 'captured_by_user_id'])->toArray(),
+                        ...($includeUsers ? ['captured_by_email' => $item->capturedBy?->email] : []),
+                    ]
                 )->all(),
             ])->all(),
         ];
@@ -312,7 +339,14 @@ class ExportImportService
      *                                 search against (SavedSearchController::store() doesn't
      *                                 enforce unique names, even per user), and this still keeps
      *                                 a repeated restore (MEDINV_RESTOREBACKUP, briefing 9.3)
-     *                                 from duplicating the same ones on every restart.
+     *                                 from duplicating the same ones on every restart. Also gates
+     *                                 whether each item's `captured_by_email` (GitHub issue #152,
+     *                                 present only when exportLibraries() was called with
+     *                                 includeUsers: true) gets resolved back onto
+     *                                 `captured_by_user_id` — see insertItems()'s own docblock for
+     *                                 why trusting it requires the matching `users` to have just
+     *                                 been restored in this same call, not merely present in the
+     *                                 file.
      * @param  bool  $restoreShares  Whether to also recreate each library's shares
      *                               (GitHub issue #80) — a separate opt-in from
      *                               $restoreSettings above, deliberately: unlike
@@ -412,12 +446,12 @@ class ExportImportService
             }
         }
 
-        DB::transaction(function () use ($data, $importingAs, $conflictResolutions, $restoreShares, &$result) {
+        DB::transaction(function () use ($data, $importingAs, $conflictResolutions, $restoreShares, $restoreSettings, &$result) {
             foreach ($data['libraries'] ?? [] as $libraryData) {
                 $existing = Library::query()->where('name', $libraryData['name'])->first();
 
                 if (! $existing) {
-                    $this->createLibraryFromExport($libraryData, $importingAs, $restoreShares, $result);
+                    $this->createLibraryFromExport($libraryData, $importingAs, $restoreShares, $restoreSettings, $result);
                     $result['created'][] = $libraryData['name'];
 
                     continue;
@@ -428,10 +462,10 @@ class ExportImportService
                 match ($resolution) {
                     'rename' => $this->createLibraryFromExport(
                         [...$libraryData, 'name' => $libraryData['name'].' (imported '.now()->format('Y-m-d H:i').')'],
-                        $importingAs, $restoreShares, $result
+                        $importingAs, $restoreShares, $restoreSettings, $result
                     ) && $result['created'][] = $libraryData['name'],
-                    'merge' => $this->mergeIntoLibrary($existing, $libraryData) && $result['merged'][] = $libraryData['name'],
-                    'overwrite' => $this->overwriteLibrary($existing, $libraryData, $importingAs, $restoreShares, $result) && $result['overwritten'][] = $libraryData['name'],
+                    'merge' => $this->mergeIntoLibrary($existing, $libraryData, $restoreSettings) && $result['merged'][] = $libraryData['name'],
+                    'overwrite' => $this->overwriteLibrary($existing, $libraryData, $importingAs, $restoreShares, $restoreSettings, $result) && $result['overwritten'][] = $libraryData['name'],
                     default => $result['skipped'][] = $libraryData['name'],
                 };
             }
@@ -479,7 +513,7 @@ class ExportImportService
     }
 
     /** @param  array{shares_skipped: int}  &$result  Updated in place — see restoreShares()'s docblock. */
-    private function createLibraryFromExport(array $libraryData, User $owner, bool $restoreShares, array &$result): true
+    private function createLibraryFromExport(array $libraryData, User $owner, bool $restoreShares, bool $restoreCapturedBy, array &$result): true
     {
         $library = Library::query()->create([
             'name' => $libraryData['name'],
@@ -490,7 +524,7 @@ class ExportImportService
             'is_sample_library' => $libraryData['is_sample_library'] ?? false,
         ]);
 
-        $this->insertItems($library, $libraryData['items'] ?? []);
+        $this->insertItems($library, $libraryData['items'] ?? [], restoreCapturedBy: $restoreCapturedBy);
 
         if ($restoreShares) {
             $result['shares_skipped'] += $this->restoreShares($library, $libraryData['shares'] ?? []);
@@ -532,22 +566,22 @@ class ExportImportService
      * admin as "add these items to the existing library", not "also change
      * who can access it".
      */
-    private function mergeIntoLibrary(Library $library, array $libraryData): true
+    private function mergeIntoLibrary(Library $library, array $libraryData, bool $restoreCapturedBy): true
     {
         // Existing records win on EAN collision (5.1: no duplicate within a library).
-        $this->insertItems($library, $libraryData['items'] ?? [], skipExistingEans: true);
+        $this->insertItems($library, $libraryData['items'] ?? [], skipExistingEans: true, restoreCapturedBy: $restoreCapturedBy);
 
         return true;
     }
 
     /** @param  array{shares_skipped: int}  &$result  Updated in place — see restoreShares()'s docblock. */
-    private function overwriteLibrary(Library $library, array $libraryData, User $owner, bool $restoreShares, array &$result): true
+    private function overwriteLibrary(Library $library, array $libraryData, User $owner, bool $restoreShares, bool $restoreCapturedBy, array &$result): true
     {
         $library->mediaItems()->delete();
         $library->update([
             'description' => $libraryData['description'] ?? null,
         ]);
-        $this->insertItems($library, $libraryData['items'] ?? []);
+        $this->insertItems($library, $libraryData['items'] ?? [], restoreCapturedBy: $restoreCapturedBy);
 
         if ($restoreShares) {
             // Full replace, same as LibraryController::updateShares() and
@@ -612,23 +646,39 @@ class ExportImportService
     }
 
     /**
-     * GitHub issue #148: `captured_by_user_id` is stripped from *every*
-     * imported item, not just omitted from exportLibraries()'s own output
-     * — the same defense-in-depth reasoning MediaItemController::store()/
-     * MetadataController::import() already apply against a client-supplied
-     * value on the ordinary capture paths (CaptureAttributionTest::
-     * test_store_ignores_an_attacker_supplied_capture_method()), just
-     * applied here too: an imported item's source file isn't necessarily
-     * one this app's own export ever produced (a hand-crafted or
-     * third-party-modified upload could still carry the field), and a
-     * value that happens to match a real account on *this* instance would
+     * GitHub issue #148: the raw `captured_by_user_id` a hand-crafted (not
+     * necessarily this app's own export) import file might carry is always
+     * stripped and never trusted directly — the same defense-in-depth
+     * reasoning MediaItemController::store()/MetadataController::import()
+     * already apply against a client-supplied value on the ordinary
+     * capture paths (CaptureAttributionTest::
+     * test_store_ignores_an_attacker_supplied_capture_method()): a value
+     * that happens to match a real account on *this* instance would
      * otherwise falsely attribute that account with having captured an
      * item it never touched.
+     *
+     * GitHub issue #152 (follow-up, explicit user request): `$restoreCapturedBy`
+     * (threaded down from importLibraries()'s own `$restoreSettings` —
+     * true only for a genuine backup restore, where the matching `users`
+     * were just restored in this exact same operation, never for an
+     * ordinary import) resolves exportLibraries()'s own `captured_by_email`
+     * by email instead — the same "look up a real account, don't trust a
+     * foreign instance's raw ID" approach `resolveLibraryOwner()`/
+     * `restoreShares()` already take for `owner_email`/`shares[].user_email`.
+     * An email matching no account (or absent entirely, e.g. an export
+     * from before this field existed) simply leaves it null — the same
+     * already-anticipated "unknown" case a pre-#74 item's own null
+     * `captured_by_user_id` gets (see ReportsService::
+     * userActivityFor()'s own docblock).
      */
-    private function insertItems(Library $library, array $items, bool $skipExistingEans = false): void
+    private function insertItems(Library $library, array $items, bool $skipExistingEans = false, bool $restoreCapturedBy = false): void
     {
         foreach ($items as $item) {
-            unset($item['captured_by_user_id']);
+            $capturedByEmail = $item['captured_by_email'] ?? null;
+            unset($item['captured_by_user_id'], $item['captured_by_email']);
+            $item['captured_by_user_id'] = ($restoreCapturedBy && is_string($capturedByEmail) && $capturedByEmail !== '')
+                ? User::query()->where('email', $capturedByEmail)->value('id')
+                : null;
 
             if ($skipExistingEans) {
                 $modelClass = $this->mediaItemService->modelClassFor($library->media_type);
