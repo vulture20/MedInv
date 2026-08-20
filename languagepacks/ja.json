@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "まだ表示できるライブラリがありません。",
-      "allLibraries": "{{count}} 件のライブラリをすべて表示"
+      "allLibraries": "{{count}} 件のライブラリをすべて表示",
+      "randomMedia": {
+        "subtitle": "あなたに表示されるすべてのライブラリからランダムに選ばれたメディアです。",
+        "none": "表示できるものはまだありません。"
+      }
     },
     "login": {
       "title": "サインイン",

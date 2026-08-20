@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "Inga bibliotek är synliga för dig ännu.",
-      "allLibraries": "Visa alla {{count}} bibliotek"
+      "allLibraries": "Visa alla {{count}} bibliotek",
+      "randomMedia": {
+        "subtitle": "Ett slumpmässigt urval från alla bibliotek som är synliga för dig.",
+        "none": "Inget att visa här än."
+      }
     },
     "login": {
       "title": "Logga in",

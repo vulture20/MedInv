@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "Engin söfn eru sýnileg þér ennþá.",
-      "allLibraries": "Sýna öll {{count}} söfn"
+      "allLibraries": "Sýna öll {{count}} söfn",
+      "randomMedia": {
+        "subtitle": "Handahófskennt úrval úr öllum söfnum sem eru sýnileg þér.",
+        "none": "Ekkert til að sýna hér ennþá."
+      }
     },
     "login": {
       "title": "Skrá inn",

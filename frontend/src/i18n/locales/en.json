@@ -15,7 +15,11 @@
   },
   "dashboard": {
     "noLibraries": "No libraries are visible to you yet.",
-    "allLibraries": "Show all {{count}} libraries"
+    "allLibraries": "Show all {{count}} libraries",
+    "randomMedia": {
+      "subtitle": "A random selection across every library visible to you.",
+      "none": "Nothing to show here yet."
+    }
   },
   "login": {
     "title": "Sign in",

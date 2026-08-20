@@ -15,7 +15,11 @@
   },
   "dashboard": {
     "noLibraries": "Für Sie sind noch keine Bibliotheken sichtbar.",
-    "allLibraries": "Alle {{count}} Bibliotheken anzeigen"
+    "allLibraries": "Alle {{count}} Bibliotheken anzeigen",
+    "randomMedia": {
+      "subtitle": "Eine zufällige Auswahl über alle für Sie sichtbaren Bibliotheken hinweg.",
+      "none": "Noch nichts zum Anzeigen vorhanden."
+    }
   },
   "login": {
     "title": "Anmelden",

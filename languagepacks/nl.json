@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "Er zijn nog geen bibliotheken voor u zichtbaar.",
-      "allLibraries": "Alle {{count}} bibliotheken tonen"
+      "allLibraries": "Alle {{count}} bibliotheken tonen",
+      "randomMedia": {
+        "subtitle": "Een willekeurige selectie uit alle voor u zichtbare bibliotheken.",
+        "none": "Hier is nog niets om te tonen."
+      }
     },
     "login": {
       "title": "Inloggen",

@@ -3,6 +3,7 @@
 namespace App\Domain\Search;
 
 use App\Domain\Libraries\LibraryAccessService;
+use App\Domain\Libraries\MediaItemService;
 use App\Models\Library;
 use App\Models\MediaBook;
 use App\Models\MediaCd;
@@ -17,6 +18,11 @@ use Illuminate\Support\Facades\DB;
  * libraries the requesting user can read (reuses LibraryAccessService so
  * the "not shared -> not findable" rule from 4.3 also applies to search).
  * Each hit carries its source library so results can show provenance (13.).
+ *
+ * Also home to randomItemsFor() (GitHub issue #116) — a different query
+ * shape (no text query, one media type at a time) but the same
+ * visibility-scoped, full-model-plus-library read as search() above, so it
+ * lives here rather than in a new one-method domain of its own.
  */
 class SearchService
 {
@@ -64,7 +70,13 @@ class SearchService
         MediaCd::class => ['tracks' => 'title'],
     ];
 
-    public function __construct(private readonly LibraryAccessService $accessService) {}
+    /** GitHub issue #116 — how many random items DashboardPage.tsx's cover carousel shows per media type. */
+    private const RANDOM_ITEMS_LIMIT = 25;
+
+    public function __construct(
+        private readonly LibraryAccessService $accessService,
+        private readonly MediaItemService $mediaItemService,
+    ) {}
 
     public function search(User $user, string $query, bool $fuzzy = false): Collection
     {
@@ -81,6 +93,51 @@ class SearchService
         }
 
         return $results;
+    }
+
+    /**
+     * A fresh, random selection per media type across every library visible
+     * to `$user` (GitHub issue #116) — feeds DashboardPage.tsx's three cover
+     * carousels ("CD"/"Buch"/"DVD/Blu-ray"). Re-run on every page load
+     * rather than cached, so each visit shows a different slice of the
+     * collection.
+     *
+     * Deliberately not filtered by the visible library's own `media_type`
+     * before querying: a MediaBook row can only ever exist in a `book`
+     * library to begin with (MediaItemService::create() enforces that at
+     * write time via modelClassFor()), so `whereIn('library_id', ...)`
+     * against the *full* set of visible library ids already can't match a
+     * row of the wrong type — same reasoning ReportsService::topForModel()
+     * already relies on.
+     *
+     * Returns full models (like search() above), not ReportsService's
+     * itemSummary() — a tile's click target opens MediaItemDetailDialog
+     * directly, which needs every media-type-specific field the same way
+     * SearchHit (SearchPage.tsx) does, not just the handful of summary
+     * columns a report table shows.
+     *
+     * @return array<string, Collection> Keyed 'book'/'cd'/'dvd_bluray'.
+     */
+    public function randomItemsFor(User $user): array
+    {
+        $visibleLibraryIds = $this->accessService->visibleLibrariesQuery($user)->pluck('id', 'id');
+
+        $result = [];
+        foreach (['book', 'cd', 'dvd_bluray'] as $mediaType) {
+            $modelClass = $this->mediaItemService->modelClassFor($mediaType);
+
+            $result[$mediaType] = $modelClass::query()
+                ->whereIn('library_id', $visibleLibraryIds)
+                // Same `library.owner` reasoning as search()'s own eager load
+                // above — the carousel's click handler needs it to gate
+                // MediaItemDetailDialog's write-access UI client-side.
+                ->with(['library:id,name,media_type,owner_id', 'library.owner:id,name'])
+                ->inRandomOrder()
+                ->limit(self::RANDOM_ITEMS_LIMIT)
+                ->get();
+        }
+
+        return $result;
     }
 
     /**

@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "Nie masz jeszcze żadnych widocznych bibliotek.",
-      "allLibraries": "Pokaż wszystkie {{count}} biblioteki"
+      "allLibraries": "Pokaż wszystkie {{count}} biblioteki",
+      "randomMedia": {
+        "subtitle": "Losowy wybór ze wszystkich widocznych dla Ciebie bibliotek.",
+        "none": "Nie ma tu jeszcze nic do wyświetlenia."
+      }
     },
     "login": {
       "title": "Zaloguj się",

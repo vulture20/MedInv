@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "您目前还看不到任何媒体库。",
-      "allLibraries": "显示全部 {{count}} 个媒体库"
+      "allLibraries": "显示全部 {{count}} 个媒体库",
+      "randomMedia": {
+        "subtitle": "从您可见的所有媒体库中随机选取的内容。",
+        "none": "这里暂时还没有内容可显示。"
+      }
     },
     "login": {
       "title": "登录",

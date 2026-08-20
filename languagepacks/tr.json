@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "Henüz görünür bir kitaplığınız yok.",
-      "allLibraries": "Tüm {{count}} kitaplığı göster"
+      "allLibraries": "Tüm {{count}} kitaplığı göster",
+      "randomMedia": {
+        "subtitle": "Sizin için görünen tüm kitaplıklardan rastgele bir seçki.",
+        "none": "Burada henüz gösterilecek bir şey yok."
+      }
     },
     "login": {
       "title": "Oturum aç",

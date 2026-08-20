@@ -18,7 +18,11 @@
     },
     "dashboard": {
       "noLibraries": "Sinulle ei ole vielä näkyvissä kirjastoja.",
-      "allLibraries": "Näytä kaikki {{count}} kirjastoa"
+      "allLibraries": "Näytä kaikki {{count}} kirjastoa",
+      "randomMedia": {
+        "subtitle": "Satunnainen valikoima kaikista sinulle näkyvistä kirjastoista.",
+        "none": "Ei vielä mitään näytettävää."
+      }
     },
     "login": {
       "title": "Kirjaudu sisään",

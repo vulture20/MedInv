@@ -1677,6 +1677,96 @@ td {
 }
 
 /*
+ * DashboardPage.tsx's three cover carousels (GitHub issue #116) — a
+ * classic marquee: .dashboard-carousel__track renders its tiles twice back
+ * to back, and the animation below slides the whole track left by exactly
+ * 50% of its own width, looping. Once the first copy has scrolled fully
+ * out of view, the second copy sits exactly where the first one started,
+ * so the wrap-around is invisible. `--dashboard-carousel-duration` is set
+ * inline per carousel (DashboardPage.tsx), scaled by item count, so a
+ * shorter list doesn't scroll noticeably faster than a fuller one for the
+ * same "slow" impression.
+ *
+ * .dashboard-carousel__viewport's own overflow: hidden clips the
+ * oversized track before .panel-card's own overflow-x: auto (see its
+ * docblock) would otherwise turn it into a manually-scrollable row
+ * fighting the animation's transform for the same axis.
+ */
+.dashboard-carousel__viewport {
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+.dashboard-carousel__track {
+  display: flex;
+  gap: 1rem;
+  width: max-content;
+  animation: dashboard-carousel-scroll var(--dashboard-carousel-duration, 60s) linear infinite;
+}
+
+/* Paused rather than stopped outright, so a tile mid-scroll doesn't jump back to its start position once hover/focus ends. */
+.dashboard-carousel__viewport:hover .dashboard-carousel__track,
+.dashboard-carousel__viewport:focus-within .dashboard-carousel__track {
+  animation-play-state: paused;
+}
+
+@keyframes dashboard-carousel-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-carousel__track {
+    animation: none;
+  }
+}
+
+.dashboard-carousel__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  width: 8rem;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.dashboard-carousel__cover {
+  width: 8rem;
+  height: 11rem;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.dashboard-carousel__cover--placeholder {
+  background: var(--color-bg);
+}
+
+.dashboard-carousel__tile:hover .dashboard-carousel__title {
+  color: var(--color-accent);
+}
+
+.dashboard-carousel__title {
+  font-size: 0.85rem;
+  /* Long titles wrap to two lines rather than pushing the tile wider (which would break the fixed tile width every other tile in the row relies on) or overflowing unread. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/*
  * DashboardPage.tsx's library excerpt — a compact row per library (unlike
  * LibrariesPage.tsx's full card per library, see DashboardPage.tsx's
  * docblock for why this stays a plain row list instead) inside a single

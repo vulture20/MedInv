@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AdminSettingsController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\CaptureController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportImportController;
 use App\Http\Controllers\Api\LanguagePackController;
 use App\Http\Controllers\Api\LibraryController;
@@ -102,6 +103,12 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // Self-service account deletion (GitHub issue #86) — see
     // AccountSettingsController::destroy()'s docblock.
     Route::delete('/me', [AccountSettingsController::class, 'destroy']);
+
+    // Startseite (briefing 11.2, GitHub issue #116) — a fresh, random
+    // per-media-type selection across every visible library, feeding
+    // DashboardPage.tsx's three cover carousels. Available to guest/user/
+    // admin alike, same visibility scoping as search/statistics below.
+    Route::get('/dashboard/random-items', [DashboardController::class, 'randomItems']);
 
     // Search & statistics — available to guest/user/admin alike, each scoped
     // to what LibraryAccessService says they can read (4.3, 13., 14.).
