@@ -956,6 +956,41 @@ td {
   width: 39%;
 }
 
+/*
+ * ReportDetailPage.tsx's top-lists (GitHub issue #115) — the exact same
+ * problem .plugin-table above already solved, on a different page: eight
+ * genuinely separate <table>s (one per ranking, GitHub issue #112), each
+ * with the same conceptual title/EAN/library/value columns, but
+ * table-layout: auto sizes every table's columns purely from its own
+ * content — so one ranking's "Title" column ended up a different width
+ * than another's, and the eight tables looked misaligned when stacked as
+ * panels. Scoped to `.report-top-list table` rather than applied to every
+ * `<table>` ItemsTable renders (its `<colgroup>` is unconditional and
+ * harmless elsewhere, see ItemsTable's own comment) — the other reports
+ * (duplicates, data quality, ...) each only ever render one table, so
+ * there's nothing for them to misalign against.
+ */
+.report-top-list table {
+  table-layout: fixed;
+  min-width: 30rem;
+}
+
+.report-items-table__col--title {
+  width: 42%;
+}
+
+.report-items-table__col--ean {
+  width: 16%;
+}
+
+.report-items-table__col--library {
+  width: 26%;
+}
+
+.report-items-table__col--extra {
+  width: 16%;
+}
+
 /* Drag handle cell (dnd-kit, PluginsPage.tsx) — dnd-kit's own `attributes`
  * already supplies role="button"/tabIndex for keyboard use, this only
  * needs to look draggable. touch-action: none stops the browser's own

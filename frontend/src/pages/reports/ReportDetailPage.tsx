@@ -53,6 +53,16 @@ function ItemsTable<T extends ReportItem>({
 
   return (
     <table>
+      {/* GitHub issue #115: harmless outside .report-top-list (table-layout
+          stays the default 'auto' there, so these widths are simply
+          ignored) — see .report-top-list table's own docblock in index.css
+          for why the top-list panels need this. */}
+      <colgroup>
+        <col className="report-items-table__col--title" />
+        <col className="report-items-table__col--ean" />
+        <col className="report-items-table__col--library" />
+        {extraHeader && <col className="report-items-table__col--extra" />}
+      </colgroup>
       <thead>
         <tr>
           <th>{t('mediaItem.fields.title')}</th>
