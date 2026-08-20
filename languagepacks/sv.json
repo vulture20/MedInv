@@ -199,7 +199,31 @@
       "noResults": "Inga träffar hittades.",
       "library": "Bibliotek",
       "resultsTitle_one": "{{count}} resultat",
-      "resultsTitle_other": "{{count}} resultat"
+      "resultsTitle_other": "{{count}} resultat",
+      "filters": {
+        "heading": "Filter",
+        "fieldLabel": "Sök i",
+        "field": {
+          "all": "Alla fält",
+          "creator": "Författare/Artist/Regissör",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Utgivningsår",
+        "min": "Min",
+        "max": "Max",
+        "reset": "Återställ filter",
+        "sortBy": "Sortera efter",
+        "sortDefault": "Relevans"
+      },
+      "savedSearches": {
+        "title": "Sparade sökningar",
+        "namePlaceholder": "Namn…",
+        "save": "Spara aktuell sökning",
+        "confirmDelete": "Ta bort den sparade sökningen \"{{name}}\"? Detta kan inte ångras.",
+        "none": "Inga sparade sökningar än.",
+        "error": "Det gick inte att läsa in sparade sökningar.",
+        "saveError": "Det gick inte att spara sökningen."
+      }
     },
     "statistics": {
       "title": "Statistik",

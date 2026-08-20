@@ -199,7 +199,31 @@
       "noResults": "Eşleşme bulunamadı.",
       "library": "Kitaplık",
       "resultsTitle_one": "{{count}} sonuç",
-      "resultsTitle_other": "{{count}} sonuç"
+      "resultsTitle_other": "{{count}} sonuç",
+      "filters": {
+        "heading": "Filtreler",
+        "fieldLabel": "Şurada ara",
+        "field": {
+          "all": "Tüm alanlar",
+          "creator": "Yazar/Sanatçı/Yönetmen",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Yayın yılı",
+        "min": "Min",
+        "max": "Maks",
+        "reset": "Filtreleri sıfırla",
+        "sortBy": "Sırala",
+        "sortDefault": "Uygunluk"
+      },
+      "savedSearches": {
+        "title": "Kayıtlı aramalar",
+        "namePlaceholder": "Ad…",
+        "save": "Geçerli aramayı kaydet",
+        "confirmDelete": "\"{{name}}\" kayıtlı araması silinsin mi? Bu geri alınamaz.",
+        "none": "Henüz kayıtlı arama yok.",
+        "error": "Kayıtlı aramalar yüklenemedi.",
+        "saveError": "Arama kaydedilemedi."
+      }
     },
     "statistics": {
       "title": "İstatistikler",

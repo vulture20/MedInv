@@ -199,7 +199,31 @@
       "noResults": "Geen overeenkomsten gevonden.",
       "library": "Bibliotheek",
       "resultsTitle_one": "{{count}} resultaat",
-      "resultsTitle_other": "{{count}} resultaten"
+      "resultsTitle_other": "{{count}} resultaten",
+      "filters": {
+        "heading": "Filters",
+        "fieldLabel": "Zoeken in",
+        "field": {
+          "all": "Alle velden",
+          "creator": "Auteur/Artiest/Regisseur",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Verschijningsjaar",
+        "min": "Min",
+        "max": "Max",
+        "reset": "Filters wissen",
+        "sortBy": "Sorteren op",
+        "sortDefault": "Relevantie"
+      },
+      "savedSearches": {
+        "title": "Opgeslagen zoekopdrachten",
+        "namePlaceholder": "Naam…",
+        "save": "Huidige zoekopdracht opslaan",
+        "confirmDelete": "Opgeslagen zoekopdracht \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+        "none": "Nog geen opgeslagen zoekopdrachten.",
+        "error": "Opgeslagen zoekopdrachten konden niet worden geladen.",
+        "saveError": "De zoekopdracht kon niet worden opgeslagen."
+      }
     },
     "statistics": {
       "title": "Statistieken",

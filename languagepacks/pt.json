@@ -199,7 +199,31 @@
       "noResults": "Nenhuma correspondência encontrada.",
       "library": "Biblioteca",
       "resultsTitle_one": "{{count}} resultado",
-      "resultsTitle_other": "{{count}} resultados"
+      "resultsTitle_other": "{{count}} resultados",
+      "filters": {
+        "heading": "Filtros",
+        "fieldLabel": "Pesquisar em",
+        "field": {
+          "all": "Todos os campos",
+          "creator": "Autor/Artista/Diretor",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Ano de lançamento",
+        "min": "Mín",
+        "max": "Máx",
+        "reset": "Redefinir filtros",
+        "sortBy": "Ordenar por",
+        "sortDefault": "Relevância"
+      },
+      "savedSearches": {
+        "title": "Pesquisas salvas",
+        "namePlaceholder": "Nome…",
+        "save": "Salvar pesquisa atual",
+        "confirmDelete": "Excluir a pesquisa salva \"{{name}}\"? Isso não pode ser desfeito.",
+        "none": "Ainda não há pesquisas salvas.",
+        "error": "Falha ao carregar as pesquisas salvas.",
+        "saveError": "Falha ao salvar a pesquisa."
+      }
     },
     "statistics": {
       "title": "Estatísticas",

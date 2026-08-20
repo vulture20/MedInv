@@ -199,7 +199,31 @@
       "noResults": "No se encontraron coincidencias.",
       "library": "Biblioteca",
       "resultsTitle_one": "{{count}} resultado",
-      "resultsTitle_other": "{{count}} resultados"
+      "resultsTitle_other": "{{count}} resultados",
+      "filters": {
+        "heading": "Filtros",
+        "fieldLabel": "Buscar en",
+        "field": {
+          "all": "Todos los campos",
+          "creator": "Autor/Intérprete/Director",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Año de publicación",
+        "min": "Mín",
+        "max": "Máx",
+        "reset": "Restablecer filtros",
+        "sortBy": "Ordenar por",
+        "sortDefault": "Relevancia"
+      },
+      "savedSearches": {
+        "title": "Búsquedas guardadas",
+        "namePlaceholder": "Nombre…",
+        "save": "Guardar búsqueda actual",
+        "confirmDelete": "Eliminar la búsqueda guardada \"{{name}}\"? Esto no se puede deshacer.",
+        "none": "Todavía no hay búsquedas guardadas.",
+        "error": "No se pudieron cargar las búsquedas guardadas.",
+        "saveError": "No se pudo guardar la búsqueda."
+      }
     },
     "statistics": {
       "title": "Estadísticas",

@@ -199,7 +199,31 @@
       "noResults": "Ingen treff funnet.",
       "library": "Bibliotek",
       "resultsTitle_one": "{{count}} resultat",
-      "resultsTitle_other": "{{count}} resultater"
+      "resultsTitle_other": "{{count}} resultater",
+      "filters": {
+        "heading": "Filtre",
+        "fieldLabel": "Søk i",
+        "field": {
+          "all": "Alle felt",
+          "creator": "Forfatter/Artist/Regissør",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Utgivelsesår",
+        "min": "Min",
+        "max": "Maks",
+        "reset": "Tilbakestill filtre",
+        "sortBy": "Sorter etter",
+        "sortDefault": "Relevans"
+      },
+      "savedSearches": {
+        "title": "Lagrede søk",
+        "namePlaceholder": "Navn…",
+        "save": "Lagre gjeldende søk",
+        "confirmDelete": "Slette det lagrede søket «{{name}}»? Dette kan ikke angres.",
+        "none": "Ingen lagrede søk ennå.",
+        "error": "Kunne ikke laste lagrede søk.",
+        "saveError": "Kunne ikke lagre søket."
+      }
     },
     "statistics": {
       "title": "Statistikk",

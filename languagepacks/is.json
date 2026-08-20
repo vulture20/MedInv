@@ -199,7 +199,31 @@
       "noResults": "Engar samsvaranir fundust.",
       "library": "Safn",
       "resultsTitle_one": "{{count}} niðurstaða",
-      "resultsTitle_other": "{{count}} niðurstöður"
+      "resultsTitle_other": "{{count}} niðurstöður",
+      "filters": {
+        "heading": "Síur",
+        "fieldLabel": "Leita í",
+        "field": {
+          "all": "Öllum reitum",
+          "creator": "Höfundur/Flytjandi/Leikstjóri",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Útgáfuár",
+        "min": "Lágm.",
+        "max": "Hám.",
+        "reset": "Núllstilla síur",
+        "sortBy": "Raða eftir",
+        "sortDefault": "Mikilvægi"
+      },
+      "savedSearches": {
+        "title": "Vistaðar leitir",
+        "namePlaceholder": "Nafn…",
+        "save": "Vista núverandi leit",
+        "confirmDelete": "Eyða vistuðu leitinni „{{name}}“? Þetta er ekki hægt að afturkalla.",
+        "none": "Engar vistaðar leitir ennþá.",
+        "error": "Ekki tókst að hlaða vistuðum leitum.",
+        "saveError": "Ekki tókst að vista leitina."
+      }
     },
     "statistics": {
       "title": "Tölfræði",

@@ -199,7 +199,31 @@
       "noResults": "Osumia ei löytynyt.",
       "library": "Kirjasto",
       "resultsTitle_one": "{{count}} tulos",
-      "resultsTitle_other": "{{count}} tulosta"
+      "resultsTitle_other": "{{count}} tulosta",
+      "filters": {
+        "heading": "Suodattimet",
+        "fieldLabel": "Hae kohteesta",
+        "field": {
+          "all": "Kaikki kentät",
+          "creator": "Kirjailija/Esittäjä/Ohjaaja",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Julkaisuvuosi",
+        "min": "Väh",
+        "max": "Enint",
+        "reset": "Nollaa suodattimet",
+        "sortBy": "Järjestä",
+        "sortDefault": "Osuvuus"
+      },
+      "savedSearches": {
+        "title": "Tallennetut haut",
+        "namePlaceholder": "Nimi…",
+        "save": "Tallenna nykyinen haku",
+        "confirmDelete": "Poistetaanko tallennettu haku \"{{name}}\"? Tätä ei voi perua.",
+        "none": "Ei vielä tallennettuja hakuja.",
+        "error": "Tallennettujen hakujen lataaminen epäonnistui.",
+        "saveError": "Haun tallentaminen epäonnistui."
+      }
     },
     "statistics": {
       "title": "Tilastot",

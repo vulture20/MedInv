@@ -199,7 +199,31 @@
       "noResults": "Совпадений не найдено.",
       "library": "Библиотека",
       "resultsTitle_one": "{{count}} результат",
-      "resultsTitle_other": "{{count}} результатов"
+      "resultsTitle_other": "{{count}} результатов",
+      "filters": {
+        "heading": "Фильтры",
+        "fieldLabel": "Искать в",
+        "field": {
+          "all": "Всех полях",
+          "creator": "Автор/Исполнитель/Режиссёр",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Год выпуска",
+        "min": "Мин",
+        "max": "Макс",
+        "reset": "Сбросить фильтры",
+        "sortBy": "Сортировать по",
+        "sortDefault": "Релевантность"
+      },
+      "savedSearches": {
+        "title": "Сохранённые поиски",
+        "namePlaceholder": "Название…",
+        "save": "Сохранить текущий поиск",
+        "confirmDelete": "Удалить сохранённый поиск «{{name}}»? Это действие нельзя отменить.",
+        "none": "Пока нет сохранённых поисков.",
+        "error": "Не удалось загрузить сохранённые поиски.",
+        "saveError": "Не удалось сохранить поиск."
+      }
     },
     "statistics": {
       "title": "Статистика",

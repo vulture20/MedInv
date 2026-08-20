@@ -196,7 +196,31 @@
     "noResults": "No matches found.",
     "library": "Library",
     "resultsTitle_one": "{{count}} result",
-    "resultsTitle_other": "{{count}} results"
+    "resultsTitle_other": "{{count}} results",
+    "filters": {
+      "heading": "Filters",
+      "fieldLabel": "Search in",
+      "field": {
+        "all": "All fields",
+        "creator": "Author/Artist/Director",
+        "identifier": "ISBN/EAN"
+      },
+      "year": "Release year",
+      "min": "Min",
+      "max": "Max",
+      "reset": "Reset filters",
+      "sortBy": "Sort by",
+      "sortDefault": "Relevance"
+    },
+    "savedSearches": {
+      "title": "Saved searches",
+      "namePlaceholder": "Name…",
+      "save": "Save current search",
+      "confirmDelete": "Delete the saved search \"{{name}}\"? This cannot be undone.",
+      "none": "No saved searches yet.",
+      "error": "Failed to load saved searches.",
+      "saveError": "Failed to save the search."
+    }
   },
   "statistics": {
     "title": "Statistics",

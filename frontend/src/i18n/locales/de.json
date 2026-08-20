@@ -196,7 +196,31 @@
     "noResults": "Keine Treffer gefunden.",
     "library": "Bibliothek",
     "resultsTitle_one": "{{count}} Ergebnis",
-    "resultsTitle_other": "{{count}} Ergebnisse"
+    "resultsTitle_other": "{{count}} Ergebnisse",
+    "filters": {
+      "heading": "Filter",
+      "fieldLabel": "Suchen in",
+      "field": {
+        "all": "Alle Felder",
+        "creator": "Autor/Interpret/Regisseur",
+        "identifier": "ISBN/EAN"
+      },
+      "year": "Erscheinungsjahr",
+      "min": "Min.",
+      "max": "Max.",
+      "reset": "Filter zurücksetzen",
+      "sortBy": "Sortieren nach",
+      "sortDefault": "Relevanz"
+    },
+    "savedSearches": {
+      "title": "Gespeicherte Suchen",
+      "namePlaceholder": "Name…",
+      "save": "Aktuelle Suche speichern",
+      "confirmDelete": "Gespeicherte Suche „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+      "none": "Noch keine gespeicherten Suchen.",
+      "error": "Gespeicherte Suchen konnten nicht geladen werden.",
+      "saveError": "Suche konnte nicht gespeichert werden."
+    }
   },
   "statistics": {
     "title": "Statistiken",

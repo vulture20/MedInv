@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\MetadataController;
 use App\Http\Controllers\Api\OidcAuthController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ReportsController;
+use App\Http\Controllers\Api\SavedSearchController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\StatisticsController;
 use App\Http\Controllers\Api\TemplateController;
@@ -112,7 +113,17 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
     // Search & statistics — available to guest/user/admin alike, each scoped
     // to what LibraryAccessService says they can read (4.3, 13., 14.).
-    Route::get('/search', SearchController::class);
+    Route::get('/search', [SearchController::class, 'search']);
+    // GitHub issue #73 — the values SearchPage.tsx's attribute filter
+    // <select>s offer, scoped the same way search itself is.
+    Route::get('/search/filter-options', [SearchController::class, 'filterOptions']);
+    // GitHub issue #73's "nice to have": named, reusable filter
+    // combinations, personal to the requesting user (not shared/library-
+    // scoped, so no LibraryAccessService check beyond the ordinary
+    // auth:sanctum/active gate every route in this group already has).
+    Route::get('/saved-searches', [SavedSearchController::class, 'index']);
+    Route::post('/saved-searches', [SavedSearchController::class, 'store']);
+    Route::delete('/saved-searches/{savedSearch}', [SavedSearchController::class, 'destroy']);
     Route::get('/statistics', StatisticsController::class);
     // Value-over-time (briefing 14. "Zeitlicher Zuwachs des Bestands", GitHub
     // issue #30) — separate endpoint rather than folded into /statistics

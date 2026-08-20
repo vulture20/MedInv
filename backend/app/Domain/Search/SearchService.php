@@ -4,11 +4,11 @@ namespace App\Domain\Search;
 
 use App\Domain\Libraries\LibraryAccessService;
 use App\Domain\Libraries\MediaItemService;
-use App\Models\Library;
 use App\Models\MediaBook;
 use App\Models\MediaCd;
 use App\Models\MediaDvdBluray;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +18,17 @@ use Illuminate\Support\Facades\DB;
  * libraries the requesting user can read (reuses LibraryAccessService so
  * the "not shared -> not findable" rule from 4.3 also applies to search).
  * Each hit carries its source library so results can show provenance (13.).
+ *
+ * GitHub issue #73 grew this from a plain (query, fuzzy) free-text search
+ * into a real filter mask: media type/library scoping, a field-specific
+ * text search scope (FIELD_GROUPS) instead of always matching every
+ * SEARCHABLE_COLUMNS column at once, attribute filters fed by
+ * filterOptionsFor()'s "values that actually occur" lists (mirroring
+ * StatisticsService::distributionsFor()'s own precedent for that), and
+ * range filters for price/year/page count/disc count/runtime. See
+ * SearchFilters' own docblock for the full shape; search() itself stays a
+ * thin per-media-type dispatcher, all of the actual query building lives
+ * in sqlSearch()/applyStructuralFilters() below.
  *
  * Also home to randomItemsFor() (GitHub issue #116) — a different query
  * shape (no text query, one media type at a time) but the same
@@ -52,6 +63,54 @@ class SearchService
     ];
 
     /**
+     * @var array<string, array<string, string[]>> `field` param (GitHub
+     *                                             issue #73) => model class => the subset of that model's
+     *                                             SEARCHABLE_COLUMNS to match against — the field-specific search
+     *                                             scope ("nur Titel", "nur Autor/Interpret/Regisseur", ...) the
+     *                                             issue proposed as an alternative to always matching every
+     *                                             column at once. `'all'` (the default) isn't listed here; it's
+     *                                             handled directly by columnsFor() as "every column in
+     *                                             SEARCHABLE_COLUMNS", same as before this issue. `'tracks'`
+     *                                             isn't listed either — it has no plain columns at all, only the
+     *                                             JSON_ARRAY_SEARCHABLE_FIELDS match (CD track titles), see
+     *                                             jsonArrayFieldsFor().
+     */
+    private const FIELD_GROUPS = [
+        'title' => [
+            MediaBook::class => ['title'],
+            MediaCd::class => ['title'],
+            MediaDvdBluray::class => ['title'],
+        ],
+        // "Autor/Interpret/Regisseur" (briefing 6.1-6.3's per-media-type
+        // creator field) — grouped under one filter option since asking a
+        // user to pick which of the three synonyms applies before they've
+        // even chosen a media type doesn't make sense; mediaTypes already
+        // narrows which of these three actually gets queried.
+        'creator' => [
+            MediaBook::class => ['authors'],
+            MediaCd::class => ['artist'],
+            MediaDvdBluray::class => ['director'],
+        ],
+        'description' => [
+            MediaBook::class => ['description'],
+            MediaCd::class => ['description'],
+            MediaDvdBluray::class => ['description'],
+        ],
+        // "ISBN/EAN" — a book's isbn10/isbn13 are additional identifiers
+        // alongside its ean; CD/DVD-Blu-ray only ever have the ean.
+        'identifier' => [
+            MediaBook::class => ['isbn10', 'isbn13', 'ean'],
+            MediaCd::class => ['ean'],
+            MediaDvdBluray::class => ['ean'],
+        ],
+        'location' => [
+            MediaBook::class => ['location'],
+            MediaCd::class => ['location'],
+            MediaDvdBluray::class => ['location'],
+        ],
+    ];
+
+    /**
      * @var array<string, array<string, string>> Model class => JSON array
      *                                           column => the field within each array element to match precisely.
      *
@@ -78,21 +137,294 @@ class SearchService
         private readonly MediaItemService $mediaItemService,
     ) {}
 
-    public function search(User $user, string $query, bool $fuzzy = false): Collection
+    /**
+     * GitHub issue #73. Every media type not excluded by
+     * `$filters->mediaTypes` is queried independently and merged — same
+     * "one query per model class, merge the collections" shape search()
+     * always had, `$filters` just now carries a lot more than `query`/
+     * `fuzzy` into how each of those per-model queries is built.
+     */
+    public function search(User $user, SearchFilters $filters): Collection
     {
-        $visibleLibraryIds = $this->accessService->visibleLibrariesQuery($user)->pluck('id', 'id');
+        $visibleLibraryIds = $this->accessService->visibleLibrariesQuery($user)
+            ->when($filters->libraryIds !== [], fn (Builder $q) => $q->whereIn('id', $filters->libraryIds))
+            ->pluck('id', 'id');
 
+        $mediaTypes = $filters->mediaTypes !== [] ? $filters->mediaTypes : ['book', 'cd', 'dvd_bluray'];
         $results = collect();
 
-        foreach (self::SEARCHABLE_COLUMNS as $modelClass => $columns) {
-            $items = $fuzzy && ! $this->pgTrgmAvailable()
-                ? $this->fuzzyPortableSearch($modelClass, $columns, $visibleLibraryIds, $query)
-                : $this->sqlSearch($modelClass, $columns, $visibleLibraryIds, $query, $fuzzy);
+        foreach ($mediaTypes as $mediaType) {
+            $modelClass = $this->mediaItemService->modelClassFor($mediaType);
+
+            $items = $filters->fuzzy && ! $this->pgTrgmAvailable()
+                ? $this->fuzzyPortableSearch($modelClass, $visibleLibraryIds, $filters)
+                : $this->sqlSearch($modelClass, $visibleLibraryIds, $filters);
 
             $results = $results->merge($items);
         }
 
         return $results;
+    }
+
+    /**
+     * GitHub issue #73's attribute filters (genre/format/language for
+     * books, medium for CD/DVD-Blu-ray, languages for DVD-Blu-ray) are
+     * populated from values that actually occur in the visible collection,
+     * not a hardcoded list — same "denkbar ähnlich der bereits vorhandenen
+     * Verteilungs-Statistiken" reasoning the issue itself points at
+     * (StatisticsService::distributionsFor()), just distinct values across
+     * every visible library at once rather than counts grouped per
+     * library. Feeds SearchPage.tsx's filter <select>s.
+     *
+     * @return array{book: array{genre: string[], format: string[], language: string[]}, cd: array{medium: string[]}, dvd_bluray: array{medium: string[], languages: string[]}}
+     */
+    public function filterOptionsFor(User $user): array
+    {
+        $visibleLibraryIds = $this->accessService->visibleLibrariesQuery($user)->pluck('id', 'id');
+
+        return [
+            'book' => [
+                'genre' => $this->distinctValues(MediaBook::class, 'genre', $visibleLibraryIds),
+                'format' => $this->distinctValues(MediaBook::class, 'format', $visibleLibraryIds),
+                'language' => $this->distinctValues(MediaBook::class, 'language', $visibleLibraryIds),
+            ],
+            'cd' => [
+                'medium' => $this->distinctValues(MediaCd::class, 'medium', $visibleLibraryIds),
+            ],
+            'dvd_bluray' => [
+                'medium' => $this->distinctValues(MediaDvdBluray::class, 'medium', $visibleLibraryIds),
+                // `languages` is a comma-separated multi-value column
+                // (e.g. "Deutsch, Englisch") — same split StatisticsService::
+                // multiValueDistribution() already does, just without counts.
+                'languages' => $this->distinctMultiValues(MediaDvdBluray::class, 'languages', $visibleLibraryIds),
+            ],
+        ];
+    }
+
+    /** @return string[] Sorted, unique, non-empty values actually present. */
+    private function distinctValues(string $modelClass, string $column, Collection $visibleLibraryIds): array
+    {
+        return $modelClass::query()
+            ->whereIn('library_id', $visibleLibraryIds)
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->distinct()
+            ->orderBy($column)
+            ->pluck($column)
+            ->all();
+    }
+
+    /** @return string[] Sorted, unique, non-empty individual values after splitting each row's comma-separated list. */
+    private function distinctMultiValues(string $modelClass, string $column, Collection $visibleLibraryIds): array
+    {
+        return $modelClass::query()
+            ->whereIn('library_id', $visibleLibraryIds)
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->pluck($column)
+            ->flatMap(fn (string $value) => array_map('trim', explode(',', $value)))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+    }
+
+    /** The `!fuzzy` case (unchanged from before #9) and the Postgres/pg_trgm case both stay entirely SQL-side, single round trip per model class — GitHub issue #73's structural filters (media type/library already scoped by search(); everything else in applyStructuralFilters()) ride along as plain AND conditions on the same query. */
+    private function sqlSearch(string $modelClass, Collection $visibleLibraryIds, SearchFilters $filters): Collection
+    {
+        $useTrigram = $filters->fuzzy && $this->pgTrgmAvailable();
+        $columns = $this->columnsFor($modelClass, $filters->field);
+        $jsonArrayFields = $this->jsonArrayFieldsFor($modelClass, $filters->field);
+
+        $query = $modelClass::query()->whereIn('library_id', $visibleLibraryIds);
+
+        if ($filters->hasQuery()) {
+            $query->where(function ($q) use ($columns, $filters, $useTrigram, $jsonArrayFields) {
+                foreach ($columns as $column) {
+                    // MediaDvdBluray::$SEARCHABLE_COLUMNS includes `cast`, a reserved SQL
+                    // keyword (CAST(expr AS type)) — unquoted, `LOWER(cast)` parses as the
+                    // start of a CAST expression and blows up with a syntax error. wrap()
+                    // applies the connection-appropriate identifier quoting (double quotes
+                    // on sqlite/postgres, backticks on mysql/mariadb) instead of hardcoding one.
+                    $wrapped = DB::getQueryGrammar()->wrap($column);
+
+                    if ($filters->fuzzy) {
+                        $q->orWhereRaw("LOWER({$wrapped}) LIKE ?", ['%'.mb_strtolower($filters->query).'%']);
+                    } else {
+                        $q->orWhere($column, 'like', "%{$filters->query}%");
+                    }
+
+                    if ($useTrigram) {
+                        // word_similarity (not plain similarity/%) on purpose: similarity()
+                        // compares the *entire* compared strings, so a short query matching
+                        // cleanly inside a long `description` gets a tiny score simply because
+                        // the denominator scales with the field's total length. word_similarity
+                        // instead asks "does the query approximately appear as a substring
+                        // somewhere in the column", which is the actually-desired semantic and
+                        // what the GIN gin_trgm_ops index (see the pg_trgm migration) accelerates
+                        // via the %> operator — confirmed via EXPLAIN against a real Postgres
+                        // instance to pick an index (bitmap) scan, not a sequential scan.
+                        $q->orWhereRaw("LOWER({$wrapped}) %> LOWER(?)", [$filters->query]);
+                    }
+                }
+
+                foreach ($jsonArrayFields as $column => $field) {
+                    $this->addJsonArrayFieldConditions($q, $column, $field, $filters->query, $useTrigram);
+                }
+            });
+        }
+
+        $query = $this->applyStructuralFilters($query, $modelClass, $filters);
+
+        if ($query === null) {
+            return collect();
+        }
+
+        // `library.owner` (GitHub issue #100) — SearchPage.tsx now opens a
+        // hit's MediaItemDetailDialog in place rather than navigating to
+        // the owning library, and that dialog's write-access gating
+        // (mirrors LibraryAccessService::canWrite()) needs `library.owner.id`
+        // client-side, the same way LibraryDetailPage's own `library` prop
+        // already carries it.
+        return $query->with(['library:id,name,media_type,owner_id', 'library.owner:id,name'])->get();
+    }
+
+    /** `field` => the subset of $modelClass's SEARCHABLE_COLUMNS to match — see FIELD_GROUPS' own docblock. */
+    private function columnsFor(string $modelClass, string $field): array
+    {
+        if ($field === 'all') {
+            return self::SEARCHABLE_COLUMNS[$modelClass];
+        }
+
+        return self::FIELD_GROUPS[$field][$modelClass] ?? [];
+    }
+
+    /** JSON_ARRAY_SEARCHABLE_FIELDS only applies in 'all' mode (unchanged pre-#73 behavior) or when the field scope is explicitly 'tracks' (CD track titles only, no plain columns at all — columnsFor() returns [] for it). Any other specific field (e.g. 'title') deliberately excludes track titles, matching that field's own narrower scope. */
+    private function jsonArrayFieldsFor(string $modelClass, string $field): array
+    {
+        return in_array($field, ['all', 'tracks'], true) ? (self::JSON_ARRAY_SEARCHABLE_FIELDS[$modelClass] ?? []) : [];
+    }
+
+    /**
+     * GitHub issue #73's attribute/range filters, applied as plain AND
+     * conditions on top of whatever sqlSearch()/fuzzyPortableSearch()
+     * already built. Returns `null` instead of the query when an active
+     * filter simply cannot match this model class at all (e.g. a `genre`
+     * filter against MediaCd, which has no `genre` column) — the caller
+     * treats that as "this media type contributes nothing", the same
+     * outcome as if the query itself had run and matched zero rows, just
+     * without actually running a query that could never match.
+     */
+    private function applyStructuralFilters(Builder $query, string $modelClass, SearchFilters $filters): ?Builder
+    {
+        if ($filters->priceMin !== null) {
+            $query->where('price', '>=', $filters->priceMin);
+        }
+        if ($filters->priceMax !== null) {
+            $query->where('price', '<=', $filters->priceMax);
+        }
+
+        // DVD-Blu-ray carries a dedicated `production_year` column
+        // alongside `release_date` — same more-direct source
+        // StatisticsService::distributionsFor() already prefers for DVD's
+        // own year distribution, over deriving a year from release_date
+        // the way book/CD have to.
+        if ($modelClass === MediaDvdBluray::class) {
+            if ($filters->yearMin !== null) {
+                $query->where('production_year', '>=', $filters->yearMin);
+            }
+            if ($filters->yearMax !== null) {
+                $query->where('production_year', '<=', $filters->yearMax);
+            }
+        } else {
+            if ($filters->yearMin !== null) {
+                $query->whereYear('release_date', '>=', $filters->yearMin);
+            }
+            if ($filters->yearMax !== null) {
+                $query->whereYear('release_date', '<=', $filters->yearMax);
+            }
+        }
+
+        $bookAttributeActive = $filters->genre !== [] || $filters->format !== [] || $filters->language !== []
+            || $filters->pageCountMin !== null || $filters->pageCountMax !== null;
+        if ($bookAttributeActive && $modelClass !== MediaBook::class) {
+            return null;
+        }
+        if ($modelClass === MediaBook::class) {
+            foreach (['genre' => $filters->genre, 'format' => $filters->format, 'language' => $filters->language] as $column => $values) {
+                if ($values !== []) {
+                    $query->whereIn($column, $values);
+                }
+            }
+            if ($filters->pageCountMin !== null) {
+                $query->where('page_count', '>=', $filters->pageCountMin);
+            }
+            if ($filters->pageCountMax !== null) {
+                $query->where('page_count', '<=', $filters->pageCountMax);
+            }
+        }
+
+        if ($filters->languages !== [] && $modelClass !== MediaDvdBluray::class) {
+            return null;
+        }
+        if ($modelClass === MediaDvdBluray::class && $filters->languages !== []) {
+            // `languages` is a comma-separated multi-value column (see
+            // distinctMultiValues() above) — a plain LIKE per requested
+            // language, OR'd together, same substring-membership check
+            // StatisticsService's own distribution takes for granted.
+            $query->where(function (Builder $q) use ($filters) {
+                foreach ($filters->languages as $language) {
+                    $q->orWhere('languages', 'like', '%'.$language.'%');
+                }
+            });
+        }
+
+        $mediumActive = $filters->medium !== [];
+        if ($mediumActive && $modelClass === MediaBook::class) {
+            return null;
+        }
+        if ($mediumActive && $modelClass !== MediaBook::class) {
+            $query->whereIn('medium', $filters->medium);
+        }
+
+        $discCountActive = $filters->discCountMin !== null || $filters->discCountMax !== null;
+        if ($discCountActive && $modelClass === MediaBook::class) {
+            return null;
+        }
+        if ($modelClass !== MediaBook::class) {
+            if ($filters->discCountMin !== null) {
+                $query->where('disc_count', '>=', $filters->discCountMin);
+            }
+            if ($filters->discCountMax !== null) {
+                $query->where('disc_count', '<=', $filters->discCountMax);
+            }
+        }
+
+        $runtimeActive = $filters->runtimeMin !== null || $filters->runtimeMax !== null;
+        if ($runtimeActive && $modelClass === MediaBook::class) {
+            return null;
+        }
+        if ($modelClass === MediaCd::class) {
+            // MediaCd::runtime_seconds vs. the filter's own minutes unit —
+            // converted here rather than asking the frontend to think in
+            // seconds for one media type and minutes for another.
+            if ($filters->runtimeMin !== null) {
+                $query->where('runtime_seconds', '>=', $filters->runtimeMin * 60);
+            }
+            if ($filters->runtimeMax !== null) {
+                $query->where('runtime_seconds', '<=', $filters->runtimeMax * 60);
+            }
+        } elseif ($modelClass === MediaDvdBluray::class) {
+            if ($filters->runtimeMin !== null) {
+                $query->where('runtime_minutes', '>=', $filters->runtimeMin);
+            }
+            if ($filters->runtimeMax !== null) {
+                $query->where('runtime_minutes', '<=', $filters->runtimeMax);
+            }
+        }
+
+        return $query;
     }
 
     /**
@@ -138,60 +470,6 @@ class SearchService
         }
 
         return $result;
-    }
-
-    /**
-     * The `!fuzzy` case (unchanged from before #9) and the Postgres/pg_trgm
-     * case both stay entirely SQL-side, single round trip per model class.
-     */
-    private function sqlSearch(string $modelClass, array $columns, Collection $visibleLibraryIds, string $query, bool $fuzzy): Collection
-    {
-        $useTrigram = $fuzzy && $this->pgTrgmAvailable();
-        $jsonArrayFields = self::JSON_ARRAY_SEARCHABLE_FIELDS[$modelClass] ?? [];
-
-        return $modelClass::query()
-            ->whereIn('library_id', $visibleLibraryIds)
-            ->where(function ($q) use ($columns, $query, $fuzzy, $useTrigram, $jsonArrayFields) {
-                foreach ($columns as $column) {
-                    // MediaDvdBluray::$SEARCHABLE_COLUMNS includes `cast`, a reserved SQL
-                    // keyword (CAST(expr AS type)) — unquoted, `LOWER(cast)` parses as the
-                    // start of a CAST expression and blows up with a syntax error. wrap()
-                    // applies the connection-appropriate identifier quoting (double quotes
-                    // on sqlite/postgres, backticks on mysql/mariadb) instead of hardcoding one.
-                    $wrapped = DB::getQueryGrammar()->wrap($column);
-
-                    if ($fuzzy) {
-                        $q->orWhereRaw("LOWER({$wrapped}) LIKE ?", ['%'.mb_strtolower($query).'%']);
-                    } else {
-                        $q->orWhere($column, 'like', "%{$query}%");
-                    }
-
-                    if ($useTrigram) {
-                        // word_similarity (not plain similarity/%) on purpose: similarity()
-                        // compares the *entire* compared strings, so a short query matching
-                        // cleanly inside a long `description` gets a tiny score simply because
-                        // the denominator scales with the field's total length. word_similarity
-                        // instead asks "does the query approximately appear as a substring
-                        // somewhere in the column", which is the actually-desired semantic and
-                        // what the GIN gin_trgm_ops index (see the pg_trgm migration) accelerates
-                        // via the %> operator — confirmed via EXPLAIN against a real Postgres
-                        // instance to pick an index (bitmap) scan, not a sequential scan.
-                        $q->orWhereRaw("LOWER({$wrapped}) %> LOWER(?)", [$query]);
-                    }
-                }
-
-                foreach ($jsonArrayFields as $column => $field) {
-                    $this->addJsonArrayFieldConditions($q, $column, $field, $query, $useTrigram);
-                }
-            })
-            // `library.owner` (GitHub issue #100) — SearchPage.tsx now opens a
-            // hit's MediaItemDetailDialog in place rather than navigating to
-            // the owning library, and that dialog's write-access gating
-            // (mirrors LibraryAccessService::canWrite()) needs `library.owner.id`
-            // client-side, the same way LibraryDetailPage's own `library` prop
-            // already carries it.
-            ->with(['library:id,name,media_type,owner_id', 'library.owner:id,name'])
-            ->get();
     }
 
     /**
@@ -265,31 +543,43 @@ class SearchService
      * spelled field value, so no LIKE-based candidate narrowing on the
      * query word itself is possible without risking excluding the very row
      * that should match). Falls back to loading every row in the visible
-     * libraries — library-visibility scoping (whereIn library_id) is kept
-     * exactly as in the SQL-side path, just evaluated as a WHERE clause
-     * rather than a client-side filter — and matching in PHP via
-     * FuzzyTextMatcher. Acceptable for this app's realistic data volumes
-     * (personal physical-media collections, not web-scale), and no worse
-     * big-O than the existing leading-wildcard LIKE, which isn't
-     * index-accelerated by any of these engines either.
+     * libraries — library-visibility scoping (whereIn library_id) and
+     * GitHub issue #73's structural filters are kept exactly as in the
+     * SQL-side path (still evaluated as WHERE clauses, not a client-side
+     * filter — only the free-text match itself needs PHP-side matching)
+     * and matched in PHP via FuzzyTextMatcher. Acceptable for this app's
+     * realistic data volumes (personal physical-media collections, not
+     * web-scale), and no worse big-O than the existing leading-wildcard
+     * LIKE, which isn't index-accelerated by any of these engines either.
      */
-    private function fuzzyPortableSearch(string $modelClass, array $columns, Collection $visibleLibraryIds, string $query): Collection
+    private function fuzzyPortableSearch(string $modelClass, Collection $visibleLibraryIds, SearchFilters $filters): Collection
     {
-        $jsonArrayFields = self::JSON_ARRAY_SEARCHABLE_FIELDS[$modelClass] ?? [];
+        $columns = $this->columnsFor($modelClass, $filters->field);
+        $jsonArrayFields = $this->jsonArrayFieldsFor($modelClass, $filters->field);
 
-        return $modelClass::query()
-            ->whereIn('library_id', $visibleLibraryIds)
-            // `library.owner` (GitHub issue #100) — SearchPage.tsx now opens a
-            // hit's MediaItemDetailDialog in place rather than navigating to
-            // the owning library, and that dialog's write-access gating
-            // (mirrors LibraryAccessService::canWrite()) needs `library.owner.id`
-            // client-side, the same way LibraryDetailPage's own `library` prop
-            // already carries it.
-            ->with(['library:id,name,media_type,owner_id', 'library.owner:id,name'])
-            ->get()
-            ->filter(function ($item) use ($columns, $query, $jsonArrayFields) {
+        $query = $this->applyStructuralFilters(
+            $modelClass::query()->whereIn('library_id', $visibleLibraryIds),
+            $modelClass,
+            $filters
+        );
+
+        if ($query === null) {
+            return collect();
+        }
+
+        // Same `library.owner` reasoning as sqlSearch() above.
+        $items = $query->with(['library:id,name,media_type,owner_id', 'library.owner:id,name'])->get();
+
+        if (! $filters->hasQuery()) {
+            // Nothing to fuzzy-match against — the structural filters above
+            // already did all the narrowing this request asked for.
+            return $items;
+        }
+
+        return $items
+            ->filter(function ($item) use ($columns, $filters, $jsonArrayFields) {
                 foreach ($columns as $column) {
-                    if (FuzzyTextMatcher::matchesAllWords($query, (string) $item->{$column})) {
+                    if (FuzzyTextMatcher::matchesAllWords($filters->query, (string) $item->{$column})) {
                         return true;
                     }
                 }
@@ -301,7 +591,7 @@ class SearchService
                 // punctuation false positives a whole-blob-text match would have.
                 foreach ($jsonArrayFields as $column => $field) {
                     foreach ((array) $item->{$column} as $element) {
-                        if (FuzzyTextMatcher::matchesAllWords($query, (string) ($element[$field] ?? ''))) {
+                        if (FuzzyTextMatcher::matchesAllWords($filters->query, (string) ($element[$field] ?? ''))) {
                             return true;
                         }
                     }

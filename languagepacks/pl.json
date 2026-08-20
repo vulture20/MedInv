@@ -199,7 +199,31 @@
       "noResults": "Nie znaleziono wyników.",
       "library": "Biblioteka",
       "resultsTitle_one": "{{count}} wynik",
-      "resultsTitle_other": "{{count}} wyników"
+      "resultsTitle_other": "{{count}} wyników",
+      "filters": {
+        "heading": "Filtry",
+        "fieldLabel": "Szukaj w",
+        "field": {
+          "all": "Wszystkie pola",
+          "creator": "Autor/Wykonawca/Reżyser",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Rok wydania",
+        "min": "Min",
+        "max": "Maks",
+        "reset": "Wyczyść filtry",
+        "sortBy": "Sortuj według",
+        "sortDefault": "Trafność"
+      },
+      "savedSearches": {
+        "title": "Zapisane wyszukiwania",
+        "namePlaceholder": "Nazwa…",
+        "save": "Zapisz bieżące wyszukiwanie",
+        "confirmDelete": "Usunąć zapisane wyszukiwanie „{{name}}”? Tej operacji nie można cofnąć.",
+        "none": "Brak zapisanych wyszukiwań.",
+        "error": "Nie udało się wczytać zapisanych wyszukiwań.",
+        "saveError": "Nie udało się zapisać wyszukiwania."
+      }
     },
     "statistics": {
       "title": "Statystyki",

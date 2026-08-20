@@ -199,7 +199,31 @@
       "noResults": "未找到匹配项。",
       "library": "媒体库",
       "resultsTitle_one": "{{count}} 个结果",
-      "resultsTitle_other": "{{count}} 个结果"
+      "resultsTitle_other": "{{count}} 个结果",
+      "filters": {
+        "heading": "筛选条件",
+        "fieldLabel": "搜索范围",
+        "field": {
+          "all": "所有字段",
+          "creator": "作者/艺术家/导演",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "发行年份",
+        "min": "最小",
+        "max": "最大",
+        "reset": "重置筛选条件",
+        "sortBy": "排序方式",
+        "sortDefault": "相关性"
+      },
+      "savedSearches": {
+        "title": "已保存的搜索",
+        "namePlaceholder": "名称…",
+        "save": "保存当前搜索",
+        "confirmDelete": "删除已保存的搜索“{{name}}”？此操作无法撤销。",
+        "none": "暂无已保存的搜索。",
+        "error": "无法加载已保存的搜索。",
+        "saveError": "无法保存该搜索。"
+      }
     },
     "statistics": {
       "title": "统计",

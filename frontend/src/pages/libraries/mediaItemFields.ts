@@ -22,6 +22,8 @@ export interface MediaItem {
   cover_path?: string | null
   description?: string | null
   release_date?: string | null
+  /** Eloquent's default timestamp, serialized on every response — GitHub issue #73's "added on" sort dimension (SearchPage.tsx) reads it directly rather than needing a dedicated summary field the way ReportsService::itemSummary()'s own `created_at` is. */
+  created_at?: string
   price?: number | string | null
   /** ISO 4217 code (e.g. "USD"/"EUR") — a deliberate extension beyond briefing 6.1-6.3's fixed attribute set (GitHub issue #58), see the migration that added it for why. */
   currency?: string | null

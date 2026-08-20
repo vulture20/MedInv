@@ -199,7 +199,31 @@
       "noResults": "一致する項目が見つかりませんでした。",
       "library": "ライブラリ",
       "resultsTitle_one": "{{count}} 件の結果",
-      "resultsTitle_other": "{{count}} 件の結果"
+      "resultsTitle_other": "{{count}} 件の結果",
+      "filters": {
+        "heading": "フィルター",
+        "fieldLabel": "検索対象",
+        "field": {
+          "all": "すべてのフィールド",
+          "creator": "著者/アーティスト/監督",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "発行年",
+        "min": "最小",
+        "max": "最大",
+        "reset": "フィルターをリセット",
+        "sortBy": "並び替え",
+        "sortDefault": "関連度"
+      },
+      "savedSearches": {
+        "title": "保存した検索",
+        "namePlaceholder": "名前…",
+        "save": "現在の検索を保存",
+        "confirmDelete": "保存した検索「{{name}}」を削除しますか？元に戻せません。",
+        "none": "まだ保存した検索はありません。",
+        "error": "保存した検索を読み込めませんでした。",
+        "saveError": "検索を保存できませんでした。"
+      }
     },
     "statistics": {
       "title": "統計",

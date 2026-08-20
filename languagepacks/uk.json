@@ -199,7 +199,31 @@
       "noResults": "Збігів не знайдено.",
       "library": "Бібліотека",
       "resultsTitle_one": "{{count}} результат",
-      "resultsTitle_other": "{{count}} результатів"
+      "resultsTitle_other": "{{count}} результатів",
+      "filters": {
+        "heading": "Фільтри",
+        "fieldLabel": "Шукати в",
+        "field": {
+          "all": "Усіх полях",
+          "creator": "Автор/Виконавець/Режисер",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Рік випуску",
+        "min": "Мін",
+        "max": "Макс",
+        "reset": "Скинути фільтри",
+        "sortBy": "Сортувати за",
+        "sortDefault": "Релевантність"
+      },
+      "savedSearches": {
+        "title": "Збережені пошуки",
+        "namePlaceholder": "Назва…",
+        "save": "Зберегти поточний пошук",
+        "confirmDelete": "Видалити збережений пошук «{{name}}»? Цю дію не можна скасувати.",
+        "none": "Поки що немає збережених пошуків.",
+        "error": "Не вдалося завантажити збережені пошуки.",
+        "saveError": "Не вдалося зберегти пошук."
+      }
     },
     "statistics": {
       "title": "Статистика",

@@ -199,7 +199,31 @@
       "noResults": "Nessuna corrispondenza trovata.",
       "library": "Biblioteca",
       "resultsTitle_one": "{{count}} risultato",
-      "resultsTitle_other": "{{count}} risultati"
+      "resultsTitle_other": "{{count}} risultati",
+      "filters": {
+        "heading": "Filtri",
+        "fieldLabel": "Cerca in",
+        "field": {
+          "all": "Tutti i campi",
+          "creator": "Autore/Artista/Regista",
+          "identifier": "ISBN/EAN"
+        },
+        "year": "Anno di pubblicazione",
+        "min": "Min",
+        "max": "Max",
+        "reset": "Reimposta filtri",
+        "sortBy": "Ordina per",
+        "sortDefault": "Rilevanza"
+      },
+      "savedSearches": {
+        "title": "Ricerche salvate",
+        "namePlaceholder": "Nome…",
+        "save": "Salva ricerca corrente",
+        "confirmDelete": "Eliminare la ricerca salvata \"{{name}}\"? Questa azione non può essere annullata.",
+        "none": "Ancora nessuna ricerca salvata.",
+        "error": "Impossibile caricare le ricerche salvate.",
+        "saveError": "Impossibile salvare la ricerca."
+      }
     },
     "statistics": {
       "title": "Statistiche",

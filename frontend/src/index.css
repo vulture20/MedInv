@@ -1938,3 +1938,139 @@ td {
   font-weight: 600;
   font-size: 0.9rem;
 }
+
+/*
+ * SearchPage.tsx's search mask (GitHub issue #73) — grown from a single
+ * text input into a real filter panel (SearchFilterPanel.tsx) plus a
+ * saved-searches list (SavedSearches.tsx). Scoped input/select/label
+ * styling here rather than global element rules, same "each page scopes
+ * its own form styling" convention .media-item-dialog/.login-form already
+ * follow — there's no shared base input/button/select style in this file
+ * to build on.
+ */
+.search-filters label,
+.search-saved label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.search-filters input,
+.search-filters select,
+.search-saved input,
+.search-saved select {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.search-filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0.75rem 0;
+}
+
+/* Overrides the column layout .search-filters label sets above — a checkbox reads better next to its own label text than stacked above it. Declared after that rule so equal-specificity cascade order lets it win, no !important needed. */
+.search-filters__checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.search-filters__multiselect select {
+  min-width: 10rem;
+}
+
+/* A min/max pair (price/year/page count/disc count/runtime) laid out as one row: label, then the two number inputs either side of a dash. */
+.search-filters__range {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.search-filters__range input {
+  width: 5rem;
+}
+
+.search-filters__range-label {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-right: 0.25rem;
+}
+
+.search-saved__save-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.search-saved__save-form input {
+  flex: 1;
+  max-width: 20rem;
+}
+
+.search-saved__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-saved__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.search-saved__row:last-child {
+  border-bottom: none;
+}
+
+/* Same unstyled-button-reading-as-text treatment as .media-item-table__title-button — a saved search's name is the click target, not a conventional button. */
+.search-saved__apply-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-saved__apply-button:hover {
+  color: var(--color-accent);
+}
+
+.search-results__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.search-results__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.search-results__sort select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
