@@ -105,6 +105,24 @@ class JpcDvdBlurayProviderTest extends TestCase
         $this->assertSame(2, $candidate->attributes['disc_count']);
     }
 
+    /** GitHub issue #143: confirmed live on "Fringe Season 5" (EAN 5051890205261, a 5-DVD TV-season box set) — the Genre row there reads "Thriller, (13 Episoden)", not just "Thriller". */
+    public function test_genre_strips_a_trailing_episode_count_annotation(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Fringe Season 5 (5 DVDs) – jpc.de</title></head><body>'
+                .'<dl><dt><b>Genre:</b></dt><dd><a href="/s/Thriller?searchtype=zeile2">Thriller,</a> (13 Episoden)</dd></dl>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('5051890205261')[0];
+
+        $this->assertSame('Thriller', $candidate->attributes['genre']);
+    }
+
     /** GitHub issue #138: an explicit "1 DVD" (not confirmed live, but a plausible shape) strips down to "DVD" too — no trailing "s" to remove since "DVD" was never pluralized in the first place, unlike "2 DVDs". */
     public function test_an_explicit_single_disc_count_also_strips_the_leading_number(): void
     {

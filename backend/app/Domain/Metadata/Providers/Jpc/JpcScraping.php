@@ -300,8 +300,11 @@ trait JpcScraping
             // real "Genre:" label) but never mapped into
             // JpcDvdBlurayProvider's own attributes until now — MediaBook
             // is the only model with a `genre` column at the time this
-            // extraction was first added.
-            'genre' => $this->jpcDetailValue($xpath, 'Genre:'),
+            // extraction was first added. GitHub issue #143:
+            // stripJpcGenreAnnotation() removes a trailing count-in-
+            // parentheses annotation (e.g. "(13 Episoden)") that isn't
+            // actually part of the genre.
+            'genre' => $this->stripJpcGenreAnnotation($this->jpcDetailValue($xpath, 'Genre:')),
             'publisher' => $this->stripJpcPublisherSuffix($this->jpcDetailValue($xpath, 'Verlag:')),
             'page_count' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Umfang:')),
             'binding' => $this->jpcDetailValue($xpath, 'Einband:'),
@@ -473,6 +476,32 @@ trait JpcScraping
         $withoutDate = preg_replace('#,\s*\d{1,2}/\d{4}\s*$#', '', $text) ?? $text;
 
         return $this->cleanText($withoutDate) ?? $this->cleanText($text);
+    }
+
+    /**
+     * GitHub issue #143: a Genre `<dd>` can carry a trailing annotation
+     * beyond the genre itself — confirmed live on "Fringe Season 5" (EAN
+     * 5051890205261), a 5-DVD TV-season box set, whose Genre row reads
+     * "Thriller, (13 Episoden)" rather than just "Thriller" (the episode
+     * count sits in the same element as the genre link, with no separate
+     * label of its own). Strips a trailing ", (...)" parenthetical that
+     * contains a digit — the same "obviously not the field itself"
+     * heuristic every other regex-based cleanup in this trait uses — since
+     * a genre name legitimately containing a digit in parentheses (rather
+     * than a count annotation) hasn't been observed and seems unlikely.
+     * Only confirmed for this one live case; a hypothetical differently-
+     * worded annotation (e.g. "(2 Staffeln)") is expected to match the
+     * same shape but hasn't itself been seen.
+     */
+    private function stripJpcGenreAnnotation(?string $genre): ?string
+    {
+        if ($genre === null) {
+            return null;
+        }
+
+        $stripped = preg_replace('/,?\s*\([^()]*\d[^()]*\)\s*$/u', '', $genre) ?? $genre;
+
+        return $this->cleanText($stripped);
     }
 
     /**
