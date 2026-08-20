@@ -144,6 +144,37 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame(2, $candidate->attributes['disc_count']);
     }
 
+    /**
+     * GitHub issue #144: a research check (not a byte-exact `curl` fetch —
+     * see this class's own docblock and JpcScraping::
+     * stripJpcTrackPreviewAnnotation()'s docblock for why that
+     * distinction matters here) found a "Hörprobe" preview-control label
+     * repeating the track title on two real, distinct CD pages. Whether
+     * that text genuinely sits inside the same `itemprop="name"` element
+     * this fixture models could not be confirmed, so this is deliberately
+     * a defensive, unverified-shape test — the same treatment
+     * AmazonDvdBlurayProviderTest::test_cast_strips_format_contamination_from_the_actors_bullet()
+     * got for GitHub issue #139.
+     */
+    public function test_track_titles_strip_a_hoerprobe_preview_annotation(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Adele: 30 (CD) – jpc.de</title></head><body>'
+                .'<li itemscope itemtype="https://schema.org/MusicRecording" itemprop="track">'
+                .'<div class="tracks"><b>1</b><span><span itemprop="name">Strangers by nature Hörprobe Track 1: Strangers by nature</span></span></div>'
+                .'</li>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcCdProvider::class)->lookupByCode('0602438571051')[0];
+
+        $this->assertSame('Strangers by nature', $candidate->attributes['tracks'][0]['title']);
+    }
+
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void
     {
         Http::fake([

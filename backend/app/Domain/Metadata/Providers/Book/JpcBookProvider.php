@@ -20,6 +20,17 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * checked). `format` is deliberately read from the confirmed `Einband:`
  * detail row (e.g. "Gebunden"), not the title tag's generic "(Buch)" —
  * see JpcScraping::jpcProductPage()'s own docblock.
+ *
+ * `genre` — a GitHub issue #143/#144 research check across five real,
+ * varied book pages (literary fiction, children's fantasy, a Tolkien
+ * companion book, a thriller, and a manga volume) found **no** "Genre:"
+ * detail row on any of them, only on the one real film page originally
+ * checked for #135 — this trait's own docblock has always listed
+ * "Genre:" under the film label set, not the book one, so this isn't a
+ * regression, but it does mean this field is expected to stay null for
+ * essentially every real book in practice, not merely nullable/best-
+ * effort like every other field here. Left in place rather than removed,
+ * since a genre-tagged book category not yet sampled can't be ruled out.
  */
 class JpcBookProvider implements MetadataProviderInterface
 {

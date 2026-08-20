@@ -569,6 +569,10 @@ trait JpcScraping
      * from "confirmed zero tracks", which callers should treat as
      * uninformative either way.
      *
+     * `title` is passed through `stripJpcTrackPreviewAnnotation()` (GitHub
+     * issue #144) — see that method's own docblock for the unconfirmed-
+     * but-consistent "Hörprobe" contamination it defends against.
+     *
      * @return array<int, array{position: ?string, title: ?string, duration_seconds: ?int}>|null
      */
     private function jpcTracks(DOMXPath $xpath): ?array
@@ -587,12 +591,48 @@ trait JpcScraping
 
             $tracks[] = [
                 'position' => $positionNode instanceof DOMElement ? $this->cleanText($positionNode->textContent) : null,
-                'title' => $nameNode instanceof DOMElement ? $this->cleanText($nameNode->textContent) : null,
+                // GitHub issue #144.
+                'title' => $nameNode instanceof DOMElement ? $this->stripJpcTrackPreviewAnnotation($this->cleanText($nameNode->textContent)) : null,
                 'duration_seconds' => null,
             ];
         }
 
         return $tracks;
+    }
+
+    /**
+     * GitHub issue #144: jpc.de's track listing UI includes a "Hörprobe"
+     * (audio-preview) control per track, which a research check found
+     * repeating the track number and title as its own label — e.g.
+     * "Strangers by nature Hörprobe Track 1: Strangers by nature" on
+     * Adele's "30" (a plain single CD) and "Bohemian Rhapsody Hörprobe
+     * Track 1: Bohemian Rhapsody" on Queen's "The Platinum Collection"
+     * (a vinyl box set) — two distinct, real CD pages, both consistent.
+     * Unlike GitHub issue #143's genre-annotation fix, whether this
+     * preview-control text actually sits inside the same schema.org
+     * `itemprop="name"` element `jpcTracks()` reads the title from, or
+     * merely renders visually next to it and only appeared merged here
+     * through the research tool's markdown conversion (the exact kind of
+     * DOM-structure loss GitHub issue #135's docblock already documents
+     * as a real, previously-proven risk), could not be confirmed — this
+     * sandbox has no working byte-exact `curl` path to jpc.de, unlike the
+     * checks #135/#136/#138 were able to do. Stripped defensively
+     * regardless — the same "confirmed pattern, unconfirmed root cause"
+     * treatment `AmazonScraping::stripAmazonFormatContamination()` got in
+     * GitHub issue #139 when an equivalent live re-check was blocked. If
+     * a future byte-exact check finds the text was never actually inside
+     * `itemprop="name"` to begin with, this is simply a permanent no-op,
+     * not a regression.
+     */
+    private function stripJpcTrackPreviewAnnotation(?string $title): ?string
+    {
+        if ($title === null) {
+            return null;
+        }
+
+        $stripped = preg_replace('/\s*Hörprobe\s+Track\s+\d+\s*:.*$/us', '', $title) ?? $title;
+
+        return $this->cleanText($stripped);
     }
 
     /** Extracts the numeric `hnum` product identifier this trait's own docblock confirms is embedded in every product URL — falls back to the full URL if a page doesn't follow that shape. */
