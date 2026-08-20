@@ -50,8 +50,27 @@ const CAROUSEL_ORDER: MediaType[] = ['cd', 'book', 'dvd_bluray']
  * An item without its own cover gets a plain placeholder tile instead of
  * being left out of the random draw — dropping cover-less items would bias
  * the "random" selection towards whichever items happen to have artwork.
+ *
+ * `paused` (GitHub issue #119) additionally stops the animation outright
+ * while this specific carousel's own MediaItemDetailDialog is open. A
+ * native <dialog> moves keyboard focus into itself when it opens, i.e. out
+ * of this carousel's DOM subtree — so the existing :focus-within pause
+ * (index.css, GitHub issue #118) stops applying for exactly as long as the
+ * dialog is shown, and the row kept scrolling behind it. DashboardPage
+ * only ever passes `true` for the one carousel whose media type matches
+ * the currently open item, never the other two.
  */
-function MediaCarousel({ mediaType, items, onSelect }: { mediaType: MediaType; items: RandomMediaItem[]; onSelect: (item: RandomMediaItem) => void }) {
+function MediaCarousel({
+  mediaType,
+  items,
+  paused,
+  onSelect,
+}: {
+  mediaType: MediaType
+  items: RandomMediaItem[]
+  paused: boolean
+  onSelect: (item: RandomMediaItem) => void
+}) {
   const { t } = useTranslation()
 
   return (
@@ -61,7 +80,7 @@ function MediaCarousel({ mediaType, items, onSelect }: { mediaType: MediaType; i
       {items.length === 0 ? (
         <p className="hint">{t('dashboard.randomMedia.none')}</p>
       ) : (
-        <div className="dashboard-carousel__viewport">
+        <div className={`dashboard-carousel__viewport${paused ? ' dashboard-carousel__viewport--paused' : ''}`}>
           <div className="dashboard-carousel__track" style={{ '--dashboard-carousel-duration': `${Math.max(items.length * 4, 20)}s` } as React.CSSProperties}>
             {[...items, ...items].map((item, i) => (
               <button key={`${item.id}-${i}`} type="button" className="dashboard-carousel__tile" onClick={() => onSelect(item)}>
@@ -212,7 +231,16 @@ export function DashboardPage() {
       </header>
 
       {randomMediaError && <p role="alert">{randomMediaError}</p>}
-      {randomMedia && CAROUSEL_ORDER.map((mediaType) => <MediaCarousel key={mediaType} mediaType={mediaType} items={randomMedia[mediaType]} onSelect={openItem} />)}
+      {randomMedia &&
+        CAROUSEL_ORDER.map((mediaType) => (
+          <MediaCarousel
+            key={mediaType}
+            mediaType={mediaType}
+            items={randomMedia[mediaType]}
+            paused={selectedItem !== null && selectedLibrary?.media_type === mediaType}
+            onSelect={openItem}
+          />
+        ))}
 
       <section className="panel-card">
         <h2>{t('libraries.title')}</h2>

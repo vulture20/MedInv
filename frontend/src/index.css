@@ -1710,6 +1710,18 @@ td {
   animation-play-state: paused;
 }
 
+/*
+ * GitHub issue #119 — a native <dialog> moves keyboard focus into itself
+ * once open, i.e. out of this carousel's own DOM subtree, so the
+ * :focus-within rule above stops applying for as long as
+ * MediaItemDetailDialog is shown. DashboardPage.tsx sets this modifier
+ * class on exactly the one carousel the open dialog's item came from
+ * (`paused` prop), so the row doesn't keep scrolling behind the dialog.
+ */
+.dashboard-carousel__viewport--paused .dashboard-carousel__track {
+  animation-play-state: paused;
+}
+
 @keyframes dashboard-carousel-scroll {
   from {
     transform: translateX(0);
