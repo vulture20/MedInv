@@ -20,7 +20,7 @@ Das vollständige Konzept-/Anforderungsdokument liegt unter [`docs/medinv-briefi
 
 ### 📷 Erfassung & Metadaten-Abgleich
 - **Kamerabasiertes Barcode-Scannen** oder manuelle Eingabe — in beiden Fällen sucht MedInv den Eintrag automatisch, statt alles per Hand eintippen zu lassen.
-- Ein steckbares Metadaten-Provider-System mit echten, funktionierenden Anbietern je Medientyp: OpenLibrary, Google Books, Hardcover, Amazon und Thalia (Bücher); MusicBrainz, Discogs, Amazon und Thalia (CDs); UPCMDB, Amazon und Thalia (DVD/Blu-ray) — dazu optional eine **KI-gestützte Suche via Claude, ChatGPT oder Gemini** für alle drei Medientypen. Ergebnisse aller aktivierten Provider werden feldweise zusammengeführt statt nur einen ganzen Datensatz zu übernehmen.
+- Ein steckbares Metadaten-Provider-System mit echten, funktionierenden Anbietern je Medientyp: OpenLibrary, Google Books, Hardcover, Amazon und Thalia (Bücher); MusicBrainz, Discogs, Amazon, Thalia und JPC (CDs); UPCMDB, Amazon, Thalia und JPC (DVD/Blu-ray) — dazu optional eine **KI-gestützte Suche via Claude, ChatGPT oder Gemini** für alle drei Medientypen. Ergebnisse aller aktivierten Provider werden feldweise zusammengeführt statt nur einen ganzen Datensatz zu übernehmen.
 - Cover-Bilder werden heruntergeladen und lokal gespeichert (inklusive automatisch erzeugtem Thumbnail), nie nur verlinkt.
 - "Kein Treffer" ist nie eine Sackgasse — Einträge lassen sich immer manuell anlegen, und Metadaten können später jederzeit aus der Detailansicht erneut abgerufen werden.
 

@@ -20,7 +20,7 @@ The full concept/requirements document lives at [`docs/medinv-briefing.md`](docs
 
 ### 📷 Capture & metadata lookup
 - **Camera-based barcode scanning** or manual entry — either way, MedInv looks up the item automatically instead of leaving you to type everything by hand.
-- A pluggable metadata-provider system with real, working providers per media type: OpenLibrary, Google Books, Hardcover, Amazon and Thalia (books); MusicBrainz, Discogs, Amazon and Thalia (CDs); UPCMDB, Amazon and Thalia (DVD/Blu-ray) — plus optional **AI-assisted lookup via Claude, ChatGPT or Gemini** for all three. Results from every enabled provider are merged field-by-field rather than picking one whole record.
+- A pluggable metadata-provider system with real, working providers per media type: OpenLibrary, Google Books, Hardcover, Amazon and Thalia (books); MusicBrainz, Discogs, Amazon, Thalia and JPC (CDs); UPCMDB, Amazon, Thalia and JPC (DVD/Blu-ray) — plus optional **AI-assisted lookup via Claude, ChatGPT or Gemini** for all three. Results from every enabled provider are merged field-by-field rather than picking one whole record.
 - Cover art is downloaded and stored locally (with a generated thumbnail), never just hot-linked.
 - A "no match" is never a dead end — items can always be captured manually, and metadata can be re-fetched later from the item's detail view.
 
