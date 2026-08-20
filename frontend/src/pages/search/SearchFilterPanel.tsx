@@ -103,6 +103,23 @@ export function SearchFilterPanel({
   // rather than two separate ones for what's the exact same filter param.
   const mediumOptions = Array.from(new Set([...(filterOptions?.cd.medium ?? []), ...(filterOptions?.dvd_bluray.medium ?? [])])).sort()
 
+  /**
+   * GitHub issue #123 — every attribute filter here only ever applies to a
+   * subset of media types (mediaItem.fields.* labels are shared with
+   * FIELD_SPECS' per-media-type edit form, where that's unambiguous since
+   * only the relevant fields for one media type show at once), but this
+   * panel shows all of them side by side regardless of which media types
+   * are selected — most visibly, `language` (book) and `languages`
+   * (DVD-Blu-ray) end up reading as two near-identical "Sprache"/
+   * "Sprache(n)" fields with nothing to tell them apart. Appends which
+   * media type(s) each one actually filters, reusing the existing
+   * libraries.mediaType.* labels rather than adding new translation keys
+   * for what both already say on their own.
+   */
+  function labelWithMediaTypes(field: string, mediaTypes: MediaType[]): string {
+    return `${t(field)} (${mediaTypes.map((type) => t(`libraries.mediaType.${type}`)).join(', ')})`
+  }
+
   return (
     <section className="panel-card search-filters">
       <h2>{t('search.filters.heading')}</h2>
@@ -159,17 +176,32 @@ export function SearchFilterPanel({
       </label>
 
       <div className="search-filters__row">
-        <MultiSelect label={t('mediaItem.fields.genre')} options={filterOptions?.book.genre ?? []} value={draft.genre} onChange={(genre) => onChange({ genre })} />
-        <MultiSelect label={t('mediaItem.fields.format')} options={filterOptions?.book.format ?? []} value={draft.format} onChange={(format) => onChange({ format })} />
         <MultiSelect
-          label={t('mediaItem.fields.language')}
+          label={labelWithMediaTypes('mediaItem.fields.genre', ['book'])}
+          options={filterOptions?.book.genre ?? []}
+          value={draft.genre}
+          onChange={(genre) => onChange({ genre })}
+        />
+        <MultiSelect
+          label={labelWithMediaTypes('mediaItem.fields.format', ['book'])}
+          options={filterOptions?.book.format ?? []}
+          value={draft.format}
+          onChange={(format) => onChange({ format })}
+        />
+        <MultiSelect
+          label={labelWithMediaTypes('mediaItem.fields.language', ['book'])}
           options={filterOptions?.book.language ?? []}
           value={draft.language}
           onChange={(language) => onChange({ language })}
         />
-        <MultiSelect label={t('mediaItem.fields.medium')} options={mediumOptions} value={draft.medium} onChange={(medium) => onChange({ medium })} />
         <MultiSelect
-          label={t('mediaItem.fields.languages')}
+          label={labelWithMediaTypes('mediaItem.fields.medium', ['cd', 'dvd_bluray'])}
+          options={mediumOptions}
+          value={draft.medium}
+          onChange={(medium) => onChange({ medium })}
+        />
+        <MultiSelect
+          label={labelWithMediaTypes('mediaItem.fields.languages', ['dvd_bluray'])}
           options={filterOptions?.dvd_bluray.languages ?? []}
           value={draft.languages}
           onChange={(languages) => onChange({ languages })}
