@@ -130,9 +130,12 @@ class ReportsTest extends TestCase
             'library_id' => $library->id, 'title' => 'Manual', 'ean' => '9780000000001',
             'capture_method' => 'manual', 'captured_by_user_id' => $owner->id,
         ]);
+        // GitHub issue #149: realistic stored values are the full,
+        // media-type-scoped provider_key (e.g. "book.open_library"), not
+        // the bare provider name — see provider key()'s own return value.
         MediaBook::query()->create([
             'library_id' => $library->id, 'title' => 'Scanned', 'ean' => '9780000000002',
-            'capture_method' => 'scan', 'metadata_provider' => 'open_library,google_books', 'captured_by_user_id' => $owner->id,
+            'capture_method' => 'scan', 'metadata_provider' => 'book.open_library,book.google_books', 'captured_by_user_id' => $owner->id,
         ]);
 
         $response = $this->getJson('/api/reports/capture-source');
@@ -143,6 +146,30 @@ class ReportsTest extends TestCase
         $this->assertSame(1, $data['by_capture_method']['scan']);
         $this->assertSame(1, $data['by_metadata_provider']['open_library']);
         $this->assertSame(1, $data['by_metadata_provider']['google_books']);
+    }
+
+    /**
+     * GitHub issue #149: a provider that exists for more than one media
+     * type (e.g. Amazon: book.amazon/cd.amazon/dvd_bluray.amazon) used to
+     * count as several distinct by_metadata_provider entries, one per
+     * media type, instead of a single combined total.
+     */
+    public function test_capture_source_merges_the_same_provider_across_media_types(): void
+    {
+        $owner = $this->actingAsUser();
+        $bookLibrary = Library::query()->create(['name' => 'Books', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $cdLibrary = Library::query()->create(['name' => 'CDs', 'media_type' => 'cd', 'owner_id' => $owner->id]);
+        $dvdLibrary = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $bookLibrary->id, 'title' => 'A Book', 'ean' => '9780000000001', 'metadata_provider' => 'book.amazon']);
+        MediaCd::query()->create(['library_id' => $cdLibrary->id, 'title' => 'A CD', 'ean' => '9780000000002', 'metadata_provider' => 'cd.amazon']);
+        MediaDvdBluray::query()->create(['library_id' => $dvdLibrary->id, 'title' => 'A Film', 'ean' => '9780000000003', 'metadata_provider' => 'dvd_bluray.amazon']);
+
+        $response = $this->getJson('/api/reports/capture-source');
+
+        $response->assertOk();
+        $data = $response->json();
+        $this->assertSame(3, $data['by_metadata_provider']['amazon']);
+        $this->assertArrayNotHasKey('book.amazon', $data['by_metadata_provider']);
     }
 
     public function test_an_unshared_librarys_items_are_invisible_to_every_report(): void

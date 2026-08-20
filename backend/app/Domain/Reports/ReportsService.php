@@ -276,9 +276,25 @@ class ReportsService
             // Comma-separated (see the migration's docblock) — split the
             // same way StatisticsService::multiValueDistribution() already
             // splits MediaDvdBluray::languages.
+            //
+            // GitHub issue #149: a stored value is the full, media-type-
+            // scoped provider_key (e.g. "book.amazon"/"cd.amazon"/
+            // "dvd_bluray.amazon" — the same key MetadataCandidate::
+            // providerKey/provider()->key() produce), so a provider that
+            // exists for more than one media type used to get counted as
+            // several distinct entries here, one per media type, rather
+            // than a single combined total. Stripped down to "everything
+            // after the first dot" before counting — the exact same
+            // normalization frontend/src/pages/capture/
+            // MetadataMergeReview.tsx's formatProviderKey() already
+            // applies when turning a key into its display label, just
+            // applied here at count time instead of render time so the
+            // *count* itself reflects "this provider" rather than "this
+            // provider for this one media type".
             'by_metadata_provider' => $rows->pluck('metadata_provider')
                 ->filter()
                 ->flatMap(fn (string $value) => explode(',', $value))
+                ->map(fn (string $key) => str_contains($key, '.') ? substr($key, strpos($key, '.') + 1) : $key)
                 ->countBy()
                 ->sortDesc()
                 ->all(),
