@@ -25,6 +25,10 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * re-check attempts were both blocked by Amazon's bot detection before
  * any markup could be inspected), so treat these two specifically as
  * unconfirmed even by this provider's own already-cautious standards.
+ * GitHub issue #141 tried again, explicitly authorized, against three
+ * different real DVD/Blu-ray product/search pages — every one was
+ * blocked (two HTTP 500s, one 503), the same outcome #139 already had.
+ * Still unconfirmed; nothing changed here as a result.
  */
 class AmazonDvdBlurayProvider implements MetadataProviderInterface
 {
