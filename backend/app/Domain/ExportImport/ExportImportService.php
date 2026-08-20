@@ -77,7 +77,7 @@ class ExportImportService
      */
     public function exportLibraries(?array $libraryIds = null, bool $includeUsers = false): array
     {
-        $query = Library::query()->with('shares');
+        $query = Library::query()->with(['shares', 'owner']);
 
         if ($libraryIds !== null) {
             $query->whereIn('id', $libraryIds);
@@ -90,6 +90,27 @@ class ExportImportService
                 'name' => $library->name,
                 'description' => $library->description,
                 'media_type' => $library->media_type,
+                // GitHub issue #152: previously missing entirely — every
+                // restored/imported library ended up owned by whoever
+                // performed the restore/import instead of its original
+                // owner, a real loss for a full backup/restore
+                // (BackupService/MEDINV_RESTOREBACKUP), whose whole point
+                // is reproducing the exact prior state. Read back by
+                // createLibraryFromExport() below the same way
+                // `shares[].user_email` already is — resolved by email
+                // against an existing/just-restored account, falling back
+                // to the importing user (not a hard failure) when no match
+                // is found, the same tolerance restoreShares() already
+                // shows for a stale share email. Deliberately not gated
+                // behind $includeUsers, matching `shares[].user_email`'s
+                // own precedent (see this method's docblock on that field)
+                // rather than `system_settings`/`users`/`metadata_plugins`'s.
+                'owner_email' => $library->owner?->email,
+                // GitHub issue #152: also previously missing — silently
+                // reset to its DB default (false) on every restore/import.
+                // Currently inconsequential (nothing else in the app reads
+                // this flag yet), but still real data loss.
+                'is_sample_library' => $library->is_sample_library,
                 'shares' => $library->shares->map(fn (LibraryShare $s) => [
                     'scope' => $s->scope,
                     'user_email' => $s->user?->email,
@@ -464,7 +485,9 @@ class ExportImportService
             'name' => $libraryData['name'],
             'description' => $libraryData['description'] ?? null,
             'media_type' => $libraryData['media_type'],
-            'owner_id' => $owner->id,
+            // GitHub issue #152.
+            'owner_id' => $this->resolveLibraryOwner($libraryData, $owner)->id,
+            'is_sample_library' => $libraryData['is_sample_library'] ?? false,
         ]);
 
         $this->insertItems($library, $libraryData['items'] ?? []);
@@ -474,6 +497,32 @@ class ExportImportService
         }
 
         return true;
+    }
+
+    /**
+     * GitHub issue #152: prefers the library's *original* owner (matched by
+     * `owner_email`, the same "resolve a user reference by email, not a
+     * raw cross-instance ID" approach `restoreShares()` already uses for
+     * `shares[].user_email`) over `$owner` (the account actually performing
+     * this import/restore) — a full backup/restore's whole point is
+     * reproducing the exact prior state, which previously didn't extend to
+     * who owned each library at all. Falls back to `$owner` when there's no
+     * `owner_email` at all (an older export predating this field) or it
+     * doesn't match any account on this instance (the original owner was
+     * never included in this particular restore, e.g. a plain library
+     * export without `$includeUsers`/a partial restore) — an otherwise-
+     * valid restore shouldn't fail over one unresolvable email, the same
+     * tolerance restoreShares() itself already shows for a stale share.
+     */
+    private function resolveLibraryOwner(array $libraryData, User $owner): User
+    {
+        $email = $libraryData['owner_email'] ?? null;
+
+        if (! is_string($email) || $email === '') {
+            return $owner;
+        }
+
+        return User::query()->where('email', $email)->first() ?? $owner;
     }
 
     /**
