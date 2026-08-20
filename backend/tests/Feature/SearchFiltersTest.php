@@ -298,4 +298,33 @@ class SearchFiltersTest extends TestCase
         $response->assertOk();
         $this->assertCount(0, $response->json());
     }
+
+    /**
+     * GitHub issue #124's own fix only covered `field=tracks` specifically
+     * — this instead exercises every valid `field` value at once, the
+     * general shape of the bug rather than that one instance of it: a
+     * query guaranteed not to match anything real must return zero
+     * results no matter which field scope it's searched under. If some
+     * future field scope ends up with zero applicable columns for a given
+     * media type the same way `tracks` did for books/DVD-Blu-ray,
+     * sqlSearch()'s free-text `where(Closure)` would again add no
+     * condition at all, which Laravel's query builder silently drops
+     * instead of compiling into an always-false one — turning "matches
+     * nothing" into "matches everything" for that combination. Reusing
+     * seedOneOfEach() (one item per media type) makes that failure mode
+     * observable: a real regression here would make this query start
+     * matching those items instead of staying empty.
+     */
+    public function test_every_field_scope_returns_nothing_for_a_query_matching_nothing_real(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+
+        foreach (['all', 'title', 'creator', 'description', 'identifier', 'location', 'tracks'] as $field) {
+            $response = $this->getJson('/api/search?query=Xyzzy1928NoSuchThingAnywhere&field='.$field);
+
+            $response->assertOk();
+            $this->assertCount(0, $response->json(), "field={$field} unexpectedly matched something for a query that matches nothing real.");
+        }
+    }
 }
