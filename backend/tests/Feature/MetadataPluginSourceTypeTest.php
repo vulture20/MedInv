@@ -30,16 +30,15 @@ class MetadataPluginSourceTypeTest extends TestCase
         $this->assertSame('api', $sourceTypes->get('cd.musicbrainz'));
         $this->assertSame('api', $sourceTypes->get('cd.discogs'));
         $this->assertSame('api', $sourceTypes->get('dvd_bluray.upcmdb'));
-        // GitHub issue #50, GitHub issue #129, GitHub issue #130 (extended
-        // to books by GitHub issue #131): the three Amazon scrapers, the
-        // three Thalia ones, and the three JPC ones are the only
-        // 'scraping' providers.
+        // GitHub issue #50, GitHub issue #130 (extended to books by GitHub
+        // issue #131): the three Amazon scrapers and the three JPC ones
+        // are the only 'scraping' providers. Thalia (GitHub issue #129)
+        // was a fourth one but was removed again by GitHub issue #134 —
+        // confirmed permanently non-functional against thalia.de's
+        // Cloudflare bot-management (GitHub issue #132).
         $this->assertSame('scraping', $sourceTypes->get('book.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('cd.amazon'));
         $this->assertSame('scraping', $sourceTypes->get('dvd_bluray.amazon'));
-        $this->assertSame('scraping', $sourceTypes->get('book.thalia'));
-        $this->assertSame('scraping', $sourceTypes->get('cd.thalia'));
-        $this->assertSame('scraping', $sourceTypes->get('dvd_bluray.thalia'));
         $this->assertSame('scraping', $sourceTypes->get('book.jpc'));
         $this->assertSame('scraping', $sourceTypes->get('cd.jpc'));
         $this->assertSame('scraping', $sourceTypes->get('dvd_bluray.jpc'));

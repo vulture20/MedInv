@@ -12,13 +12,18 @@ use Illuminate\Support\Facades\Log;
  * Shared HTTP + HTML parsing for the three JPC providers (JpcBook/JpcCd/
  * JpcDvdBlurayProvider — GitHub issue #130, extended to books by GitHub
  * issue #131 after #130 itself wrongly assumed JPC doesn't sell books —
- * it does). Structural sibling of AmazonScraping (#50) and ThaliaScraping
- * (#129): jpc.de has no public lookup API either, so this scrapes the
- * same product/search pages a browser would load — **explicitly a Beta
- * feature**, disabled by default, for the same legal/technical/
- * maintenance reasons AmazonScraping's own docblock lays out in full (not
- * repeated here). Like Thalia, jpc.de isn't a briefing-listed source —
- * added purely because it was explicitly requested.
+ * it does). Structural sibling of AmazonScraping (#50) and — historically,
+ * see below — ThaliaScraping (#129, GitHub issue #134: removed again once
+ * confirmed permanently blocked by thalia.de's Cloudflare bot-management,
+ * a fate JPC didn't share; the comparisons to it throughout this docblock
+ * are kept as accurate history of how this class was built, even though
+ * that sibling class no longer exists in the codebase to link to): jpc.de
+ * has no public lookup API either, so this scrapes the same product/
+ * search pages a browser would load — **explicitly a Beta feature**,
+ * disabled by default, for the same legal/technical/maintenance reasons
+ * AmazonScraping's own docblock lays out in full (not repeated here).
+ * Like Thalia was, jpc.de isn't a briefing-listed source — added purely
+ * because it was explicitly requested.
  *
  * ## What's confirmed vs. guessed here — read this before trusting any of it
  *

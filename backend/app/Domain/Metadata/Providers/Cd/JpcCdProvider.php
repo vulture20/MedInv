@@ -15,9 +15,9 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * and which are best-effort guesses.
  *
  * Deliberately doesn't attempt a track listing (GitHub issue #48's
- * `tracks` field) — same reasoning as AmazonCdProvider's/ThaliaCdProvider's
- * own identical omission: nothing this trait extracts reliably exposes
- * one in a stable, machine-parseable shape.
+ * `tracks` field) — same reasoning as AmazonCdProvider's own identical
+ * omission: nothing this trait extracts reliably exposes one in a stable,
+ * machine-parseable shape.
  */
 class JpcCdProvider implements MetadataProviderInterface
 {

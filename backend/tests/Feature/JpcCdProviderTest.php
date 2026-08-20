@@ -8,17 +8,17 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * JpcCdProvider (GitHub issue #130, analogous to Amazon's #50). Unlike
- * ThaliaBookProviderTest's fixtures (built from indexed-snippet reads of a
- * site that blocked every direct fetch), jpc.de did not block a direct,
- * one-time, read-only check during development — these fixtures combine
- * what was actually confirmed on two real jpc.de pages (the `<title>` tag
- * shape, the German detail-row labels, the EAN-derived cover URL) with a
- * best-effort, never-confirmed search endpoint — see JpcScraping's own
- * docblock for exactly which parts are confirmed vs. guessed. These
- * fixtures exist to prove the *parsing logic* behaves correctly against a
- * plausible input shape, not to guarantee the real site still looks like
- * this today.
+ * JpcCdProvider (GitHub issue #130, analogous to Amazon's #50). jpc.de did
+ * not block a direct, one-time, read-only check during development,
+ * unlike thalia.de (a since-removed provider — GitHub issue #134,
+ * thalia.de turned out to be permanently blocked by Cloudflare
+ * bot-management) — these fixtures combine what was actually confirmed on
+ * real jpc.de pages (the `<title>` tag shape, the German detail-row
+ * labels, the EAN-derived cover URL, and — since GitHub issue #133 — the
+ * real search endpoint itself) — see JpcScraping's own docblock for
+ * exactly which parts are confirmed vs. guessed. These fixtures exist to
+ * prove the *parsing logic* behaves correctly against a plausible input
+ * shape, not to guarantee the real site still looks like this today.
  */
 class JpcCdProviderTest extends TestCase
 {

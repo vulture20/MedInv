@@ -80,18 +80,26 @@ class DatabaseSeederTest extends TestCase
         $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.gemini', 'enabled' => false]);
     }
 
-    /** GitHub issue #129: same reasoning as the Amazon providers above — Thalia is a second Beta scraping vendor and must not be enabled just because the app was installed either. */
-    public function test_seeding_creates_the_thalia_providers_disabled(): void
+    /**
+     * GitHub issue #134: Thalia (GitHub issue #129) was removed from
+     * MetadataProviderRegistry — confirmed permanently non-functional
+     * against thalia.de's Cloudflare bot-management (GitHub issue #132),
+     * unlike every other Beta scraper here, which are merely unreliable.
+     * The 2026_08_20_193000_remove_thalia_metadata_plugins migration
+     * deletes any pre-existing metadata_plugins rows for it; this asserts
+     * a fresh seed doesn't recreate them.
+     */
+    public function test_seeding_does_not_recreate_the_removed_thalia_providers(): void
     {
         $this->seed();
 
         $table = (new MetadataPlugin)->getTable();
-        $this->assertDatabaseHas($table, ['provider_key' => 'book.thalia', 'enabled' => false]);
-        $this->assertDatabaseHas($table, ['provider_key' => 'cd.thalia', 'enabled' => false]);
-        $this->assertDatabaseHas($table, ['provider_key' => 'dvd_bluray.thalia', 'enabled' => false]);
+        $this->assertDatabaseMissing($table, ['provider_key' => 'book.thalia']);
+        $this->assertDatabaseMissing($table, ['provider_key' => 'cd.thalia']);
+        $this->assertDatabaseMissing($table, ['provider_key' => 'dvd_bluray.thalia']);
     }
 
-    /** GitHub issue #130 (extended to books by GitHub issue #131 — JPC does sell books after all): same reasoning as the Amazon/Thalia providers above — JPC is a third Beta scraping vendor and must not be enabled just because the app was installed either. */
+    /** GitHub issue #130 (extended to books by GitHub issue #131 — JPC does sell books after all): same reasoning as the Amazon providers above — JPC is a third Beta scraping vendor and must not be enabled just because the app was installed either. */
     public function test_seeding_creates_the_jpc_providers_disabled(): void
     {
         $this->seed();
