@@ -237,6 +237,23 @@ class SearchService
         $columns = $this->columnsFor($modelClass, $filters->field);
         $jsonArrayFields = $this->jsonArrayFieldsFor($modelClass, $filters->field);
 
+        // GitHub issue #124 — a narrow `field` scope (e.g. 'tracks', which
+        // only MediaCd has anything to match) leaves both $columns and
+        // $jsonArrayFields empty for a model that field doesn't apply to at
+        // all. Laravel's where(Closure) below silently adds *no* WHERE
+        // clause whatsoever when the closure ends up adding zero
+        // conditions (Builder::addNestedWhereQuery() only wraps the nested
+        // group at all if it actually has wheres) — so without this guard,
+        // "nothing to match the query against" quietly became "match every
+        // row", returning e.g. every book/DVD-Blu-ray for a `field=tracks`
+        // search that could only ever apply to CDs. fuzzyPortableSearch()
+        // below doesn't have this bug: its ->filter() closure with the same
+        // two empty loops correctly falls through to `return false` for
+        // every item instead.
+        if ($filters->hasQuery() && $columns === [] && $jsonArrayFields === []) {
+            return collect();
+        }
+
         $query = $modelClass::query()->whereIn('library_id', $visibleLibraryIds);
 
         if ($filters->hasQuery()) {

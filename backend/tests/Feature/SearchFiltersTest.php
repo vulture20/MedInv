@@ -276,4 +276,26 @@ class SearchFiltersTest extends TestCase
         $matchesAlbumTitle->assertOk();
         $this->assertCount(0, $matchesAlbumTitle->json());
     }
+
+    /**
+     * GitHub issue #124 — `field=tracks` has no plain SEARCHABLE_COLUMNS at
+     * all for MediaBook/MediaDvdBluray (only MediaCd has a
+     * JSON_ARRAY_SEARCHABLE_FIELDS entry), so sqlSearch()'s free-text
+     * `where(Closure)` for those two model classes used to add zero
+     * conditions — which Laravel's query builder silently drops entirely
+     * rather than compiling into an always-false WHERE clause, so it
+     * returned *every* visible book/DVD-Blu-ray regardless of the query
+     * instead of none. seedOneOfEach() gives every media type a matching
+     * "search this" opportunity; only the CD may actually appear.
+     */
+    public function test_field_tracks_never_matches_books_or_dvd_blurays_regardless_of_query(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+
+        $response = $this->getJson('/api/search?query=break&field=tracks');
+
+        $response->assertOk();
+        $this->assertCount(0, $response->json());
+    }
 }
