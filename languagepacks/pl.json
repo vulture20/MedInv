@@ -79,6 +79,7 @@
       "confirmDelete": "Usunąć „{{title}}”? Tej czynności nie można cofnąć.",
       "moveToLibrary": "Przenieś do biblioteki",
       "selectLibrary": "Wybierz bibliotekę…",
+      "selectValue": "Wybierz…",
       "move": "Przenieś",
       "uploadCover": "Prześlij okładkę",
       "removeCover": "Usuń okładkę",

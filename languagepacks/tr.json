@@ -79,6 +79,7 @@
       "confirmDelete": "\"{{title}}\" silinsin mi? Bu işlem geri alınamaz.",
       "moveToLibrary": "Kitaplığa taşı",
       "selectLibrary": "Bir kitaplık seçin…",
+      "selectValue": "Seç…",
       "move": "Taşı",
       "uploadCover": "Kapak yükle",
       "removeCover": "Kapağı kaldır",

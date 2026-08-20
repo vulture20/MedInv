@@ -79,6 +79,7 @@
       "confirmDelete": "Eyða „{{title}}“? Þessu er ekki hægt að afturkalla.",
       "moveToLibrary": "Flytja í safn",
       "selectLibrary": "Veldu safn…",
+      "selectValue": "Veldu…",
       "move": "Flytja",
       "uploadCover": "Hlaða upp kápu",
       "removeCover": "Fjarlægja kápu",

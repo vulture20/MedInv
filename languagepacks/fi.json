@@ -79,6 +79,7 @@
       "confirmDelete": "Poistetaanko ”{{title}}”? Tätä ei voi perua.",
       "moveToLibrary": "Siirrä kirjastoon",
       "selectLibrary": "Valitse kirjasto…",
+      "selectValue": "Valitse…",
       "move": "Siirrä",
       "uploadCover": "Lataa kansikuva",
       "removeCover": "Poista kansikuva",

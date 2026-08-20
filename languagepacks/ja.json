@@ -79,6 +79,7 @@
       "confirmDelete": "「{{title}}」を削除しますか? この操作は元に戻せません。",
       "moveToLibrary": "ライブラリへ移動",
       "selectLibrary": "ライブラリを選択…",
+      "selectValue": "選択…",
       "move": "移動",
       "uploadCover": "カバー画像をアップロード",
       "removeCover": "カバー画像を削除",

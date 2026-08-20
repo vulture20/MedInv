@@ -79,6 +79,7 @@
       "confirmDelete": "删除“{{title}}”？此操作无法撤销。",
       "moveToLibrary": "移动到媒体库",
       "selectLibrary": "选择媒体库…",
+      "selectValue": "选择…",
       "move": "移动",
       "uploadCover": "上传封面",
       "removeCover": "移除封面",

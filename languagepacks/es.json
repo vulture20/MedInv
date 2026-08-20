@@ -79,6 +79,7 @@
       "confirmDelete": "¿Eliminar «{{title}}»? Esta acción no se puede deshacer.",
       "moveToLibrary": "Mover a otra biblioteca",
       "selectLibrary": "Seleccionar una biblioteca…",
+      "selectValue": "Seleccionar…",
       "move": "Mover",
       "uploadCover": "Subir portada",
       "removeCover": "Eliminar portada",

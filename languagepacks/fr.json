@@ -79,6 +79,7 @@
       "confirmDelete": "Supprimer « {{title}} » ? Cette action est irréversible.",
       "moveToLibrary": "Déplacer vers une bibliothèque",
       "selectLibrary": "Sélectionner une bibliothèque…",
+      "selectValue": "Sélectionner…",
       "move": "Déplacer",
       "uploadCover": "Importer une couverture",
       "removeCover": "Supprimer la couverture",

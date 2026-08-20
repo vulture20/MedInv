@@ -79,6 +79,7 @@
       "confirmDelete": "Ta bort ”{{title}}”? Detta kan inte ångras.",
       "moveToLibrary": "Flytta till bibliotek",
       "selectLibrary": "Välj ett bibliotek…",
+      "selectValue": "Välj…",
       "move": "Flytta",
       "uploadCover": "Ladda upp omslag",
       "removeCover": "Ta bort omslag",

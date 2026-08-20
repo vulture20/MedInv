@@ -23,7 +23,7 @@ interface Props {
  * GitHub issue #17.
  */
 export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCreated }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [ean, setEan] = useState('')
   const [values, setValues] = useState<Record<string, string>>({})
@@ -148,6 +148,21 @@ export function CreateMediaItemDialog({ library, initialEan, open, onClose, onCr
                     value={values[field.key] ?? ''}
                     onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
                   />
+                ) : field.type === 'select' ? (
+                  // GitHub issue #114 — a fixed, browser-provided value list
+                  // (e.g. ISO 4217 currency codes) instead of free text.
+                  <select
+                    required={field.required}
+                    value={values[field.key] ?? ''}
+                    onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  >
+                    <option value="">{t('mediaItem.selectValue')}</option>
+                    {field.options?.map((option) => (
+                      <option key={option} value={option}>
+                        {field.formatOption ? field.formatOption(option, i18n.language) : option}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   <input
                     type={field.type}

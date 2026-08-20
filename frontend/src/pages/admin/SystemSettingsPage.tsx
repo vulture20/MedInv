@@ -4,6 +4,7 @@ import { apiClient } from '../../api/client'
 import { describeError } from './adminErrors'
 import { AVAILABLE_LANGUAGES } from '../../i18n'
 import { getRuntimeLanguagePacks, onRuntimeLanguagePacksChanged, type LanguagePackSummary } from '../../i18n/languagePackEvents'
+import { CURRENCY_CODES, currencyLabel } from '../libraries/mediaItemFields'
 
 interface SecuritySettings {
   throttle_max_attempts: number
@@ -54,7 +55,7 @@ const TIMEZONES: string[] = (() => {
  * so a second, page-level heading here would be redundant.
  */
 export function SystemSettingsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   // GitHub issue #110 — see load()'s own docblock for why this is separate
   // from the six section-specific error states below.
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -359,13 +360,15 @@ export function SystemSettingsPage() {
           <form onSubmit={saveDefaultCurrency}>
             <label>
               {t('admin.statisticsSettings.defaultCurrency')}
-              <input
-                className="panel-select"
-                value={defaultCurrency ?? ''}
-                onChange={(e) => setDefaultCurrency(e.target.value)}
-                placeholder="EUR"
-                maxLength={3}
-              />
+              {/* GitHub issue #114 — a fixed <select> (ISO 4217 codes, same CURRENCY_CODES/currencyLabel() mediaItemFields.ts's own currency field uses) instead of a free-text code the admin had to type correctly from memory. */}
+              <select className="panel-select" value={defaultCurrency ?? ''} onChange={(e) => setDefaultCurrency(e.target.value)}>
+                <option value="">{t('mediaItem.selectValue')}</option>
+                {CURRENCY_CODES.map((code) => (
+                  <option key={code} value={code}>
+                    {currencyLabel(code, i18n.language)}
+                  </option>
+                ))}
+              </select>
             </label>
             <button type="submit">{t('admin.actions.save')}</button>
             {defaultCurrencySaved && (

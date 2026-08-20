@@ -79,6 +79,7 @@
       "confirmDelete": "Eliminare «{{title}}»? Questa azione non può essere annullata.",
       "moveToLibrary": "Sposta in una biblioteca",
       "selectLibrary": "Seleziona una biblioteca…",
+      "selectValue": "Seleziona…",
       "move": "Sposta",
       "uploadCover": "Carica copertina",
       "removeCover": "Rimuovi copertina",

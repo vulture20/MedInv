@@ -79,6 +79,7 @@
       "confirmDelete": "Excluir \"{{title}}\"? Esta ação não pode ser desfeita.",
       "moveToLibrary": "Mover para uma biblioteca",
       "selectLibrary": "Selecionar uma biblioteca…",
+      "selectValue": "Selecionar…",
       "move": "Mover",
       "uploadCover": "Enviar capa",
       "removeCover": "Remover capa",

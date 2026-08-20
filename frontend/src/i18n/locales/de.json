@@ -76,6 +76,7 @@
     "confirmDelete": "„{{title}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
     "moveToLibrary": "In Bibliothek verschieben",
     "selectLibrary": "Bibliothek auswählen…",
+    "selectValue": "Auswählen…",
     "move": "Verschieben",
     "uploadCover": "Cover hochladen",
     "removeCover": "Cover entfernen",

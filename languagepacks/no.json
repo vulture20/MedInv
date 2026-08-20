@@ -79,6 +79,7 @@
       "confirmDelete": "Slette «{{title}}»? Dette kan ikke angres.",
       "moveToLibrary": "Flytt til bibliotek",
       "selectLibrary": "Velg et bibliotek…",
+      "selectValue": "Velg…",
       "move": "Flytt",
       "uploadCover": "Last opp omslag",
       "removeCover": "Fjern omslag",

@@ -59,12 +59,46 @@ export interface MediaItem {
   production_year?: number | null
 }
 
-type FieldType = 'text' | 'textarea' | 'number' | 'date'
+type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'select'
 
 export interface FieldSpec {
   key: keyof MediaItem
   type: FieldType
   required?: boolean
+  /** Only meaningful for `type: 'select'` — the fixed list of values the `<select>` offers, e.g. CURRENCY_CODES. */
+  options?: string[]
+  /** Only meaningful for `type: 'select'` — how to label each `options` entry, e.g. currencyLabel(). Defaults to the raw value itself if omitted. */
+  formatOption?: (value: string, language: string) => string
+}
+
+/**
+ * ISO 4217 currency codes (GitHub issue #114 — a free-text `currency` field
+ * was impractical to fill in correctly), sourced from the runtime's own
+ * `Intl` data rather than a hand-maintained list, same reasoning and same
+ * `Intl.supportedValuesOf` fallback pattern as SystemSettingsPage.tsx's own
+ * `TIMEZONES` constant. Deliberately doesn't narrow what the backend
+ * accepts (MediaItemController::rulesFor()'s `currency` rule stays a plain
+ * `max:3` string, see its own comment) — a metadata provider or an import/
+ * restore can still carry a code that isn't in this list, and the read/edit
+ * views fall back to showing it verbatim rather than rejecting it; this
+ * only shapes what a human manually typing a value gets offered.
+ */
+export const CURRENCY_CODES: string[] = (() => {
+  try {
+    return Intl.supportedValuesOf('currency')
+  } catch {
+    return ['EUR', 'USD', 'GBP', 'CHF', 'JPY']
+  }
+})()
+
+/** "EUR — Euro" rather than a bare code, using the same locale the rest of the app already formats currency amounts in (see formatPrice() below) — falls back to the bare code if `Intl.DisplayNames` doesn't recognize it (or isn't available at all) for that language. */
+export function currencyLabel(code: string, language: string): string {
+  try {
+    const name = new Intl.DisplayNames([language], { type: 'currency' }).of(code)
+    return name && name !== code ? `${code} — ${name}` : code
+  } catch {
+    return code
+  }
 }
 
 /**
@@ -85,7 +119,7 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'publisher', type: 'text' },
     { key: 'release_date', type: 'date' },
     { key: 'price', type: 'number' },
-    { key: 'currency', type: 'text' },
+    { key: 'currency', type: 'select', options: CURRENCY_CODES, formatOption: currencyLabel },
     { key: 'isbn10', type: 'text' },
     { key: 'isbn13', type: 'text' },
     { key: 'location', type: 'text' },
@@ -100,7 +134,7 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'runtime_seconds', type: 'number' },
     { key: 'release_date', type: 'date' },
     { key: 'price', type: 'number' },
-    { key: 'currency', type: 'text' },
+    { key: 'currency', type: 'select', options: CURRENCY_CODES, formatOption: currencyLabel },
     { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
   ],
@@ -115,7 +149,7 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'release_date', type: 'date' },
     { key: 'production_year', type: 'number' },
     { key: 'price', type: 'number' },
-    { key: 'currency', type: 'text' },
+    { key: 'currency', type: 'select', options: CURRENCY_CODES, formatOption: currencyLabel },
     { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
   ],

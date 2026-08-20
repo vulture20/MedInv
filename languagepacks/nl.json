@@ -79,6 +79,7 @@
       "confirmDelete": "\"{{title}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "moveToLibrary": "Verplaatsen naar bibliotheek",
       "selectLibrary": "Selecteer een bibliotheek…",
+      "selectValue": "Selecteren…",
       "move": "Verplaatsen",
       "uploadCover": "Cover uploaden",
       "removeCover": "Cover verwijderen",

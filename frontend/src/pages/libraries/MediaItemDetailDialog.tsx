@@ -27,7 +27,7 @@ interface Props {
  * modal implementation.
  */
 export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpdated, onDeleted, onMoved }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const coverDialogRef = useRef<HTMLDialogElement>(null)
@@ -302,6 +302,21 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                       value={values[field.key] ?? ''}
                       onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
                     />
+                  ) : field.type === 'select' ? (
+                    // GitHub issue #114 — a fixed, browser-provided value
+                    // list (e.g. ISO 4217 currency codes) instead of free text.
+                    <select
+                      required={field.required}
+                      value={values[field.key] ?? ''}
+                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    >
+                      <option value="">{t('mediaItem.selectValue')}</option>
+                      {field.options?.map((option) => (
+                        <option key={option} value={option}>
+                          {field.formatOption ? field.formatOption(option, i18n.language) : option}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
                     <input
                       type={field.type}
@@ -346,6 +361,9 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                         )
                       ) : field.type === 'date' ? (
                         dateOnly(item[field.key]) || '—'
+                      ) : field.type === 'select' && field.formatOption && item[field.key] ? (
+                        // GitHub issue #114 — e.g. "EUR — Euro" instead of the bare stored code.
+                        field.formatOption(String(item[field.key]), i18n.language)
                       ) : (
                         String(item[field.key] ?? '') || '—'
                       )}

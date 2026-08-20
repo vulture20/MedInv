@@ -79,6 +79,7 @@
       "confirmDelete": "Удалить «{{title}}»? Это действие нельзя отменить.",
       "moveToLibrary": "Переместить в библиотеку",
       "selectLibrary": "Выберите библиотеку…",
+      "selectValue": "Выбрать…",
       "move": "Переместить",
       "uploadCover": "Загрузить обложку",
       "removeCover": "Удалить обложку",
