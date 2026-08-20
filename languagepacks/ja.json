@@ -334,7 +334,9 @@
         "confirm": "バックアップ「{{filename}}」を復元しますか? この操作は元に戻せません。",
         "success": "復元が完了しました: 新規作成 {{created}} 件、上書き {{overwritten}} 件、統合 {{merged}} 件、スキップ {{skipped}} 件。",
         "sharesSkipped_one": "{{count}} 件の共有をスキップしました（該当するアカウントがありません）。",
-        "sharesSkipped_other": "{{count}} 件の共有をスキップしました(該当するアカウントがありません)。"
+        "sharesSkipped_other": "{{count}} 件の共有をスキップしました(該当するアカウントがありません)。",
+        "savedSearchesSkipped_one": "{{count}} 件の保存された検索をスキップしました（該当するアカウントがありません）。",
+        "savedSearchesSkipped_other": "{{count}} 件の保存された検索をスキップしました（該当するアカウントがありません）。"
       },
       "exportImportPage": {
         "exportTitle": "エクスポート",

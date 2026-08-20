@@ -335,7 +335,9 @@
         "confirm": "Palautetaanko varmuuskopio \"{{filename}}\"? Tätä ei voi perua.",
         "success": "Palautus valmis: {{created}} luotu, {{overwritten}} korvattu, {{merged}} yhdistetty, {{skipped}} ohitettu.",
         "sharesSkipped_one": "{{count}} jako ohitettu (ei vastaavaa tiliä).",
-        "sharesSkipped_other": "{{count}} jakoa ohitettu (ei vastaavaa tiliä)."
+        "sharesSkipped_other": "{{count}} jakoa ohitettu (ei vastaavaa tiliä).",
+        "savedSearchesSkipped_one": "{{count}} tallennettu haku ohitettu (ei vastaavaa tiliä).",
+        "savedSearchesSkipped_other": "{{count}} tallennettua hakua ohitettu (ei vastaavaa tiliä)."
       },
       "exportImportPage": {
         "exportTitle": "Vienti",

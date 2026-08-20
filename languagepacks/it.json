@@ -334,7 +334,9 @@
         "confirm": "Ripristinare il backup «{{filename}}»? Questa azione non può essere annullata.",
         "success": "Ripristino completato: {{created}} create, {{overwritten}} sovrascritte, {{merged}} unite, {{skipped}} ignorate.",
         "sharesSkipped_one": "{{count}} condivisione ignorata (nessun account corrispondente).",
-        "sharesSkipped_other": "{{count}} condivisioni ignorate (nessun account corrispondente)."
+        "sharesSkipped_other": "{{count}} condivisioni ignorate (nessun account corrispondente).",
+        "savedSearchesSkipped_one": "{{count}} ricerca salvata ignorata (nessun account corrispondente).",
+        "savedSearchesSkipped_other": "{{count}} ricerche salvate ignorate (nessun account corrispondente)."
       },
       "exportImportPage": {
         "exportTitle": "Esporta",

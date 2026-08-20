@@ -334,7 +334,9 @@
         "confirm": "Przywrócić kopię zapasową „{{filename}}”? Tej czynności nie można cofnąć.",
         "success": "Przywracanie zakończone: utworzono {{created}}, nadpisano {{overwritten}}, scalono {{merged}}, pominięto {{skipped}}.",
         "sharesSkipped_one": "Pominięto {{count}} udostępnienie (brak pasującego konta).",
-        "sharesSkipped_other": "Pominięto {{count}} udostępnień (brak pasującego konta)."
+        "sharesSkipped_other": "Pominięto {{count}} udostępnień (brak pasującego konta).",
+        "savedSearchesSkipped_one": "Pominięto {{count}} zapisane wyszukiwanie (brak pasującego konta).",
+        "savedSearchesSkipped_other": "Pominięto {{count}} zapisanych wyszukiwań (brak pasującego konta)."
       },
       "exportImportPage": {
         "exportTitle": "Eksport",

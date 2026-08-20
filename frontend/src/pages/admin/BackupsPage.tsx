@@ -39,6 +39,8 @@ interface RestoreResult {
   users_restored: string[]
   /** GitHub issue #80 — a scope=user share whose user_email matched no account here. */
   shares_skipped: number
+  /** GitHub issue #125 — a saved search whose user_email matched no account here, same reasoning shares_skipped above already documents. */
+  saved_searches_skipped: number
 }
 
 /**
@@ -158,6 +160,10 @@ export function BackupsPage() {
       // result message reads exactly as it did before this option existed.
       if (restoreShares && data.shares_skipped > 0) {
         message += ' ' + t('admin.backupRestore.sharesSkipped', { count: data.shares_skipped })
+      }
+      // GitHub issue #125 — same "only appended when actually relevant" reasoning as sharesSkipped above.
+      if (restoreSettings && data.saved_searches_skipped > 0) {
+        message += ' ' + t('admin.backupRestore.savedSearchesSkipped', { count: data.saved_searches_skipped })
       }
       setRestoreResult(message)
       setRestoringId(null)

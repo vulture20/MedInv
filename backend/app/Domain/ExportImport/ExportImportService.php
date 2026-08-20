@@ -8,6 +8,7 @@ use App\Domain\Metadata\CoverDownloadService;
 use App\Models\Library;
 use App\Models\LibraryShare;
 use App\Models\MetadataPlugin;
+use App\Models\SavedSearch;
 use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -47,25 +48,30 @@ class ExportImportService
      * @param  bool  $includeUsers  Whether to also embed system_settings (briefing 15.,
      *                              including secrets in plaintext — mail.password,
      *                              oidc.client_secret) under `system_settings`, every user
-     *                              account (incl. hashed password) under `users`, and every
+     *                              account (incl. hashed password) under `users`, every
      *                              metadata_plugins row (incl. provider config such as an API
-     *                              key, GitHub issue #29) under `metadata_plugins`.
+     *                              key, GitHub issue #29) under `metadata_plugins`, and every
+     *                              saved search (GitHub issue #73's "nice to have", GitHub
+     *                              issue #125) under `saved_searches`.
      *                              Deliberately opt-in and off by default: an ordinary
      *                              admin-initiated multi-library export to share with another
      *                              instance (briefing 9.1) has no reason to leak any of these
      *                              — a plugin's stored API key or a mail/OIDC secret is
-     *                              exactly as sensitive as an account's password hash. All
-     *                              three used to be conditional on this flag except
-     *                              system_settings, which was included unconditionally in
-     *                              every export regardless — a real reported leak: a plain
-     *                              library export downloaded to share with someone else
-     *                              carried the SMTP password and OIDC client secret in
-     *                              plaintext even though nothing about that export's UI
-     *                              suggested system configuration was involved at all.
-     *                              BackupService::create() is the one caller that passes
+     *                              exactly as sensitive as an account's password hash, and a
+     *                              saved search is meaningless orphaned data on a target
+     *                              instance whose users array wasn't also included (it's tied
+     *                              to a specific user_id/email, same reasoning `shares`'
+     *                              scope=user entries already have). All four used to be
+     *                              conditional on this flag except system_settings, which was
+     *                              included unconditionally in every export regardless — a
+     *                              real reported leak: a plain library export downloaded to
+     *                              share with someone else carried the SMTP password and OIDC
+     *                              client secret in plaintext even though nothing about that
+     *                              export's UI suggested system configuration was involved at
+     *                              all. BackupService::create() is the one caller that passes
      *                              true — a backup is meant to be a full snapshot of this
-     *                              instance, all three included.
-     * @return array{format_version: int, exported_at: string, libraries: array, system_settings?: array, users?: array, metadata_plugins?: array}
+     *                              instance, all four included.
+     * @return array{format_version: int, exported_at: string, libraries: array, system_settings?: array, users?: array, metadata_plugins?: array, saved_searches?: array}
      */
     public function exportLibraries(?array $libraryIds = null, bool $includeUsers = false): array
     {
@@ -129,6 +135,17 @@ class ExportImportService
                 'enabled' => $plugin->enabled,
                 'priority' => $plugin->priority,
                 'config' => $plugin->config,
+            ])->all();
+
+            // GitHub issue #125 — keyed by the owning user's email, not
+            // user_id (which a restore may reassign, same reasoning
+            // `shares`' scope=user entries above already use `user_email`
+            // for) so restoreSavedSearches() can re-resolve the right user
+            // on the target instance regardless of id drift.
+            $data['saved_searches'] = SavedSearch::query()->with('user:id,email')->get()->map(fn (SavedSearch $s) => [
+                'user_email' => $s->user->email,
+                'name' => $s->name,
+                'filters' => $s->filters,
             ])->all();
         }
 
@@ -218,18 +235,21 @@ class ExportImportService
      *                                                      BackupController::restore()'s interactive admin-UI path.
      *                                                      Without `__default__`, an unlisted library is skipped.
      * @param  bool  $restoreSettings  Whether to also apply $data['system_settings'],
-     *                                 $data['users'] and $data['metadata_plugins'] (present
-     *                                 since exportLibraries() started including them, the
-     *                                 latter two only when it was called with includeUsers:
-     *                                 true — i.e. from a backup) onto this instance. Opt-in
-     *                                 and defaulted to false: an ordinary library import
-     *                                 shouldn't silently overwrite the target's
-     *                                 mail/backup/security configuration, user accounts, or
-     *                                 metadata-provider settings (incl. API keys). Users and
-     *                                 metadata_plugins are both upserted (by email /
-     *                                 provider_key respectively) rather than duplicated, since
-     *                                 a restore is meant to reinstate the backed-up instance's
-     *                                 state.
+     *                                 $data['users'], $data['metadata_plugins'] and
+     *                                 $data['saved_searches'] (present since exportLibraries()
+     *                                 started including them, the latter three only when it
+     *                                 was called with includeUsers: true — i.e. from a backup)
+     *                                 onto this instance. Opt-in and defaulted to false: an
+     *                                 ordinary library import shouldn't silently overwrite the
+     *                                 target's mail/backup/security configuration, user
+     *                                 accounts, metadata-provider settings (incl. API keys), or
+     *                                 anyone's saved searches. Users and metadata_plugins are
+     *                                 both upserted (by email / provider_key respectively)
+     *                                 rather than duplicated, since a restore is meant to
+     *                                 reinstate the backed-up instance's state; saved_searches
+     *                                 is replaced per-user instead (see
+     *                                 restoreSavedSearches()'s own docblock for why it can't
+     *                                 use the same upsert approach).
      * @param  bool  $restoreShares  Whether to also recreate each library's shares
      *                               (GitHub issue #80) — a separate opt-in from
      *                               $restoreSettings above, deliberately: unlike
@@ -248,7 +268,7 @@ class ExportImportService
      *                               shares_skipped) rather than created with no target or
      *                               rejected outright — scope=guest/scope=all_users shares
      *                               have no such dependency and are never skipped.
-     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[], plugins_restored: string[], shares_restored: bool, shares_skipped: int}
+     * @return array{created: string[], merged: string[], overwritten: string[], skipped: string[], settings_restored: bool, users_restored: string[], plugins_restored: string[], shares_restored: bool, shares_skipped: int, saved_searches_restored: int, saved_searches_skipped: int}
      *
      * @throws InvalidImportFileException
      */
@@ -268,6 +288,7 @@ class ExportImportService
             'created' => [], 'merged' => [], 'overwritten' => [], 'skipped' => [],
             'settings_restored' => false, 'users_restored' => [], 'plugins_restored' => [],
             'shares_restored' => $restoreShares, 'shares_skipped' => 0,
+            'saved_searches_restored' => 0, 'saved_searches_skipped' => 0,
         ];
 
         if (($conflictResolutions['__all__'] ?? null) === 'cancel') {
@@ -307,6 +328,10 @@ class ExportImportService
                 ]);
                 $result['plugins_restored'][] = $pluginData['provider_key'];
             }
+        }
+
+        if ($restoreSettings && ! empty($data['saved_searches'])) {
+            [$result['saved_searches_restored'], $result['saved_searches_skipped']] = $this->restoreSavedSearches($data['saved_searches']);
         }
 
         DB::transaction(function () use ($data, $importingAs, $conflictResolutions, $restoreShares, &$result) {
@@ -478,6 +503,60 @@ class ExportImportService
         }
 
         return $skipped;
+    }
+
+    /**
+     * Recreates every saved search (GitHub issue #73's "nice to have",
+     * GitHub issue #125) from an exportLibraries() `saved_searches` array —
+     * each entry's `user_email` is resolved to a User the same way
+     * restoreShares()'s scope=user shares are just above, since a saved
+     * search's owning user_id, unlike a library's owner_id, isn't
+     * something importLibraries() otherwise re-derives from $importingAs.
+     * An entry whose user_email matches no account on this instance is
+     * skipped rather than failing the whole restore — same tolerance
+     * restoreShares() has for a stale email.
+     *
+     * Deleted and recreated per user rather than upserted like users/
+     * metadata_plugins above: there's no natural unique key to upsert a
+     * saved search against (SavedSearchController::store() doesn't enforce
+     * unique names, even per user), so upserting by name could silently
+     * merge two genuinely different saved searches that happen to share
+     * one. Deleting first and only for users actually mentioned in
+     * $savedSearches keeps a repeated restore (MEDINV_RESTOREBACKUP,
+     * briefing 9.3) from duplicating the same saved searches on every
+     * restart, without touching a user who has none in this backup at all.
+     *
+     * @return array{0: int, 1: int} [restored count, skipped count]
+     */
+    private function restoreSavedSearches(array $savedSearches): array
+    {
+        $restored = 0;
+        $skipped = 0;
+        $clearedUserIds = [];
+
+        foreach ($savedSearches as $searchData) {
+            $user = User::query()->where('email', $searchData['user_email'] ?? null)->first();
+
+            if (! $user) {
+                $skipped++;
+
+                continue;
+            }
+
+            if (! in_array($user->id, $clearedUserIds, true)) {
+                SavedSearch::query()->where('user_id', $user->id)->delete();
+                $clearedUserIds[] = $user->id;
+            }
+
+            SavedSearch::query()->create([
+                'user_id' => $user->id,
+                'name' => $searchData['name'] ?? '',
+                'filters' => $searchData['filters'] ?? [],
+            ]);
+            $restored++;
+        }
+
+        return [$restored, $skipped];
     }
 
     private function insertItems(Library $library, array $items, bool $skipExistingEans = false): void

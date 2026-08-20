@@ -334,7 +334,9 @@
         "confirm": "¿Restaurar la copia de seguridad «{{filename}}»? Esta acción no se puede deshacer.",
         "success": "Restauración completada: {{created}} creada(s), {{overwritten}} sobrescrita(s), {{merged}} fusionada(s), {{skipped}} omitida(s).",
         "sharesSkipped_one": "{{count}} permiso compartido omitido (sin cuenta coincidente).",
-        "sharesSkipped_other": "{{count}} permisos compartidos omitidos (sin cuenta coincidente)."
+        "sharesSkipped_other": "{{count}} permisos compartidos omitidos (sin cuenta coincidente).",
+        "savedSearchesSkipped_one": "{{count}} búsqueda guardada omitida (sin cuenta coincidente).",
+        "savedSearchesSkipped_other": "{{count}} búsquedas guardadas omitidas (sin cuenta coincidente)."
       },
       "exportImportPage": {
         "exportTitle": "Exportar",

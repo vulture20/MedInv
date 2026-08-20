@@ -335,7 +335,9 @@
         "confirm": "Återställa säkerhetskopian \"{{filename}}\"? Detta kan inte ångras.",
         "success": "Återställning klar: {{created}} skapade, {{overwritten}} överskrivna, {{merged}} sammanslagna, {{skipped}} överhoppade.",
         "sharesSkipped_one": "{{count}} delning överhoppad (inget matchande konto).",
-        "sharesSkipped_other": "{{count}} delningar överhoppade (inget matchande konto)."
+        "sharesSkipped_other": "{{count}} delningar överhoppade (inget matchande konto).",
+        "savedSearchesSkipped_one": "{{count}} sparad sökning överhoppad (inget matchande konto).",
+        "savedSearchesSkipped_other": "{{count}} sparade sökningar överhoppade (inget matchande konto)."
       },
       "exportImportPage": {
         "exportTitle": "Export",

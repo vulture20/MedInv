@@ -401,7 +401,9 @@
       "confirm": "Restore backup \"{{filename}}\"? This cannot be undone.",
       "success": "Restore complete: {{created}} created, {{overwritten}} overwritten, {{merged}} merged, {{skipped}} skipped.",
       "sharesSkipped_one": "{{count}} share skipped (no matching account).",
-      "sharesSkipped_other": "{{count}} shares skipped (no matching account)."
+      "sharesSkipped_other": "{{count}} shares skipped (no matching account).",
+      "savedSearchesSkipped_one": "{{count}} saved search skipped (no matching account).",
+      "savedSearchesSkipped_other": "{{count}} saved searches skipped (no matching account)."
     },
     "exportImportPage": {
       "exportTitle": "Export",

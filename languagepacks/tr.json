@@ -334,7 +334,9 @@
         "confirm": "\"{{filename}}\" yedeği geri yüklensin mi? Bu işlem geri alınamaz.",
         "success": "Geri yükleme tamamlandı: {{created}} oluşturuldu, {{overwritten}} üzerine yazıldı, {{merged}} birleştirildi, {{skipped}} atlandı.",
         "sharesSkipped_one": "{{count}} paylaşım atlandı (eşleşen hesap yok).",
-        "sharesSkipped_other": "{{count}} paylaşım atlandı (eşleşen hesap yok)."
+        "sharesSkipped_other": "{{count}} paylaşım atlandı (eşleşen hesap yok).",
+        "savedSearchesSkipped_one": "{{count}} kayıtlı arama atlandı (eşleşen hesap yok).",
+        "savedSearchesSkipped_other": "{{count}} kayıtlı arama atlandı (eşleşen hesap yok)."
       },
       "exportImportPage": {
         "exportTitle": "Dışa aktar",

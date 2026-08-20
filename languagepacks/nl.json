@@ -334,7 +334,9 @@
         "confirm": "Back-up \"{{filename}}\" herstellen? Dit kan niet ongedaan worden gemaakt.",
         "success": "Herstel voltooid: {{created}} aangemaakt, {{overwritten}} overschreven, {{merged}} samengevoegd, {{skipped}} overgeslagen.",
         "sharesSkipped_one": "{{count}} deelinstelling overgeslagen (geen overeenkomend account).",
-        "sharesSkipped_other": "{{count}} deelinstellingen overgeslagen (geen overeenkomend account)."
+        "sharesSkipped_other": "{{count}} deelinstellingen overgeslagen (geen overeenkomend account).",
+        "savedSearchesSkipped_one": "{{count}} opgeslagen zoekopdracht overgeslagen (geen overeenkomend account).",
+        "savedSearchesSkipped_other": "{{count}} opgeslagen zoekopdrachten overgeslagen (geen overeenkomend account)."
       },
       "exportImportPage": {
         "exportTitle": "Exporteren",
