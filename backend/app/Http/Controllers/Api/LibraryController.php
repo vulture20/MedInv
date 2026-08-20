@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\ExportPdf\PdfExportService;
 use App\Domain\Libraries\LibraryAccessService;
+use App\Domain\Libraries\MediaItemService;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
 use App\Models\LibraryShare;
@@ -82,12 +83,25 @@ class LibraryController extends Controller
      * above (LibraryAccessService::canRead()), a plain read action rather
      * than a management one, so a guest with an explicitly shared library
      * (briefing 4.2) can export it too, same as they can already browse it.
+     *
+     * `sort_by`/`sort_dir` (GitHub issue #128, the same fix #127 already
+     * made for search's own PDF export) — validated against exactly the
+     * same per-media-type whitelist MediaItemController::index()'s own
+     * server-side item sort already uses, so the exported row order can
+     * match whatever LibraryDetailPage.tsx's table is currently sorted by,
+     * whether that's a column the admin explicitly clicked or the table's
+     * own unsorted default.
      */
     public function exportPdf(Request $request, Library $library)
     {
         abort_unless($this->access->canRead($request->user(), $library), 403);
 
-        $pdf = $this->pdfExportService->libraryInventoryPdf($library, $request->user());
+        $data = $request->validate([
+            'sort_by' => ['nullable', Rule::in(MediaItemService::SORTABLE_COLUMNS[$library->media_type])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
+        ]);
+
+        $pdf = $this->pdfExportService->libraryInventoryPdf($library, $request->user(), $data['sort_by'] ?? null, $data['sort_dir'] ?? 'asc');
         $filename = 'medinv-'.$this->sanitizeForFilename($library->name).'-'.SystemSetting::localNow()->format('Ymd-His').'.pdf';
 
         return $pdf->download($filename);

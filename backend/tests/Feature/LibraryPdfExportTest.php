@@ -155,4 +155,49 @@ class LibraryPdfExportTest extends TestCase
         $this->assertStringContainsString('Total value: 12', $text);
         $this->assertStringNotContainsString('€', $text);
     }
+
+    /** GitHub issue #128 — the exported row order must match sort_by/sort_dir, the same params LibraryDetailPage.tsx now sends whenever a column is actually sorted (the same server-side sort MediaItemController::index() itself already offers). */
+    public function test_sort_by_and_sort_dir_control_the_exported_row_order(): void
+    {
+        if (trim(shell_exec('which pdftotext 2>/dev/null') ?? '') === '') {
+            $this->markTestSkipped('pdftotext (poppler-utils) not available in this environment.');
+        }
+
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Zebra', 'ean' => '9780000000001']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Apple', 'ean' => '9780000000002']);
+
+        $ascResponse = $this->get("/api/libraries/{$library->id}/export/pdf?sort_by=title&sort_dir=asc");
+        $ascResponse->assertOk();
+        $ascending = $this->pdfText($ascResponse);
+        $this->assertLessThan(strpos($ascending, 'Zebra'), strpos($ascending, 'Apple'));
+
+        $descResponse = $this->get("/api/libraries/{$library->id}/export/pdf?sort_by=title&sort_dir=desc");
+        $descResponse->assertOk();
+        $descending = $this->pdfText($descResponse);
+        $this->assertLessThan(strpos($descending, 'Apple'), strpos($descending, 'Zebra'));
+    }
+
+    /** A sort_by column outside this library's own media_type whitelist (MediaItemService::SORTABLE_COLUMNS) must 422, same as MediaItemController::index()'s own request-driven sort would silently ignore rather than crash on — but exportPdf() validates up front instead of silently falling back, so a typo'd/unsupported column is visible as an error, not a quietly-wrong export. */
+    public function test_an_invalid_sort_by_422s(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+
+        $response = $this->get("/api/libraries/{$library->id}/export/pdf?sort_by=not-a-real-column");
+
+        $response->assertStatus(422);
+    }
+
+    /** `runtime_seconds` is only sortable for CD libraries (MediaItemService::SORTABLE_COLUMNS) — a book library must reject it rather than silently accept a column that makes no sense for its own media type. */
+    public function test_a_sort_by_column_not_valid_for_this_librarys_media_type_422s(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+
+        $response = $this->get("/api/libraries/{$library->id}/export/pdf?sort_by=runtime_seconds");
+
+        $response->assertStatus(422);
+    }
 }

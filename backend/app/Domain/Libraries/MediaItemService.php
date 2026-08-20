@@ -14,9 +14,35 @@ use Illuminate\Database\Eloquent\Model;
  * form and bulk import (briefing 7.1/7.2). Enforces the per-library EAN
  * uniqueness rule from 5.1 for every entry point so the rule can't be
  * bypassed by adding a new capture method later.
+ *
+ * Also home to SORTABLE_COLUMNS — not itself about creating items, but the
+ * same per-media-type mapping concept modelClassFor() below already is,
+ * and needed by more than one controller (MediaItemController's own item
+ * list, LibraryController::exportPdf(), GitHub issue #128), so it lives
+ * here rather than duplicated or awkwardly owned by just one of them.
  */
 class MediaItemService
 {
+    /**
+     * Columns the item-list table (LibraryDetailPage.tsx, GitHub issue #77)
+     * lets a user sort by, per media_type — always `title`/`ean` (every
+     * media type has both) plus that type's own subtitle column (mirrors
+     * the frontend's `subtitle()` helper). Whitelisted rather than passing
+     * `sort_by` straight into orderBy() since it comes from an untrusted
+     * query param and orderBy() doesn't parameterize column names.
+     */
+    public const SORTABLE_COLUMNS = [
+        // location (GitHub issue #108) — every media type's own table has
+        // this column (GitHub issue #96), so it's sortable everywhere too.
+        'book' => ['title', 'authors', 'ean', 'location'],
+        // release_date/runtime_seconds (GitHub issue #98) — sortable columns
+        // for the two extra CD-only table columns; track count has no
+        // dedicated `tracks` column to sort by (it's a JSON array's length),
+        // so it stays unsortable.
+        'cd' => ['title', 'artist', 'ean', 'release_date', 'runtime_seconds', 'location'],
+        'dvd_bluray' => ['title', 'director', 'ean', 'location'],
+    ];
+
     /** @throws DuplicateEanException */
     public function create(Library $library, array $attributes): Model
     {

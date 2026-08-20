@@ -3,6 +3,7 @@
 namespace App\Domain\ExportPdf;
 
 use App\Domain\Languages\Translator;
+use App\Domain\Libraries\MediaItemService;
 use App\Domain\Reports\ReportsService;
 use App\Domain\Search\SearchFilters;
 use App\Domain\Search\SearchService;
@@ -249,8 +250,16 @@ class PdfExportService
      * above, this isn't scoped through LibraryAccessService itself —
      * LibraryController::exportPdf() already does that canRead() check
      * before calling this, same as every other single-library read.
+     *
+     * `$sortBy`/`$sortDir` (GitHub issue #128) mirror MediaItemController::
+     * index()'s own server-side item sort, validated by the controller
+     * against the same MediaItemService::SORTABLE_COLUMNS whitelist —
+     * `$sortBy === null` (nothing explicitly sorted, LibraryDetailPage.tsx's
+     * own table default) leaves the query in its natural, unsorted order
+     * rather than forcing one, so the export matches what's on screen even
+     * before an admin has clicked any column header.
      */
-    public function libraryInventoryPdf(Library $library, User $user): PdfDocument
+    public function libraryInventoryPdf(Library $library, User $user, ?string $sortBy = null, string $sortDir = 'asc'): PdfDocument
     {
         $lang = $this->languageFor($user);
 
@@ -261,7 +270,11 @@ class PdfExportService
         };
         $subtitleLabel = $this->tr($lang, "mediaItem.fields.$subtitleField");
 
-        $items = $library->mediaItems()->orderBy('title')->get();
+        $query = $library->mediaItems();
+        if (in_array($sortBy, MediaItemService::SORTABLE_COLUMNS[$library->media_type], true)) {
+            $query->orderBy($sortBy, $sortDir === 'desc' ? 'desc' : 'asc');
+        }
+        $items = $query->get();
 
         $rows = $items->map(fn (Model $item) => [
             'title' => $item->title,

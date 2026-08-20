@@ -28,26 +28,6 @@ class MediaItemController extends Controller
         private readonly CurrencyConversionService $currencyConversion,
     ) {}
 
-    /**
-     * Columns the item-list table (LibraryDetailPage.tsx, GitHub issue #77)
-     * lets a user sort by, per media_type — always `title`/`ean` (every
-     * media type has both) plus that type's own subtitle column (mirrors
-     * the frontend's `subtitle()` helper). Whitelisted rather than passing
-     * `sort_by` straight into orderBy() since it comes from an untrusted
-     * query param and orderBy() doesn't parameterize column names.
-     */
-    private const SORTABLE_COLUMNS = [
-        // location (GitHub issue #108) — every media type's own table has
-        // this column (GitHub issue #96), so it's sortable everywhere too.
-        'book' => ['title', 'authors', 'ean', 'location'],
-        // release_date/runtime_seconds (GitHub issue #98) — sortable columns
-        // for the two extra CD-only table columns; track count has no
-        // dedicated `tracks` column to sort by (it's a JSON array's length),
-        // so it stays unsortable.
-        'cd' => ['title', 'artist', 'ean', 'release_date', 'runtime_seconds', 'location'],
-        'dvd_bluray' => ['title', 'director', 'ean', 'location'],
-    ];
-
     public function index(Request $request, Library $library)
     {
         abort_unless($this->access->canRead($request->user(), $library), 403);
@@ -55,7 +35,7 @@ class MediaItemController extends Controller
         $query = $library->mediaItems();
 
         $sortBy = $request->string('sort_by')->toString();
-        if (in_array($sortBy, self::SORTABLE_COLUMNS[$library->media_type], true)) {
+        if (in_array($sortBy, MediaItemService::SORTABLE_COLUMNS[$library->media_type], true)) {
             $direction = $request->string('sort_dir')->toString() === 'desc' ? 'desc' : 'asc';
             $query->orderBy($sortBy, $direction);
         }

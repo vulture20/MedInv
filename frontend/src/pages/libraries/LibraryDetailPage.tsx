@@ -388,11 +388,19 @@ export function LibraryDetailPage() {
               a shared library can export it too, same as they can already
               browse it). Plain navigation rather than an apiClient request,
               same window.location.href pattern BackupsPage.tsx's download
-              button already uses for a GET file download. */}
+              button already uses for a GET file download. sort_by/sort_dir
+              (GitHub issue #128) ride along too, only when a column is
+              actually sorted (mirrors loadItems()'s own
+              `...(sortByParam ? {...} : {})` spread) — so the exported row
+              order matches this table's, whether that's a column the admin
+              explicitly clicked or its own unsorted default. */}
           <button
             type="button"
             onClick={() => {
-              window.location.href = `${apiClient.defaults.baseURL}/libraries/${library.id}/export/pdf`
+              window.location.href = apiClient.getUri({
+                url: `/libraries/${library.id}/export/pdf`,
+                params: sortBy ? { sort_by: sortBy, sort_dir: sortDir } : {},
+              })
             }}
           >
             {t('libraries.exportPdf')}
