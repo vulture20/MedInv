@@ -148,7 +148,28 @@ export function DashboardPage() {
     setSelectedLibrary(item.library)
   }
 
+  /**
+   * GitHub issue #118 — closing a native <dialog> (Esc, backdrop click, its
+   * own close button) restores focus to whichever element opened it, here
+   * the clicked carousel tile's <button>. `.dashboard-carousel__track`'s
+   * auto-scroll animation is deliberately paused while focus sits inside
+   * its carousel (index.css's `:focus-within` rule, so a keyboard user
+   * tabbed onto a tile isn't fought by it sliding out from under them) —
+   * without this blur, that same rule kept the row paused indefinitely
+   * after closing the dialog, since the now-closed dialog's own returned
+   * focus never moves again on its own; a click/tap or keyboard focus into
+   * the carousel to open the dialog in the first place both leave the
+   * tile focused this same way, matching what the user reported (mouse
+   * click and touch alike). Scoped to `.dashboard-carousel` specifically
+   * rather than blurring on every close — MediaItemDetailDialog's other
+   * callers (SearchPage.tsx, LibraryDetailPage.tsx) rely on the standard
+   * browser behavior of returning focus to their own triggering row/button
+   * for keyboard users to continue from, which this must not disturb.
+   */
   function closeDialog() {
+    if (document.activeElement instanceof HTMLElement && document.activeElement.closest('.dashboard-carousel')) {
+      document.activeElement.blur()
+    }
     setSelectedItem(null)
     setSelectedLibrary(null)
   }
