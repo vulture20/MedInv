@@ -135,27 +135,35 @@ class ExportImportService
                 // where no user has that ID at all (the column has a real
                 // NOT NULL-adjacent foreign key).
                 //
-                // GitHub issue #152 (follow-up, explicit user request):
+                // GitHub issue #153 (follow-up, explicit user request):
                 // `captured_by_email` carries the same information the
-                // *deliberately* unconditional `shares[].user_email`/
-                // `owner_email` above already do — resolved by email
-                // against a real account, not a raw cross-instance ID —
-                // but specifically gated behind $includeUsers (a real
-                // backup) rather than being unconditional like those two:
-                // "who captured this" is meaningfully private in a way
-                // "this library is shared with/owned by" isn't, so an
+                // unconditional `shares[].user_email`/`owner_email` above
+                // already do — resolved by email against a real account,
+                // not a raw cross-instance ID — but its *presence in the
+                // export* is specifically gated behind $includeUsers (a
+                // real backup) rather than being unconditional like those
+                // two: "who captured this" is meaningfully private in a
+                // way "this library is shared with/owned by" isn't, so an
                 // ordinary library export (never $includeUsers) still
                 // leaks nothing here at all, matching `system_settings`/
-                // `users`/`metadata_plugins`'s own precedent instead.
-                // Read back by insertItems() below, only ever trusted when
-                // $restoreSettings is also true on import (the same "the
-                // matching users were actually just restored in this same
-                // operation" signal already gates `users`/
-                // `metadata_plugins` themselves) — an ordinary import
-                // (`$restoreSettings` always false, since ExportImportPage.tsx
-                // never sends it, see ExportImportController::import()'s
-                // own docblock) simply never restores it, no matter what a
-                // hand-crafted file might claim.
+                // `users`/`metadata_plugins`'s own precedent instead. Once
+                // present in an import file, though, it's resolved by
+                // insertItems() below exactly as unconditionally as
+                // `owner_email`/`shares[].user_email` already are — *not*
+                // additionally gated behind $restoreSettings the way
+                // `users`/`metadata_plugins` themselves are, since a plain
+                // `where('email', ...)` lookup against whatever accounts
+                // already exist on this instance carries the same, already-
+                // accepted risk profile regardless of whether this same
+                // operation also happens to be restoring settings/users —
+                // an earlier version of this fix gated it behind
+                // $restoreSettings too, which meant restoring a backup
+                // without separately opting into "restore settings" (the
+                // common case for restoring items/shares without wanting
+                // to overwrite the current instance's own accounts) left
+                // captured_by_user_id null even though the file genuinely
+                // had a resolvable captured_by_email, reported by the user
+                // as the field silently getting discarded on import.
                 'items' => $library->mediaItems()->when(
                     $includeUsers,
                     fn ($query) => $query->with('capturedBy:id,email')
@@ -348,14 +356,14 @@ class ExportImportService
      *                                 search against (SavedSearchController::store() doesn't
      *                                 enforce unique names, even per user), and this still keeps
      *                                 a repeated restore (MEDINV_RESTOREBACKUP, briefing 9.3)
-     *                                 from duplicating the same ones on every restart. Also gates
-     *                                 whether each item's `captured_by_email` (GitHub issue #152,
+     *                                 from duplicating the same ones on every restart. Does *not*
+     *                                 gate each item's `captured_by_email` (GitHub issue #153,
      *                                 present only when exportLibraries() was called with
-     *                                 includeUsers: true) gets resolved back onto
-     *                                 `captured_by_user_id` — see insertItems()'s own docblock for
-     *                                 why trusting it requires the matching `users` to have just
-     *                                 been restored in this same call, not merely present in the
-     *                                 file.
+     *                                 includeUsers: true) — that's resolved back onto
+     *                                 `captured_by_user_id` unconditionally by insertItems(),
+     *                                 the same way owner_email/shares[].user_email already are;
+     *                                 see insertItems()'s own docblock for why tying it to this
+     *                                 flag too was itself a bug.
      * @param  bool  $restoreShares  Whether to also recreate each library's shares
      *                               (GitHub issue #80) — a separate opt-in from
      *                               $restoreSettings above, deliberately: unlike
@@ -455,12 +463,12 @@ class ExportImportService
             }
         }
 
-        DB::transaction(function () use ($data, $importingAs, $conflictResolutions, $restoreShares, $restoreSettings, &$result) {
+        DB::transaction(function () use ($data, $importingAs, $conflictResolutions, $restoreShares, &$result) {
             foreach ($data['libraries'] ?? [] as $libraryData) {
                 $existing = Library::query()->where('name', $libraryData['name'])->first();
 
                 if (! $existing) {
-                    $this->createLibraryFromExport($libraryData, $importingAs, $restoreShares, $restoreSettings, $result);
+                    $this->createLibraryFromExport($libraryData, $importingAs, $restoreShares, $result);
                     $result['created'][] = $libraryData['name'];
 
                     continue;
@@ -471,10 +479,10 @@ class ExportImportService
                 match ($resolution) {
                     'rename' => $this->createLibraryFromExport(
                         [...$libraryData, 'name' => $libraryData['name'].' (imported '.now()->format('Y-m-d H:i').')'],
-                        $importingAs, $restoreShares, $restoreSettings, $result
+                        $importingAs, $restoreShares, $result
                     ) && $result['created'][] = $libraryData['name'],
-                    'merge' => $this->mergeIntoLibrary($existing, $libraryData, $restoreSettings) && $result['merged'][] = $libraryData['name'],
-                    'overwrite' => $this->overwriteLibrary($existing, $libraryData, $importingAs, $restoreShares, $restoreSettings, $result) && $result['overwritten'][] = $libraryData['name'],
+                    'merge' => $this->mergeIntoLibrary($existing, $libraryData) && $result['merged'][] = $libraryData['name'],
+                    'overwrite' => $this->overwriteLibrary($existing, $libraryData, $importingAs, $restoreShares, $result) && $result['overwritten'][] = $libraryData['name'],
                     default => $result['skipped'][] = $libraryData['name'],
                 };
             }
@@ -522,7 +530,7 @@ class ExportImportService
     }
 
     /** @param  array{shares_skipped: int}  &$result  Updated in place — see restoreShares()'s docblock. */
-    private function createLibraryFromExport(array $libraryData, User $owner, bool $restoreShares, bool $restoreCapturedBy, array &$result): true
+    private function createLibraryFromExport(array $libraryData, User $owner, bool $restoreShares, array &$result): true
     {
         $library = Library::query()->create([
             'name' => $libraryData['name'],
@@ -533,7 +541,7 @@ class ExportImportService
             'is_sample_library' => $libraryData['is_sample_library'] ?? false,
         ]);
 
-        $this->insertItems($library, $libraryData['items'] ?? [], restoreCapturedBy: $restoreCapturedBy);
+        $this->insertItems($library, $libraryData['items'] ?? []);
 
         if ($restoreShares) {
             $result['shares_skipped'] += $this->restoreShares($library, $libraryData['shares'] ?? []);
@@ -575,22 +583,22 @@ class ExportImportService
      * admin as "add these items to the existing library", not "also change
      * who can access it".
      */
-    private function mergeIntoLibrary(Library $library, array $libraryData, bool $restoreCapturedBy): true
+    private function mergeIntoLibrary(Library $library, array $libraryData): true
     {
         // Existing records win on EAN collision (5.1: no duplicate within a library).
-        $this->insertItems($library, $libraryData['items'] ?? [], skipExistingEans: true, restoreCapturedBy: $restoreCapturedBy);
+        $this->insertItems($library, $libraryData['items'] ?? [], skipExistingEans: true);
 
         return true;
     }
 
     /** @param  array{shares_skipped: int}  &$result  Updated in place — see restoreShares()'s docblock. */
-    private function overwriteLibrary(Library $library, array $libraryData, User $owner, bool $restoreShares, bool $restoreCapturedBy, array &$result): true
+    private function overwriteLibrary(Library $library, array $libraryData, User $owner, bool $restoreShares, array &$result): true
     {
         $library->mediaItems()->delete();
         $library->update([
             'description' => $libraryData['description'] ?? null,
         ]);
-        $this->insertItems($library, $libraryData['items'] ?? [], restoreCapturedBy: $restoreCapturedBy);
+        $this->insertItems($library, $libraryData['items'] ?? []);
 
         if ($restoreShares) {
             // Full replace, same as LibraryController::updateShares() and
@@ -666,26 +674,30 @@ class ExportImportService
      * otherwise falsely attribute that account with having captured an
      * item it never touched.
      *
-     * GitHub issue #152 (follow-up, explicit user request): `$restoreCapturedBy`
-     * (threaded down from importLibraries()'s own `$restoreSettings` —
-     * true only for a genuine backup restore, where the matching `users`
-     * were just restored in this exact same operation, never for an
-     * ordinary import) resolves exportLibraries()'s own `captured_by_email`
-     * by email instead — the same "look up a real account, don't trust a
-     * foreign instance's raw ID" approach `resolveLibraryOwner()`/
-     * `restoreShares()` already take for `owner_email`/`shares[].user_email`.
-     * An email matching no account (or absent entirely, e.g. an export
-     * from before this field existed) simply leaves it null — the same
-     * already-anticipated "unknown" case a pre-#74 item's own null
-     * `captured_by_user_id` gets (see ReportsService::
+     * GitHub issue #153 (follow-up, explicit user request): `captured_by_email`
+     * (exportLibraries()'s own field — present only in a real backup, see
+     * that method's own docblock) is resolved back onto
+     * `captured_by_user_id` by email here — the same "look up a real
+     * account, don't trust a foreign instance's raw ID" approach
+     * `resolveLibraryOwner()`/`restoreShares()` already take for
+     * `owner_email`/`shares[].user_email`, and, like both of those,
+     * resolved unconditionally rather than gated behind
+     * `$restoreSettings` — see exportLibraries()'s own docblock for why an
+     * earlier version of this fix gating it that way was itself a bug
+     * (reported by the user as the field silently getting discarded on a
+     * backup restore that didn't separately opt into "restore settings").
+     * An email matching no account (or absent entirely, e.g. an ordinary
+     * import, or an export from before this field existed) simply leaves
+     * it null — the same already-anticipated "unknown" case a pre-#74
+     * item's own null `captured_by_user_id` gets (see ReportsService::
      * userActivityFor()'s own docblock).
      */
-    private function insertItems(Library $library, array $items, bool $skipExistingEans = false, bool $restoreCapturedBy = false): void
+    private function insertItems(Library $library, array $items, bool $skipExistingEans = false): void
     {
         foreach ($items as $item) {
             $capturedByEmail = $item['captured_by_email'] ?? null;
             unset($item['captured_by_user_id'], $item['captured_by_email']);
-            $item['captured_by_user_id'] = ($restoreCapturedBy && is_string($capturedByEmail) && $capturedByEmail !== '')
+            $item['captured_by_user_id'] = (is_string($capturedByEmail) && $capturedByEmail !== '')
                 ? User::query()->where('email', $capturedByEmail)->value('id')
                 : null;
 

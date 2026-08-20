@@ -13,15 +13,21 @@ use Tests\TestCase;
 use ZipArchive;
 
 /**
- * GitHub issue #152 (follow-up, explicit user request): reverses part of
- * #148's own fix specifically for a real backup — `captured_by_user_id`
- * (GitHub issue #74) should still be preserved there, just not as the raw,
- * instance-local ID #148 rightly stripped, but resolved by email
- * (`captured_by_email`) the same "look up a real account, don't trust a
- * foreign ID" way `owner_email`/`shares[].user_email` already are. Gated
- * behind `$includeUsers` on export and `$restoreSettings` on import — an
- * ordinary library export/import (neither ever set) is completely
- * unaffected and stays exactly as #148 left it.
+ * GitHub issue #153 (explicit user request): reverses part of #148's own
+ * fix specifically for a real backup — `captured_by_user_id` (GitHub issue
+ * #74) should still be preserved there, just not as the raw, instance-local
+ * ID #148 rightly stripped, but resolved by email (`captured_by_email`) the
+ * same "look up a real account, don't trust a foreign ID" way
+ * `owner_email`/`shares[].user_email` already are. Its *presence in the
+ * export* is gated behind `$includeUsers` (a real backup, never an
+ * ordinary library export) — but, unlike an earlier version of this fix,
+ * resolving it back on *import* is unconditional, the same as
+ * `owner_email`/`shares[].user_email` themselves, not additionally gated
+ * behind `$restoreSettings` too. That extra gate was itself a bug, reported
+ * by the user: it meant restoring a backup without separately opting into
+ * "restore settings" (the common case for restoring items/shares without
+ * wanting to overwrite the current instance's own accounts) silently
+ * discarded a perfectly resolvable `captured_by_email`.
  */
 class CapturedByBackupTest extends TestCase
 {
@@ -86,11 +92,17 @@ class CapturedByBackupTest extends TestCase
         $this->assertSame($captor->id, $item->captured_by_user_id);
     }
 
-    /** The whole point of gating this behind $restoreSettings: an ordinary import (never restoring users) must not trust a captured_by_email that could point at an unrelated real account on this instance. */
-    public function test_restoring_without_restore_settings_leaves_captured_by_user_id_null(): void
+    /**
+     * Regression test for the bug the user reported: resolving
+     * captured_by_email must *not* require restoreSettings too — a real
+     * backup restore that only opts into e.g. restoring shares (not
+     * settings/user accounts) must still correctly attribute captured_by
+     * against whichever accounts already exist on this instance.
+     */
+    public function test_restoring_without_restore_settings_still_resolves_captured_by_email(): void
     {
         $admin = User::factory()->create(['level' => 'admin']);
-        User::factory()->create(['email' => 'captor@example.com']);
+        $captor = User::factory()->create(['email' => 'captor@example.com']);
 
         $data = [
             'libraries' => [[
@@ -102,10 +114,10 @@ class CapturedByBackupTest extends TestCase
         app(ExportImportService::class)->importLibraries($data, $admin);
 
         $item = MediaBook::query()->where('ean', '9780000000001')->firstOrFail();
-        $this->assertNull($item->captured_by_user_id);
+        $this->assertSame($captor->id, $item->captured_by_user_id);
     }
 
-    public function test_restoring_with_restore_settings_but_no_matching_account_leaves_it_null(): void
+    public function test_restoring_with_no_matching_account_leaves_it_null(): void
     {
         $admin = User::factory()->create(['level' => 'admin']);
 
@@ -145,6 +157,34 @@ class CapturedByBackupTest extends TestCase
 
         $item = MediaBook::query()->where('ean', '9780000000001')->firstOrFail();
         $this->assertNull($item->captured_by_user_id);
+    }
+
+    /**
+     * The exact scenario the user's bug report traced back to:
+     * BackupController::restore() (the interactive admin-UI path) defaults
+     * `restore_settings` to false unless an admin explicitly opts in — a
+     * perfectly ordinary way to restore a backup's libraries/shares
+     * without also overwriting the current instance's own accounts, which
+     * must not silently discard captured_by along the way.
+     */
+    public function test_a_full_backup_restore_preserves_captured_by_even_without_restoring_settings(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->create(['level' => 'admin']);
+        $captor = User::factory()->create(['email' => 'captor@example.com']);
+        $library = $this->library($admin->id);
+        MediaBook::query()->create([
+            'library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001', 'captured_by_user_id' => $captor->id,
+        ]);
+
+        $backup = app(BackupService::class)->create();
+
+        MediaBook::query()->where('ean', '9780000000001')->delete();
+
+        app(BackupService::class)->restore($backup, $admin, conflictResolutions: ['__default__' => 'overwrite'], restoreSettings: false, restoreShares: false);
+
+        $restored = MediaBook::query()->where('ean', '9780000000001')->firstOrFail();
+        $this->assertSame($captor->id, $restored->captured_by_user_id);
     }
 
     /** Full round trip through the real zip-based backup/restore path (BackupService), not just importLibraries() called directly. */
