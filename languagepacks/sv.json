@@ -510,6 +510,7 @@
         "tmdbAttributionHint": "TMDB kräver att dess logotyp och följande meddelande visas så länge detta tillägg är aktiverat:",
         "fields": {
           "api_key": "API-nyckel",
+          "read_access_token": "API-läsåtkomsttoken",
           "prompt": "Prompt"
         }
       },

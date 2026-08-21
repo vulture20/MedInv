@@ -510,6 +510,7 @@
         "tmdbAttributionHint": "TMDB krefst þess að merki þess og eftirfarandi tilkynning séu sýnd á meðan þetta viðbót er virkt:",
         "fields": {
           "api_key": "API-lykill",
+          "read_access_token": "API lestrarað­gangs­tákn",
           "prompt": "Prompt"
         }
       },

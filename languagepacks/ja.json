@@ -491,6 +491,7 @@
         "tmdbAttributionHint": "このプラグインが有効な間、TMDBはそのロゴと次の告知の表示を求めています。",
         "fields": {
           "api_key": "APIキー",
+          "read_access_token": "APIリードアクセストークン",
           "prompt": "プロンプト"
         }
       },

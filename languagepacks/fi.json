@@ -510,6 +510,7 @@
         "tmdbAttributionHint": "TMDB edellyttää, että sen logo ja seuraava huomautus näytetään, kun tämä liitännäinen on käytössä:",
         "fields": {
           "api_key": "API-avain",
+          "read_access_token": "API-lukuoikeuden käyttöoikeustunnus",
           "prompt": "Prompt"
         }
       },

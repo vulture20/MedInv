@@ -45,12 +45,23 @@ use Illuminate\Support\Facades\Http;
  * per-title data) reused across every search.
  *
  * Authentication uses TMDB's Bearer "API Read Access Token" (`Http::
- * withToken()`), stored under the same `api_key` config key every other
- * API-key-gated provider in this app uses (e.g. UpcMdbProvider) — the
- * value itself is a longer opaque JWT-shaped string rather than a short
- * key, but the field is otherwise identical (a single required `password`
- * type), so there was no reason to invent a new config key name just for
- * TMDB's own terminology.
+ * withToken()`), stored under its own `read_access_token` config key —
+ * *not* the `api_key` key every other API-key-gated provider in this app
+ * uses (e.g. UpcMdbProvider), even though the field is otherwise
+ * identical (a single required `password` type). This was reused as
+ * `api_key` in this class's first version and corrected after the user
+ * pointed out the real, "akute Verwechslungsgefahr" this created: TMDB
+ * itself issues two genuinely different credentials — a short v3 "API
+ * Key" and this long, JWT-shaped "API Read Access Token" — and this
+ * provider needs the latter, not the former. Labeling the settings-dialog
+ * field "API-Key" (`admin.pluginConfig.fields.api_key`, the shared label
+ * every other provider's identical-looking field already uses) would
+ * have actively invited an admin to paste the wrong one of the two in.
+ * The field's `key` is what PluginsPage.tsx resolves a translated label
+ * from (`admin.pluginConfig.fields.<key>`), so giving this field its own
+ * distinct key was the only way to give it its own distinct, correct
+ * label ("API-Token für Lesezugriff") without also relabeling every
+ * other provider's genuinely-a-plain-API-key field.
  *
  * Marked `version()` `"v0.1-beta"` and left in
  * `MetadataProviderRegistry::DEFAULT_DISABLED_PROVIDER_KEYS` (opt-in),
@@ -93,7 +104,7 @@ class TmdbProvider implements MetadataProviderInterface
     public function configFields(): array
     {
         return [
-            new MetadataProviderConfigField('api_key', type: 'password', required: true),
+            new MetadataProviderConfigField('read_access_token', type: 'password', required: true),
         ];
     }
 
@@ -172,13 +183,15 @@ class TmdbProvider implements MetadataProviderInterface
      * Eloquent fetch, not a raw query builder ->value(), so the model's
      * `config` => 'array' cast actually applies instead of returning the
      * raw (possibly still-JSON-encoded) column value. Same pattern
-     * UpcMdbProvider::apiKey() already uses.
+     * UpcMdbProvider::apiKey() already uses, just keyed on
+     * `read_access_token` rather than `api_key` — see configFields()'s
+     * own comment for why those two are deliberately not the same key.
      */
     private function accessToken(): ?string
     {
         $config = MetadataPlugin::query()->where('provider_key', $this->key())->first()?->config;
 
-        return $config['api_key'] ?? null;
+        return $config['read_access_token'] ?? null;
     }
 
     /** @param  array<int, string>  $genreNames  Genre id => name, from genreNamesById(). */

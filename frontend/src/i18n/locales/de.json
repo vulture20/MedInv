@@ -576,6 +576,7 @@
       "tmdbAttributionHint": "TMDB verlangt, dass sein Logo und der folgende Hinweis angezeigt werden, solange dieses Plugin aktiviert ist:",
       "fields": {
         "api_key": "API-Key",
+        "read_access_token": "API-Token für Lesezugriff",
         "prompt": "Prompt"
       }
     },

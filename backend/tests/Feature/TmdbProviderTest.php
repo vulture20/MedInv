@@ -23,14 +23,15 @@ class TmdbProviderTest extends TestCase
 
     private const BASE_URL = 'https://api.themoviedb.org/3';
 
-    private function withApiKey(string $token = 'test-read-access-token'): void
+    /** Deliberately `read_access_token`, not `api_key` — see TmdbProvider::configFields()'s own comment for why those are two genuinely different TMDB credentials. */
+    private function withReadAccessToken(string $token = 'test-read-access-token'): void
     {
         MetadataPlugin::query()->create([
             'provider_key' => 'dvd_bluray.tmdb',
             'name' => 'TMDB',
             'media_type' => 'dvd_bluray',
             'enabled' => true,
-            'config' => ['api_key' => $token],
+            'config' => ['read_access_token' => $token],
         ]);
     }
 
@@ -79,7 +80,7 @@ class TmdbProviderTest extends TestCase
     /** GitHub issue #157: confirmed against the live API reference — no code-based lookup is even attempted. */
     public function test_lookup_by_code_always_returns_no_candidates(): void
     {
-        $this->withApiKey();
+        $this->withReadAccessToken();
         Http::fake(); // Nothing faked at all — a real request here would fail the test.
 
         $candidates = app(TmdbProvider::class)->lookupByCode('4006680095609');
@@ -89,7 +90,7 @@ class TmdbProviderTest extends TestCase
 
     public function test_search_calls_the_search_endpoint_with_a_bearer_token(): void
     {
-        $this->withApiKey('secret-token-123');
+        $this->withReadAccessToken('secret-token-123');
         $this->fakeGenreList();
         Http::fake([
             self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
@@ -110,7 +111,7 @@ class TmdbProviderTest extends TestCase
 
     public function test_search_maps_the_response_onto_media_dvd_bluray_columns(): void
     {
-        $this->withApiKey();
+        $this->withReadAccessToken();
         Http::fake([
             self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
             self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => [
@@ -141,7 +142,7 @@ class TmdbProviderTest extends TestCase
     /** An unreleased/unknown release_date comes back as an empty string from TMDB, not absent — must not become "1970" or an empty-but-present date. */
     public function test_an_empty_release_date_maps_to_null_release_date_and_year(): void
     {
-        $this->withApiKey();
+        $this->withReadAccessToken();
         $result = $this->sampleSearchResult();
         $result['release_date'] = '';
         Http::fake([
@@ -157,7 +158,7 @@ class TmdbProviderTest extends TestCase
 
     public function test_no_poster_path_means_no_cover_urls(): void
     {
-        $this->withApiKey();
+        $this->withReadAccessToken();
         $result = $this->sampleSearchResult();
         $result['poster_path'] = null;
         Http::fake([
@@ -173,7 +174,7 @@ class TmdbProviderTest extends TestCase
     /** Same "misconfigured provider silently contributes nothing to a search" convention UpcMdbProvider::search() already established. */
     public function test_search_returns_no_candidates_without_a_configured_token(): void
     {
-        // No withApiKey() call.
+        // No withReadAccessToken() call.
         Http::fake();
 
         $candidates = app(TmdbProvider::class)->search('The Matrix');
@@ -183,7 +184,7 @@ class TmdbProviderTest extends TestCase
 
     public function test_the_genre_list_is_only_fetched_once_across_multiple_searches(): void
     {
-        $this->withApiKey();
+        $this->withReadAccessToken();
         Http::fake([
             self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
             self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => [

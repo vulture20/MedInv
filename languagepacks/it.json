@@ -491,6 +491,7 @@
         "tmdbAttributionHint": "TMDB richiede che il proprio logo e il seguente avviso vengano mostrati finché questo plugin è attivo:",
         "fields": {
           "api_key": "Chiave API",
+          "read_access_token": "Token di accesso in lettura API",
           "prompt": "Prompt"
         }
       },

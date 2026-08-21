@@ -491,6 +491,7 @@
         "tmdbAttributionHint": "O TMDB exige que o seu logótipo e o seguinte aviso sejam apresentados enquanto este plugin estiver ativado:",
         "fields": {
           "api_key": "Chave de API",
+          "read_access_token": "Token de acesso de leitura da API",
           "prompt": "Prompt"
         }
       },
