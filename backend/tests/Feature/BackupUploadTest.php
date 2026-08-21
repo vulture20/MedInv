@@ -37,7 +37,7 @@ class BackupUploadTest extends TestCase
         return $admin;
     }
 
-    private function zipWithManifest(string $manifestContent): UploadedFile
+    private function zipWithManifest(string $manifestContent, string $originalName = 'medinv-backup-downloaded.zip'): UploadedFile
     {
         $tmpZip = tempnam(sys_get_temp_dir(), 'backup-upload-test');
         $zip = new ZipArchive;
@@ -45,7 +45,7 @@ class BackupUploadTest extends TestCase
         $zip->addFromString('manifest.json', $manifestContent);
         $zip->close();
 
-        return new UploadedFile($tmpZip, 'medinv-backup-downloaded.zip', 'application/zip', null, true);
+        return new UploadedFile($tmpZip, $originalName, 'application/zip', null, true);
     }
 
     public function test_uploading_a_valid_backup_creates_a_manual_backup_row(): void
@@ -65,6 +65,55 @@ class BackupUploadTest extends TestCase
         Storage::disk('local')->assertExists('backups/'.$backup->filename);
         // Never the uploaded file's own original name — see BackupService::upload()'s own comment on why.
         $this->assertNotSame('medinv-backup-downloaded.zip', $backup->filename);
+    }
+
+    /** GitHub issue #169: re-uploading a backup keeps documenting the point in time it actually backs up, not the moment it happened to be re-uploaded. */
+    public function test_uploading_a_backup_with_the_original_naming_convention_reuses_its_timestamp(): void
+    {
+        Storage::fake('local');
+        $this->actingAsAdmin();
+        $file = $this->zipWithManifest(json_encode(['libraries' => []]), 'medinv-backup-20250101-120000.zip');
+
+        $response = $this->postJson('/api/admin/backups/upload', ['file' => $file]);
+
+        $response->assertCreated();
+        $this->assertSame('medinv-backup-20250101-120000.zip', $response->json('filename'));
+    }
+
+    /** A renamed file, or one from outside this app entirely, falls back to the previous behavior — the current time — rather than misreading arbitrary text as a timestamp. */
+    public function test_uploading_a_backup_with_a_non_matching_name_falls_back_to_the_current_time(): void
+    {
+        Storage::fake('local');
+        $this->actingAsAdmin();
+        $file = $this->zipWithManifest(json_encode(['libraries' => []]), 'my-renamed-backup.zip');
+
+        $response = $this->postJson('/api/admin/backups/upload', ['file' => $file]);
+
+        $response->assertCreated();
+        $this->assertMatchesRegularExpression('/^medinv-backup-\d{8}-\d{6}\.zip$/', $response->json('filename'));
+    }
+
+    /** Re-uploading the exact same file twice (or two originals whose timestamps happen to coincide) must never silently overwrite the first upload. */
+    public function test_uploading_the_same_original_timestamp_twice_does_not_collide(): void
+    {
+        Storage::fake('local');
+        $this->actingAsAdmin();
+        $originalName = 'medinv-backup-20250101-120000.zip';
+
+        $first = $this->postJson('/api/admin/backups/upload', [
+            'file' => $this->zipWithManifest(json_encode(['libraries' => []]), $originalName),
+        ]);
+        $second = $this->postJson('/api/admin/backups/upload', [
+            'file' => $this->zipWithManifest(json_encode(['libraries' => []]), $originalName),
+        ]);
+
+        $first->assertCreated();
+        $second->assertCreated();
+        $this->assertSame('medinv-backup-20250101-120000.zip', $first->json('filename'));
+        $this->assertSame('medinv-backup-20250101-120000-1.zip', $second->json('filename'));
+        $this->assertSame(2, Backup::query()->count());
+        Storage::disk('local')->assertExists('backups/medinv-backup-20250101-120000.zip');
+        Storage::disk('local')->assertExists('backups/medinv-backup-20250101-120000-1.zip');
     }
 
     public function test_an_uploaded_backup_shows_up_in_the_ordinary_list(): void

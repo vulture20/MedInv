@@ -133,14 +133,28 @@ class BackupService
      * ExportImportService::importLibraries() the moment this backup is
      * actually restored, the same as any other backup.
      *
-     * Always stored under a freshly generated filename (create()'s own
-     * convention), never the uploaded file's original name — so an admin
-     * uploading the exact same file twice, or a name that happens to
-     * collide with an existing row, can never overwrite another backup.
-     * `trigger` is 'manual', the same as clicking "Jetzt sichern" — an
-     * admin who deliberately brought this file in shouldn't have it swept
-     * away by the automatic retention policy meant for backups nobody
-     * explicitly asked to keep (see prune()'s own docblock).
+     * Always stored under create()'s own filename convention
+     * (`medinv-backup-{timestamp}.zip`), never the uploaded file's original
+     * name verbatim — so an arbitrary/attacker-controlled name can never
+     * end up on disk or reach path-sensitive code. GitHub issue #169: the
+     * `{timestamp}` itself is still, where possible, the *original*
+     * backup's own timestamp rather than the moment of upload — an admin
+     * re-uploading a backup they downloaded earlier (the whole point of
+     * this feature) found it confusing to see today's date on a file that
+     * actually documents an older point in time. `filenameForUpload()`
+     * only ever reuses a timestamp extracted from an original name that
+     * matches this exact convention (so, again, never arbitrary
+     * attacker-controlled text) and falls back to the current time
+     * otherwise — a renamed file, or one from a different tool entirely,
+     * gets exactly the old freshly-generated behavior. Collision-checked
+     * against what's already on disk either way (an admin uploading the
+     * exact same file twice, or two backups whose original timestamps
+     * happen to coincide, would otherwise silently overwrite one another)
+     * by appending a numeric suffix rather than ever reusing an existing
+     * path. `trigger` is 'manual', the same as clicking "Jetzt sichern" —
+     * an admin who deliberately brought this file in shouldn't have it
+     * swept away by the automatic retention policy meant for backups
+     * nobody explicitly asked to keep (see prune()'s own docblock).
      *
      * @throws \RuntimeException If the uploaded file isn't a valid backup archive.
      */
@@ -158,7 +172,7 @@ class BackupService
             throw new \RuntimeException('Uploaded file is missing a valid manifest.json.');
         }
 
-        $filename = 'medinv-backup-'.SystemSetting::localNow()->format('Ymd-His').'.zip';
+        $filename = $this->filenameForUpload($file->getClientOriginalName());
         $path = self::DIR.'/'.$filename;
 
         Storage::disk(self::DISK)->makeDirectory(self::DIR);
@@ -174,6 +188,31 @@ class BackupService
         Log::info('Backup uploaded', ['filename' => $filename, 'size_bytes' => $backup->size_bytes]);
 
         return $backup;
+    }
+
+    /**
+     * Picks the filename an uploaded backup is stored under (see upload()'s
+     * own docblock for why). `$originalName` is only ever trusted for its
+     * timestamp, extracted via a full match against create()'s own naming
+     * convention — never used verbatim, and anything that doesn't match
+     * exactly (a renamed file, one from a different tool, no name at all)
+     * falls back to the current time exactly as before this method existed.
+     */
+    private function filenameForUpload(?string $originalName): string
+    {
+        $timestamp = SystemSetting::localNow()->format('Ymd-His');
+        if ($originalName !== null && preg_match('/^medinv-backup-(\d{8}-\d{6})\.zip$/', $originalName, $matches)) {
+            $timestamp = $matches[1];
+        }
+
+        $filename = "medinv-backup-{$timestamp}.zip";
+        $suffix = 1;
+        while (Storage::disk(self::DISK)->exists(self::DIR.'/'.$filename)) {
+            $filename = "medinv-backup-{$timestamp}-{$suffix}.zip";
+            $suffix++;
+        }
+
+        return $filename;
     }
 
     /**
