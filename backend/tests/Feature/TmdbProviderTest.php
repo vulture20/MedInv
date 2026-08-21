@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\DvdBluray\TmdbProvider;
 use App\Models\MetadataPlugin;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -300,6 +301,68 @@ class TmdbProviderTest extends TestCase
 
         // 2 searches + 1 cached genre-list fetch (not 2) + 1 enrichment call per search (both find the same id 603).
         Http::assertSentCount(5);
+    }
+
+    /** GitHub issue #170: the requesting user's own preferred_language ('de') is translated to the full locale TMDB's `language` parameter expects ('de-DE') and sent on every request this class makes. */
+    public function test_search_uses_the_requesting_users_preferred_language(): void
+    {
+        $this->withReadAccessToken();
+        $this->actingAs(User::factory()->create(['preferred_language' => 'de']));
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
+        ]);
+
+        app(TmdbProvider::class)->search('The Matrix');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/search/movie') && $request['language'] === 'de-DE');
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/genre/movie/list') && $request['language'] === 'de-DE');
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/movie/603') && $request['language'] === 'de-DE');
+    }
+
+    /** A different preferred_language maps to its own TMDB locale, not just a hardcoded German default. */
+    public function test_search_uses_english_for_an_english_preferring_user(): void
+    {
+        $this->withReadAccessToken();
+        $this->actingAs(User::factory()->create(['preferred_language' => 'en']));
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => []], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+        ]);
+
+        app(TmdbProvider::class)->search('The Matrix');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/search/movie') && $request['language'] === 'en-US');
+    }
+
+    /** No authenticated user (shouldn't normally happen — every real call site runs within an authenticated request) falls back to 'de-DE', the same tolerant default PdfExportService::languageFor() uses elsewhere in this app. */
+    public function test_search_falls_back_to_german_without_an_authenticated_user(): void
+    {
+        $this->withReadAccessToken();
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => []], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+        ]);
+
+        app(TmdbProvider::class)->search('The Matrix');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/search/movie') && $request['language'] === 'de-DE');
+    }
+
+    /** A preferred_language with no entry in TMDB_LANGUAGE_BY_CODE (a future language pack this map hasn't been extended for yet) falls back to TMDB's own "en-US" default rather than sending a malformed value. */
+    public function test_search_falls_back_to_en_us_for_an_unmapped_language_code(): void
+    {
+        $this->withReadAccessToken();
+        $this->actingAs(User::factory()->create(['preferred_language' => 'xx']));
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => []], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+        ]);
+
+        app(TmdbProvider::class)->search('The Matrix');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/search/movie') && $request['language'] === 'en-US');
     }
 
     /** GitHub issue #160: the precise 200-vs-401 distinction the user themselves anticipated, confirmed against TMDB's own /authentication reference. */

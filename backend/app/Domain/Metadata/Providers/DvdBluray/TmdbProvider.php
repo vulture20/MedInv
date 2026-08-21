@@ -8,6 +8,7 @@ use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Domain\Metadata\Contracts\TestableMetadataProvider;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
@@ -110,6 +111,45 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
     /** GitHub issue #165 — see castFrom()'s own docblock for why the full cast list isn't used as-is. */
     private const MAX_CAST_MEMBERS = 10;
 
+    /**
+     * GitHub issue #170: TMDB's `language` query parameter (search, movie
+     * details, and the genre list — everywhere below a request is made)
+     * expects a full `ISO-639-1-ISO-3166-1` tag, not the bare two-letter
+     * codes this app stores in `User::preferred_language` (e.g. 'de', not
+     * 'de-DE') — confirmed against TMDB's own reference documentation
+     * (`GET /search/movie`, defaulting to "en-US") and its
+     * `GET /configuration/primary_translations` example response, which
+     * lists a specific region for every one of this app's supported
+     * languages except Icelandic (not present in that list at all — 'is-IS'
+     * below is the standard ISO combination, not itself TMDB-confirmed).
+     * Kept as an explicit map rather than a guessed `"{code}-{code
+     * uppercased}"` pattern, since that would be wrong for several real
+     * entries here (e.g. 'uk' is Ukrainian, not the UK; TMDB's own list
+     * uses 'zh-CN'/'pt-PT'/'no-NO', not the only-imaginable options for
+     * those). A preferred_language without an entry here (a future
+     * language pack this map hasn't been extended for yet) falls back to
+     * TMDB's own "en-US" default rather than sending a malformed value.
+     */
+    private const TMDB_LANGUAGE_BY_CODE = [
+        'de' => 'de-DE',
+        'en' => 'en-US',
+        'es' => 'es-ES',
+        'fi' => 'fi-FI',
+        'fr' => 'fr-FR',
+        'is' => 'is-IS',
+        'it' => 'it-IT',
+        'ja' => 'ja-JP',
+        'nl' => 'nl-NL',
+        'no' => 'no-NO',
+        'pl' => 'pl-PL',
+        'pt' => 'pt-PT',
+        'ru' => 'ru-RU',
+        'sv' => 'sv-SE',
+        'tr' => 'tr-TR',
+        'uk' => 'uk-UA',
+        'zh' => 'zh-CN',
+    ];
+
     public function key(): string
     {
         return 'dvd_bluray.tmdb';
@@ -132,10 +172,10 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
         ];
     }
 
-    /** See MetadataProviderInterface::version()'s docblock — never live-verified against the real, authenticated API, see this class's own docblock. Bumped for GitHub issue #165's cast/director/runtime enrichment. */
+    /** See MetadataProviderInterface::version()'s docblock — never live-verified against the real, authenticated API, see this class's own docblock. Bumped for GitHub issue #170's language-aware search. */
     public function version(): string
     {
-        return 'v0.2-beta';
+        return 'v0.3-beta';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock — a real, documented API, not scraping. */
@@ -197,27 +237,47 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
             return [];
         }
 
-        $response = Http::withToken($token)->get(self::BASE_URL.'/search/movie', ['query' => $query]);
+        $language = $this->tmdbLanguage();
+        $response = Http::withToken($token)->get(self::BASE_URL.'/search/movie', ['query' => $query, 'language' => $language]);
 
         if ($response->failed()) {
             return [];
         }
 
-        $genreNames = $this->genreNamesById($token);
+        $genreNames = $this->genreNamesById($token, $language);
 
         return collect($response->json('results', []))
             ->values()
-            ->map(function (array $item, int $index) use ($genreNames, $token) {
+            ->map(function (array $item, int $index) use ($genreNames, $token, $language) {
                 // GitHub issue #165: only the first MAX_ENRICHED_RESULTS
                 // results get the extra detail+credits request — see this
                 // class's own docblock for why not every result does.
                 $details = $index < self::MAX_ENRICHED_RESULTS && isset($item['id'])
-                    ? $this->movieDetailsWithCredits((int) $item['id'], $token)
+                    ? $this->movieDetailsWithCredits((int) $item['id'], $token, $language)
                     : null;
 
                 return $this->mapToCandidate($item, $genreNames, $details);
             })
             ->all();
+    }
+
+    /**
+     * GitHub issue #170: the requesting user's own preferred_language,
+     * translated to the full locale tag TMDB's `language` parameter
+     * expects (TMDB_LANGUAGE_BY_CODE above). Read straight off `Auth::
+     * user()` rather than threaded through as a parameter — every call
+     * site of `search()` runs within an authenticated admin/user request
+     * (MetadataProviderInterface's own signature is shared across all ~20
+     * providers and fixed, not something to widen for one provider's
+     * benefit), the same tolerant 'de' fallback PdfExportService::
+     * languageFor() already uses for a factory-built or otherwise
+     * languageless user.
+     */
+    private function tmdbLanguage(): string
+    {
+        $code = Auth::user()?->preferred_language ?: 'de';
+
+        return self::TMDB_LANGUAGE_BY_CODE[$code] ?? 'en-US';
     }
 
     /**
@@ -230,9 +290,12 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
      * enrichment, rather than losing the whole candidate over one extra,
      * genuinely optional request failing.
      */
-    private function movieDetailsWithCredits(int $id, string $token): ?array
+    private function movieDetailsWithCredits(int $id, string $token, string $language): ?array
     {
-        $response = Http::withToken($token)->get(self::BASE_URL."/movie/{$id}", ['append_to_response' => 'credits']);
+        $response = Http::withToken($token)->get(self::BASE_URL."/movie/{$id}", [
+            'append_to_response' => 'credits',
+            'language' => $language,
+        ]);
 
         return $response->successful() ? $response->json() : null;
     }
@@ -246,13 +309,18 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
      * already uses for similarly small, stable external state. A failed
      * request here degrades to "no genre names available" (candidates
      * still get every other field) rather than failing the whole search.
+     * Cache key includes `$language` (GitHub issue #170) — genre names are
+     * themselves translated by TMDB, so a single shared cache entry would
+     * otherwise serve one user's language to every other user regardless
+     * of their own preference, whoever happened to trigger the first
+     * lookup within the cache's one-day lifetime.
      *
      * @return array<int, string> Genre id => name.
      */
-    private function genreNamesById(string $token): array
+    private function genreNamesById(string $token, string $language): array
     {
-        return Cache::remember('tmdb_movie_genres', now()->addDay(), function () use ($token) {
-            $response = Http::withToken($token)->get(self::BASE_URL.'/genre/movie/list');
+        return Cache::remember("tmdb_movie_genres_{$language}", now()->addDay(), function () use ($token, $language) {
+            $response = Http::withToken($token)->get(self::BASE_URL.'/genre/movie/list', ['language' => $language]);
 
             if ($response->failed()) {
                 return [];
