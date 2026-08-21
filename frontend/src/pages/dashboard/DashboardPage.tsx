@@ -5,7 +5,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { apiClient } from '../../api/client'
 import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog } from '../libraries/MediaItemDetailDialog'
-import type { LibraryRef, MediaItem, MediaType } from '../libraries/mediaItemFields'
+import { coverSrc, type LibraryRef, type MediaItem, type MediaType } from '../libraries/mediaItemFields'
 
 /** A Library, mirroring backend/app/Models/Library.php (see LibrariesPage.tsx). */
 interface Library {
@@ -87,7 +87,7 @@ function MediaCarousel({
                 {item.cover_path ? (
                   <img
                     className="dashboard-carousel__cover"
-                    src={`${apiClient.defaults.baseURL}/libraries/${item.library.id}/items/${item.id}/cover/thumbnail`}
+                    src={coverSrc(item.library.id, item.id, item.cover_path, '/thumbnail')}
                     crossOrigin="use-credentials"
                     alt=""
                   />

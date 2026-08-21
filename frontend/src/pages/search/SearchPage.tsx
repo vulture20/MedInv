@@ -5,7 +5,7 @@ import { apiClient } from '../../api/client'
 import { describeError } from '../admin/adminErrors'
 import { SortableHeader } from '../../components/SortableHeader'
 import { MediaItemDetailDialog } from '../libraries/MediaItemDetailDialog'
-import { formatPrice, subtitleField, type LibraryRef, type MediaItem } from '../libraries/mediaItemFields'
+import { coverSrc, formatPrice, subtitleField, type LibraryRef, type MediaItem } from '../libraries/mediaItemFields'
 import { SearchFilterPanel, type SearchFilterOptions } from './SearchFilterPanel'
 import { SavedSearches, type SavedSearch } from './SavedSearches'
 import {
@@ -366,7 +366,7 @@ export function SearchPage() {
                       {hit.cover_path && (
                         <img
                           className="media-item-table__cover"
-                          src={`${apiClient.defaults.baseURL}/libraries/${hit.library.id}/items/${hit.id}/cover/thumbnail`}
+                          src={coverSrc(hit.library.id, hit.id, hit.cover_path, '/thumbnail')}
                           crossOrigin="use-credentials"
                           alt=""
                         />

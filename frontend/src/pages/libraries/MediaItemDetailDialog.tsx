@@ -5,6 +5,7 @@ import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
 import {
   FIELD_SPECS,
+  coverSrc,
   dateOnly,
   formatDuration,
   isNoEanPlaceholder,
@@ -277,7 +278,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
             >
               <img
                 className="media-item-dialog__cover"
-                src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
+                src={coverSrc(library.id, item.id, item.cover_path)}
                 crossOrigin="use-credentials"
                 alt=""
               />
@@ -515,7 +516,7 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       <dialog ref={coverDialogRef} className="media-item-cover-dialog" onClose={() => setCoverFullscreen(false)} onClick={() => setCoverFullscreen(false)}>
         <img
           className="media-item-cover-dialog__image"
-          src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover`}
+          src={coverSrc(library.id, item.id, item.cover_path)}
           crossOrigin="use-credentials"
           alt=""
         />

@@ -8,7 +8,7 @@ import { describeError } from '../admin/adminErrors'
 import { MediaItemDetailDialog, type MediaItem } from './MediaItemDetailDialog'
 import { CreateMediaItemDialog } from './CreateMediaItemDialog'
 import { LibrarySettingsDialog } from './LibrarySettingsDialog'
-import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, subtitleField } from './mediaItemFields'
+import { FIELD_SPECS, coverSrc, dateOnly, formatDuration, payloadFromValues, subtitleField } from './mediaItemFields'
 
 /** One row of App\Models\LibraryShare, as returned by LibraryController::show()'s `shares.user:id,name,email` eager load (briefing 4.3). */
 interface Share {
@@ -533,7 +533,7 @@ export function LibraryDetailPage() {
                     {item.cover_path && (
                       <img
                         className="media-item-table__cover"
-                        src={`${apiClient.defaults.baseURL}/libraries/${library.id}/items/${item.id}/cover/thumbnail`}
+                        src={coverSrc(library.id, item.id, item.cover_path, '/thumbnail')}
                         crossOrigin="use-credentials"
                         alt=""
                       />

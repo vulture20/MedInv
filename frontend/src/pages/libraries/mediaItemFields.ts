@@ -1,4 +1,25 @@
+import { apiClient } from '../../api/client'
+
 export type MediaType = 'book' | 'cd' | 'dvd_bluray'
+
+/**
+ * GitHub issue #171: the URL for a media item's stored cover (full-size, or
+ * `variant: '/thumbnail'` for the list view's small generated one), with
+ * the current `cover_path` appended as a cache-busting query parameter.
+ * Without it, the URL for a given item id never changes even after its
+ * cover does (a metadata refresh replacing it, a manual re-upload, ...) —
+ * React never touches an unchanged `src` string on re-render, so the
+ * browser just keeps showing whatever it already fetched; only a full page
+ * reload forced a fresh request before this fix. `cover_path` itself is a
+ * reliable token for this, not just any timestamp:
+ * `CoverDownloadService::store()` always mints a fresh random filename per
+ * stored cover, so it's guaranteed to change whenever the image itself
+ * does, and *only* then — unlike e.g. `updated_at`, which also changes on
+ * an unrelated field edit and would bust the cache needlessly.
+ */
+export function coverSrc(libraryId: number, itemId: number, coverPath: string | null | undefined, variant: '' | '/thumbnail' = ''): string {
+  return `${apiClient.defaults.baseURL}/libraries/${libraryId}/items/${itemId}/cover${variant}?v=${encodeURIComponent(coverPath ?? '')}`
+}
 
 /**
  * GitHub issue #151's generated placeholder prefix — must match
