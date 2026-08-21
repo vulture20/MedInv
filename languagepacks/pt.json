@@ -194,8 +194,10 @@
         "ok_one": "{{count}} resultado",
         "ok_other": "{{count}} resultados",
         "no_match": "sem resultado",
-        "failed": "falha na solicitação"
-      }
+        "failed": "falha na solicitação",
+        "skipped": "ignorado (ainda sem título claro)"
+      },
+      "foundViaTitle": "(encontrado através do título)"
     },
     "search": {
       "placeholder": "Pesquisar…",

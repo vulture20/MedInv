@@ -187,8 +187,10 @@
       "ok_one": "{{count}} Treffer",
       "ok_other": "{{count}} Treffer",
       "no_match": "kein Treffer",
-      "failed": "Anfrage fehlgeschlagen"
+      "failed": "Anfrage fehlgeschlagen",
+      "skipped": "übersprungen (noch kein eindeutiger Titel)"
     },
+    "foundViaTitle": "(über Titel gefunden)",
     "cameraScan": "Mit Kamera scannen",
     "cameraClose": "Kamera schließen",
     "cameraHint": "Barcode vor die Kamera halten.",

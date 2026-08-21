@@ -1313,6 +1313,16 @@ td {
   font-weight: 600;
 }
 
+/* GitHub issue #159: a title-round provider that never got queried at all (no unambiguous title from the EAN round to search with) — neutral, same as no_match, not an error. */
+.provider-status-list__status--skipped {
+  color: var(--color-text-muted);
+}
+
+/* GitHub issue #159: ".hint" already sets the muted color/smaller size this wants — this only adds the italic touch that sets it apart as a qualifier on the status text next to it, not a second, independent piece of information. */
+.provider-status-list__via {
+  font-style: italic;
+}
+
 /*
  * Shared card-page language, introduced for SettingsPage.tsx (briefing
  * 4.1's "benutzerdefinierte Einstellungen" — the one settings surface a

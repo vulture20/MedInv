@@ -194,8 +194,10 @@
         "ok_one": "{{count}} resultaat",
         "ok_other": "{{count}} resultaten",
         "no_match": "geen resultaat",
-        "failed": "aanvraag mislukt"
-      }
+        "failed": "aanvraag mislukt",
+        "skipped": "overgeslagen (nog geen duidelijke titel)"
+      },
+      "foundViaTitle": "(gevonden via titel)"
     },
     "search": {
       "placeholder": "Zoeken…",

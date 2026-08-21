@@ -190,8 +190,10 @@
         "ok_one": "{{count}} osuma",
         "ok_other": "{{count}} osumaa",
         "no_match": "ei osumaa",
-        "failed": "pyyntö epäonnistui"
+        "failed": "pyyntö epäonnistui",
+        "skipped": "ohitettu (ei vielä selkeää nimeä)"
       },
+      "foundViaTitle": "(löytyi nimen perusteella)",
       "cameraScan": "Skannaa kameralla",
       "cameraClose": "Sulje kamera",
       "cameraHint": "Pidä viivakoodia kameran edessä.",

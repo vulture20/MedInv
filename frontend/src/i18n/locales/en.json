@@ -187,8 +187,10 @@
       "ok_one": "{{count}} match",
       "ok_other": "{{count}} matches",
       "no_match": "no match",
-      "failed": "request failed"
+      "failed": "request failed",
+      "skipped": "skipped (no clear title yet)"
     },
+    "foundViaTitle": "(found via title)",
     "cameraScan": "Scan with camera",
     "cameraClose": "Close camera",
     "cameraHint": "Hold a barcode in front of the camera.",

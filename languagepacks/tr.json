@@ -194,8 +194,10 @@
         "ok_one": "{{count}} sonuç",
         "ok_other": "{{count}} sonuç",
         "no_match": "sonuç yok",
-        "failed": "istek başarısız"
-      }
+        "failed": "istek başarısız",
+        "skipped": "atlandı (henüz net bir başlık yok)"
+      },
+      "foundViaTitle": "(başlık üzerinden bulundu)"
     },
     "search": {
       "placeholder": "Ara…",

@@ -190,8 +190,10 @@
         "ok_one": "{{count}} träff",
         "ok_other": "{{count}} träffar",
         "no_match": "ingen träff",
-        "failed": "förfrågan misslyckades"
+        "failed": "förfrågan misslyckades",
+        "skipped": "hoppades över (ingen tydlig titel ännu)"
       },
+      "foundViaTitle": "(hittades via titel)",
       "cameraScan": "Skanna med kamera",
       "cameraClose": "Stäng kamera",
       "cameraHint": "Håll en streckkod framför kameran.",

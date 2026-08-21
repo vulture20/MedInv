@@ -63,11 +63,32 @@ interface Props {
   onReject: () => void
 }
 
-/** GitHub issue #53: per-provider request outcome, alongside a scan/refresh result — 'ok' still means "the request succeeded", not "it found a match a user would pick"; a provider can be 'ok' with candidate_count 0 disagreements resolved elsewhere in `merged`. */
+/**
+ * GitHub issue #53: per-provider request outcome, alongside a scan/refresh
+ * result — 'ok' still means "the request succeeded", not "it found a match
+ * a user would pick"; a provider can be 'ok' with candidate_count 0
+ * disagreements resolved elsewhere in `merged`. 'skipped' (GitHub issue
+ * #159) is a fourth status alongside those three, specific to `stage:
+ * 'title'`: this provider never got queried at all this time, because
+ * round 1 (the EAN lookup) never resolved an unambiguous title to search
+ * with — see MetadataImportService::collectCandidatesByCode()'s own
+ * docblock for why that's a deliberate choice, not a bug.
+ */
 export interface ProviderStatus {
   provider_key: string
-  status: 'ok' | 'no_match' | 'failed'
+  status: 'ok' | 'no_match' | 'failed' | 'skipped'
   candidate_count: number
+  /**
+   * GitHub issue #159: 'code' for an ordinary EAN-based lookup (every
+   * status before this issue), 'title' for a provider that can never
+   * support an EAN lookup at all (`supportsCodeLookup() === false`, GitHub
+   * issue #158 — TMDB today) and was instead queried by the title round 1
+   * itself agreed on. ProviderStatusList below surfaces this so a
+   * title-round contribution doesn't look indistinguishable from an
+   * ordinary EAN match — title-based matching is inherently less certain
+   * (no barcode to confirm it), worth knowing at a glance.
+   */
+  stage: 'code' | 'title'
 }
 
 /**
@@ -110,6 +131,14 @@ export function ProviderStatusList({ statuses }: { statuses: ProviderStatus[] })
           <span className={`provider-status-list__status--${s.status}`}>
             {t(`capture.providerStatus.${s.status}`, { count: s.candidate_count })}
           </span>
+          {/*
+            GitHub issue #159: 'skipped' already says *why* nothing
+            happened (no title to search with yet) — appending "found via
+            title" there too would read as a contradiction rather than an
+            explanation, so this is shown for every other title-stage
+            status ('ok'/'no_match'/'failed') instead.
+          */}
+          {s.stage === 'title' && s.status !== 'skipped' && <span className="hint provider-status-list__via">{t('capture.foundViaTitle')}</span>}
         </li>
       ))}
     </ul>

@@ -194,8 +194,10 @@
         "ok_one": "{{count}} 个结果",
         "ok_other": "{{count}} 个结果",
         "no_match": "无匹配",
-        "failed": "请求失败"
-      }
+        "failed": "请求失败",
+        "skipped": "已跳过（尚无明确标题）"
+      },
+      "foundViaTitle": "（通过标题找到）"
     },
     "search": {
       "placeholder": "搜索…",

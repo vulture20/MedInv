@@ -190,8 +190,10 @@
         "ok_one": "{{count}} niðurstaða",
         "ok_other": "{{count}} niðurstöður",
         "no_match": "engin niðurstaða",
-        "failed": "beiðni mistókst"
+        "failed": "beiðni mistókst",
+        "skipped": "sleppt (enginn skýr titill ennþá)"
       },
+      "foundViaTitle": "(fannst með titli)",
       "cameraScan": "Skanna með myndavél",
       "cameraClose": "Loka myndavél",
       "cameraHint": "Haltu strikamerki fyrir framan myndavélina.",
