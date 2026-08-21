@@ -78,6 +78,14 @@ RUN composer dump-autoload --optimize --no-dev \
 
 COPY --from=frontend-build /app/dist /var/www/spa
 
+# GitHub issue #168: raises upload_max_filesize/post_max_size beyond the
+# stock php:8.4-fpm-alpine defaults (2M/8M) — see the file's own comment
+# for why. Dropped into PHP's own conf.d scan directory (confirmed live via
+# `php -r 'echo PHP_CONFIG_FILE_SCAN_DIR;'` inside a running container)
+# rather than editing php.ini directly, the same additive-ini convention
+# the official php Docker images document.
+COPY docker/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 # Rendered into nginx.conf at container start (entrypoint.sh, via envsubst)
 # once MEDINV_PortWeb is known — nginx itself can't read environment
 # variables.

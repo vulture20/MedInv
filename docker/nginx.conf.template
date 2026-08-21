@@ -8,7 +8,12 @@ http {
     include       mime.types;
     default_type  application/octet-stream;
     sendfile      on;
-    client_max_body_size 20m;
+    # GitHub issue #168: raised from 20m alongside docker/uploads.ini's
+    # matching upload_max_filesize/post_max_size bump — a real backup .zip
+    # (GitHub issue #167) already reaches ~20MB on a real deployment, right
+    # at the old ceiling, and nginx's own 413 here is what a user actually
+    # saw before PHP's own (even smaller) limit ever came into play.
+    client_max_body_size 512m;
 
     # Web port (MEDINV_PortWeb, briefing 16.-style env var): the only port
     # nginx listens on. Serves the built React SPA and, on the same port,
