@@ -102,7 +102,13 @@ class TitleSearchSecondStageTest extends TestCase
         Http::assertNotSent(fn ($request) => str_starts_with($request->url(), self::TMDB_BASE_URL) && ! str_contains($request->url(), '/search/movie') && ! str_contains($request->url(), '/genre/movie/list'));
     }
 
-    public function test_round_2_is_skipped_when_round_1_providers_disagree_on_the_title(): void
+    /**
+     * GitHub issue #159's own follow-up (explicit user request): a
+     * disagreement between round-1 providers no longer skips round 2
+     * outright — TMDB is tried against *each* disagreeing title instead of
+     * giving up, since the correct one is usually still among them.
+     */
+    public function test_round_2_tries_every_disagreeing_title_instead_of_skipping(): void
     {
         $owner = $this->actingAsOwner();
         $library = $this->library($owner->id);
@@ -123,15 +129,65 @@ class TitleSearchSecondStageTest extends TestCase
                 '<html><head><title>A Different Film (DVD) – jpc.de</title></head><body></body></html>',
                 200
             ),
+            self::TMDB_BASE_URL.'/search/movie*' => Http::sequence()
+                ->push(['results' => [['id' => 603, 'title' => 'The Matrix', 'overview' => 'Found via the first title.', 'release_date' => '1999-03-30', 'genre_ids' => []]]])
+                ->push(['results' => []]),
         ]);
+        $this->fakeTmdbGenreList();
 
         $response = $this->postJson("/api/libraries/{$library->id}/capture/scan", ['ean' => '4006680095609']);
 
         $response->assertOk();
-        Http::assertNotSent(fn ($request) => str_starts_with($request->url(), self::TMDB_BASE_URL));
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::TMDB_BASE_URL.'/search/movie') && $request['query'] === 'The Matrix');
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::TMDB_BASE_URL.'/search/movie') && $request['query'] === 'A Different Film');
         $statuses = collect($response->json('provider_statuses'))->keyBy('provider_key');
-        $this->assertSame('skipped', $statuses['dvd_bluray.tmdb']['status']);
-        $this->assertSame('title', $statuses['dvd_bluray.tmdb']['stage']);
+        $this->assertSame('ok', $statuses['dvd_bluray.tmdb']['status']);
+        $this->assertSame(1, $statuses['dvd_bluray.tmdb']['candidate_count']);
+    }
+
+    /**
+     * MAX_TITLE_CANDIDATES caps round 2's attempts — four EAN-capable
+     * providers here (UPCMDB, Claude, OpenAI, Gemini) each disagree on a
+     * genuinely distinct title, so TMDB gets tried for at most 3 of the 4,
+     * not one call per disagreeing title. Which 3 "win" is decided by
+     * MetadataMerger's own per-option provider-count ranking (already
+     * covered by MetadataMergerTest.php) — this test focuses on the cap
+     * actually being applied, not re-verifying that ranking itself.
+     */
+    public function test_round_2_tries_at_most_max_title_candidates_titles(): void
+    {
+        $owner = $this->actingAsOwner();
+        $library = $this->library($owner->id);
+        $this->enableUpcMdbAndTmdb();
+        MetadataPlugin::query()->create(['provider_key' => 'dvd_bluray.claude', 'name' => 'Claude', 'media_type' => 'dvd_bluray', 'enabled' => true, 'config' => ['api_key' => 'sk-ant-test']]);
+        MetadataPlugin::query()->create(['provider_key' => 'dvd_bluray.openai', 'name' => 'OpenAI', 'media_type' => 'dvd_bluray', 'enabled' => true, 'config' => ['api_key' => 'sk-test']]);
+        MetadataPlugin::query()->create(['provider_key' => 'dvd_bluray.gemini', 'name' => 'Gemini', 'media_type' => 'dvd_bluray', 'enabled' => true, 'config' => ['api_key' => 'gemini-test']]);
+
+        Http::fake([
+            self::UPCMDB_BASE_URL.'/v1/lookup/ean/*' => Http::response(['upc' => '4006680095609', 'title' => 'Title A', 'year' => 1999], 200),
+            'https://api.anthropic.com/v1/messages' => Http::response([
+                'id' => 'msg_test', 'type' => 'message', 'role' => 'assistant', 'stop_reason' => 'end_turn',
+                'content' => [['type' => 'text', 'text' => json_encode(['found' => true, 'title' => 'Title B'])]],
+            ], 200),
+            'https://api.openai.com/v1/responses' => Http::response([
+                'id' => 'resp_test', 'object' => 'response', 'status' => 'completed',
+                'output' => [['type' => 'message', 'id' => 'msg_test', 'status' => 'completed', 'role' => 'assistant', 'content' => [
+                    ['type' => 'output_text', 'text' => json_encode(['found' => true, 'title' => 'Title C'])],
+                ]]],
+            ], 200),
+            'https://generativelanguage.googleapis.com/v1beta/models/*:generateContent' => Http::response([
+                'candidates' => [['content' => ['role' => 'model', 'parts' => [
+                    ['text' => json_encode(['found' => true, 'title' => 'Title D'])],
+                ]], 'finishReason' => 'STOP', 'index' => 0]],
+            ], 200),
+            self::TMDB_BASE_URL.'/search/movie*' => Http::response(['results' => []], 200),
+        ]);
+        $this->fakeTmdbGenreList();
+
+        $this->postJson("/api/libraries/{$library->id}/capture/scan", ['ean' => '4006680095609']);
+
+        $tmdbSearchCalls = collect(Http::recorded(fn ($request) => str_starts_with($request->url(), self::TMDB_BASE_URL.'/search/movie')));
+        $this->assertCount(3, $tmdbSearchCalls);
     }
 
     public function test_round_2_is_skipped_when_round_1_finds_nothing_at_all(): void

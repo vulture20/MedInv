@@ -70,7 +70,7 @@ interface Props {
  * disagreements resolved elsewhere in `merged`. 'skipped' (GitHub issue
  * #159) is a fourth status alongside those three, specific to `stage:
  * 'title'`: this provider never got queried at all this time, because
- * round 1 (the EAN lookup) never resolved an unambiguous title to search
+ * round 1 (the EAN lookup) reported no usable title at all to search
  * with — see MetadataImportService::collectCandidatesByCode()'s own
  * docblock for why that's a deliberate choice, not a bug.
  */
@@ -82,11 +82,15 @@ export interface ProviderStatus {
    * GitHub issue #159: 'code' for an ordinary EAN-based lookup (every
    * status before this issue), 'title' for a provider that can never
    * support an EAN lookup at all (`supportsCodeLookup() === false`, GitHub
-   * issue #158 — TMDB today) and was instead queried by the title round 1
-   * itself agreed on. ProviderStatusList below surfaces this so a
-   * title-round contribution doesn't look indistinguishable from an
-   * ordinary EAN match — title-based matching is inherently less certain
-   * (no barcode to confirm it), worth knowing at a glance.
+   * issue #158 — TMDB today) and was instead queried by up to the top 3
+   * titles round 1 itself reported (MetadataImportService::
+   * resolveCandidateTitles()'s own docblock — a single title when every
+   * round-1 candidate that reported one agrees, up to three when they
+   * don't, rather than giving up on any disagreement). ProviderStatusList
+   * below surfaces this so a title-round contribution doesn't look
+   * indistinguishable from an ordinary EAN match — title-based matching is
+   * inherently less certain (no barcode to confirm it), worth knowing at
+   * a glance.
    */
   stage: 'code' | 'title'
 }

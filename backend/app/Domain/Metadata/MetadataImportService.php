@@ -19,12 +19,11 @@ use Illuminate\Support\Facades\Log;
  * GitHub issue #159: a provider that can never contribute through
  * lookupByCode() at all (`supportsCodeLookup() === false`, GitHub issue
  * #158 — today only TMDB) still gets a real chance to contribute to an
- * EAN-based lookup, as a second round: once the first (EAN) round's own
- * candidates agree on a title, that title is fed into such a provider's
- * search() instead. See collectCandidatesByCode()'s own docblock for the
- * two deliberate scoping decisions this makes (only when the first round's
- * title is unambiguous; only for providers that structurally have no other
- * way to ever contribute) and why. No change was needed to
+ * EAN-based lookup, as a second round: the first (EAN) round's own
+ * candidates' title(s) are fed into such a provider's search() instead.
+ * See collectCandidatesByCode()'s own docblock for the deliberate scoping
+ * decision this still makes (only for providers that structurally have no
+ * other way to ever contribute) and why. No change was needed to
  * MetadataCandidate or MetadataMerger for this — a second round's
  * candidates are ordinary MetadataCandidate objects merged the exact same
  * way as the first round's; the only new, additive piece of information is
@@ -33,6 +32,21 @@ use Illuminate\Support\Facades\Log;
  * uses to label a title-round provider's contribution as "gefunden über
  * Titel" rather than leaving it looking indistinguishable from an ordinary
  * EAN match.
+ *
+ * The first version of this only ever tried a single title — the one
+ * every round-1 candidate agreed on — and skipped round 2 outright the
+ * moment EAN-capable providers disagreed with each other, on the
+ * reasoning that guessing wrong risked silently mixing in a completely
+ * unrelated film's data. The user asked for that traded away too much:
+ * even a disagreement usually still has the right title among the
+ * top few most-supported options (e.g. a barcode shared by more than one
+ * real release — DiscogsProvider's own docblock documents this happening
+ * live — still has the *correct* release's title as one of the
+ * candidates, just not the only one). resolveCandidateTitles() below now
+ * always tries up to MAX_TITLE_CANDIDATES titles, ranked by how many
+ * round-1 providers actually reported each one — a single title when
+ * everyone agrees (the previous behavior, unchanged in that case), up to
+ * three when they don't, rather than an all-or-nothing skip.
  */
 class MetadataImportService
 {
@@ -96,6 +110,16 @@ class MetadataImportService
     }
 
     /**
+     * How many of round 1's most-supported, distinct title candidates
+     * round 2 (below) will try — explicit user request after using this
+     * feature: a full skip on any EAN-provider disagreement (this class's
+     * own history, see the class docblock) gave up too easily, since the
+     * correct title is usually still among the top few even when not
+     * every provider agrees on it.
+     */
+    private const MAX_TITLE_CANDIDATES = 3;
+
+    /**
      * GitHub issue #159: round 1 (EAN) is unchanged in spirit — every
      * enabled provider that can meaningfully answer lookupByCode() gets
      * queried — but now actually skips a provider that never could
@@ -105,28 +129,23 @@ class MetadataImportService
      * providers get queried in round 2 below instead, by title.
      *
      * Round 2 only runs, and only for exactly those skipped providers, when
-     * two conditions both hold — two deliberate scoping decisions, not
-     * incidental:
-     *
-     *  - Round 1's own candidates must *agree* on a title
-     *    (resolveAgreedTitle() below). If EAN-capable providers disagree
-     *    with each other about the title (e.g. a barcode shared by more
-     *    than one real release — DiscogsProvider's own docblock documents
-     *    this happening live), searching a title-only provider with
-     *    *either* guess risks silently mixing in a completely unrelated
-     *    film's data, which is worse than simply not enriching this
-     *    lookup further. A provider that would otherwise have run gets a
-     *    `skipped` provider_statuses entry instead, so it's still visible
-     *    *why* it didn't contribute, the same transparency #53 already
-     *    established for `failed` vs `no_match`.
-     *  - Only providers with `supportsCodeLookup() === false` are eligible
-     *    at all — not "every provider that happened to report no_match in
-     *    round 1". Opening round 2 to every EAN-capable provider too would
-     *    multiply the request count (and, for a paid API, the cost) of
-     *    *every* unsuccessful EAN lookup across every provider, not just
-     *    the one (TMDB) that structurally has no other way to ever
-     *    contribute — a JPC/UPCMDB/etc. `no_match` in round 1 already *is*
-     *    a genuine answer, not a reason to ask again a different way.
+     * round 1's own candidates reported at least one usable title
+     * (resolveCandidateTitles() below) — still a deliberate scoping
+     * decision, just a narrower one than this class used to make (see its
+     * own docblock for the "used to skip entirely on disagreement, no
+     * longer does" history): only providers with `supportsCodeLookup() ===
+     * false` are eligible for round 2 at all, not "every provider that
+     * happened to report no_match in round 1". Opening round 2 to every
+     * EAN-capable provider too would multiply the request count (and, for
+     * a paid API, the cost) of *every* unsuccessful EAN lookup across
+     * every provider, not just the one (TMDB) that structurally has no
+     * other way to ever contribute — a JPC/UPCMDB/etc. `no_match` in round
+     * 1 already *is* a genuine answer, not a reason to ask again a
+     * different way. A provider with genuinely nothing to search with
+     * (round 1 found no candidates at all, or none reported a title) gets
+     * a `skipped` provider_statuses entry instead, so it's still visible
+     * *why* it didn't contribute, the same transparency #53 already
+     * established for `failed` vs `no_match`.
      *
      * @return array{candidates: MetadataCandidate[], provider_statuses: array<int, array{provider_key: string, status: string, candidate_count: int, stage: string}>}
      */
@@ -139,10 +158,10 @@ class MetadataImportService
         [$candidates, $statuses] = $this->queryProviders($codeProviders, fn (MetadataProviderInterface $p) => $p->lookupByCode($code), "code {$code}", 'code');
 
         if ($titleOnlyProviders->isNotEmpty()) {
-            $title = $this->resolveAgreedTitle($candidates);
+            $titles = $this->resolveCandidateTitles($candidates);
 
-            if ($title !== null) {
-                [$titleCandidates, $titleStatuses] = $this->queryProviders($titleOnlyProviders, fn (MetadataProviderInterface $p) => $p->search($title), "title \"{$title}\" (round 2 for code {$code})", 'title');
+            if ($titles !== []) {
+                [$titleCandidates, $titleStatuses] = $this->queryProvidersByTitles($titleOnlyProviders, $titles, $code);
                 $candidates = [...$candidates, ...$titleCandidates];
                 $statuses = [...$statuses, ...$titleStatuses];
             } else {
@@ -156,12 +175,13 @@ class MetadataImportService
     }
 
     /**
-     * Shared request/status-bookkeeping loop behind both rounds of
-     * collectCandidatesByCode() above — identical shape to the single round
-     * this replaced, just parameterized over which callable to invoke per
-     * provider and which `stage` to stamp each status entry with, so a
-     * consumer (MetadataMergeReview.tsx's ProviderStatusList) can tell a
-     * round-2 contribution apart from an ordinary EAN match.
+     * Round 1's own request/status-bookkeeping loop — one query per
+     * provider, one status entry each. `$stage` is still an explicit
+     * parameter (rather than hardcoding `'code'` here) purely so this
+     * stays a general single-query-per-provider helper on its own terms;
+     * round 2 doesn't reuse it (see queryProvidersByTitles() below for why
+     * trying up to MAX_TITLE_CANDIDATES titles per provider needs its own,
+     * slightly different aggregation instead).
      *
      * @param  Collection<int, MetadataProviderInterface>  $providers
      * @param  callable(MetadataProviderInterface): MetadataCandidate[]  $query
@@ -197,31 +217,99 @@ class MetadataImportService
     }
 
     /**
-     * The title every round-1 candidate that reported one agrees on
-     * (MetadataMerger's own "agreed" concept — a single option once
-     * duplicates/whitespace-only differences are normalized away), or null
-     * when there's genuinely nothing to search a title-only provider with:
-     * no round-1 candidates at all, none of them reported a title, or they
-     * reported *different* titles (see collectCandidatesByCode()'s own
-     * docblock for why that specific case deliberately skips round 2
-     * rather than guessing one of the disagreeing values).
+     * Up to MAX_TITLE_CANDIDATES distinct titles round 1's own candidates
+     * reported, most-supported first. Reuses MetadataMerger's own
+     * per-field `options` (each already grouped by normalized value, with
+     * `provider_keys` deduped per GitHub follow-up to 8.3's own existing
+     * behavior) rather than needing any new merge logic — when every
+     * round-1 candidate that reported a title agrees, `options` has
+     * exactly one entry and this returns exactly that one title, the same
+     * single-title behavior this class always had; when they disagree,
+     * `options` has more than one, sorted here by how many providers
+     * support each so the top MAX_TITLE_CANDIDATES are the most-likely-
+     * correct ones, not just whichever happened to be encountered first.
+     * Empty when there's genuinely nothing to search a title-only provider
+     * with: no round-1 candidates at all, or none of them reported a
+     * title.
      *
      * @param  MetadataCandidate[]  $candidates
+     * @return string[]
      */
-    private function resolveAgreedTitle(array $candidates): ?string
+    private function resolveCandidateTitles(array $candidates): array
     {
         if ($candidates === []) {
-            return null;
+            return [];
         }
 
         $titleField = $this->merger->merge($candidates)['fields']['title'] ?? null;
 
-        if (! $titleField || ! $titleField['agreed']) {
-            return null;
+        if (! $titleField) {
+            return [];
         }
 
-        $title = $titleField['value'];
+        return collect($titleField['options'])
+            ->sortByDesc(fn (array $option) => count($option['provider_keys']))
+            ->pluck('value')
+            ->filter(fn ($value) => is_string($value) && $value !== '')
+            ->take(self::MAX_TITLE_CANDIDATES)
+            ->values()
+            ->all();
+    }
 
-        return is_string($title) && $title !== '' ? $title : null;
+    /**
+     * Round 2's own query loop — deliberately not queryProviders() above,
+     * since a title-only provider is now tried against up to
+     * MAX_TITLE_CANDIDATES titles (not just one), and those attempts need
+     * to collapse into a single provider_statuses entry per provider, not
+     * one per title tried. A provider that finds *anything* across any of
+     * its title attempts is reported 'ok' with the combined candidate
+     * count; one whose every attempt genuinely succeeded with zero results
+     * is 'no_match'; one where every attempt failed outright is 'failed' —
+     * the same three-way distinction queryProviders() draws for a single
+     * query, just aggregated across more than one attempt. A provider
+     * whose *some* attempts failed and others succeeded (even with zero
+     * results) is not reported 'failed' — a real answer for at least one
+     * of the tried titles is more informative than the fact that another
+     * one errored, and the failure is still logged either way.
+     *
+     * MetadataMerger's own dedup already keeps two attempts that happen to
+     * surface the exact same real title (e.g. two of the tried titles
+     * both resolving to the same actual film) from showing up as two
+     * separate options — see mergeField()'s "same provider contributing
+     * more than one candidate" handling — so nothing extra is needed here
+     * for that.
+     *
+     * @param  Collection<int, MetadataProviderInterface>  $providers
+     * @param  string[]  $titles
+     * @return array{0: MetadataCandidate[], 1: array<int, array{provider_key: string, status: string, candidate_count: int, stage: string}>}
+     */
+    private function queryProvidersByTitles(Collection $providers, array $titles, string $code): array
+    {
+        $candidates = [];
+        $statuses = [];
+
+        foreach ($providers as $provider) {
+            $found = [];
+            $anySucceeded = false;
+
+            foreach ($titles as $title) {
+                try {
+                    $found = [...$found, ...$provider->search($title)];
+                    $anySucceeded = true;
+                } catch (\Throwable $e) {
+                    Log::warning("Metadata provider {$provider->key()} failed for title \"{$title}\" (round 2 for code {$code}): {$e->getMessage()}");
+                }
+            }
+
+            $candidates = [...$candidates, ...$found];
+            $statuses[] = [
+                'provider_key' => $provider->key(),
+                'status' => $found !== [] ? 'ok' : ($anySucceeded ? 'no_match' : 'failed'),
+                'candidate_count' => count($found),
+                'stage' => 'title',
+            ];
+        }
+
+        return [$candidates, $statuses];
     }
 }
