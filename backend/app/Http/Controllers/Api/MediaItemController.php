@@ -218,7 +218,7 @@ class MediaItemController extends Controller
         // hand-corrected track list would leave a stale runtime in place.
         // A no-op for every other field/media type (see withDerivedRuntime()'s
         // own docblock).
-        $record->update($this->mediaItemService->withDerivedRuntime($data));
+        $record->update($this->mediaItemService->withDiscCountDefault($this->mediaItemService->withDerivedRuntime($data)));
 
         return $record;
     }
@@ -319,8 +319,13 @@ class MediaItemController extends Controller
 
         $records = $library->mediaItems()->whereIn('id', $selection['ids'])->get();
 
+        // GitHub issue #155: bulk-clearing disc_count the same way a
+        // single edit's blank field would hits the exact same NOT NULL
+        // column default gap — see withDiscCountDefault()'s own docblock.
+        $update = $this->mediaItemService->withDiscCountDefault([$selection['field'] => $value]);
+
         foreach ($records as $record) {
-            $record->update([$selection['field'] => $value]);
+            $record->update($update);
         }
 
         return response()->json(['updated_ids' => $records->pluck('id')->values()]);

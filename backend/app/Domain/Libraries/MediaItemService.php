@@ -48,6 +48,7 @@ class MediaItemService
     {
         $modelClass = $this->modelClassFor($library->media_type);
         $attributes = $this->withDerivedRuntime($attributes);
+        $attributes = $this->withDiscCountDefault($attributes);
 
         if ($modelClass::query()->where('library_id', $library->id)->where('ean', $attributes['ean'])->exists()) {
             throw new DuplicateEanException($attributes['ean']);
@@ -126,7 +127,7 @@ class MediaItemService
     public function updateFromMetadata(Model $item, array $attributes): void
     {
         unset($attributes['ean']);
-        $item->update($this->withDerivedRuntime($attributes));
+        $item->update($this->withDiscCountDefault($this->withDerivedRuntime($attributes)));
     }
 
     /**
@@ -178,6 +179,36 @@ class MediaItemService
         }
 
         return [...$attributes, 'runtime_seconds' => $runtimeSeconds, 'runtime_computed' => true];
+    }
+
+    /**
+     * GitHub issue #155: `disc_count` (`MediaCd`/`MediaDvdBluray`) is a
+     * `NOT NULL` column with its own DB-level default of 1 (see the
+     * create_media_cds/create_media_dvd_blurays_table migrations, the same
+     * default GitHub issue #136's docblock already references) — but that
+     * default only ever applies when the column is *omitted* from an
+     * INSERT/UPDATE statement, not when it's explicitly set to `null`.
+     * Every caller that can legitimately not know a disc count (a manual
+     * capture form field left blank, a metadata candidate whose provider
+     * doesn't report one) sends exactly that: `payloadFromValues()` in the
+     * frontend turns a blank field into an explicit `null`, not a missing
+     * key, and `rulesFor()`'s own `disc_count` rule is `nullable` for
+     * precisely that reason. Left uncorrected, that `null` reached the
+     * database as-is and crashed with a `NOT NULL` constraint violation —
+     * confirmed live via a real "capture without EAN" CD entry that failed
+     * this exact way. Coercing `null` back to the column's own default
+     * here, once, is simpler and safer than teaching every caller (manual
+     * entry, metadata import/refresh, and the edit form alike) to either
+     * omit the key or never send `null` for it. A no-op for book items,
+     * which have no `disc_count` column/key at all.
+     */
+    public function withDiscCountDefault(array $attributes): array
+    {
+        if (array_key_exists('disc_count', $attributes) && $attributes['disc_count'] === null) {
+            $attributes['disc_count'] = 1;
+        }
+
+        return $attributes;
     }
 
     /** @return class-string<Model> */
