@@ -347,4 +347,49 @@ class DiscogsProviderTest extends TestCase
         $this->assertNotEmpty($candidates);
         Http::assertSent(fn ($request) => ! $request->hasHeader('Authorization'));
     }
+
+    /** GitHub issue #163: the whole point — live-confirmed against the real API (a bogus token), not assumed. See DiscogsProvider's own docblock. */
+    public function test_test_config_returns_false_for_an_invalid_token(): void
+    {
+        Http::fake([
+            'https://api.discogs.com/oauth/identity' => Http::response(['message' => 'Invalid consumer token. Please register an app before making requests.'], 401),
+        ]);
+
+        $valid = app(DiscogsProvider::class)->testConfig(['api_key' => 'a-bogus-token']);
+
+        $this->assertFalse($valid);
+    }
+
+    public function test_test_config_returns_true_for_a_valid_token(): void
+    {
+        Http::fake([
+            'https://api.discogs.com/oauth/identity' => Http::response(['id' => 1, 'username' => 'someone'], 200),
+        ]);
+
+        $valid = app(DiscogsProvider::class)->testConfig(['api_key' => 'a-valid-token']);
+
+        $this->assertTrue($valid);
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.discogs.com/oauth/identity'
+            && $request->header('Authorization')[0] === 'Discogs token=a-valid-token');
+    }
+
+    /** The field is optional (this class's own docblock) — nothing to test without a value, not an "invalid" credential. */
+    public function test_test_config_returns_false_without_a_token_at_all(): void
+    {
+        Http::fake(); // No request should even be attempted.
+
+        $this->assertFalse(app(DiscogsProvider::class)->testConfig([]));
+        $this->assertFalse(app(DiscogsProvider::class)->testConfig(['api_key' => '']));
+    }
+
+    /** Neither a confirmed-valid nor a confirmed-invalid credential — the check itself didn't complete, so this must not be silently folded into "invalid" (GitHub issue #53's own precedent, already applied the same way for TmdbProvider::testConfig()/HardcoverProvider::testConfig()). */
+    public function test_test_config_throws_on_an_unexpected_status(): void
+    {
+        Http::fake([
+            'https://api.discogs.com/oauth/identity' => Http::response(['message' => 'Service unavailable'], 503),
+        ]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(DiscogsProvider::class)->testConfig(['api_key' => 'some-token']);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\Cd;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Contracts\TestableMetadataProvider;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Client\Response;
@@ -74,8 +75,18 @@ use Illuminate\Support\Facades\Http;
  * imported correctly") — normalizeReleaseDate() normalizes all of these
  * into a real date string or null instead of assuming the field is
  * always already a clean ISO date.
+ *
+ * testConfig() (GitHub issue #163) uses `GET /oauth/identity`, Discogs'
+ * own documented "smoke test" endpoint for a personal access token —
+ * returns the authenticated account's user object for a valid token. The
+ * issue's own text left the exact invalid-token status unconfirmed
+ * (community references only, no real token available to check); a live,
+ * unauthenticated-safe check with a bogus token before implementing this
+ * found a plain `401 {"message": "Invalid consumer token. Please
+ * register an app before making requests."}` — confirmed rather than
+ * left as a guess.
  */
-class DiscogsProvider implements MetadataProviderInterface
+class DiscogsProvider implements MetadataProviderInterface, TestableMetadataProvider
 {
     private const BASE_URL = 'https://api.discogs.com';
 
@@ -130,6 +141,39 @@ class DiscogsProvider implements MetadataProviderInterface
     public function supportsCodeLookup(): bool
     {
         return true;
+    }
+
+    /**
+     * GitHub issue #163: unlike TmdbProvider's/HardcoverProvider's own
+     * required token, this field is optional (this class's own docblock —
+     * Discogs works fine fully unauthenticated) — nothing to test without
+     * one, so this returns `false` without a request rather than treating
+     * a blank field as "invalid", the same distinction
+     * TmdbProvider::testConfig() already draws for an empty token. See
+     * this class's own docblock for the live-confirmed `401` a real
+     * invalid token gets from `/oauth/identity`.
+     */
+    public function testConfig(array $config): bool
+    {
+        $token = $config['api_key'] ?? null;
+        if (! is_string($token) || $token === '') {
+            return false;
+        }
+
+        $response = Http::withHeaders([
+            'User-Agent' => self::USER_AGENT,
+            'Authorization' => "Discogs token={$token}",
+        ])->get(self::BASE_URL.'/oauth/identity');
+
+        if ($response->successful()) {
+            return true;
+        }
+
+        if ($response->status() === 401) {
+            return false;
+        }
+
+        throw new MetadataProviderRequestException("Discogs config test failed with status {$response->status()}.");
     }
 
     public function lookupByCode(string $code): array
