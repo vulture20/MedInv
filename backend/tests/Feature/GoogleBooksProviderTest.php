@@ -321,4 +321,53 @@ class GoogleBooksProviderTest extends TestCase
         $this->assertNotEmpty($candidates);
         Http::assertSent(fn ($request) => ! isset($request['key']));
     }
+
+    /** GitHub issue #164: the whole point — live-confirmed against the real API (a bogus key), not the issue's own guessed reason/status. */
+    public function test_test_config_returns_false_for_an_invalid_key(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response([
+                'error' => ['code' => 400, 'message' => 'API key not valid. Please pass a valid API key.', 'errors' => [['reason' => 'badRequest']]],
+            ], 400),
+        ]);
+
+        $valid = app(GoogleBooksProvider::class)->testConfig(['api_key' => 'a-bogus-key']);
+
+        $this->assertFalse($valid);
+    }
+
+    public function test_test_config_also_treats_403_as_invalid(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response(['error' => ['code' => 403]], 403)]);
+
+        $this->assertFalse(app(GoogleBooksProvider::class)->testConfig(['api_key' => 'an-unauthorized-key']));
+    }
+
+    public function test_test_config_returns_true_for_a_valid_key(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response(['totalItems' => 0, 'items' => []], 200)]);
+
+        $valid = app(GoogleBooksProvider::class)->testConfig(['api_key' => 'a-valid-key']);
+
+        $this->assertTrue($valid);
+        Http::assertSent(fn ($request) => $request['key'] === 'a-valid-key' && $request['q'] === 'isbn:0000000000');
+    }
+
+    /** The field is optional (this class's own docblock) — nothing to test without a value, not an "invalid" credential. */
+    public function test_test_config_returns_false_without_a_key_at_all(): void
+    {
+        Http::fake(); // No request should even be attempted.
+
+        $this->assertFalse(app(GoogleBooksProvider::class)->testConfig([]));
+        $this->assertFalse(app(GoogleBooksProvider::class)->testConfig(['api_key' => '']));
+    }
+
+    /** Neither a confirmed-valid nor a confirmed-invalid credential — the check itself didn't complete, so this must not be silently folded into "invalid" (GitHub issue #53's own precedent, already applied the same way for the other TestableMetadataProvider implementations). */
+    public function test_test_config_throws_on_an_unexpected_status(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response(['error' => 'Service unavailable'], 503)]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(GoogleBooksProvider::class)->testConfig(['api_key' => 'some-key']);
+    }
 }

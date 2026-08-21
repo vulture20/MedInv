@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\Book;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Contracts\TestableMetadataProvider;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Client\Response;
@@ -25,8 +26,26 @@ use Illuminate\Support\Facades\Http;
  * config, just against that small shared quota, and an admin-supplied key
  * (metadata_plugins.config, briefing 15.) raises it via the documented
  * `key` query parameter.
+ *
+ * testConfig() (GitHub issue #164) has no separate "just check the key"
+ * endpoint to call — the Volumes API has none — so it reuses the same
+ * `?q=...&key=...` shape as an ordinary lookup, just with a query
+ * guaranteed to have no real match ("isbn:0000000000"). A missing volume
+ * is itself a plain `200` with an empty `items` array (no error) either
+ * way, so the response status alone already distinguishes "key accepted"
+ * from "key rejected" without needing to inspect the body at all. The
+ * issue's own text left the exact invalid-key status/reason unconfirmed
+ * (guessed `keyInvalid`); a live, unauthenticated-safe check with a
+ * bogus key before implementing this found a plain `400` instead, with
+ * Google's standard structured error body reporting `reason:
+ * "badRequest"` (an `error.details[].reason: "API_KEY_INVALID"` sits one
+ * level deeper) — simpler to key off the confirmed status code than that
+ * deeply-nested, more failure-prone reason string. `403` is kept as a
+ * second rejection status per the issue's own reasoning (a
+ * valid-but-unauthorized key, e.g. restricted to a different API/
+ * referrer) — not itself live-confirmed the way `400` now is.
  */
-class GoogleBooksProvider implements MetadataProviderInterface
+class GoogleBooksProvider implements MetadataProviderInterface, TestableMetadataProvider
 {
     private const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 
@@ -68,6 +87,33 @@ class GoogleBooksProvider implements MetadataProviderInterface
     public function supportsCodeLookup(): bool
     {
         return true;
+    }
+
+    /**
+     * GitHub issue #164: like DiscogsProvider's own optional field, there's
+     * nothing to test without a value — `false` without a request, not
+     * "confirmed invalid", the same distinction TmdbProvider::testConfig()
+     * already draws for an empty token. See this class's own docblock for
+     * the live-confirmed `400` a real invalid key gets.
+     */
+    public function testConfig(array $config): bool
+    {
+        $key = $config['api_key'] ?? null;
+        if (! is_string($key) || $key === '') {
+            return false;
+        }
+
+        $response = Http::get(self::BASE_URL, ['q' => 'isbn:0000000000', 'key' => $key]);
+
+        if ($response->successful()) {
+            return true;
+        }
+
+        if (in_array($response->status(), [400, 403], true)) {
+            return false;
+        }
+
+        throw new MetadataProviderRequestException("Google Books config test failed with status {$response->status()}.");
     }
 
     public function lookupByCode(string $code): array
