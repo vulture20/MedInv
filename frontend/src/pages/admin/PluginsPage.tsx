@@ -33,6 +33,8 @@ interface Plugin {
   version: string | null
   /** Declared by the matching backend provider class (GitHub issue #55, extended for #59) — not stored, computed per request; null for a provider_key with no matching registered class, same as `version`. */
   source_type: 'api' | 'scraping' | 'llm' | null
+  /** Declared by the matching backend provider class (GitHub issue #158) — not stored, computed per request; null for a provider_key with no matching registered class, same as `version`/`source_type`. */
+  supports_code_lookup: boolean | null
 }
 
 /**
@@ -153,6 +155,14 @@ function SortableRow({ id, children }: { id: number; children: (handle: { attrib
  * docblock, #50: ToS risk, no success guarantee, higher chance of silently
  * breaking; ClaudeMetadataProvider's docblock, #59: hallucination risk, real
  * per-call cost).
+ *
+ * Each row's "EAN" checkmark (GitHub issue #158) shows whether the plugin's
+ * `lookupByCode()` can ever meaningfully return a result at all, as opposed
+ * to only ever contributing through the free-text search path — every
+ * provider implemented so far supports it; a plugin that doesn't (e.g. a
+ * future TMDB provider, GitHub issue #157 — the movie database itself has
+ * no barcode lookup) would otherwise look identical to one that simply
+ * never matched the scanned code.
  *
  * Card layout matches UsersPage.tsx's (.panel-page/.panel-card, see
  * index.css's shared docblock) — one card per media type, the same
@@ -310,6 +320,7 @@ export function PluginsPage() {
                   <col className="plugin-table__col--name" />
                   <col className="plugin-table__col--version" />
                   <col className="plugin-table__col--source-type" />
+                  <col className="plugin-table__col--ean" />
                   <col className="plugin-table__col--enabled" />
                   <col className="plugin-table__col--settings" />
                 </colgroup>
@@ -319,6 +330,7 @@ export function PluginsPage() {
                     <th>{t('common.name')}</th>
                     <th>{t('admin.table.version')}</th>
                     <th>{t('admin.table.sourceType')}</th>
+                    <th>{t('admin.table.eanSupport')}</th>
                     <th>{t('admin.table.enabled')}</th>
                     <th>{t('admin.pluginConfig.settings')}</th>
                   </tr>
@@ -346,6 +358,17 @@ export function PluginsPage() {
                                 </span>
                               ) : (
                                 '—'
+                              )}
+                            </td>
+                            <td>
+                              {p.supports_code_lookup ? (
+                                <span className="plugin-ean-support__yes" aria-label={t('admin.table.eanSupportYes')} title={t('admin.table.eanSupportYes')}>
+                                  ✓
+                                </span>
+                              ) : (
+                                <span aria-label={t('admin.table.eanSupportNo')} title={t('admin.table.eanSupportNo')}>
+                                  —
+                                </span>
                               )}
                             </td>
                             <td>

@@ -307,7 +307,10 @@
         "priority": "Prioriteetti",
         "mediaType": "Mediatyyppi",
         "version": "Versio",
-        "sourceType": "Lähde"
+        "sourceType": "Lähde",
+        "eanSupport": "EAN",
+        "eanSupportYes": "Tukee EAN-/koodihakua",
+        "eanSupportNo": "Ei tue EAN-/koodihakua"
       },
       "sourceType": {
         "api": "API",

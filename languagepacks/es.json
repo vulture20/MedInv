@@ -306,7 +306,10 @@
         "priority": "Prioridad",
         "mediaType": "Tipo de medio",
         "version": "Versión",
-        "sourceType": "Fuente"
+        "sourceType": "Fuente",
+        "eanSupport": "EAN",
+        "eanSupportYes": "Admite búsqueda por EAN/código",
+        "eanSupportNo": "No admite búsqueda por EAN/código"
       },
       "sourceType": {
         "api": "API",

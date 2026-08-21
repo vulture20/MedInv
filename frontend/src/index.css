@@ -930,7 +930,10 @@ td {
  * alone (33% -> 21%) the same way. The priority column was later removed
  * outright (its 18% given back to settings, 21% -> 39%) — dragging a row
  * still reorders it (see the handle column), only the redundant numeric
- * rank display next to it is gone.
+ * rank display next to it is gone. ean (GitHub issue #158) took its 8% out
+ * of settings alone the same way source-type did (39% -> 31%) — it only
+ * ever holds a single checkmark/dash character, so it needs far less room
+ * than a full column ratio would otherwise give it.
  */
 .plugin-table__col--handle {
   width: 4%;
@@ -948,12 +951,16 @@ td {
   width: 12%;
 }
 
+.plugin-table__col--ean {
+  width: 8%;
+}
+
 .plugin-table__col--enabled {
   width: 18%;
 }
 
 .plugin-table__col--settings {
-  width: 39%;
+  width: 31%;
 }
 
 /*
@@ -1036,6 +1043,12 @@ td {
  * kind of risk as a scraper. */
 .source-type-badge--llm {
   color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* GitHub issue #158: --color-success is already established for a positive/success state (GitHub issue #53's provider-status list) — reused here rather than introducing a second "this is fine" token. The "not supported" case stays plain-text (--color-text-muted via the cell's own inherited color), the same restrained treatment 'api' gets above; there's nothing wrong with a provider not supporting code lookup, so it shouldn't read as a warning. */
+.plugin-ean-support__yes {
+  color: var(--color-success);
   font-weight: 600;
 }
 

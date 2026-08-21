@@ -306,7 +306,10 @@
         "priority": "Prioriteit",
         "mediaType": "Mediatype",
         "version": "Versie",
-        "sourceType": "Bron"
+        "sourceType": "Bron",
+        "eanSupport": "EAN",
+        "eanSupportYes": "Ondersteunt EAN-/code-zoeken",
+        "eanSupportNo": "Ondersteunt geen EAN-/code-zoeken"
       },
       "sourceType": {
         "api": "API",

@@ -214,6 +214,28 @@ class MetadataProviderRegistry
     }
 
     /**
+     * Every registered provider's declared EAN/code-lookup support
+     * (GitHub issue #158), keyed by provider_key — same "attach live per
+     * request, don't store in the database" shape versionsByProviderKey()/
+     * sourceTypesByProviderKey() already established, for the same reason:
+     * this is intrinsic to how the class is implemented, not
+     * admin-configurable state. Shown as the plugin list's "EAN" checkmark
+     * column, and expected to keep being `true` for every provider until
+     * the first one (GitHub issue #157's proposed TMDB provider) that
+     * structurally cannot support it at all.
+     *
+     * @return Collection<string, bool>
+     */
+    public function eanSupportByProviderKey(): Collection
+    {
+        return collect(static::defaultProviders())
+            ->map(fn (string $class) => app($class))
+            ->mapWithKeys(fn (MetadataProviderInterface $provider) => [
+                $provider->key() => $provider->supportsCodeLookup(),
+            ]);
+    }
+
+    /**
      * Enabled provider instances for the given media type, ordered by
      * admin-configured priority. `orderBy('id')` after `priority` is the
      * same deterministic-tie-breaker fix as MetadataController::plugins()'s

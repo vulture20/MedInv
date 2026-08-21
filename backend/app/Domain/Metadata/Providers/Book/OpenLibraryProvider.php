@@ -49,6 +49,12 @@ class OpenLibraryProvider implements MetadataProviderInterface
         return 'api';
     }
 
+    /** GitHub issue #158: a real, documented code-based lookup — see MetadataProviderInterface::supportsCodeLookup()'s own docblock. */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     public function lookupByCode(string $code): array
     {
         $response = Http::get('https://openlibrary.org/api/books', [

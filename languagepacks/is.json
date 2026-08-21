@@ -307,7 +307,10 @@
         "priority": "Forgangur",
         "mediaType": "Efnistegund",
         "version": "Útgáfa",
-        "sourceType": "Heimild"
+        "sourceType": "Heimild",
+        "eanSupport": "EAN",
+        "eanSupportYes": "Styður EAN-/kóðaleit",
+        "eanSupportNo": "Styður ekki EAN-/kóðaleit"
       },
       "sourceType": {
         "api": "API",

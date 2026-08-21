@@ -306,7 +306,10 @@
         "priority": "Öncelik",
         "mediaType": "Medya türü",
         "version": "Sürüm",
-        "sourceType": "Kaynak"
+        "sourceType": "Kaynak",
+        "eanSupport": "EAN",
+        "eanSupportYes": "EAN/kod aramasını destekler",
+        "eanSupportNo": "EAN/kod aramasını desteklemez"
       },
       "sourceType": {
         "api": "API",

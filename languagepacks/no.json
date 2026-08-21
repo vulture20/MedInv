@@ -307,7 +307,10 @@
         "priority": "Prioritet",
         "mediaType": "Medietype",
         "version": "Versjon",
-        "sourceType": "Kilde"
+        "sourceType": "Kilde",
+        "eanSupport": "EAN",
+        "eanSupportYes": "Støtter EAN-/kodesøk",
+        "eanSupportNo": "Støtter ikke EAN-/kodesøk"
       },
       "sourceType": {
         "api": "API",

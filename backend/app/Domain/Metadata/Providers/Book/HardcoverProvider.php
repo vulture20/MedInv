@@ -93,6 +93,12 @@ class HardcoverProvider implements MetadataProviderInterface
         return 'api';
     }
 
+    /** GitHub issue #158: a real, documented code-based lookup — see MetadataProviderInterface::supportsCodeLookup()'s own docblock. */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     /**
      * Hardcover's `editions` table has both isbn_10 and isbn_13 as plain,
      * independently-filterable columns (see the official "Get Edition

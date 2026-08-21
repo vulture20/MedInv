@@ -306,7 +306,10 @@
         "priority": "优先级",
         "mediaType": "媒体类型",
         "version": "版本",
-        "sourceType": "来源"
+        "sourceType": "来源",
+        "eanSupport": "EAN",
+        "eanSupportYes": "支持EAN/代码查找",
+        "eanSupportNo": "不支持EAN/代码查找"
       },
       "sourceType": {
         "api": "API",

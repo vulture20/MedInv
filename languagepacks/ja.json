@@ -306,7 +306,10 @@
         "priority": "優先度",
         "mediaType": "メディア種別",
         "version": "バージョン",
-        "sourceType": "ソース"
+        "sourceType": "ソース",
+        "eanSupport": "EAN",
+        "eanSupportYes": "EAN/コード検索に対応",
+        "eanSupportNo": "EAN/コード検索に非対応"
       },
       "sourceType": {
         "api": "API",

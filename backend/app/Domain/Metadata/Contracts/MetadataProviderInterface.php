@@ -100,4 +100,26 @@ interface MetadataProviderInterface
      * other two labels don't capture.
      */
     public function sourceType(): string;
+
+    /**
+     * Whether lookupByCode() above can ever meaningfully return a result
+     * for this provider — shown as a checkmark column in the admin plugin
+     * list (briefing 8.1/15., GitHub issue #158) so an operator can see at
+     * a glance which providers only ever contribute through search(), the
+     * same "attach live per request, don't store in the database" pattern
+     * version()/sourceType() already established (see
+     * MetadataProviderRegistry::eanSupportByProviderKey()) — this is an
+     * intrinsic property of the source itself, not something that changes
+     * at runtime or is admin-configurable.
+     *
+     * Declared explicitly by each provider rather than inferred from
+     * lookupByCode()'s behavior (e.g. "does it always return []?"), since
+     * an empty result there can also just mean "no match for this code",
+     * which is not the same fact. Every provider implemented so far
+     * genuinely supports a code-based lookup and returns `true`; GitHub
+     * issue #157 (a TMDB provider — the movie database has no barcode/EAN
+     * lookup capability at all, confirmed against its own API reference)
+     * is expected to be the first real `false`.
+     */
+    public function supportsCodeLookup(): bool;
 }

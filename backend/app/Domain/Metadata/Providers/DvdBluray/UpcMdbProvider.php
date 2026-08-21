@@ -71,6 +71,12 @@ class UpcMdbProvider implements MetadataProviderInterface
         return 'api';
     }
 
+    /** GitHub issue #158: a real, documented code-based lookup — see MetadataProviderInterface::supportsCodeLookup()'s own docblock. */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     /**
      * This app's own `ean` column is a 13-digit EAN (see the media_dvd_blurays
      * migration), so /v1/lookup/ean/:ean — not the separate UPC-12 or IMDb-ID

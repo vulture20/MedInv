@@ -104,6 +104,12 @@ trait OpenAiMetadataProvider
         return 'llm';
     }
 
+    /** Same as ClaudeMetadataProvider::supportsCodeLookup() — see MetadataProviderInterface::supportsCodeLookup()'s own docblock (GitHub issue #158). */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     /** Identical shape to ClaudeMetadataProvider::configFields() — same two fields, same reasoning. */
     public function configFields(): array
     {

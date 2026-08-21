@@ -114,6 +114,12 @@ trait ClaudeMetadataProvider
         return 'llm';
     }
 
+    /** GitHub issue #158: lookupByCode() below genuinely queries the model by the given EAN/ISBN/UPC — a real code-based lookup, not search()-only. */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     /**
      * `api_key` (required, matching every other API-key-gated provider's
      * shape, e.g. UpcMdbProvider) plus `prompt` (GitHub issue #59's

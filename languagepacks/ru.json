@@ -306,7 +306,10 @@
         "priority": "Приоритет",
         "mediaType": "Тип носителя",
         "version": "Версия",
-        "sourceType": "Источник"
+        "sourceType": "Источник",
+        "eanSupport": "EAN",
+        "eanSupportYes": "Поддерживает поиск по EAN/коду",
+        "eanSupportNo": "Не поддерживает поиск по EAN/коду"
       },
       "sourceType": {
         "api": "API",

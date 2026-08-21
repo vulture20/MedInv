@@ -126,6 +126,12 @@ class DiscogsProvider implements MetadataProviderInterface
         return 'api';
     }
 
+    /** GitHub issue #158: a real, documented code-based lookup — see MetadataProviderInterface::supportsCodeLookup()'s own docblock. */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     public function lookupByCode(string $code): array
     {
         $response = $this->request('/database/search', ['barcode' => $code, 'type' => 'release']);

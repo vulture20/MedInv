@@ -76,6 +76,12 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
         return 'scraping';
     }
 
+    /** GitHub issue #158: a real, documented code-based lookup — see MetadataProviderInterface::supportsCodeLookup()'s own docblock. */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     public function lookupByCode(string $code): array
     {
         $results = $this->amazonSearch($code);

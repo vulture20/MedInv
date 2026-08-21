@@ -130,6 +130,12 @@ trait GeminiMetadataProvider
         return 'llm';
     }
 
+    /** Same as ClaudeMetadataProvider::supportsCodeLookup() — see MetadataProviderInterface::supportsCodeLookup()'s own docblock (GitHub issue #158). */
+    public function supportsCodeLookup(): bool
+    {
+        return true;
+    }
+
     /** Identical shape to ClaudeMetadataProvider::configFields()/OpenAiMetadataProvider::configFields() — same two fields, same reasoning, same AI-Studio-key-only setup the issue's own technical note asked for (no GCP project/service account). */
     public function configFields(): array
     {
