@@ -300,6 +300,9 @@
       "confirmDeleteUser": "Eliminare l'utente «{{name}}»? Questa azione non può essere annullata.",
       "confirmDeleteBackup": "Eliminare il backup «{{filename}}»? Questa azione non può essere annullata.",
       "noBackups": "Nessun backup ancora presente.",
+      "backupUpload": {
+        "label": "Carica backup"
+      },
       "passwordHint": "Almeno 10 caratteri, con almeno una lettera maiuscola, una minuscola, una cifra e un carattere speciale.",
       "table": {
         "level": "Livello",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "Questo file non è in un formato di esportazione MedInv valido (file di esportazione .zip non leggibile).",
+        "invalid_backup_file": "Questo file non è un archivio di backup MedInv valido.",
         "import_missing_libraries": "Questo file non contiene alcuna biblioteca — probabilmente non è un file di esportazione MedInv valido.",
         "import_invalid_library": "La biblioteca n. {{number}} nel file non ha un campo «{{field}}» valido.",
         "import_invalid_item": "Un elemento (voce n. {{number}}) nella biblioteca «{{library}}» non ha un titolo o un EAN validi.",

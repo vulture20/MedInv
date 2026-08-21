@@ -300,6 +300,9 @@
       "confirmDeleteUser": "Excluir o usuário \"{{name}}\"? Esta ação não pode ser desfeita.",
       "confirmDeleteBackup": "Excluir o backup \"{{filename}}\"? Esta ação não pode ser desfeita.",
       "noBackups": "Ainda não há backups.",
+      "backupUpload": {
+        "label": "Carregar cópia de segurança"
+      },
       "passwordHint": "Pelo menos 10 caracteres, com pelo menos uma letra maiúscula, uma minúscula, um dígito e um caractere especial.",
       "table": {
         "level": "Nível",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "Este arquivo não está em um formato de exportação MedInv válido (arquivo de exportação .zip ilegível).",
+        "invalid_backup_file": "Este ficheiro não é um arquivo de cópia de segurança MedInv válido.",
         "import_missing_libraries": "Este arquivo não contém nenhuma biblioteca — provavelmente não é um arquivo de exportação MedInv válido.",
         "import_invalid_library": "A biblioteca nº {{number}} no arquivo não tem um campo \"{{field}}\" válido.",
         "import_invalid_item": "Um item (entrada nº {{number}}) na biblioteca \"{{library}}\" não tem título ou EAN válido.",

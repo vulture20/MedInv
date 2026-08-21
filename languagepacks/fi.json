@@ -301,6 +301,9 @@
       "confirmDeleteUser": "Poistetaanko käyttäjä ”{{name}}”? Tätä ei voi perua.",
       "confirmDeleteBackup": "Poistetaanko varmuuskopio ”{{filename}}”? Tätä ei voi perua.",
       "noBackups": "Ei vielä varmuuskopioita.",
+      "backupUpload": {
+        "label": "Lataa varmuuskopio"
+      },
       "passwordHint": "Vähintään 10 merkkiä, ja mukana vähintään yksi iso kirjain, yksi pieni kirjain, yksi numero ja yksi erikoismerkki.",
       "table": {
         "level": "Taso",
@@ -409,6 +412,7 @@
       },
       "errors": {
         "import_invalid_json": "Tämä tiedosto ei ole kelvollinen MedInv-vientimuoto (ei luettavissa oleva .zip-vientitiedosto).",
+        "invalid_backup_file": "Tämä tiedosto ei ole kelvollinen MedInv-varmuuskopioarkisto.",
         "import_missing_libraries": "Tämä tiedosto ei sisällä yhtään kirjastoa — todennäköisesti se ei ole kelvollinen MedInv-vientitiedosto.",
         "import_invalid_library": "Tiedoston kirjastolla #{{number}} ei ole kelvollista \"{{field}}\"-kenttää.",
         "import_invalid_item": "Kirjaston \"{{library}}\" kohteella (tietue #{{number}}) ei ole kelvollista nimikettä tai EAN-koodia.",

@@ -300,6 +300,9 @@
       "confirmDeleteUser": "\"{{name}}\" kullanıcısı silinsin mi? Bu işlem geri alınamaz.",
       "confirmDeleteBackup": "\"{{filename}}\" yedeği silinsin mi? Bu işlem geri alınamaz.",
       "noBackups": "Henüz yedek yok.",
+      "backupUpload": {
+        "label": "Yedek yükle"
+      },
       "passwordHint": "En az 10 karakter, en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermeli.",
       "table": {
         "level": "Seviye",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "Bu dosya geçerli bir MedInv dışa aktarma biçiminde değil (okunabilir bir .zip dışa aktarma dosyası değil).",
+        "invalid_backup_file": "Bu dosya geçerli bir MedInv yedek arşivi değil.",
         "import_missing_libraries": "Bu dosya hiçbir kitaplık içermiyor — muhtemelen geçerli bir MedInv dışa aktarma dosyası değil.",
         "import_invalid_library": "Dosyadaki {{number}} numaralı kitaplığın geçerli bir \"{{field}}\" alanı yok.",
         "import_invalid_item": "\"{{library}}\" kitaplığındaki bir öğenin ({{number}} numaralı kayıt) geçerli bir başlığı veya EAN'ı yok.",

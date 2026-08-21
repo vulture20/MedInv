@@ -300,6 +300,9 @@
       "confirmDeleteUser": "Gebruiker \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "confirmDeleteBackup": "Back-up \"{{filename}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "noBackups": "Nog geen back-ups.",
+      "backupUpload": {
+        "label": "Back-up uploaden"
+      },
       "passwordHint": "Minimaal 10 tekens, met minstens een hoofdletter, een kleine letter, een cijfer en een speciaal teken.",
       "table": {
         "level": "Niveau",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "Dit bestand heeft geen geldig MedInv-exportformaat (geen leesbaar .zip-exportbestand).",
+        "invalid_backup_file": "Dit bestand is geen geldig MedInv-back-uparchief.",
         "import_missing_libraries": "Dit bestand bevat geen bibliotheken — waarschijnlijk geen geldig MedInv-exportbestand.",
         "import_invalid_library": "Bibliotheek nr. {{number}} in het bestand heeft geen geldig veld \"{{field}}\".",
         "import_invalid_item": "Een item (nr. {{number}}) in bibliotheek \"{{library}}\" heeft geen geldige titel of EAN.",

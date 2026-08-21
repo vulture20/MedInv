@@ -300,6 +300,9 @@
       "confirmDeleteUser": "删除用户“{{name}}”？此操作无法撤销。",
       "confirmDeleteBackup": "删除备份“{{filename}}”？此操作无法撤销。",
       "noBackups": "暂无备份。",
+      "backupUpload": {
+        "label": "上传备份"
+      },
       "passwordHint": "至少 10 个字符，且至少包含一个大写字母、一个小写字母、一个数字和一个特殊字符。",
       "table": {
         "level": "级别",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "此文件不是有效的 MedInv 导出格式(不是可读取的 .zip 导出文件)。",
+        "invalid_backup_file": "此文件不是有效的 MedInv 备份归档文件。",
         "import_missing_libraries": "此文件不包含任何媒体库 — 可能不是有效的 MedInv 导出文件。",
         "import_invalid_library": "文件中第 {{number}} 个媒体库没有有效的“{{field}}”字段。",
         "import_invalid_item": "媒体库“{{library}}”中的一个项目（第 {{number}} 条）没有有效的标题或 EAN。",

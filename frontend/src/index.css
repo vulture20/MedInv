@@ -1974,6 +1974,22 @@ td {
  * media-item list), so each row gets its own flex layout that wraps on
  * narrow viewports rather than a single fixed row.
  */
+/* GitHub issue #167 — "Jetzt sichern" and the upload control sit side by side, the same row-of-actions shape .media-item-dialog__cover-actions already uses elsewhere. */
+.backup-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.backup-upload-label {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0 !important;
+}
+
 .backup-list {
   list-style: none;
   margin: 0.75rem 0 0;

@@ -301,6 +301,9 @@
       "confirmDeleteUser": "Eyða notandanum „{{name}}“? Þessu er ekki hægt að afturkalla.",
       "confirmDeleteBackup": "Eyða öryggisafritinu „{{filename}}“? Þessu er ekki hægt að afturkalla.",
       "noBackups": "Engin öryggisafrit ennþá.",
+      "backupUpload": {
+        "label": "Hlaða upp öryggisafriti"
+      },
       "passwordHint": "Að minnsta kosti 10 stafir, með að minnsta kosti einum hástaf, einum lágstaf, einum tölustaf og einu sérstöku tákni.",
       "table": {
         "level": "Stig",
@@ -409,6 +412,7 @@
       },
       "errors": {
         "import_invalid_json": "Þessi skrá er ekki gilt MedInv-útflutningssnið (ekki læsileg .zip-útflutningsskrá).",
+        "invalid_backup_file": "Þessi skrá er ekki gilt MedInv öryggisafritsskjalasafn.",
         "import_missing_libraries": "Þessi skrá inniheldur engin söfn — líklega ekki gild MedInv-útflutningsskrá.",
         "import_invalid_library": "Safn #{{number}} í skránni er ekki með gilt „{{field}}“-svæði.",
         "import_invalid_item": "Færsla (færsla #{{number}}) í safninu „{{library}}“ er ekki með gildan titil eða EAN.",

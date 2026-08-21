@@ -54,6 +54,8 @@ export function describeError(err: unknown, t: TFunction): string {
       library: data.context?.library ?? '?',
     })
   }
+  // GitHub issue #167 — BackupController::upload() rejecting a file that isn't a real backup archive (not a zip at all, or missing/invalid manifest.json).
+  if (data?.error_code === 'invalid_backup_file') return t('admin.errors.invalid_backup_file')
   if (data?.errors) {
     if (data.errors.password) return t('admin.errors.passwordPolicy')
 

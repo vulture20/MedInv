@@ -241,6 +241,8 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
         Route::get('/backups', [BackupController::class, 'index']);
         Route::post('/backups', [BackupController::class, 'store']);
+        // GitHub issue #167 — the upload counterpart to store() above.
+        Route::post('/backups/upload', [BackupController::class, 'upload']);
         Route::get('/backups/{backup}/download', [BackupController::class, 'download']);
         Route::delete('/backups/{backup}', [BackupController::class, 'destroy']);
         Route::post('/backups/{backup}/restore', [BackupController::class, 'restore']);

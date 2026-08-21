@@ -300,6 +300,9 @@
       "confirmDeleteUser": "Supprimer l'utilisateur « {{name}} » ? Cette action est irréversible.",
       "confirmDeleteBackup": "Supprimer la sauvegarde « {{filename}} » ? Cette action est irréversible.",
       "noBackups": "Aucune sauvegarde pour le moment.",
+      "backupUpload": {
+        "label": "Téléverser une sauvegarde"
+      },
       "passwordHint": "Au moins 10 caractères, avec au moins une majuscule, une minuscule, un chiffre et un caractère spécial.",
       "table": {
         "level": "Niveau",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "Ce fichier n'est pas un format d'export MedInv valide (fichier .zip d'export illisible).",
+        "invalid_backup_file": "Ce fichier n'est pas une archive de sauvegarde MedInv valide.",
         "import_missing_libraries": "Ce fichier ne contient aucune bibliothèque — il ne s'agit probablement pas d'un fichier d'export MedInv valide.",
         "import_invalid_library": "La bibliothèque n° {{number}} du fichier n'a pas de champ « {{field}} » valide.",
         "import_invalid_item": "Un élément (entrée n° {{number}}) de la bibliothèque « {{library}} » n'a pas de titre ou d'EAN valide.",

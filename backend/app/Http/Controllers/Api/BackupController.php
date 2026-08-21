@@ -30,6 +30,26 @@ class BackupController extends Controller
         return response()->json($this->backupService->create(trigger: 'manual'), 201);
     }
 
+    /**
+     * GitHub issue #167: uploads a backup .zip an admin already has
+     * locally, turning it into an ordinary Backup row via
+     * BackupService::upload() — see that method's own docblock for why
+     * this is the deliberately fuller counterpart to
+     * ExportImportController::import()'s upload.
+     */
+    public function upload(Request $request)
+    {
+        $data = $request->validate(['file' => ['required', 'file']]);
+
+        try {
+            $backup = $this->backupService->upload($data['file']);
+        } catch (\RuntimeException $e) {
+            return response()->json(['error_code' => 'invalid_backup_file', 'message' => $e->getMessage()], 422);
+        }
+
+        return response()->json($backup, 201);
+    }
+
     public function download(Backup $backup)
     {
         return response()->download($this->backupService->download($backup), $backup->filename);

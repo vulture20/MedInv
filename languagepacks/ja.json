@@ -300,6 +300,9 @@
       "confirmDeleteUser": "ユーザー「{{name}}」を削除しますか? この操作は元に戻せません。",
       "confirmDeleteBackup": "バックアップ「{{filename}}」を削除しますか? この操作は元に戻せません。",
       "noBackups": "まだバックアップがありません。",
+      "backupUpload": {
+        "label": "バックアップをアップロード"
+      },
       "passwordHint": "10文字以上で、大文字・小文字・数字・記号をそれぞれ1文字以上含めてください。",
       "table": {
         "level": "レベル",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "このファイルは有効なMedInvエクスポート形式ではありません(読み取り可能な.zipエクスポートファイルではありません)。",
+        "invalid_backup_file": "このファイルは有効なMedInvバックアップアーカイブではありません。",
         "import_missing_libraries": "このファイルにはライブラリが含まれていません — 有効なMedInvエクスポートファイルではない可能性があります。",
         "import_invalid_library": "ファイル内のライブラリ #{{number}} に有効な「{{field}}」フィールドがありません。",
         "import_invalid_item": "ライブラリ「{{library}}」内のアイテム（項目 #{{number}}）に有効なタイトルまたはEANがありません。",

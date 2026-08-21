@@ -367,6 +367,9 @@
     "confirmDeleteUser": "Delete user “{{name}}”? This cannot be undone.",
     "confirmDeleteBackup": "Delete backup “{{filename}}”? This cannot be undone.",
     "noBackups": "No backups yet.",
+    "backupUpload": {
+      "label": "Upload backup"
+    },
     "passwordHint": "At least 10 characters, with at least one uppercase letter, one lowercase letter, one digit and one special character.",
     "table": {
       "level": "Level",
@@ -475,6 +478,7 @@
     },
     "errors": {
       "import_invalid_json": "This file is not a valid MedInv export format (not a readable .zip export file).",
+      "invalid_backup_file": "This file is not a valid MedInv backup archive.",
       "import_missing_libraries": "This file contains no libraries — probably not a valid MedInv export file.",
       "import_invalid_library": "Library #{{number}} in the file has no valid \"{{field}}\" field.",
       "import_invalid_item": "An item (entry #{{number}}) in library \"{{library}}\" has no valid title or EAN.",

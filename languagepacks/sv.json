@@ -301,6 +301,9 @@
       "confirmDeleteUser": "Ta bort användaren ”{{name}}”? Detta kan inte ångras.",
       "confirmDeleteBackup": "Ta bort säkerhetskopian ”{{filename}}”? Detta kan inte ångras.",
       "noBackups": "Inga säkerhetskopior ännu.",
+      "backupUpload": {
+        "label": "Ladda upp säkerhetskopia"
+      },
       "passwordHint": "Minst 10 tecken, med minst en stor bokstav, en liten bokstav, en siffra och ett specialtecken.",
       "table": {
         "level": "Nivå",
@@ -409,6 +412,7 @@
       },
       "errors": {
         "import_invalid_json": "Den här filen är inte ett giltigt MedInv-exportformat (inte en läsbar .zip-exportfil).",
+        "invalid_backup_file": "Den här filen är inte ett giltigt MedInv-säkerhetskopiearkiv.",
         "import_missing_libraries": "Den här filen innehåller inga bibliotek — troligen inte en giltig MedInv-exportfil.",
         "import_invalid_library": "Bibliotek #{{number}} i filen har inget giltigt \"{{field}}\"-fält.",
         "import_invalid_item": "En post (post #{{number}}) i biblioteket \"{{library}}\" har ingen giltig titel eller EAN.",

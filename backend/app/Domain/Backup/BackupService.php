@@ -6,6 +6,7 @@ use App\Domain\ExportImport\ExportImportService;
 use App\Models\Backup;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -107,6 +108,70 @@ class BackupService
         ]);
 
         $this->prune();
+
+        return $backup;
+    }
+
+    /**
+     * GitHub issue #167: brings a backup .zip an admin already has locally
+     * (downloaded earlier from this or another instance) into the same
+     * managed `backups/` storage + `backups` table BackupController::
+     * index()/restore() already work off of — from here on indistinguishable
+     * from a backup this instance created itself, reachable through the
+     * exact same list/download/restore/delete actions with the exact same
+     * full restore scope (settings/users/shares), unlike
+     * ExportImportController::import()'s deliberately narrower
+     * library-only restore (see that controller's own docblock for why it
+     * never exposes `restore_settings`).
+     *
+     * Validated only as thoroughly as restore() itself already tolerates a
+     * broken file — must open as a real zip and contain a `manifest.json`
+     * that decodes to a JSON array/object — anything short of that is
+     * rejected before ever touching storage or the database. Deeper
+     * structural validation (e.g. a library missing its `name`) isn't
+     * duplicated here — it already happens inside
+     * ExportImportService::importLibraries() the moment this backup is
+     * actually restored, the same as any other backup.
+     *
+     * Always stored under a freshly generated filename (create()'s own
+     * convention), never the uploaded file's original name — so an admin
+     * uploading the exact same file twice, or a name that happens to
+     * collide with an existing row, can never overwrite another backup.
+     * `trigger` is 'manual', the same as clicking "Jetzt sichern" — an
+     * admin who deliberately brought this file in shouldn't have it swept
+     * away by the automatic retention policy meant for backups nobody
+     * explicitly asked to keep (see prune()'s own docblock).
+     *
+     * @throws \RuntimeException If the uploaded file isn't a valid backup archive.
+     */
+    public function upload(UploadedFile $file): Backup
+    {
+        $zip = new ZipArchive;
+        if ($zip->open($file->getRealPath()) !== true) {
+            throw new \RuntimeException('Uploaded file is not a valid zip archive.');
+        }
+
+        $manifest = $zip->getFromName('manifest.json');
+        $zip->close();
+
+        if ($manifest === false || ! is_array(json_decode($manifest, true))) {
+            throw new \RuntimeException('Uploaded file is missing a valid manifest.json.');
+        }
+
+        $filename = 'medinv-backup-'.SystemSetting::localNow()->format('Ymd-His').'.zip';
+        $path = self::DIR.'/'.$filename;
+
+        Storage::disk(self::DISK)->makeDirectory(self::DIR);
+        Storage::disk(self::DISK)->putFileAs(self::DIR, $file, $filename);
+
+        $backup = Backup::query()->create([
+            'filename' => $filename,
+            'size_bytes' => Storage::disk(self::DISK)->size($path),
+            'trigger' => 'manual',
+            'status' => 'completed',
+        ]);
+
+        Log::info('Backup uploaded', ['filename' => $filename, 'size_bytes' => $backup->size_bytes]);
 
         return $backup;
     }

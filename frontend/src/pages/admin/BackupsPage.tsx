@@ -63,6 +63,15 @@ export function BackupsPage() {
   // saveSettings(), which already had it): a failed request just left the
   // list silently unchanged with no indication anything went wrong.
   const [backupsError, setBackupsError] = useState<string | null>(null)
+  // GitHub issue #167: uploading a backup .zip an admin already has locally
+  // (downloaded earlier from this or another instance) — previously the
+  // only way to bring one in at all was direct filesystem access to
+  // storage/app/private/backups. A separate error/loading pair from
+  // backupsError/createBackup() above, since an upload failure ("that
+  // wasn't a valid backup file") is a different thing to tell the admin
+  // than "the backup list itself failed to load".
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [settings, setSettings] = useState<BackupSettings | null>(null)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [settingsSaved, setSettingsSaved] = useState(false)
@@ -115,6 +124,23 @@ export function BackupsPage() {
       await loadBackups()
     } catch (err) {
       setBackupsError(describeError(err, t))
+    }
+  }
+
+  /** GitHub issue #167 — uploads immediately on file selection, the same "no separate confirm step" pattern MediaItemDetailDialog's own cover upload already uses; the actual risky action (restoring) still needs its own explicit, separate confirmation below, same as any other backup in the list. */
+  async function uploadBackup(file: File | undefined) {
+    if (!file) return
+    setUploadError(null)
+    setUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      await apiClient.post('/admin/backups/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      await loadBackups()
+    } catch (err) {
+      setUploadError(describeError(err, t))
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -184,8 +210,24 @@ export function BackupsPage() {
     <div className="panel-page">
       <section className="panel-card">
         <h2>{t('admin.backups')}</h2>
-        <button onClick={() => void createBackup()}>{t('admin.actions.createBackupNow')}</button>
+        <div className="backup-actions">
+          <button onClick={() => void createBackup()}>{t('admin.actions.createBackupNow')}</button>
+          {/* GitHub issue #167 */}
+          <label className="panel-field backup-upload-label">
+            {t('admin.backupUpload.label')}
+            <input
+              type="file"
+              accept=".zip,application/zip"
+              disabled={uploading}
+              onChange={(e) => {
+                void uploadBackup(e.target.files?.[0])
+                e.target.value = ''
+              }}
+            />
+          </label>
+        </div>
         {backupsError && <p role="alert">{backupsError}</p>}
+        {uploadError && <p role="alert">{uploadError}</p>}
         {backups.length === 0 ? (
           <p className="hint">{t('admin.noBackups')}</p>
         ) : (

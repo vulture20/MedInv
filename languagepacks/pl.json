@@ -300,6 +300,9 @@
       "confirmDeleteUser": "Usunąć użytkownika „{{name}}”? Tej czynności nie można cofnąć.",
       "confirmDeleteBackup": "Usunąć kopię zapasową „{{filename}}”? Tej czynności nie można cofnąć.",
       "noBackups": "Brak kopii zapasowych.",
+      "backupUpload": {
+        "label": "Prześlij kopię zapasową"
+      },
       "passwordHint": "Co najmniej 10 znaków, w tym co najmniej jedna wielka litera, jedna mała litera, jedna cyfra i jeden znak specjalny.",
       "table": {
         "level": "Poziom",
@@ -390,6 +393,7 @@
       },
       "errors": {
         "import_invalid_json": "Ten plik nie jest w prawidłowym formacie eksportu MedInv (nieprawidłowy plik eksportu .zip).",
+        "invalid_backup_file": "Ten plik nie jest prawidłowym archiwum kopii zapasowej MedInv.",
         "import_missing_libraries": "Ten plik nie zawiera żadnych bibliotek — prawdopodobnie nie jest prawidłowym plikiem eksportu MedInv.",
         "import_invalid_library": "Biblioteka nr {{number}} w pliku nie ma prawidłowego pola „{{field}}”.",
         "import_invalid_item": "Pozycja (wpis nr {{number}}) w bibliotece „{{library}}” nie ma prawidłowego tytułu ani EAN.",
