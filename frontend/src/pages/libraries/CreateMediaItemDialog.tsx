@@ -21,6 +21,21 @@ interface Props {
    * auto-generated as a `NoEAN-...` placeholder server-side otherwise.
    */
   initialAttributes?: Record<string, unknown>
+  /**
+   * GitHub issue #166: set alongside initialAttributes when opened from
+   * CapturePage's free-text search — a chosen candidate's own cover, shown
+   * in that search's results list, previously never made it onto the
+   * created item at all (initialAttributes never carried it — a
+   * candidate's `cover_urls` sits alongside `attributes`, not inside it,
+   * mirroring MetadataCandidate::toArray() server-side — and even if it
+   * had, this dialog had no way to use a cover URL at all before this
+   * issue, only a local file upload). Downloaded server-side by
+   * MediaItemController::store() (its own new `cover_url` field, the same
+   * shape MetadataController::import()/reimport() already use) rather
+   * than fetched client-side — cross-origin image hosts (a metadata
+   * provider's own CDN) won't generally allow that from a browser anyway.
+   */
+  initialCoverUrl?: string
   open: boolean
   onClose: () => void
   onCreated: (item: MediaItem) => void
@@ -35,7 +50,7 @@ interface Props {
  * issue #17), and CapturePage's free-text search result (fields prefilled
  * from the chosen candidate, no EAN — GitHub issue #151).
  */
-export function CreateMediaItemDialog({ library, initialEan, initialAttributes, open, onClose, onCreated }: Props) {
+export function CreateMediaItemDialog({ library, initialEan, initialAttributes, initialCoverUrl, open, onClose, onCreated }: Props) {
   const { t, i18n } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [ean, setEan] = useState('')
@@ -47,6 +62,12 @@ export function CreateMediaItemDialog({ library, initialEan, initialAttributes, 
   // attach it to yet; actually uploaded as a second request in submit()
   // below, right after the item itself is created.
   const [coverFile, setCoverFile] = useState<File | null>(null)
+  // GitHub issue #166: a candidate's own cover, previewed but not yet
+  // downloaded — the actual download happens server-side in submit()
+  // below, alongside item creation, not eagerly here. Cleared the moment
+  // the user picks a local file instead (see the file input's onChange) or
+  // explicitly removes it, so the two never both end up sent at once.
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
   // GitHub issue #92: a CD's track list, editable right at manual entry —
   // most useful right after a capture-flow `no_match` dead end, previously
   // the one case where typing a track list by hand was most likely to be
@@ -69,13 +90,15 @@ export function CreateMediaItemDialog({ library, initialEan, initialAttributes, 
       setError(null)
       setSaving(false)
       setCoverFile(null)
+      // GitHub issue #166.
+      setCoverUrl(initialCoverUrl ?? null)
       setTracks((initialAttributes?.tracks as Track[] | undefined) ?? [])
       dialogRef.current?.showModal()
     } else {
       dialogRef.current?.close()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialEan, initialAttributes])
+  }, [open, initialEan, initialAttributes, initialCoverUrl])
 
   // GitHub issue #156: errors.actionFailed, not errors.generic — the
   // latter's wording ("Login failed...") is specific to LoginPage.tsx's own
@@ -103,6 +126,13 @@ export function CreateMediaItemDialog({ library, initialEan, initialAttributes, 
       // MediaItemController::store()) can simply be handed whatever's here.
       if (library.media_type === 'cd' && tracks.length > 0) {
         payload.tracks = tracks
+      }
+      // GitHub issue #166: a manually chosen file (below) always wins over
+      // the candidate's own cover — the file input's onChange already
+      // clears `coverUrl` the moment one is picked, but this stays the
+      // authoritative check in case that ever changes.
+      if (!coverFile && coverUrl) {
+        payload.cover_url = coverUrl
       }
       let { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items`, payload)
       // GitHub issue #75: a second request, hidden behind this same submit,
@@ -148,6 +178,22 @@ export function CreateMediaItemDialog({ library, initialEan, initialAttributes, 
           <h3>{t('mediaItem.createTitle')}</h3>
           {error && <p role="alert">{error}</p>}
           <form onSubmit={(e) => void submit(e)}>
+            {/*
+              GitHub issue #166: a candidate's own cover, previewed here so
+              it's clear one is already about to be used — not yet
+              downloaded, that happens server-side alongside item creation
+              (see coverUrl's own state comment). Shown only while there's
+              no locally chosen file instead (mutually exclusive with the
+              upload control right below, per submit()'s own precedence).
+            */}
+            {coverUrl && !coverFile && (
+              <div className="media-item-dialog__cover-actions">
+                <img src={coverUrl} className="media-item-dialog__cover" alt="" />
+                <button type="button" onClick={() => setCoverUrl(null)}>
+                  {t('mediaItem.removeCover')}
+                </button>
+              </div>
+            )}
             {/* GitHub issue #75: uploaded as a second request in submit()
                 above right after the item itself is created — there's no
                 item id to attach a cover to yet, unlike
@@ -156,7 +202,16 @@ export function CreateMediaItemDialog({ library, initialEan, initialAttributes, 
             <div className="media-item-dialog__cover-actions">
               <label className="media-item-dialog__cover-upload-label">
                 {t('mediaItem.uploadCover')}
-                <input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null
+                    setCoverFile(file)
+                    // GitHub issue #166 — a manually chosen file always wins; see submit()'s own comment.
+                    if (file) setCoverUrl(null)
+                  }}
+                />
               </label>
             </div>
             <label>

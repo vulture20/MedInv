@@ -143,6 +143,13 @@ export function CapturePage() {
   const [textSearching, setTextSearching] = useState(false)
   const [textSearchResults, setTextSearchResults] = useState<MetadataSearchCandidate[] | null>(null)
   const [creatingFromSearch, setCreatingFromSearch] = useState<Record<string, unknown> | null>(null)
+  // GitHub issue #166: kept alongside creatingFromSearch rather than folded
+  // into it — a candidate's cover_urls[] is its own field on
+  // MetadataSearchCandidate, not part of `attributes` (mirrors
+  // MetadataCandidate::toArray() server-side), so CreateMediaItemDialog's
+  // `initialAttributes` prop was never the right place for it either;
+  // passed through its own initialCoverUrl prop instead.
+  const [creatingFromSearchCoverUrl, setCreatingFromSearchCoverUrl] = useState<string | null>(null)
   // See EAN_SCAN_THROTTLE_MS above. A ref, not state — updating it must never
   // itself trigger a re-render, and scanCode() needs its current value
   // synchronously on every call, not just after the next render.
@@ -427,7 +434,14 @@ export function CapturePage() {
                   )}
                   <span className="capture-result__ean">{String(candidate.attributes.title ?? '')}</span>
                   <span className="hint">{formatProviderKey(candidate.provider_key)}</span>
-                  <button type="button" onClick={() => setCreatingFromSearch(candidate.attributes)}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreatingFromSearch(candidate.attributes)
+                      // GitHub issue #166 — see this component's own state comment.
+                      setCreatingFromSearchCoverUrl(candidate.cover_urls[0] ?? null)
+                    }}
+                  >
                     {t('capture.noEanUseResult')}
                   </button>
                 </div>
@@ -504,14 +518,18 @@ export function CapturePage() {
           initialEan={creatingForEan ?? undefined}
           // GitHub issue #151 — see this dialog's own `initialAttributes` docblock.
           initialAttributes={creatingFromSearch ?? undefined}
+          // GitHub issue #166 — see this dialog's own `initialCoverUrl` docblock.
+          initialCoverUrl={creatingFromSearchCoverUrl ?? undefined}
           open={creatingForEan !== null || creatingFromSearch !== null}
           onClose={() => {
             setCreatingForEan(null)
             setCreatingFromSearch(null)
+            setCreatingFromSearchCoverUrl(null)
           }}
           onCreated={(item: MediaItem) => {
             setCreatingForEan(null)
             setCreatingFromSearch(null)
+            setCreatingFromSearchCoverUrl(null)
             setResults((prev) => prev.filter((r) => r.ean !== item.ean))
           }}
         />

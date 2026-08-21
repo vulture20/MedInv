@@ -149,7 +149,24 @@ class MediaItemController extends Controller
     {
         abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
-        $data = $request->validate($this->rulesFor($library->media_type));
+        $data = $request->validate([
+            ...$this->rulesFor($library->media_type),
+            // GitHub issue #166: a candidate chosen from CapturePage.tsx's
+            // free-text "ohne EAN erfassen" search (issue #151) carries a
+            // cover image URL of its own — MetadataController::import()
+            // (the EAN/merge-review confirm path) already downloads a
+            // cover this same way; this form previously had no equivalent
+            // at all, so a candidate's cover — visibly shown in the search
+            // results list — silently never made it onto the created item.
+            // Not part of rulesFor() itself since it's request-only
+            // metadata about *where to get* the cover, not a stored
+            // MediaBook/MediaCd/MediaDvdBluray column the way every other
+            // rulesFor() field is.
+            'cover_url' => ['nullable', 'string'],
+        ]);
+        $coverUrl = $data['cover_url'] ?? null;
+        unset($data['cover_url']);
+
         // GitHub issue #64: a live-converted price stays meaningful in
         // StatisticsService::overviewFor()'s sum('price') without that
         // service needing to know about multiple currencies at all — see
@@ -181,6 +198,19 @@ class MediaItemController extends Controller
             $item = $this->mediaItemService->create($library, $data);
         } catch (DuplicateEanException $e) {
             return response()->json(['message' => $e->getMessage(), 'ean' => $e->ean], 409);
+        }
+
+        // GitHub issue #166 — same "download server-side, then attach"
+        // shape MetadataController::import()/reimport() already use. A
+        // failed download (dead link, blocked host, ...) leaves the item
+        // exactly as created, without a cover, rather than failing the
+        // whole capture over an optional enrichment.
+        if (! empty($coverUrl)) {
+            $coverPath = $this->coverDownloadService->download($coverUrl, $library->media_type, $item->ean);
+
+            if ($coverPath) {
+                $item->update(['cover_path' => $coverPath]);
+            }
         }
 
         return response()->json($item, 201);
