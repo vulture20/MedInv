@@ -286,10 +286,19 @@ class HardcoverProviderTest extends TestCase
         $this->assertFalse($valid);
     }
 
+    /**
+     * Regression test: reported by the user against a real Hardcover
+     * account — a genuinely valid token, real `200`, still read as a
+     * failed test. `me` is actually a *list* (confirmed live, with the
+     * user's own explicit authorization, against the real API:
+     * `{"data":{"me":[{"id":...,"username":"..."}]}}`), not the single
+     * object an earlier version of testConfig() assumed — this fixture
+     * mirrors that real shape rather than the wrong one.
+     */
     public function test_test_config_returns_true_for_a_valid_token(): void
     {
         Http::fake([
-            self::GRAPHQL_URL => Http::response(['data' => ['me' => ['id' => 42]]], 200),
+            self::GRAPHQL_URL => Http::response(['data' => ['me' => [['id' => 42, 'username' => 'someone']]]], 200),
         ]);
 
         $valid = app(HardcoverProvider::class)->testConfig(['api_key' => 'a-valid-token']);
@@ -305,7 +314,7 @@ class HardcoverProviderTest extends TestCase
     /** Same defensive stripping apiKey() already applies to the saved value — see HardcoverProvider's own docblock on why a pasted token can already include this. */
     public function test_test_config_strips_a_pasted_bearer_prefix(): void
     {
-        Http::fake([self::GRAPHQL_URL => Http::response(['data' => ['me' => ['id' => 42]]], 200)]);
+        Http::fake([self::GRAPHQL_URL => Http::response(['data' => ['me' => [['id' => 42]]]], 200)]);
 
         app(HardcoverProvider::class)->testConfig(['api_key' => 'Bearer a-valid-token']);
 

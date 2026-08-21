@@ -123,6 +123,17 @@ class HardcoverProvider implements MetadataProviderInterface, TestableMetadataPr
      * applied the same defensive way apiKey() already applies it to the
      * saved value, so a pasted "Bearer eyJ..." string tests the same way
      * it would actually be used once saved.
+     *
+     * The success condition deliberately only checks status + absence of
+     * a GraphQL `errors` array, exactly matching query()'s own already
+     * battle-tested condition — not `data.me`'s exact shape. An earlier
+     * version of this method additionally required `data.me.id !== null`,
+     * which a real, user-authorized live check against a genuine account
+     * (reported by the user: a real `200` still being read as a failed
+     * test) revealed was wrong — Hardcover's `me` field is actually a
+     * *list* (`{"data":{"me":[{"id":...}]}}`), not a single object, an
+     * unconfirmed assumption this method never should have made in the
+     * first place given query() itself already gets by without it.
      */
     public function testConfig(array $config): bool
     {
@@ -140,7 +151,7 @@ class HardcoverProvider implements MetadataProviderInterface, TestableMetadataPr
             return false;
         }
 
-        if ($response->successful() && ! $response->json('errors') && $response->json('data.me.id') !== null) {
+        if ($response->successful() && ! $response->json('errors')) {
             return true;
         }
 
