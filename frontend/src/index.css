@@ -1150,6 +1150,27 @@ td {
   color: var(--color-text);
 }
 
+/* GitHub issue #160: the settings dialog's "Test" button + its result — a compact row rather than its own bordered block like .plugin-attribution above, since this is routine form feedback, not a one-off legal notice. */
+.plugin-config-dialog__test {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.plugin-config-dialog__test-result {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.plugin-config-dialog__test-result--valid {
+  color: var(--color-success);
+}
+
+.plugin-config-dialog__test-result--invalid {
+  color: var(--color-danger);
+}
+
 /*
  * Metadata merge review (CapturePage.tsx / MetadataMergeReview.tsx) — the
  * per-field comparison across every provider that matched a scanned code.

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import tmdbLogoUrl from '../../assets/tmdb-logo.svg'
+import { Spinner } from '../../components/Spinner'
 import { describeError } from './adminErrors'
 
 interface ConfigField {
@@ -36,6 +37,8 @@ interface Plugin {
   source_type: 'api' | 'scraping' | 'llm' | null
   /** Declared by the matching backend provider class (GitHub issue #158) — not stored, computed per request; null for a provider_key with no matching registered class, same as `version`/`source_type`. */
   supports_code_lookup: boolean | null
+  /** Whether the backend provider class implements TestableMetadataProvider (GitHub issue #160) — not stored, computed per request; `false` (not `null`) for a provider_key with no matching registered class, since MetadataProviderRegistry::testableByProviderKey() itself defaults absent keys to `false` rather than leaving them out. */
+  supports_config_test: boolean
 }
 
 /**
@@ -165,6 +168,12 @@ function SortableRow({ id, children }: { id: number; children: (handle: { attrib
  * no barcode lookup) would otherwise look identical to one that simply
  * never matched the scanned code.
  *
+ * The settings dialog's "Test" button (GitHub issue #160, only shown when
+ * `supports_config_test` is true) checks *currently typed* config against
+ * the real provider API before an admin necessarily saves it — see
+ * testConfig()'s own comment for why that's a deliberate difference from
+ * MailPage.tsx's own save-then-test flow.
+ *
  * Card layout matches UsersPage.tsx's (.panel-page/.panel-card, see
  * index.css's shared docblock) — one card per media type, the same
  * "each distinct thing gets its own card" treatment LibrariesPage.tsx's
@@ -179,6 +188,13 @@ export function PluginsPage() {
   const [error, setError] = useState<string | null>(null)
   const [editingPluginId, setEditingPluginId] = useState<number | null>(null)
   const [formValues, setFormValues] = useState<Record<string, string>>({})
+  // GitHub issue #160: 'valid'/'invalid' is a *confirmed* result from the
+  // real provider API (POST .../test); 'error' is the check itself not
+  // completing (network failure, unexpected status) — kept distinct from
+  // 'invalid' for the same reason the backend itself never folds the two
+  // together (TmdbProvider::testConfig()'s own docblock).
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'valid' | 'invalid' | 'error'>('idle')
+  const [testErrorMessage, setTestErrorMessage] = useState<string | null>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   // Both options objects are module-level constants, not created inline
@@ -260,6 +276,8 @@ export function PluginsPage() {
     // `default` (GitHub issue #59's addendum: the prompt field should
     // already show a sensible pre-filled value, not an empty box).
     setFormValues(Object.fromEntries(plugin.config_fields.map((f) => [f.key, String(plugin.config?.[f.key] ?? f.default ?? '')])))
+    setTestStatus('idle')
+    setTestErrorMessage(null)
     dialogRef.current?.showModal()
   }
 
@@ -277,6 +295,28 @@ export function PluginsPage() {
     const config = Object.fromEntries(Object.entries(formValues).filter(([, value]) => value !== ''))
     await update(plugin, { config })
     closeSettings()
+  }
+
+  /**
+   * GitHub issue #160, following the user's own explicit request after
+   * #157: tests the *currently typed* config (`formValues`, not
+   * necessarily saved yet) against the real provider API — unlike
+   * MailPage.tsx's testMail() (which tests the already-saved mail
+   * config), there's no reason to make an admin Save first, close the
+   * dialog, then come back just to find out a key was mistyped.
+   */
+  async function testConfig() {
+    if (!editingPlugin) return
+    setTestStatus('testing')
+    setTestErrorMessage(null)
+    try {
+      const config = Object.fromEntries(Object.entries(formValues).filter(([, value]) => value !== ''))
+      const { data } = await apiClient.post<{ valid: boolean }>(`/admin/metadata/plugins/${editingPlugin.id}/test`, { config })
+      setTestStatus(data.valid ? 'valid' : 'invalid')
+    } catch (err) {
+      setTestStatus('error')
+      setTestErrorMessage(describeError(err, t))
+    }
   }
 
   const editingPlugin = plugins.find((p) => p.id === editingPluginId) ?? null
@@ -452,6 +492,36 @@ export function PluginsPage() {
                 )}
               </label>
             ))}
+            {/*
+              GitHub issue #160, following the user's own explicit request:
+              tests formValues as currently typed, not the already-saved
+              config — see testConfig()'s own comment for why that's a
+              deliberate difference from MailPage.tsx's save-then-test flow.
+              Only rendered when the backend actually declares this
+              capability (TestableMetadataProvider) for this provider —
+              most don't, see that interface's own docblock.
+            */}
+            {editingPlugin.supports_config_test && (
+              <div className="plugin-config-dialog__test">
+                <button type="button" onClick={() => void testConfig()} disabled={testStatus === 'testing'}>
+                  {t('admin.pluginConfig.testConfig')}
+                </button>
+                {testStatus === 'testing' && <Spinner />}
+                {testStatus === 'valid' && (
+                  <span className="plugin-config-dialog__test-result plugin-config-dialog__test-result--valid">
+                    {t('admin.pluginConfig.testConfigValid')}
+                  </span>
+                )}
+                {testStatus === 'invalid' && (
+                  <span className="plugin-config-dialog__test-result plugin-config-dialog__test-result--invalid">
+                    {t('admin.pluginConfig.testConfigInvalid')}
+                  </span>
+                )}
+                {testStatus === 'error' && (
+                  <span className="plugin-config-dialog__test-result plugin-config-dialog__test-result--invalid">{testErrorMessage}</span>
+                )}
+              </div>
+            )}
             <div className="plugin-config-dialog__actions">
               <button type="submit">{t('admin.actions.save')}</button>
               <button type="button" onClick={closeSettings}>

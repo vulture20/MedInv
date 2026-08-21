@@ -3,6 +3,7 @@
 namespace App\Domain\Metadata;
 
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Contracts\TestableMetadataProvider;
 use App\Domain\Metadata\Providers\Book\AmazonBookProvider;
 use App\Domain\Metadata\Providers\Book\ClaudeBookProvider;
 use App\Domain\Metadata\Providers\Book\GeminiBookProvider;
@@ -249,6 +250,26 @@ class MetadataProviderRegistry
     }
 
     /**
+     * Every registered provider's support for a config test (GitHub issue
+     * #160), keyed by provider_key — unlike versionsByProviderKey()/
+     * sourceTypesByProviderKey()/eanSupportByProviderKey() above, this
+     * isn't a method every MetadataProviderInterface implementation has —
+     * `instanceof TestableMetadataProvider` is the check itself, see that
+     * interface's own docblock for why only some providers implement it
+     * at all.
+     *
+     * @return Collection<string, bool>
+     */
+    public function testableByProviderKey(): Collection
+    {
+        return collect(static::defaultProviders())
+            ->map(fn (string $class) => app($class))
+            ->mapWithKeys(fn (MetadataProviderInterface $provider) => [
+                $provider->key() => $provider instanceof TestableMetadataProvider,
+            ]);
+    }
+
+    /**
      * Enabled provider instances for the given media type, ordered by
      * admin-configured priority. `orderBy('id')` after `priority` is the
      * same deterministic-tie-breaker fix as MetadataController::plugins()'s
@@ -271,5 +292,22 @@ class MetadataProviderRegistry
             ->filter(fn (MetadataProviderInterface $provider) => $enabledKeys->contains($provider->key()))
             ->sortBy(fn (MetadataProviderInterface $provider) => $enabledKeys->search($provider->key()))
             ->values();
+    }
+
+    /**
+     * The registered provider instance for a given provider_key, regardless
+     * of its `metadata_plugins.enabled` state (GitHub issue #160) — unlike
+     * enabledProvidersFor() above, a config test needs to work *before* an
+     * admin has flipped a freshly-configured plugin on, not just after.
+     * Null for a provider_key with no matching registered class, same
+     * "absent, not an error" precedent versionsByProviderKey()/
+     * sourceTypesByProviderKey() already established for an unregistered
+     * key.
+     */
+    public function providerByKey(string $key): ?MetadataProviderInterface
+    {
+        return collect(static::defaultProviders())
+            ->map(fn (string $class) => app($class))
+            ->first(fn (MetadataProviderInterface $provider) => $provider->key() === $key);
     }
 }

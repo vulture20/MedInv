@@ -233,6 +233,8 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
         // Only PluginsPage.tsx (admin-only) ever calls this.
         Route::get('/metadata/plugins', [MetadataController::class, 'plugins']);
         Route::put('/metadata/plugins/{plugin}', [MetadataController::class, 'updatePlugin']);
+        // GitHub issue #160 — tests a candidate config (not necessarily saved yet) against the real provider API.
+        Route::post('/metadata/plugins/{plugin}/test', [MetadataController::class, 'testPluginConfig']);
 
         Route::post('/export', [ExportImportController::class, 'export']);
         Route::post('/import', [ExportImportController::class, 'import']);

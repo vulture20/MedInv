@@ -489,6 +489,9 @@
         "settings": "Ustawienia",
         "noConfig": "Konfiguracja nie jest wymagana.",
         "tmdbAttributionHint": "TMDB wymaga wyświetlania swojego logo oraz poniższej informacji, dopóki ta wtyczka jest włączona:",
+        "testConfig": "Testuj",
+        "testConfigValid": "Prawidłowy ✓",
+        "testConfigInvalid": "Nieprawidłowy ✗",
         "fields": {
           "api_key": "Klucz API",
           "read_access_token": "Token dostępu do odczytu API",

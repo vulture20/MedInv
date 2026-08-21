@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\DvdBluray\TmdbProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -196,5 +197,49 @@ class TmdbProviderTest extends TestCase
         app(TmdbProvider::class)->search('The Matrix Reloaded');
 
         Http::assertSentCount(3); // 2 searches + 1 cached genre-list fetch, not 2.
+    }
+
+    /** GitHub issue #160: the precise 200-vs-401 distinction the user themselves anticipated, confirmed against TMDB's own /authentication reference. */
+    public function test_test_config_returns_true_for_a_valid_token(): void
+    {
+        Http::fake([
+            self::BASE_URL.'/authentication*' => Http::response(['success' => true, 'status_code' => 1, 'status_message' => 'Success.'], 200),
+        ]);
+
+        $valid = app(TmdbProvider::class)->testConfig(['read_access_token' => 'a-valid-token']);
+
+        $this->assertTrue($valid);
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/authentication')
+            && $request->hasHeader('Authorization', 'Bearer a-valid-token'));
+    }
+
+    public function test_test_config_returns_false_for_an_invalid_token(): void
+    {
+        Http::fake([
+            self::BASE_URL.'/authentication*' => Http::response(['success' => false, 'status_code' => 7, 'status_message' => 'Invalid API key: You must be granted a valid key.'], 401),
+        ]);
+
+        $valid = app(TmdbProvider::class)->testConfig(['read_access_token' => 'a-bogus-token']);
+
+        $this->assertFalse($valid);
+    }
+
+    public function test_test_config_returns_false_without_a_token_at_all(): void
+    {
+        Http::fake(); // No request should even be attempted.
+
+        $this->assertFalse(app(TmdbProvider::class)->testConfig([]));
+        $this->assertFalse(app(TmdbProvider::class)->testConfig(['read_access_token' => '']));
+    }
+
+    /** Neither a confirmed-valid nor a confirmed-invalid credential — the check itself didn't complete, so this must not be silently folded into "invalid" (GitHub issue #53's own precedent elsewhere in this app). */
+    public function test_test_config_throws_on_an_unexpected_status(): void
+    {
+        Http::fake([
+            self::BASE_URL.'/authentication*' => Http::response(['status_message' => 'Service unavailable.'], 503),
+        ]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(TmdbProvider::class)->testConfig(['read_access_token' => 'some-token']);
     }
 }

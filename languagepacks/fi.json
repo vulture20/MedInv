@@ -508,6 +508,9 @@
         "settings": "Asetukset",
         "noConfig": "Asetuksia ei tarvita.",
         "tmdbAttributionHint": "TMDB edellyttää, että sen logo ja seuraava huomautus näytetään, kun tämä liitännäinen on käytössä:",
+        "testConfig": "Testaa",
+        "testConfigValid": "Kelvollinen ✓",
+        "testConfigInvalid": "Virheellinen ✗",
         "fields": {
           "api_key": "API-avain",
           "read_access_token": "API-lukuoikeuden käyttöoikeustunnus",

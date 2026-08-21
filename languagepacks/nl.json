@@ -489,6 +489,9 @@
         "settings": "Instellingen",
         "noConfig": "Geen instellingen vereist.",
         "tmdbAttributionHint": "TMDB vereist dat het logo en de volgende kennisgeving worden getoond zolang deze plugin is ingeschakeld:",
+        "testConfig": "Testen",
+        "testConfigValid": "Geldig ✓",
+        "testConfigInvalid": "Ongeldig ✗",
         "fields": {
           "api_key": "API-sleutel",
           "read_access_token": "API-leestoegangstoken",

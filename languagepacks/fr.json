@@ -489,6 +489,9 @@
         "settings": "Paramètres",
         "noConfig": "Aucun paramètre requis.",
         "tmdbAttributionHint": "TMDB exige que son logo et l'avis suivant soient affichés tant que ce plugin est activé :",
+        "testConfig": "Tester",
+        "testConfigValid": "Valide ✓",
+        "testConfigInvalid": "Non valide ✗",
         "fields": {
           "api_key": "Clé API",
           "read_access_token": "Jeton d'accès en lecture de l'API",

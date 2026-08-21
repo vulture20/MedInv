@@ -489,6 +489,9 @@
         "settings": "Ayarlar",
         "noConfig": "Ayar gerekmiyor.",
         "tmdbAttributionHint": "TMDB, bu eklenti etkinken logosunun ve aşağıdaki bildirimin gösterilmesini şart koşar:",
+        "testConfig": "Test Et",
+        "testConfigValid": "Geçerli ✓",
+        "testConfigInvalid": "Geçersiz ✗",
         "fields": {
           "api_key": "API Anahtarı",
           "read_access_token": "API okuma erişim jetonu",

@@ -5,6 +5,8 @@ namespace App\Domain\Metadata\Providers\DvdBluray;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Contracts\TestableMetadataProvider;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -76,7 +78,7 @@ use Illuminate\Support\Facades\Http;
  * self-hosted collection storage — a deliberate reason to require an
  * admin's explicit opt-in rather than enabling this by default.
  */
-class TmdbProvider implements MetadataProviderInterface
+class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvider
 {
     private const BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -130,6 +132,40 @@ class TmdbProvider implements MetadataProviderInterface
     public function lookupByCode(string $code): array
     {
         return [];
+    }
+
+    /**
+     * GitHub issue #160, following the user's own explicit request after
+     * #157: `GET /authentication` is TMDB's own dedicated endpoint for
+     * exactly this — validating a token without any other side effect —
+     * confirmed live against the API reference, including the precise
+     * 200-vs-401 distinction the user themselves already anticipated: a
+     * valid token gets `200 {"success": true, ...}`, an invalid/expired
+     * one gets `401 {"success": false, "status_code": 7, ...}`. Anything
+     * else (a network error, a 5xx, an unexpected status) means the check
+     * itself didn't complete — thrown rather than folded into `false`, the
+     * same "don't conflate 'confirmed invalid' with 'couldn't check'"
+     * distinction GitHub issue #53 already established for lookupByCode()
+     * failures elsewhere in this app.
+     */
+    public function testConfig(array $config): bool
+    {
+        $token = $config['read_access_token'] ?? null;
+        if (! is_string($token) || $token === '') {
+            return false;
+        }
+
+        $response = Http::withToken($token)->get(self::BASE_URL.'/authentication');
+
+        if ($response->successful()) {
+            return true;
+        }
+
+        if ($response->status() === 401) {
+            return false;
+        }
+
+        throw new MetadataProviderRequestException("TMDB config test failed with status {$response->status()}.");
     }
 
     public function search(string $query): array

@@ -508,6 +508,9 @@
         "settings": "Stillingar",
         "noConfig": "Engar stillingar nauðsynlegar.",
         "tmdbAttributionHint": "TMDB krefst þess að merki þess og eftirfarandi tilkynning séu sýnd á meðan þetta viðbót er virkt:",
+        "testConfig": "Prófa",
+        "testConfigValid": "Gilt ✓",
+        "testConfigInvalid": "Ógilt ✗",
         "fields": {
           "api_key": "API-lykill",
           "read_access_token": "API lestrarað­gangs­tákn",

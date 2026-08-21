@@ -489,6 +489,9 @@
         "settings": "設定",
         "noConfig": "設定は不要です。",
         "tmdbAttributionHint": "このプラグインが有効な間、TMDBはそのロゴと次の告知の表示を求めています。",
+        "testConfig": "テスト",
+        "testConfigValid": "有効 ✓",
+        "testConfigInvalid": "無効 ✗",
         "fields": {
           "api_key": "APIキー",
           "read_access_token": "APIリードアクセストークン",

@@ -489,6 +489,9 @@
         "settings": "Налаштування",
         "noConfig": "Налаштування не потрібні.",
         "tmdbAttributionHint": "TMDB вимагає показувати свій логотип і наступне повідомлення, поки цей плагін увімкнено:",
+        "testConfig": "Перевірити",
+        "testConfigValid": "Дійсний ✓",
+        "testConfigInvalid": "Недійсний ✗",
         "fields": {
           "api_key": "Ключ API",
           "read_access_token": "Токен доступу API для читання",

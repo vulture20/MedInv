@@ -489,6 +489,9 @@
         "settings": "设置",
         "noConfig": "无需设置。",
         "tmdbAttributionHint": "只要启用此插件，TMDB就要求显示其徽标和以下声明：",
+        "testConfig": "测试",
+        "testConfigValid": "有效 ✓",
+        "testConfigInvalid": "无效 ✗",
         "fields": {
           "api_key": "API 密钥",
           "read_access_token": "API 只读访问令牌",

@@ -6,9 +6,11 @@ use App\Domain\Libraries\CurrencyConversionService;
 use App\Domain\Libraries\DuplicateEanException;
 use App\Domain\Libraries\LibraryAccessService;
 use App\Domain\Libraries\MediaItemService;
+use App\Domain\Metadata\Contracts\TestableMetadataProvider;
 use App\Domain\Metadata\CoverDownloadService;
 use App\Domain\Metadata\MetadataImportService;
 use App\Domain\Metadata\MetadataProviderRegistry;
+use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
 use App\Models\MetadataPlugin;
@@ -37,12 +39,15 @@ class MetadataController extends Controller
      * (briefing 15.). Each row carries a `config_fields` attribute (GitHub
      * issue #29), a `version` attribute (GitHub issue #44), a
      * `source_type` attribute (GitHub issue #55, 'api'|'scraping'|'llm' —
-     * the third value added by GitHub issue #59's Claude providers), and a
-     * `supports_code_lookup` attribute (GitHub issue #158) — all four
-     * declared by the matching provider class, not stored in the
-     * database — so PluginsPage.tsx can render a settings form and show a
-     * version/source type/EAN-support per plugin without any of them
-     * needing their own migration/sync step.
+     * the third value added by GitHub issue #59's Claude providers), a
+     * `supports_code_lookup` attribute (GitHub issue #158), and a
+     * `supports_config_test` attribute (GitHub issue #160, whether the
+     * provider implements `TestableMetadataProvider` — see that
+     * interface's own docblock) — all five declared by the matching
+     * provider class, not stored in the database — so PluginsPage.tsx can
+     * render a settings form and show a version/source type/EAN-support/
+     * config-test-availability per plugin without any of them needing
+     * their own migration/sync step.
      *
      * `orderBy('id')` as a tie-breaker after `priority` matters more than it
      * looks: MetadataProviderRegistry::syncToDatabase() never sets an
@@ -67,14 +72,17 @@ class MetadataController extends Controller
         $versions = $this->registry->versionsByProviderKey();
         $sourceTypes = $this->registry->sourceTypesByProviderKey();
         $eanSupport = $this->registry->eanSupportByProviderKey();
+        $testable = $this->registry->testableByProviderKey();
 
-        return $query->orderBy('priority')->orderBy('id')->get()->map(function (MetadataPlugin $plugin) use ($configFields, $versions, $sourceTypes, $eanSupport) {
+        return $query->orderBy('priority')->orderBy('id')->get()->map(function (MetadataPlugin $plugin) use ($configFields, $versions, $sourceTypes, $eanSupport, $testable) {
             $plugin->setAttribute('config_fields', $configFields->get($plugin->provider_key, []));
             $plugin->setAttribute('version', $versions->get($plugin->provider_key));
             // GitHub issue #55.
             $plugin->setAttribute('source_type', $sourceTypes->get($plugin->provider_key));
             // GitHub issue #158.
             $plugin->setAttribute('supports_code_lookup', $eanSupport->get($plugin->provider_key));
+            // GitHub issue #160.
+            $plugin->setAttribute('supports_config_test', $testable->get($plugin->provider_key, false));
 
             return $plugin;
         });
@@ -260,6 +268,42 @@ class MetadataController extends Controller
         Log::info('Metadata plugin updated', ['actor_id' => $request->user()->id, 'provider_key' => $plugin->provider_key, 'changes' => $this->redactedChanges($plugin, $data)]);
 
         return $plugin;
+    }
+
+    /**
+     * GitHub issue #160, following the user's own explicit request after
+     * #157: checks a candidate config (typically an API key/token just
+     * typed into PluginsPage.tsx's settings dialog, not necessarily saved
+     * yet — see TestableMetadataProvider's own docblock for why it's
+     * tested as-typed rather than requiring a save first, unlike
+     * AdminSettingsController::testMail()'s save-then-test flow) against
+     * the real provider API. Only meaningful for a provider that actually
+     * declares this capability (TestableMetadataProvider — most providers
+     * don't, for reasons ranging from "no credential concept at all" to
+     * "a real test would cost real money", see that interface's own
+     * docblock) — PluginsPage.tsx only ever shows the "Test" button when
+     * `supports_config_test` (attached in plugins() below) is true, this
+     * is the defensive backstop for a stale page/direct API call.
+     */
+    public function testPluginConfig(Request $request, MetadataPlugin $plugin)
+    {
+        $data = $request->validate(['config' => ['required', 'array']]);
+
+        $provider = $this->registry->providerByKey($plugin->provider_key);
+
+        if (! $provider instanceof TestableMetadataProvider) {
+            return response()->json(['error_code' => 'not_testable', 'message' => 'This plugin does not support a config test.'], 422);
+        }
+
+        try {
+            $valid = $provider->testConfig($data['config']);
+        } catch (MetadataProviderRequestException $e) {
+            $this->logApiError($request, 'config_test_failed', $e->getMessage());
+
+            return response()->json(['error_code' => 'config_test_failed', 'message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['valid' => $valid]);
     }
 
     /**
