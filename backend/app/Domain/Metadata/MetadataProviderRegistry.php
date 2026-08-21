@@ -23,6 +23,7 @@ use App\Domain\Metadata\Providers\DvdBluray\ClaudeDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\GeminiDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\JpcDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\OpenAiDvdBlurayProvider;
+use App\Domain\Metadata\Providers\DvdBluray\TmdbProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Collection;
@@ -80,12 +81,23 @@ class MetadataProviderRegistry
      * #59's own proposal, is exactly why it shouldn't turn on just
      * because an admin installed/updated MedInv — a wrong, invented detail
      * is quieter and easier to miss than a plain "no match".
+     *
+     * `dvd_bluray.tmdb` (GitHub issue #157) is disabled by default for yet
+     * another reason, distinct from every case above: TMDB's own API
+     * Terms of Use prohibit caching API data for longer than six months —
+     * in real, unresolved tension with this app's whole purpose of
+     * permanent, self-hosted collection storage (see TmdbProvider's own
+     * docblock, and the feasibility study behind #157). This is a
+     * legal/compliance question worth an admin's own explicit decision,
+     * not something to enable silently on install/update the way a
+     * merely-Beta-but-unproblematic provider could be.
      */
     private const DEFAULT_DISABLED_PROVIDER_KEYS = [
         'book.amazon', 'cd.amazon', 'dvd_bluray.amazon',
         'book.claude', 'cd.claude', 'dvd_bluray.claude',
         'book.openai', 'cd.openai', 'dvd_bluray.openai',
         'book.gemini', 'cd.gemini', 'dvd_bluray.gemini',
+        'dvd_bluray.tmdb',
     ];
 
     /** @return class-string<MetadataProviderInterface>[] */
@@ -113,6 +125,7 @@ class MetadataProviderRegistry
             OpenAiDvdBlurayProvider::class,
             GeminiDvdBlurayProvider::class,
             JpcDvdBlurayProvider::class,
+            TmdbProvider::class,
             // TODO: EmunationProvider (briefing 8.2 — DVD/Blu-ray)
         ];
     }

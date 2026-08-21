@@ -488,6 +488,7 @@
       "pluginConfig": {
         "settings": "Configuración",
         "noConfig": "No se requiere configuración.",
+        "tmdbAttributionHint": "TMDB exige que se muestren su logotipo y el siguiente aviso mientras este plugin esté activado:",
         "fields": {
           "api_key": "Clave de API",
           "prompt": "Prompt"

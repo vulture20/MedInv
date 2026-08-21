@@ -488,6 +488,7 @@
       "pluginConfig": {
         "settings": "Paramètres",
         "noConfig": "Aucun paramètre requis.",
+        "tmdbAttributionHint": "TMDB exige que son logo et l'avis suivant soient affichés tant que ce plugin est activé :",
         "fields": {
           "api_key": "Clé API",
           "prompt": "Prompt"

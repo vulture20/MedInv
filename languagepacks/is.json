@@ -507,6 +507,7 @@
       "pluginConfig": {
         "settings": "Stillingar",
         "noConfig": "Engar stillingar nauðsynlegar.",
+        "tmdbAttributionHint": "TMDB krefst þess að merki þess og eftirfarandi tilkynning séu sýnd á meðan þetta viðbót er virkt:",
         "fields": {
           "api_key": "API-lykill",
           "prompt": "Prompt"

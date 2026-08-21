@@ -488,6 +488,7 @@
       "pluginConfig": {
         "settings": "Ayarlar",
         "noConfig": "Ayar gerekmiyor.",
+        "tmdbAttributionHint": "TMDB, bu eklenti etkinken logosunun ve aşağıdaki bildirimin gösterilmesini şart koşar:",
         "fields": {
           "api_key": "API Anahtarı",
           "prompt": "Prompt"

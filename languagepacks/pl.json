@@ -488,6 +488,7 @@
       "pluginConfig": {
         "settings": "Ustawienia",
         "noConfig": "Konfiguracja nie jest wymagana.",
+        "tmdbAttributionHint": "TMDB wymaga wyświetlania swojego logo oraz poniższej informacji, dopóki ta wtyczka jest włączona:",
         "fields": {
           "api_key": "Klucz API",
           "prompt": "Prompt"

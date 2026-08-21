@@ -488,6 +488,7 @@
       "pluginConfig": {
         "settings": "设置",
         "noConfig": "无需设置。",
+        "tmdbAttributionHint": "只要启用此插件，TMDB就要求显示其徽标和以下声明：",
         "fields": {
           "api_key": "API 密钥",
           "prompt": "提示词"

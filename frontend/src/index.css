@@ -1112,6 +1112,45 @@ td {
 }
 
 /*
+ * GitHub issue #157's own addendum: TMDB's API Terms of Use require
+ * displaying TMDB's logo and a specific notice sentence — shown only for
+ * that one plugin's settings dialog (see PluginsPage.tsx's own comment).
+ * A quiet, bordered block rather than a warning/danger treatment — this
+ * isn't a problem to flag, just a required credit, the same restrained
+ * visual weight a "photo by" caption gets elsewhere on the web.
+ */
+.plugin-attribution {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.plugin-attribution__logo {
+  height: 1.1rem;
+  width: auto;
+}
+
+.plugin-attribution__hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+/* The required notice text itself — kept in its original English wording (see PluginsPage.tsx's comment), so it reads distinctly from the translated hint above it rather than blending in as ordinary UI copy. */
+.plugin-attribution__notice {
+  margin: 0;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--color-text);
+}
+
+/*
  * Metadata merge review (CapturePage.tsx / MetadataMergeReview.tsx) — the
  * per-field comparison across every provider that matched a scanned code.
  * A field every provider agreed on renders as plain text (nothing to

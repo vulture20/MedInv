@@ -488,6 +488,7 @@
       "pluginConfig": {
         "settings": "Impostazioni",
         "noConfig": "Nessuna impostazione richiesta.",
+        "tmdbAttributionHint": "TMDB richiede che il proprio logo e il seguente avviso vengano mostrati finché questo plugin è attivo:",
         "fields": {
           "api_key": "Chiave API",
           "prompt": "Prompt"

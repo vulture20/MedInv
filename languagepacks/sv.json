@@ -507,6 +507,7 @@
       "pluginConfig": {
         "settings": "Inställningar",
         "noConfig": "Inga inställningar krävs.",
+        "tmdbAttributionHint": "TMDB kräver att dess logotyp och följande meddelande visas så länge detta tillägg är aktiverat:",
         "fields": {
           "api_key": "API-nyckel",
           "prompt": "Prompt"

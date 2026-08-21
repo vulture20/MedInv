@@ -573,6 +573,7 @@
     "pluginConfig": {
       "settings": "Einstellungen",
       "noConfig": "Keine Einstellungen erforderlich.",
+      "tmdbAttributionHint": "TMDB verlangt, dass sein Logo und der folgende Hinweis angezeigt werden, solange dieses Plugin aktiviert ist:",
       "fields": {
         "api_key": "API-Key",
         "prompt": "Prompt"

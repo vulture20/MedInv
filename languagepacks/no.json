@@ -507,6 +507,7 @@
       "pluginConfig": {
         "settings": "Innstillinger",
         "noConfig": "Ingen innstillinger nødvendig.",
+        "tmdbAttributionHint": "TMDB krever at logoen og følgende merknad vises så lenge dette programtillegget er aktivert:",
         "fields": {
           "api_key": "API-nøkkel",
           "prompt": "Prompt"

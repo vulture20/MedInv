@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
+import tmdbLogoUrl from '../../assets/tmdb-logo.svg'
 import { describeError } from './adminErrors'
 
 interface ConfigField {
@@ -408,6 +409,30 @@ export function PluginsPage() {
         {editingPlugin && (
           <form onSubmit={(e) => void saveSettings(e)}>
             <h3>{editingPlugin.name}</h3>
+            {/*
+              GitHub issue #157's own addendum: TMDB's API Terms of Use
+              require displaying TMDB's logo and a specific notice sentence
+              wherever the app uses their data — this is the one place in
+              MedInv an admin actually configures this plugin, so it's shown
+              here rather than somewhere an end user browsing their own
+              collection would never see it attributed at all. Deliberately
+              keyed off provider_key, not a generic "every provider may want
+              a notice" mechanism — no other provider's terms require this.
+              The tmdb-logo.svg asset is TMDB's own official "short" SVG mark
+              (themoviedb.org/about/logos-attribution), not a redrawn/
+              approximated copy. The required sentence itself is left in its
+              original English wording rather than translated — it's a
+              specific, required legal notice, not ordinary UI copy.
+            */}
+            {editingPlugin.provider_key === 'dvd_bluray.tmdb' && (
+              <div className="plugin-attribution">
+                <img src={tmdbLogoUrl} alt="TMDB" className="plugin-attribution__logo" />
+                <p className="plugin-attribution__hint">{t('admin.pluginConfig.tmdbAttributionHint')}</p>
+                <p className="plugin-attribution__notice">
+                  This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
+                </p>
+              </div>
+            )}
             {editingPlugin.config_fields.map((field) => (
               <label key={field.key}>
                 {fieldLabel(t, field.key)}

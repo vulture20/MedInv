@@ -25,14 +25,25 @@ class MetadataPluginEanSupportTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registry_exposes_true_for_every_currently_registered_provider(): void
+    /**
+     * GitHub issue #157: dvd_bluray.tmdb is the first (and, as of this
+     * test, only) provider that genuinely doesn't support it — TMDB has
+     * no barcode/EAN/UPC lookup capability at all, see TmdbProvider's own
+     * docblock. Everything else predates that and still supports it.
+     */
+    public function test_registry_exposes_true_for_every_provider_except_tmdb(): void
     {
         $eanSupport = app(MetadataProviderRegistry::class)->eanSupportByProviderKey();
 
         foreach (MetadataProviderRegistry::defaultProviders() as $class) {
             $key = app($class)->key();
+            if ($key === 'dvd_bluray.tmdb') {
+                continue;
+            }
             $this->assertTrue($eanSupport->get($key), "Expected {$key} to support code lookup.");
         }
+
+        $this->assertFalse($eanSupport->get('dvd_bluray.tmdb'));
     }
 
     public function test_plugins_endpoint_attaches_supports_code_lookup_to_each_row(): void
