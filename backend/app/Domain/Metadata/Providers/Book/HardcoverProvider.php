@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\Book;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Contracts\TestableMetadataProvider;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Client\Response;
@@ -54,8 +55,20 @@ use Illuminate\Support\Facades\Http;
  * lookupByCode() is built directly off Hardcover's own literal, official
  * example query ("Get Edition Details by ISBN" in their Editions schema
  * docs).
+ *
+ * testConfig() (GitHub issue #162) sends a minimal `{ me { id } }` query —
+ * Hardcover's documented field for the currently authenticated user,
+ * cheap enough to not resemble a real lookup at all. GitHub issue #162's
+ * own text anticipated Hasura's usual "200 plus an `errors` array"
+ * behavior (see query()'s own comment) applying to an invalid token too —
+ * live-checked before implementing rather than assumed, since a genuine
+ * token was never available to confirm it either way: a bogus token
+ * actually gets rejected with a plain `401 {"error": "invalid_token",
+ * "error_description": "Invalid JWT"}`, one layer in front of Hasura
+ * entirely, not a Hasura-level GraphQL error. Simpler than the issue's
+ * own guess, and confirmed live rather than left as a caveat.
  */
-class HardcoverProvider implements MetadataProviderInterface
+class HardcoverProvider implements MetadataProviderInterface, TestableMetadataProvider
 {
     private const GRAPHQL_URL = 'https://api.hardcover.app/v1/graphql';
 
@@ -97,6 +110,41 @@ class HardcoverProvider implements MetadataProviderInterface
     public function supportsCodeLookup(): bool
     {
         return true;
+    }
+
+    /**
+     * GitHub issue #162: see this class's own docblock for the live check
+     * behind this — an invalid token is rejected with a plain `401`
+     * before Hasura (Hardcover's GraphQL engine) ever sees the query, not
+     * folded into the 200-plus-`errors` shape a genuine GraphQL-level
+     * failure gets (query()'s own comment). `$config` is the
+     * not-necessarily-saved-yet candidate value PluginsPage.tsx's "Test"
+     * button sends, not metadata_plugins.config — stripBearerPrefix()
+     * applied the same defensive way apiKey() already applies it to the
+     * saved value, so a pasted "Bearer eyJ..." string tests the same way
+     * it would actually be used once saved.
+     */
+    public function testConfig(array $config): bool
+    {
+        $token = $config['api_key'] ?? null;
+        if (! is_string($token) || $token === '') {
+            return false;
+        }
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer '.$this->stripBearerPrefix($token),
+            'User-Agent' => 'MedInv (https://github.com/vulture20/MedInv)',
+        ])->post(self::GRAPHQL_URL, ['query' => '{ me { id } }']);
+
+        if ($response->status() === 401) {
+            return false;
+        }
+
+        if ($response->successful() && ! $response->json('errors') && $response->json('data.me.id') !== null) {
+            return true;
+        }
+
+        throw new MetadataProviderRequestException("Hardcover config test failed with status {$response->status()}.");
     }
 
     /**
@@ -272,10 +320,12 @@ class HardcoverProvider implements MetadataProviderInterface
         $config = MetadataPlugin::query()->where('provider_key', $this->key())->first()?->config;
         $key = $config['api_key'] ?? null;
 
-        if ($key === null) {
-            return null;
-        }
+        return $key === null ? null : $this->stripBearerPrefix($key);
+    }
 
-        return preg_replace('/^Bearer\s+/i', '', trim($key));
+    /** GitHub issue #162: split out of apiKey() so testConfig() can apply the exact same defensive stripping to a not-yet-saved candidate value — see this class's own docblock for why a pasted token can already include this prefix. */
+    private function stripBearerPrefix(string $token): string
+    {
+        return preg_replace('/^Bearer\s+/i', '', trim($token));
     }
 }

@@ -273,4 +273,68 @@ class HardcoverProviderTest extends TestCase
 
         $this->assertSame([], $candidates);
     }
+
+    /** GitHub issue #162: the whole point — live-confirmed against the real API (a bogus token), not assumed. See HardcoverProvider's own docblock. */
+    public function test_test_config_returns_false_for_an_invalid_token(): void
+    {
+        Http::fake([
+            self::GRAPHQL_URL => Http::response(['error' => 'invalid_token', 'error_description' => 'Invalid JWT'], 401),
+        ]);
+
+        $valid = app(HardcoverProvider::class)->testConfig(['api_key' => 'a-bogus-token']);
+
+        $this->assertFalse($valid);
+    }
+
+    public function test_test_config_returns_true_for_a_valid_token(): void
+    {
+        Http::fake([
+            self::GRAPHQL_URL => Http::response(['data' => ['me' => ['id' => 42]]], 200),
+        ]);
+
+        $valid = app(HardcoverProvider::class)->testConfig(['api_key' => 'a-valid-token']);
+
+        $this->assertTrue($valid);
+        Http::assertSent(function ($request) {
+            return $request->url() === self::GRAPHQL_URL
+                && $request->hasHeader('Authorization', 'Bearer a-valid-token')
+                && str_contains($request['query'], '{ me { id } }');
+        });
+    }
+
+    /** Same defensive stripping apiKey() already applies to the saved value — see HardcoverProvider's own docblock on why a pasted token can already include this. */
+    public function test_test_config_strips_a_pasted_bearer_prefix(): void
+    {
+        Http::fake([self::GRAPHQL_URL => Http::response(['data' => ['me' => ['id' => 42]]], 200)]);
+
+        app(HardcoverProvider::class)->testConfig(['api_key' => 'Bearer a-valid-token']);
+
+        Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer a-valid-token'));
+    }
+
+    public function test_test_config_returns_false_without_a_token_at_all(): void
+    {
+        Http::fake(); // No request should even be attempted.
+
+        $this->assertFalse(app(HardcoverProvider::class)->testConfig([]));
+        $this->assertFalse(app(HardcoverProvider::class)->testConfig(['api_key' => '']));
+    }
+
+    /** Neither a confirmed-valid nor a confirmed-invalid credential — the check itself didn't complete, so this must not be silently folded into "invalid" (GitHub issue #53's own precedent, already applied the same way for TmdbProvider::testConfig()). */
+    public function test_test_config_throws_on_an_unexpected_status(): void
+    {
+        Http::fake([self::GRAPHQL_URL => Http::response(['message' => 'Service unavailable'], 503)]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(HardcoverProvider::class)->testConfig(['api_key' => 'some-token']);
+    }
+
+    /** A 200 that still carries a GraphQL-level `errors` array (Hasura's own general failure shape, query()'s own comment) must not be read as a confirmed-valid token either. */
+    public function test_test_config_throws_when_the_response_has_a_200_with_a_graphql_error(): void
+    {
+        Http::fake([self::GRAPHQL_URL => Http::response(['errors' => [['message' => 'unexpected error']]], 200)]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(HardcoverProvider::class)->testConfig(['api_key' => 'some-token']);
+    }
 }
