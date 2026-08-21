@@ -31,20 +31,36 @@ use Illuminate\Support\Facades\Http;
  * EAN-based capture into a provider like this one, without the user
  * having to switch to the free-text search box themselves.
  *
- * `search()` maps candidates straight from `GET /search/movie`'s own
+ * `search()` maps most candidates straight from `GET /search/movie`'s own
  * response fields (title, overview, release_date, genre_ids, poster_path)
- * without a follow-up `GET /movie/{id}` call per result — the same
- * "map only what the endpoint actually returns, don't fan out into N
- * extra requests per search" discipline every other search()
+ * — the same "map only what the endpoint actually returns, don't fan out
+ * into N extra requests per search" discipline every other search()
  * implementation in this app already follows (e.g. OpenLibraryProvider).
- * The trade-off: TMDB's cast/crew and runtime are genuinely only
- * available via a per-title `append_to_response=credits` detail call,
- * which this provider deliberately does not make — `cast`/`director`/
- * `runtime_minutes` stay unset. `genre_ids` are numeric and need
- * translating to names via a separate `GET /genre/movie/list` call;
- * unlike a per-result detail fetch, this is a single, cacheable lookup
- * (TMDB's genre list is a small, effectively static reference table, not
- * per-title data) reused across every search.
+ * `genre_ids` are numeric and need translating to names via a separate
+ * `GET /genre/movie/list` call; unlike a per-result detail fetch, this is
+ * a single, cacheable lookup (TMDB's genre list is a small, effectively
+ * static reference table, not per-title data) reused across every search.
+ *
+ * Cast/crew and runtime (GitHub issue #165) are a deliberate partial
+ * exception to that "no extra requests" rule: genuinely only available
+ * via a per-title `GET /movie/{id}` detail call (`runtime` directly,
+ * `credits.cast[]`/`credits.crew[]` — Regie via `job === "Director"` — via
+ * `append_to_response=credits`, field names confirmed live against the
+ * official reference), too valuable to leave unset entirely given how
+ * unreliable this data already is everywhere else in this app (Amazon's
+ * `cast` extraction was removed outright, GitHub issue #150; JPC has no
+ * confirmed cast label at all). Fetching it for *every* search result
+ * would still be the same N+1 fan-out this class otherwise avoids, so
+ * only the first `MAX_ENRICHED_RESULTS` results (1, for now — an
+ * explicit, deliberately conservative starting point, not a permanent
+ * ceiling) get the extra call; every other result stays exactly as
+ * unenriched as before. Worth remembering this compounds with GitHub
+ * issue #159's own second-stage round, which can search up to 3 different
+ * titles per single EAN scan (`MAX_TITLE_CANDIDATES`) — up to 3 extra
+ * detail requests per scan, not per manual search, now that round 2 runs
+ * automatically. movieDetailsWithCredits() degrades to `null` (the
+ * un-enriched candidate) on any failure rather than failing the whole
+ * search, the same resilience genreNamesById() already has.
  *
  * Authentication uses TMDB's Bearer "API Read Access Token" (`Http::
  * withToken()`), stored under its own `read_access_token` config key —
@@ -88,6 +104,12 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
     // w500/w780/original) TMDB itself serves, not a guess.
     private const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
+    /** GitHub issue #165 — see this class's own docblock for why this is 1, not "every result". */
+    private const MAX_ENRICHED_RESULTS = 1;
+
+    /** GitHub issue #165 — see castFrom()'s own docblock for why the full cast list isn't used as-is. */
+    private const MAX_CAST_MEMBERS = 10;
+
     public function key(): string
     {
         return 'dvd_bluray.tmdb';
@@ -110,10 +132,10 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
         ];
     }
 
-    /** See MetadataProviderInterface::version()'s docblock — never live-verified against the real, authenticated API, see this class's own docblock. */
+    /** See MetadataProviderInterface::version()'s docblock — never live-verified against the real, authenticated API, see this class's own docblock. Bumped for GitHub issue #165's cast/director/runtime enrichment. */
     public function version(): string
     {
-        return 'v0.1-beta';
+        return 'v0.2-beta';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock — a real, documented API, not scraping. */
@@ -184,8 +206,35 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
         $genreNames = $this->genreNamesById($token);
 
         return collect($response->json('results', []))
-            ->map(fn (array $item) => $this->mapToCandidate($item, $genreNames))
+            ->values()
+            ->map(function (array $item, int $index) use ($genreNames, $token) {
+                // GitHub issue #165: only the first MAX_ENRICHED_RESULTS
+                // results get the extra detail+credits request — see this
+                // class's own docblock for why not every result does.
+                $details = $index < self::MAX_ENRICHED_RESULTS && isset($item['id'])
+                    ? $this->movieDetailsWithCredits((int) $item['id'], $token)
+                    : null;
+
+                return $this->mapToCandidate($item, $genreNames, $details);
+            })
             ->all();
+    }
+
+    /**
+     * `runtime` (top-level) and `credits.cast[]`/`credits.crew[]` (via
+     * `append_to_response=credits`) — the only source for any of these
+     * three fields, see this class's own docblock. Returns null on any
+     * failure (a missing/expired token already returned earlier via
+     * search()'s own guard never reaches this method at all) so the
+     * calling result stays exactly as useful as it would have been without
+     * enrichment, rather than losing the whole candidate over one extra,
+     * genuinely optional request failing.
+     */
+    private function movieDetailsWithCredits(int $id, string $token): ?array
+    {
+        $response = Http::withToken($token)->get(self::BASE_URL."/movie/{$id}", ['append_to_response' => 'credits']);
+
+        return $response->successful() ? $response->json() : null;
     }
 
     /**
@@ -230,8 +279,11 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
         return $config['read_access_token'] ?? null;
     }
 
-    /** @param  array<int, string>  $genreNames  Genre id => name, from genreNamesById(). */
-    private function mapToCandidate(array $item, array $genreNames): MetadataCandidate
+    /**
+     * @param  array<int, string>  $genreNames  Genre id => name, from genreNamesById().
+     * @param  ?array  $details  The enriched movie-details+credits response for this result (movieDetailsWithCredits()), or null when this result wasn't one of the first MAX_ENRICHED_RESULTS, or the enrichment request failed.
+     */
+    private function mapToCandidate(array $item, array $genreNames, ?array $details): MetadataCandidate
     {
         $releaseDate = $this->nullIfEmpty($item['release_date'] ?? null);
 
@@ -251,16 +303,57 @@ class TmdbProvider implements MetadataProviderInterface, TestableMetadataProvide
                 'genre' => $this->nullIfEmpty($genre),
                 'release_date' => $releaseDate,
                 'production_year' => $releaseDate !== null ? (int) substr($releaseDate, 0, 4) : null,
-                // No `medium`/`disc_count`/`languages`/`subtitles`/`cast`/
-                // `director`/`runtime_minutes`/`price`/`currency` — none of
-                // these are ever available from TMDB (a film database, not
-                // a physical-release/retail one) or, for cast/director/
-                // runtime specifically, not without the per-result detail
-                // fetch this provider deliberately doesn't make (see this
-                // class's own docblock).
+                // GitHub issue #165 — null for every result but the first
+                // (MAX_ENRICHED_RESULTS), same as before this issue.
+                'runtime_minutes' => $details['runtime'] ?? null,
+                'director' => $this->directorFrom($details),
+                'cast' => $this->castFrom($details),
+                // No `medium`/`disc_count`/`languages`/`subtitles`/`price`/
+                // `currency` — none of these are ever available from TMDB
+                // (a film database, not a physical-release/retail one).
             ],
             coverUrls: $posterPath ? [self::IMAGE_BASE_URL.$posterPath] : [],
         );
+    }
+
+    /** `credits.crew[]` entries with `job === "Director"` (confirmed live against the official reference), joined for the rare case of more than one credited director. Null without `$details` or a confirmed director. */
+    private function directorFrom(?array $details): ?string
+    {
+        if ($details === null) {
+            return null;
+        }
+
+        $directors = collect($details['credits']['crew'] ?? [])
+            ->filter(fn (array $member) => ($member['job'] ?? null) === 'Director')
+            ->pluck('name')
+            ->filter()
+            ->implode(', ');
+
+        return $this->nullIfEmpty($directors);
+    }
+
+    /**
+     * `credits.cast[]`, sorted by TMDB's own `order` field (billing order —
+     * confirmed live against the official reference) and capped to
+     * MAX_CAST_MEMBERS: a real cast list can run to 50+ entries including
+     * uncredited/minor roles, which isn't a usable value for this app's
+     * plain free-text `cast` field the way a handful of the actually
+     * top-billed names is. Null without `$details` or any cast entries.
+     */
+    private function castFrom(?array $details): ?string
+    {
+        if ($details === null) {
+            return null;
+        }
+
+        $cast = collect($details['credits']['cast'] ?? [])
+            ->sortBy('order')
+            ->take(self::MAX_CAST_MEMBERS)
+            ->pluck('name')
+            ->filter()
+            ->implode(', ');
+
+        return $this->nullIfEmpty($cast);
     }
 
     private function nullIfEmpty(?string $value): ?string

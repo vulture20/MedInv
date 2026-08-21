@@ -63,6 +63,26 @@ class TmdbProviderTest extends TestCase
         ]);
     }
 
+    /** Shaped after TMDB's documented GET /movie/{id}?append_to_response=credits response fields, confirmed live against the official reference. */
+    private function sampleMovieDetails(): array
+    {
+        return [
+            'id' => 603,
+            'runtime' => 136,
+            'credits' => [
+                'cast' => [
+                    ['name' => 'Keanu Reeves', 'character' => 'Neo', 'order' => 0],
+                    ['name' => 'Laurence Fishburne', 'character' => 'Morpheus', 'order' => 1],
+                ],
+                'crew' => [
+                    ['name' => 'Lana Wachowski', 'job' => 'Director', 'department' => 'Directing'],
+                    ['name' => 'Lilly Wachowski', 'job' => 'Director', 'department' => 'Directing'],
+                    ['name' => 'Bill Pope', 'job' => 'Director of Photography', 'department' => 'Camera'],
+                ],
+            ],
+        ];
+    }
+
     public function test_key_and_media_type(): void
     {
         $provider = app(TmdbProvider::class);
@@ -92,12 +112,12 @@ class TmdbProviderTest extends TestCase
     public function test_search_calls_the_search_endpoint_with_a_bearer_token(): void
     {
         $this->withReadAccessToken('secret-token-123');
-        $this->fakeGenreList();
         Http::fake([
             self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
             self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => [
                 ['id' => 28, 'name' => 'Action'], ['id' => 878, 'name' => 'Science Fiction'],
             ]], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
         ]);
 
         $candidates = app(TmdbProvider::class)->search('The Matrix');
@@ -118,6 +138,7 @@ class TmdbProviderTest extends TestCase
             self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => [
                 ['id' => 28, 'name' => 'Action'], ['id' => 878, 'name' => 'Science Fiction'],
             ]], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
         ]);
 
         $candidate = app(TmdbProvider::class)->search('The Matrix')[0];
@@ -130,14 +151,92 @@ class TmdbProviderTest extends TestCase
             'genre' => 'Action, Science Fiction',
             'release_date' => '1999-03-30',
             'production_year' => 1999,
+            // GitHub issue #165 — the first (only) result, so it's enriched.
+            'runtime_minutes' => 136,
+            'director' => 'Lana Wachowski, Lilly Wachowski',
+            'cast' => 'Keanu Reeves, Laurence Fishburne',
         ], $candidate->attributes);
         $this->assertSame(['https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg'], $candidate->coverUrls);
-        // Never mapped by this provider — see its own docblock for why.
-        $this->assertArrayNotHasKey('cast', $candidate->attributes);
-        $this->assertArrayNotHasKey('director', $candidate->attributes);
-        $this->assertArrayNotHasKey('runtime_minutes', $candidate->attributes);
         // No `ean` key at all, the same convention every other search()-only provider follows (see #151's own docblock note in CreateMediaItemDialog.tsx).
         $this->assertArrayNotHasKey('ean', $candidate->attributes);
+    }
+
+    /** GitHub issue #165: only the first MAX_ENRICHED_RESULTS results get the extra detail request — the rest stay exactly as unenriched as before this issue. */
+    public function test_only_the_first_result_is_enriched_with_credits_and_runtime(): void
+    {
+        $this->withReadAccessToken();
+        $second = $this->sampleSearchResult();
+        $second['id'] = 604;
+        $second['title'] = 'The Matrix Reloaded';
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult(), $second]], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
+        ]);
+
+        $candidates = app(TmdbProvider::class)->search('The Matrix');
+
+        $this->assertSame(136, $candidates[0]->attributes['runtime_minutes']);
+        $this->assertNotNull($candidates[0]->attributes['director']);
+        $this->assertNull($candidates[1]->attributes['runtime_minutes']);
+        $this->assertNull($candidates[1]->attributes['director']);
+        $this->assertNull($candidates[1]->attributes['cast']);
+        // The second result's own id (604) must never have been requested.
+        Http::assertNotSent(fn ($request) => str_starts_with($request->url(), self::BASE_URL.'/movie/604'));
+    }
+
+    /** A failed enrichment request degrades to an unenriched candidate rather than losing the result (or failing the whole search) over one extra, optional request. */
+    public function test_a_failed_enrichment_request_degrades_to_an_unenriched_candidate(): void
+    {
+        $this->withReadAccessToken();
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::BASE_URL.'/movie/603*' => Http::response(['status_message' => 'Service unavailable'], 503),
+        ]);
+
+        $candidates = app(TmdbProvider::class)->search('The Matrix');
+
+        $this->assertCount(1, $candidates);
+        $this->assertSame('The Matrix', $candidates[0]->attributes['title']);
+        $this->assertNull($candidates[0]->attributes['runtime_minutes']);
+        $this->assertNull($candidates[0]->attributes['director']);
+        $this->assertNull($candidates[0]->attributes['cast']);
+    }
+
+    /** Crew members with a different job (e.g. Director of Photography) must not be mistaken for the director. */
+    public function test_only_crew_with_the_director_job_are_used(): void
+    {
+        $this->withReadAccessToken();
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
+        ]);
+
+        $candidate = app(TmdbProvider::class)->search('The Matrix')[0];
+
+        $this->assertStringNotContainsString('Bill Pope', $candidate->attributes['director']);
+    }
+
+    /** MAX_CAST_MEMBERS caps a potentially very long real cast list to the top-billed few, sorted by TMDB's own `order` field. */
+    public function test_cast_is_capped_and_sorted_by_billing_order(): void
+    {
+        $this->withReadAccessToken();
+        $details = $this->sampleMovieDetails();
+        $details['credits']['cast'] = collect(range(0, 14))
+            ->map(fn (int $i) => ['name' => "Actor {$i}", 'character' => "Role {$i}", 'order' => 14 - $i])
+            ->all();
+        Http::fake([
+            self::BASE_URL.'/search/movie*' => Http::response(['results' => [$this->sampleSearchResult()]], 200),
+            self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($details, 200),
+        ]);
+
+        $candidate = app(TmdbProvider::class)->search('The Matrix')[0];
+
+        // order 14 down to 0 (reversed) — the lowest `order` values (best billing) are 0..9, i.e. "Actor 14".."Actor 5".
+        $this->assertSame('Actor 14, Actor 13, Actor 12, Actor 11, Actor 10, Actor 9, Actor 8, Actor 7, Actor 6, Actor 5', $candidate->attributes['cast']);
     }
 
     /** An unreleased/unknown release_date comes back as an empty string from TMDB, not absent — must not become "1970" or an empty-but-present date. */
@@ -149,6 +248,7 @@ class TmdbProviderTest extends TestCase
         Http::fake([
             self::BASE_URL.'/search/movie*' => Http::response(['results' => [$result]], 200),
             self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
         ]);
 
         $candidate = app(TmdbProvider::class)->search('The Matrix')[0];
@@ -165,6 +265,7 @@ class TmdbProviderTest extends TestCase
         Http::fake([
             self::BASE_URL.'/search/movie*' => Http::response(['results' => [$result]], 200),
             self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
         ]);
 
         $candidate = app(TmdbProvider::class)->search('The Matrix')[0];
@@ -191,12 +292,14 @@ class TmdbProviderTest extends TestCase
             self::BASE_URL.'/genre/movie/list*' => Http::response(['genres' => [
                 ['id' => 28, 'name' => 'Action'], ['id' => 878, 'name' => 'Science Fiction'],
             ]], 200),
+            self::BASE_URL.'/movie/603*' => Http::response($this->sampleMovieDetails(), 200),
         ]);
 
         app(TmdbProvider::class)->search('The Matrix');
         app(TmdbProvider::class)->search('The Matrix Reloaded');
 
-        Http::assertSentCount(3); // 2 searches + 1 cached genre-list fetch, not 2.
+        // 2 searches + 1 cached genre-list fetch (not 2) + 1 enrichment call per search (both find the same id 603).
+        Http::assertSentCount(5);
     }
 
     /** GitHub issue #160: the precise 200-vs-401 distinction the user themselves anticipated, confirmed against TMDB's own /authentication reference. */

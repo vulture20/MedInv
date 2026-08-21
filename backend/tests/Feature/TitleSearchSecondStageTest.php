@@ -72,6 +72,7 @@ class TitleSearchSecondStageTest extends TestCase
                 ['id' => 603, 'title' => 'The Matrix', 'overview' => 'A hacker discovers reality is a simulation.', 'release_date' => '1999-03-30', 'genre_ids' => []],
             ]], 200),
             self::TMDB_BASE_URL.'/genre/movie/list*' => Http::response(['genres' => []], 200),
+            self::TMDB_BASE_URL.'/movie/603*' => Http::response(['id' => 603, 'runtime' => null, 'credits' => ['cast' => [], 'crew' => []]], 200),
         ]);
 
         $response = $this->postJson("/api/libraries/{$library->id}/capture/scan", ['ean' => '4006680095609']);
@@ -132,6 +133,7 @@ class TitleSearchSecondStageTest extends TestCase
             self::TMDB_BASE_URL.'/search/movie*' => Http::sequence()
                 ->push(['results' => [['id' => 603, 'title' => 'The Matrix', 'overview' => 'Found via the first title.', 'release_date' => '1999-03-30', 'genre_ids' => []]]])
                 ->push(['results' => []]),
+            self::TMDB_BASE_URL.'/movie/603*' => Http::response(['id' => 603, 'runtime' => null, 'credits' => ['cast' => [], 'crew' => []]], 200),
         ]);
         $this->fakeTmdbGenreList();
 
@@ -269,6 +271,7 @@ class TitleSearchSecondStageTest extends TestCase
             self::TMDB_BASE_URL.'/search/movie*' => Http::response(['results' => [
                 ['id' => 603, 'title' => 'The Matrix', 'overview' => 'A hacker discovers reality is a simulation.', 'release_date' => '1999-03-30', 'genre_ids' => []],
             ]], 200),
+            self::TMDB_BASE_URL.'/movie/603*' => Http::response(['id' => 603, 'runtime' => null, 'credits' => ['cast' => [], 'crew' => []]], 200),
         ]);
         $this->fakeTmdbGenreList();
 
@@ -290,6 +293,7 @@ class TitleSearchSecondStageTest extends TestCase
             self::TMDB_BASE_URL.'/search/movie*' => Http::response(['results' => [
                 ['id' => 603, 'title' => 'The Matrix', 'overview' => 'A hacker discovers reality is a simulation.', 'release_date' => '1999-03-30', 'genre_ids' => []],
             ]], 200),
+            self::TMDB_BASE_URL.'/movie/603*' => Http::response(['id' => 603, 'runtime' => null, 'credits' => ['cast' => [], 'crew' => []]], 200),
         ]);
         $this->fakeTmdbGenreList();
 
