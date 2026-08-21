@@ -43,6 +43,17 @@ class MediaItemService
         'dvd_bluray' => ['title', 'director', 'ean', 'location'],
     ];
 
+    /**
+     * The fixed prefix every generateNoEanPlaceholder() value starts with
+     * (GitHub issue #151) — exposed as a constant, not just inlined in
+     * randomNoEanCandidate() below, so callers that need to recognize a
+     * placeholder rather than generate one (GitHub issue #155's follow-up:
+     * MetadataController::refresh()/reimport() skip querying providers by
+     * an EAN that was never real to begin with) share the exact same
+     * definition instead of risking it drifting out of sync.
+     */
+    public const NO_EAN_PREFIX = 'NoEAN-';
+
     /** @throws DuplicateEanException */
     public function create(Library $library, array $attributes): Model
     {
@@ -107,7 +118,13 @@ class MediaItemService
      */
     protected function randomNoEanCandidate(): string
     {
-        return 'NoEAN-'.str_pad((string) random_int(0, 9999999999999), 13, '0', STR_PAD_LEFT);
+        return self::NO_EAN_PREFIX.str_pad((string) random_int(0, 9999999999999), 13, '0', STR_PAD_LEFT);
+    }
+
+    /** Whether `$ean` is a generated placeholder (GitHub issue #151) rather than a real, scannable code — see NO_EAN_PREFIX's own docblock for why callers should use this instead of re-deriving the prefix themselves. */
+    public function isNoEanPlaceholder(string $ean): bool
+    {
+        return str_starts_with($ean, self::NO_EAN_PREFIX);
     }
 
     /**

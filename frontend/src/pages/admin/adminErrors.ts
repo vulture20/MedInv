@@ -9,14 +9,19 @@ import { isAxiosError } from 'axios'
  * translated string; Laravel's default `{errors: {field: [messages]}}`
  * validation shape gets a translated hint for the password policy
  * specifically (the most common cause) or the raw field messages
- * otherwise; anything else falls back to the generic translation.
+ * otherwise; anything else falls back to `errors.actionFailed`
+ * (GitHub issue #156) — a deliberately different key from
+ * `errors.generic`/LoginPage.tsx's own fallback, whose wording ("Login
+ * failed...") is specific to an actual failed login attempt and was
+ * confusingly reused here for completely unrelated admin actions before
+ * this issue.
  *
  * Shared across every admin/*.tsx page (users, plugins, backups, mail,
  * settings) rather than duplicated per-page, since they all talk to the
  * same admin API and hit the same error shapes.
  */
 export function describeError(err: unknown, t: TFunction): string {
-  if (!isAxiosError(err)) return t('errors.generic')
+  if (!isAxiosError(err)) return t('errors.actionFailed')
 
   const data = err.response?.data as
     | {
@@ -55,7 +60,7 @@ export function describeError(err: unknown, t: TFunction): string {
     return Object.values(data.errors).flat().join(' ')
   }
 
-  return t('errors.generic')
+  return t('errors.actionFailed')
 }
 
 /**
@@ -73,7 +78,7 @@ export async function describeBlobError(err: unknown, t: TFunction): Promise<str
       const parsed: unknown = JSON.parse(await err.response.data.text())
       return describeError({ ...err, response: { ...err.response, data: parsed } }, t)
     } catch {
-      return t('errors.generic')
+      return t('errors.actionFailed')
     }
   }
 

@@ -137,6 +137,7 @@
       "moveTrackDown": "Déplacer la piste vers le bas",
       "computedHint": "(calculé)",
       "refreshMetadata": "Actualiser les métadonnées",
+      "refreshMetadataDisabledNoEan": "Non disponible : cet article n'a pas d'EAN réel.",
       "bulkDelete": {
         "enter": "Sélectionner",
         "exit": "Annuler la sélection",
@@ -537,6 +538,7 @@
       "account_locked": "Trop de tentatives échouées. Ce compte est temporairement verrouillé.",
       "account_deactivated": "Ce compte a été désactivé.",
       "generic": "Échec de la connexion. Veuillez réessayer plus tard ou contacter un administrateur.",
+      "actionFailed": "Échec de la requête. Veuillez réessayer plus tard ou contacter un administrateur.",
       "oidc_provider_error": "L'authentification unique a été annulée ou refusée par le fournisseur d'identité.",
       "oidc_state_mismatch": "La demande d'authentification unique n'a pas pu être vérifiée. Veuillez réessayer.",
       "oidc_failed": "L'authentification unique a échoué. Veuillez réessayer ou utiliser votre mot de passe à la place.",

@@ -137,6 +137,7 @@
       "moveTrackDown": "Przesuń utwór w dół",
       "computedHint": "(obliczone)",
       "refreshMetadata": "Odśwież metadane",
+      "refreshMetadataDisabledNoEan": "Niedostępne — ten element nie ma prawdziwego kodu EAN.",
       "bulkDelete": {
         "enter": "Zaznacz",
         "exit": "Anuluj zaznaczanie",
@@ -537,6 +538,7 @@
       "account_locked": "Zbyt wiele nieudanych prób. To konto jest tymczasowo zablokowane.",
       "account_deactivated": "To konto zostało dezaktywowane.",
       "generic": "Logowanie nie powiodło się. Spróbuj ponownie później lub skontaktuj się z administratorem.",
+      "actionFailed": "Żądanie nie powiodło się. Spróbuj ponownie później lub skontaktuj się z administratorem.",
       "oidc_provider_error": "Logowanie jednokrotne zostało anulowane lub odrzucone przez dostawcę tożsamości.",
       "oidc_state_mismatch": "Nie udało się zweryfikować żądania logowania jednokrotnego. Spróbuj ponownie.",
       "oidc_failed": "Logowanie jednokrotne nie powiodło się. Spróbuj ponownie lub zaloguj się hasłem.",

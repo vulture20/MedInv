@@ -3,7 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { apiClient } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
-import { FIELD_SPECS, dateOnly, formatDuration, payloadFromValues, valuesFromItem, type LibraryRef, type MediaItem, type Track } from './mediaItemFields'
+import {
+  FIELD_SPECS,
+  dateOnly,
+  formatDuration,
+  isNoEanPlaceholder,
+  payloadFromValues,
+  valuesFromItem,
+  type LibraryRef,
+  type MediaItem,
+  type Track,
+} from './mediaItemFields'
 import { TrackListEditor } from './TrackListEditor'
 import { MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from '../capture/MetadataMergeReview'
 
@@ -102,12 +112,15 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     (lib) => lib.id !== library.id && lib.media_type === library.media_type && (user?.level === 'admin' || lib.owner.id === user?.id)
   )
 
+  // GitHub issue #156: errors.actionFailed, not errors.generic — see
+  // CreateMediaItemDialog.tsx's identical comment on its own copy of this
+  // function.
   function describeApiError(err: unknown): string {
-    if (!isAxiosError(err)) return t('errors.generic')
+    if (!isAxiosError(err)) return t('errors.actionFailed')
     if (err.response?.status === 409) return t('capture.duplicate')
     const errors = (err.response?.data as { errors?: Record<string, string[]> } | undefined)?.errors
     if (errors) return Object.values(errors).flat().join(' ')
-    return t('errors.generic')
+    return t('errors.actionFailed')
   }
 
   async function save(e: React.FormEvent) {
@@ -408,7 +421,20 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                 </button>
               )}
               {canWrite && (
-                <button type="button" disabled={refreshStatus === 'loading'} onClick={() => void refreshMetadata()}>
+                // GitHub issue #155's follow-up: a NoEAN-... placeholder
+                // (issue #151) was never a real, scannable code — querying
+                // every enabled provider by it can only ever come back
+                // no_match, wasting a real request (and, for the LLM
+                // providers, real cost) per provider for nothing.
+                // MetadataController::refresh() short-circuits the same
+                // case server-side; this disables the action before it's
+                // even attempted rather than relying on that alone.
+                <button
+                  type="button"
+                  disabled={refreshStatus === 'loading' || isNoEanPlaceholder(item.ean)}
+                  title={isNoEanPlaceholder(item.ean) ? t('mediaItem.refreshMetadataDisabledNoEan') : undefined}
+                  onClick={() => void refreshMetadata()}
+                >
                   {t('mediaItem.refreshMetadata')}
                 </button>
               )}

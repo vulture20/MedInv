@@ -137,6 +137,7 @@
       "moveTrackDown": "Parçayı aşağı taşı",
       "computedHint": "(hesaplandı)",
       "refreshMetadata": "Meta verileri yenile",
+      "refreshMetadataDisabledNoEan": "Kullanılamıyor — bu öğenin gerçek bir EAN'ı yok.",
       "bulkDelete": {
         "enter": "Seç",
         "exit": "Seçimi iptal et",
@@ -537,6 +538,7 @@
       "account_locked": "Çok fazla başarısız deneme. Bu hesap geçici olarak kilitlendi.",
       "account_deactivated": "Bu hesap devre dışı bırakıldı.",
       "generic": "Oturum açma başarısız. Lütfen daha sonra tekrar deneyin veya bir yöneticiyle iletişime geçin.",
+      "actionFailed": "İstek başarısız oldu. Lütfen daha sonra tekrar deneyin veya bir yöneticiyle iletişime geçin.",
       "oidc_provider_error": "Tek oturum açma iptal edildi veya kimlik sağlayıcı tarafından reddedildi.",
       "oidc_state_mismatch": "Tek oturum açma isteği doğrulanamadı. Lütfen tekrar deneyin.",
       "oidc_failed": "Tek oturum açma başarısız oldu. Lütfen tekrar deneyin veya bunun yerine parolanızı kullanın.",

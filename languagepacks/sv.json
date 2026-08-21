@@ -107,6 +107,7 @@
       "moveTrackDown": "Flytta spår nedåt",
       "computedHint": "(beräknad)",
       "refreshMetadata": "Uppdatera metadata",
+      "refreshMetadataDisabledNoEan": "Inte tillgängligt – den här posten har inget riktigt EAN.",
       "bulkDelete": {
         "enter": "Välj",
         "exit": "Avbryt val",
@@ -537,6 +538,7 @@
       "account_locked": "För många misslyckade försök. Det här kontot är tillfälligt låst.",
       "account_deactivated": "Det här kontot har inaktiverats.",
       "generic": "Inloggningen misslyckades. Försök igen senare eller kontakta en administratör.",
+      "actionFailed": "Begäran misslyckades. Försök igen senare eller kontakta en administratör.",
       "oidc_provider_error": "Enkel inloggning avbröts eller nekades av identitetsleverantören.",
       "oidc_state_mismatch": "Begäran om enkel inloggning kunde inte verifieras. Försök igen.",
       "oidc_failed": "Enkel inloggning misslyckades. Försök igen eller använd ditt lösenord i stället.",

@@ -77,12 +77,17 @@ export function CreateMediaItemDialog({ library, initialEan, initialAttributes, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialEan, initialAttributes])
 
+  // GitHub issue #156: errors.actionFailed, not errors.generic — the
+  // latter's wording ("Login failed...") is specific to LoginPage.tsx's own
+  // actual failed-login case and was confusingly reused here for an
+  // unrelated action (a real 500 while saving an item read as if the
+  // login itself had somehow failed).
   function describeApiError(err: unknown): string {
-    if (!isAxiosError(err)) return t('errors.generic')
+    if (!isAxiosError(err)) return t('errors.actionFailed')
     if (err.response?.status === 409) return t('capture.duplicate')
     const errors = (err.response?.data as { errors?: Record<string, string[]> } | undefined)?.errors
     if (errors) return Object.values(errors).flat().join(' ')
-    return t('errors.generic')
+    return t('errors.actionFailed')
   }
 
   async function submit(e: React.FormEvent) {

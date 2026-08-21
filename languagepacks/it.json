@@ -137,6 +137,7 @@
       "moveTrackDown": "Sposta traccia in giù",
       "computedHint": "(calcolato)",
       "refreshMetadata": "Aggiorna metadati",
+      "refreshMetadataDisabledNoEan": "Non disponibile: questo articolo non ha un EAN reale.",
       "bulkDelete": {
         "enter": "Seleziona",
         "exit": "Annulla selezione",
@@ -537,6 +538,7 @@
       "account_locked": "Troppi tentativi falliti. Questo account è temporaneamente bloccato.",
       "account_deactivated": "Questo account è stato disattivato.",
       "generic": "Accesso non riuscito. Riprova più tardi o contatta un amministratore.",
+      "actionFailed": "Richiesta non riuscita. Riprova più tardi o contatta un amministratore.",
       "oidc_provider_error": "Il Single Sign-On è stato annullato o rifiutato dal provider di identità.",
       "oidc_state_mismatch": "Impossibile verificare la richiesta di Single Sign-On. Riprovare.",
       "oidc_failed": "Il Single Sign-On non è riuscito. Riprovare oppure utilizzare la password.",

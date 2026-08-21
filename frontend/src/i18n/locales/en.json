@@ -104,6 +104,7 @@
     "moveTrackDown": "Move track down",
     "computedHint": "(computed)",
     "refreshMetadata": "Refresh metadata",
+    "refreshMetadataDisabledNoEan": "Not available — this item has no real EAN.",
     "bulkDelete": {
       "enter": "Select",
       "exit": "Cancel selection",
@@ -603,6 +604,7 @@
     "account_locked": "Too many failed attempts. This account is temporarily locked.",
     "account_deactivated": "This account has been deactivated.",
     "generic": "Login failed. Please try again later or contact an administrator.",
+    "actionFailed": "The request failed. Please try again later or contact an administrator.",
     "oidc_provider_error": "Single sign-on was cancelled or declined by the identity provider.",
     "oidc_state_mismatch": "The single sign-on request could not be verified. Please try again.",
     "oidc_failed": "Single sign-on failed. Please try again or use your password instead.",

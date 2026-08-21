@@ -137,6 +137,7 @@
       "moveTrackDown": "Bajar pista",
       "computedHint": "(calculado)",
       "refreshMetadata": "Actualizar metadatos",
+      "refreshMetadataDisabledNoEan": "No disponible: este artículo no tiene un EAN real.",
       "bulkDelete": {
         "enter": "Seleccionar",
         "exit": "Cancelar selección",
@@ -537,6 +538,7 @@
       "account_locked": "Demasiados intentos fallidos. Esta cuenta está bloqueada temporalmente.",
       "account_deactivated": "Esta cuenta ha sido desactivada.",
       "generic": "Error al iniciar sesión. Inténtalo de nuevo más tarde o ponte en contacto con un administrador.",
+      "actionFailed": "Error al procesar la solicitud. Inténtalo de nuevo más tarde o ponte en contacto con un administrador.",
       "oidc_provider_error": "El inicio de sesión único fue cancelado o rechazado por el proveedor de identidad.",
       "oidc_state_mismatch": "No se pudo verificar la solicitud de inicio de sesión único. Vuelva a intentarlo.",
       "oidc_failed": "El inicio de sesión único falló. Vuelva a intentarlo o utilice su contraseña.",

@@ -107,6 +107,7 @@
       "moveTrackDown": "Flytt spor ned",
       "computedHint": "(beregnet)",
       "refreshMetadata": "Oppdater metadata",
+      "refreshMetadataDisabledNoEan": "Ikke tilgjengelig – denne oppføringen har ingen ekte EAN.",
       "bulkDelete": {
         "enter": "Velg",
         "exit": "Avbryt valg",
@@ -537,6 +538,7 @@
       "account_locked": "For mange mislykkede forsøk. Denne kontoen er midlertidig låst.",
       "account_deactivated": "Denne kontoen er deaktivert.",
       "generic": "Innlogging mislyktes. Prøv igjen senere eller kontakt en administrator.",
+      "actionFailed": "Forespørselen mislyktes. Prøv igjen senere eller kontakt en administrator.",
       "oidc_provider_error": "Enkel pålogging ble avbrutt eller avvist av identitetsleverandøren.",
       "oidc_state_mismatch": "Forespørselen om enkel pålogging kunne ikke bekreftes. Vennligst prøv igjen.",
       "oidc_failed": "Enkel pålogging mislyktes. Prøv igjen eller bruk passordet ditt i stedet.",

@@ -137,6 +137,7 @@
       "moveTrackDown": "下移曲目",
       "computedHint": "（已计算）",
       "refreshMetadata": "刷新元数据",
+      "refreshMetadataDisabledNoEan": "不可用 — 此条目没有真实的EAN。",
       "bulkDelete": {
         "enter": "选择",
         "exit": "取消选择",
@@ -537,6 +538,7 @@
       "account_locked": "失败尝试次数过多，此账户已被暂时锁定。",
       "account_deactivated": "此账户已被停用。",
       "generic": "登录失败，请稍后重试或联系管理员。",
+      "actionFailed": "请求失败，请稍后重试或联系管理员。",
       "oidc_provider_error": "单点登录已被取消或被身份提供商拒绝。",
       "oidc_state_mismatch": "无法验证单点登录请求。请重试。",
       "oidc_failed": "单点登录失败。请重试，或改用密码登录。",

@@ -104,6 +104,7 @@
     "moveTrackDown": "Track nach unten verschieben",
     "computedHint": "(berechnet)",
     "refreshMetadata": "Metadaten erneut abfragen",
+    "refreshMetadataDisabledNoEan": "Nicht verfügbar — dieser Eintrag hat keine echte EAN.",
     "bulkDelete": {
       "enter": "Auswählen",
       "exit": "Auswahl abbrechen",
@@ -603,6 +604,7 @@
     "account_locked": "Zu viele Fehlversuche. Dieses Konto ist vorübergehend gesperrt.",
     "account_deactivated": "Dieses Konto wurde deaktiviert.",
     "generic": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es später erneut oder wenden Sie sich an einen Administrator.",
+    "actionFailed": "Die Anfrage ist fehlgeschlagen. Bitte versuchen Sie es später erneut oder wenden Sie sich an einen Administrator.",
     "oidc_provider_error": "Single Sign-On wurde abgebrochen oder vom Identitätsanbieter abgelehnt.",
     "oidc_state_mismatch": "Die Single-Sign-On-Anfrage konnte nicht verifiziert werden. Bitte erneut versuchen.",
     "oidc_failed": "Single Sign-On ist fehlgeschlagen. Bitte erneut versuchen oder stattdessen mit Passwort anmelden.",

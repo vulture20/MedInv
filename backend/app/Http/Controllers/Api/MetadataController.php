@@ -167,12 +167,27 @@ class MetadataController extends Controller
      * through the same MetadataMergeReview component the initial capture
      * flow uses, per explicit user instruction that this should offer the
      * same per-field picking rather than a blind overwrite.
+     *
+     * GitHub issue #155's follow-up: an item captured without a real EAN
+     * (#151) stores a generated `NoEAN-...` placeholder — querying every
+     * enabled provider by that value can only ever return `no_match`
+     * (real API/scraping requests and, for the LLM providers, real
+     * per-call cost, all wasted on a code that was never real to begin
+     * with), so this short-circuits before any provider is even asked.
+     * The frontend already disables MediaItemDetailDialog's "refresh"
+     * button for exactly this case (see its own comment) — this is the
+     * server-side backstop for a direct API call/stale page bypassing that.
      */
     public function refresh(Request $request, Library $library, int $item)
     {
         abort_unless($this->access->canWriteItems($request->user(), $library), 403);
 
         $record = $library->mediaItems()->findOrFail($item);
+
+        if ($this->mediaItemService->isNoEanPlaceholder($record->ean)) {
+            return response()->json(['status' => 'no_match', 'candidates' => [], 'merged' => ['fields' => [], 'covers' => []], 'provider_statuses' => []]);
+        }
+
         $result = $this->importService->lookupMerged($library, $record->ean);
 
         return response()->json([

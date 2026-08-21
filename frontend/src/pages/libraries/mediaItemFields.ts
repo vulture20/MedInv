@@ -1,5 +1,20 @@
 export type MediaType = 'book' | 'cd' | 'dvd_bluray'
 
+/**
+ * GitHub issue #151's generated placeholder prefix — must match
+ * `MediaItemService::NO_EAN_PREFIX` exactly (see that constant's own
+ * docblock for why it's a named constant there rather than an inline
+ * string). Used to recognize, not generate, a placeholder: an item
+ * captured this way was never a real, scannable code, so a "refresh
+ * metadata" action keyed off it can only ever waste a request per
+ * provider for a guaranteed no_match (GitHub issue #155's follow-up) —
+ * MediaItemDetailDialog.tsx disables that button for exactly this case,
+ * mirroring MetadataController::refresh()'s own server-side short-circuit.
+ */
+export function isNoEanPlaceholder(ean: string): boolean {
+  return ean.startsWith('NoEAN-')
+}
+
 /** One row of a CD's track listing (GitHub issue #48) — matches the shape App\Domain\Metadata\TrackListRuntimeCalculator/the `tracks` JSON column expect. */
 export interface Track {
   position: string | number | null

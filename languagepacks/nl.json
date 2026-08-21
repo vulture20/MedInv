@@ -137,6 +137,7 @@
       "moveTrackDown": "Track omlaag verplaatsen",
       "computedHint": "(berekend)",
       "refreshMetadata": "Metadata vernieuwen",
+      "refreshMetadataDisabledNoEan": "Niet beschikbaar — dit item heeft geen echte EAN.",
       "bulkDelete": {
         "enter": "Selecteren",
         "exit": "Selectie annuleren",
@@ -537,6 +538,7 @@
       "account_locked": "Te veel mislukte pogingen. Dit account is tijdelijk vergrendeld.",
       "account_deactivated": "Dit account is gedeactiveerd.",
       "generic": "Inloggen mislukt. Probeer het later opnieuw of neem contact op met een beheerder.",
+      "actionFailed": "Aanvraag mislukt. Probeer het later opnieuw of neem contact op met een beheerder.",
       "oidc_provider_error": "Single sign-on is geannuleerd of geweigerd door de identiteitsprovider.",
       "oidc_state_mismatch": "Het single-sign-on-verzoek kon niet worden geverifieerd. Probeer het opnieuw.",
       "oidc_failed": "Single sign-on is mislukt. Probeer het opnieuw of gebruik in plaats daarvan uw wachtwoord.",

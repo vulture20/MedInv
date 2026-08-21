@@ -137,6 +137,7 @@
       "moveTrackDown": "Mover faixa para baixo",
       "computedHint": "(calculado)",
       "refreshMetadata": "Atualizar metadados",
+      "refreshMetadataDisabledNoEan": "Não disponível — este item não tem um EAN real.",
       "bulkDelete": {
         "enter": "Selecionar",
         "exit": "Cancelar seleção",
@@ -537,6 +538,7 @@
       "account_locked": "Muitas tentativas falhas. Esta conta está temporariamente bloqueada.",
       "account_deactivated": "Esta conta foi desativada.",
       "generic": "Falha no login. Tente novamente mais tarde ou entre em contato com um administrador.",
+      "actionFailed": "Falha na solicitação. Tente novamente mais tarde ou entre em contato com um administrador.",
       "oidc_provider_error": "O login único foi cancelado ou recusado pelo provedor de identidade.",
       "oidc_state_mismatch": "Não foi possível verificar a solicitação de login único. Tente novamente.",
       "oidc_failed": "O login único falhou. Tente novamente ou use sua senha.",

@@ -107,6 +107,7 @@
       "moveTrackDown": "Siirrä kappaletta alas",
       "computedHint": "(laskettu)",
       "refreshMetadata": "Päivitä metatiedot",
+      "refreshMetadataDisabledNoEan": "Ei käytettävissä – tällä nimekkeellä ei ole todellista EAN-koodia.",
       "bulkDelete": {
         "enter": "Valitse",
         "exit": "Peru valinta",
@@ -537,6 +538,7 @@
       "account_locked": "Liian monta epäonnistunutta yritystä. Tämä tili on tilapäisesti lukittu.",
       "account_deactivated": "Tämä tili on poistettu käytöstä.",
       "generic": "Kirjautuminen epäonnistui. Yritä myöhemmin uudelleen tai ota yhteyttä ylläpitäjään.",
+      "actionFailed": "Pyyntö epäonnistui. Yritä myöhemmin uudelleen tai ota yhteyttä ylläpitäjään.",
       "oidc_provider_error": "Identiteetintarjoaja peruutti tai hylkäsi kertakirjautumisen.",
       "oidc_state_mismatch": "Kertakirjautumispyyntöä ei voitu vahvistaa. Yritä uudelleen.",
       "oidc_failed": "Kertakirjautuminen epäonnistui. Yritä uudelleen tai käytä sen sijaan salasanaasi.",
