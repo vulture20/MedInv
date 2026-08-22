@@ -35,8 +35,18 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * unconfirmed even by this provider's own already-cautious standards.
  * GitHub issue #141 tried again, explicitly authorized, against three
  * different real DVD/Blu-ray product/search pages — every one was
- * blocked (two HTTP 500s, one 503), the same outcome #139 already had.
- * Still unconfirmed; nothing changed here as a result.
+ * blocked (two HTTP 500s, one 503), the same outcome #139 already had. A
+ * further authorized re-attempt (also #141) fetched Amazon's search page
+ * directly via curl with this trait's own exact User-Agent/Accept-Language
+ * headers (bypassing whatever tool/environment quirk might have produced
+ * the earlier 500s) and still hit the same standard bot-block response
+ * (HTTP 503, Amazon's generic "Sorry! Something went wrong!" interstitial)
+ * before any real search-results markup, let alone a product page, was
+ * ever reached. Four attempts across two issues, all blocked the same
+ * way — still unconfirmed; nothing changed here as a result. Any future
+ * re-check needs its own fresh authorization per the standing policy
+ * (AmazonScraping's own docblock), not a reason to keep retrying on its
+ * own.
  */
 class AmazonDvdBlurayProvider implements MetadataProviderInterface
 {
