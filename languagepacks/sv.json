@@ -280,6 +280,14 @@
         "de": "Tyska",
         "en": "Engelska"
       },
+      "password": {
+        "label": "Ändra lösenord",
+        "hint": "Ändra lösenordet för ditt konto.",
+        "current": "Nuvarande lösenord",
+        "new": "Nytt lösenord",
+        "confirm": "Bekräfta nytt lösenord",
+        "submit": "Ändra lösenord"
+      },
       "deleteAccount": {
         "title": "Ta bort konto",
         "hint": "Tar bort ditt konto permanent. Detta kan inte ångras.",
@@ -417,6 +425,7 @@
         "import_invalid_library": "Bibliotek #{{number}} i filen har inget giltigt \"{{field}}\"-fält.",
         "import_invalid_item": "En post (post #{{number}}) i biblioteket \"{{library}}\" har ingen giltig titel eller EAN.",
         "protected_account": "Det här är det fördefinierade administratörskontot och kan inte redigeras, inaktiveras eller tas bort.",
+        "invalidCurrentPassword": "Nuvarande lösenord är felaktigt.",
         "passwordPolicy": "Lösenordet måste vara minst 10 tecken långt och innehålla en stor bokstav, en liten bokstav, en siffra och ett specialtecken.",
         "ownsLibraries": "Det här kontot äger fortfarande följande bibliotek och kan inte tas bort förrän de överförs till en annan ägare eller tas bort: {{libraries}}"
       },

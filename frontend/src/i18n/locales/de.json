@@ -346,6 +346,14 @@
       "de": "Deutsch",
       "en": "Englisch"
     },
+    "password": {
+      "label": "Passwort ändern",
+      "hint": "Ändern Sie das Passwort für Ihr Konto.",
+      "current": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "confirm": "Neues Passwort bestätigen",
+      "submit": "Passwort ändern"
+    },
     "deleteAccount": {
       "title": "Konto löschen",
       "hint": "Löscht Ihr Konto endgültig. Dies kann nicht rückgängig gemacht werden.",
@@ -478,6 +486,7 @@
     },
     "errors": {
       "protected_account": "Dies ist das vordefinierte Administrator-Konto und kann nicht bearbeitet, deaktiviert oder gelöscht werden.",
+      "invalidCurrentPassword": "Das aktuelle Passwort ist nicht korrekt.",
       "passwordPolicy": "Das Passwort muss mindestens 10 Zeichen lang sein und einen Großbuchstaben, einen Kleinbuchstaben, eine Ziffer und ein Sonderzeichen enthalten.",
       "ownsLibraries": "Dieses Konto besitzt noch folgende Bibliotheken und kann erst gelöscht werden, wenn diese übertragen oder gelöscht wurden: {{libraries}}",
       "import_invalid_json": "Diese Datei ist kein gültiges MedInv-Exportformat (keine lesbare .zip-Exportdatei).",

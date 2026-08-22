@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Domain\Users\UserDeletionService;
 use App\Http\Controllers\Controller;
 use App\Models\Template;
+use App\Rules\MedInvPasswordPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
@@ -45,6 +47,64 @@ class AccountSettingsController extends Controller
         $user->update($data);
 
         return $user;
+    }
+
+    /**
+     * Self-service password change (GitHub issue #174, briefing 4.1/12.1) —
+     * previously the only way to change a password at all was the
+     * email-based "forgot password" flow (PasswordResetController), which
+     * also needs a configured mail server; an admin can't set another
+     * user's password after account creation either (UserController::
+     * update() has no password field). Requires the current password
+     * (verified via Hash::check() against the still-hashed column, never
+     * decrypted) rather than trusting the session alone, the same
+     * "prove you still are who you say you are" principle a password
+     * change should have even though the request is already
+     * authenticated — otherwise anyone with a few minutes at an unlocked,
+     * still-logged-in session could lock the real owner out.
+     *
+     * An OIDC-provisioned account (`oidc_subject` set) has no local
+     * password its owner could ever know — OidcAuthController::
+     * findOrCreateUser() deliberately assigns it a random, never-revealed
+     * one (see that method's own comment) specifically so only the SSO
+     * flow or an admin-initiated reset can authenticate it. `current_password`
+     * would therefore never validate for such an account; the frontend
+     * hides this section entirely for one rather than let it 422 with a
+     * confusing "wrong password" for a password that was never really
+     * theirs to know — this is the same backstop AccountSettingsController
+     * already needs regardless of what the frontend shows, since a request
+     * could bypass that UI.
+     */
+    public function updatePassword(Request $request)
+    {
+        $data = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'confirmed', new MedInvPasswordPolicy],
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($data['current_password'], $user->password)) {
+            $this->logApiError($request, 'invalid_current_password', 'Password change failed: current password did not match.');
+
+            return response()->json([
+                'error_code' => 'invalid_current_password',
+                'message' => 'The current password is incorrect.',
+            ], 422);
+        }
+
+        // forceFill() rather than plain update() — mirrors
+        // PasswordResetController::reset()'s own equivalent line; 'password'
+        // is fillable regardless (#[Fillable] on User), so this isn't about
+        // bypassing mass-assignment protection, just matching the
+        // established convention for "this is a credential change, not an
+        // ordinary attribute update" at every place this app sets a
+        // password outside of initial account creation.
+        $user->forceFill(['password' => $data['password']])->save();
+
+        Log::info('Password changed (self-service)', ['user_id' => $user->id, 'email' => $user->email, 'ip' => $request->ip()]);
+
+        return response()->noContent();
     }
 
     /**

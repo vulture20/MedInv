@@ -280,6 +280,14 @@
         "de": "Alemán",
         "en": "Inglés"
       },
+      "password": {
+        "label": "Cambiar contraseña",
+        "hint": "Cambia la contraseña de tu cuenta.",
+        "current": "Contraseña actual",
+        "new": "Nueva contraseña",
+        "confirm": "Confirmar nueva contraseña",
+        "submit": "Cambiar contraseña"
+      },
       "deleteAccount": {
         "title": "Eliminar cuenta",
         "hint": "Elimina tu cuenta de forma permanente. Esta acción no se puede deshacer.",
@@ -398,6 +406,7 @@
         "import_invalid_library": "La biblioteca n.º {{number}} del archivo no tiene un campo «{{field}}» válido.",
         "import_invalid_item": "Un elemento (entrada n.º {{number}}) de la biblioteca «{{library}}» no tiene un título o EAN válido.",
         "protected_account": "Esta es la cuenta de administrador predefinida y no se puede editar, desactivar ni eliminar.",
+        "invalidCurrentPassword": "La contraseña actual no es correcta.",
         "passwordPolicy": "La contraseña debe tener al menos 10 caracteres e incluir una mayúscula, una minúscula, un dígito y un carácter especial.",
         "ownsLibraries": "Esta cuenta todavía es propietaria de las siguientes bibliotecas y no se puede eliminar hasta que se transfieran a otro propietario o se eliminen: {{libraries}}"
       },

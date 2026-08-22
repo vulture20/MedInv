@@ -280,6 +280,14 @@
         "de": "Saksa",
         "en": "Englanti"
       },
+      "password": {
+        "label": "Vaihda salasana",
+        "hint": "Vaihda tilisi salasana.",
+        "current": "Nykyinen salasana",
+        "new": "Uusi salasana",
+        "confirm": "Vahvista uusi salasana",
+        "submit": "Vaihda salasana"
+      },
       "deleteAccount": {
         "title": "Poista tili",
         "hint": "Poistaa tilisi pysyvästi. Tätä ei voi perua.",
@@ -417,6 +425,7 @@
         "import_invalid_library": "Tiedoston kirjastolla #{{number}} ei ole kelvollista \"{{field}}\"-kenttää.",
         "import_invalid_item": "Kirjaston \"{{library}}\" kohteella (tietue #{{number}}) ei ole kelvollista nimikettä tai EAN-koodia.",
         "protected_account": "Tämä on ennalta määritetty pääkäyttäjätili, eikä sitä voi muokata, poistaa käytöstä tai poistaa.",
+        "invalidCurrentPassword": "Nykyinen salasana on virheellinen.",
         "passwordPolicy": "Salasanan on oltava vähintään 10 merkkiä pitkä ja sisällettävä iso kirjain, pieni kirjain, numero ja erikoismerkki.",
         "ownsLibraries": "Tällä tilillä on edelleen seuraavat kirjastot, eikä sitä voi poistaa ennen kuin ne siirretään toiselle omistajalle tai poistetaan: {{libraries}}"
       },

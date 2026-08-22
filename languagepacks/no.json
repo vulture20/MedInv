@@ -280,6 +280,14 @@
         "de": "Tysk",
         "en": "Engelsk"
       },
+      "password": {
+        "label": "Endre passord",
+        "hint": "Endre passordet for kontoen din.",
+        "current": "Nåværende passord",
+        "new": "Nytt passord",
+        "confirm": "Bekreft nytt passord",
+        "submit": "Endre passord"
+      },
       "deleteAccount": {
         "title": "Slett konto",
         "hint": "Sletter kontoen din permanent. Dette kan ikke angres.",
@@ -417,6 +425,7 @@
         "import_invalid_library": "Bibliotek #{{number}} i filen har ikke et gyldig \"{{field}}\"-felt.",
         "import_invalid_item": "En oppføring (post #{{number}}) i biblioteket \"{{library}}\" har ingen gyldig tittel eller EAN.",
         "protected_account": "Dette er den forhåndsdefinerte administratorkontoen og kan ikke redigeres, deaktiveres eller slettes.",
+        "invalidCurrentPassword": "Gjeldende passord er feil.",
         "passwordPolicy": "Passordet må være minst 10 tegn langt og inneholde en stor bokstav, en liten bokstav, ett tall og ett spesialtegn.",
         "ownsLibraries": "Denne kontoen eier fortsatt følgende biblioteker og kan ikke slettes før de overføres til en annen eier eller slettes: {{libraries}}"
       },

@@ -280,6 +280,14 @@
         "de": "Allemand",
         "en": "Anglais"
       },
+      "password": {
+        "label": "Modifier le mot de passe",
+        "hint": "Modifiez le mot de passe de votre compte.",
+        "current": "Mot de passe actuel",
+        "new": "Nouveau mot de passe",
+        "confirm": "Confirmer le nouveau mot de passe",
+        "submit": "Modifier le mot de passe"
+      },
       "deleteAccount": {
         "title": "Supprimer le compte",
         "hint": "Supprime définitivement votre compte. Cette action est irréversible.",
@@ -398,6 +406,7 @@
         "import_invalid_library": "La bibliothèque n° {{number}} du fichier n'a pas de champ « {{field}} » valide.",
         "import_invalid_item": "Un élément (entrée n° {{number}}) de la bibliothèque « {{library}} » n'a pas de titre ou d'EAN valide.",
         "protected_account": "Il s'agit du compte administrateur prédéfini ; il ne peut être ni modifié, ni désactivé, ni supprimé.",
+        "invalidCurrentPassword": "Le mot de passe actuel est incorrect.",
         "passwordPolicy": "Le mot de passe doit comporter au moins 10 caractères et contenir une majuscule, une minuscule, un chiffre et un caractère spécial.",
         "ownsLibraries": "Ce compte possède encore les bibliothèques suivantes et ne peut être supprimé tant qu'elles n'ont pas été transférées à un autre propriétaire ou supprimées : {{libraries}}"
       },

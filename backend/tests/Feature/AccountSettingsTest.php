@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Template;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
@@ -79,5 +80,74 @@ class AccountSettingsTest extends TestCase
     public function test_an_unauthenticated_request_cannot_update_settings(): void
     {
         $this->putJson('/api/me/settings', ['preferred_template' => 'dark'])->assertUnauthorized();
+    }
+
+    /**
+     * GitHub issue #174: self-service password change. UserFactory's
+     * default password is 'password' (see its own comment).
+     */
+    public function test_a_user_can_change_their_own_password(): void
+    {
+        $user = $this->actingAsUser();
+
+        $this->putJson('/api/me/password', [
+            'current_password' => 'password',
+            'password' => 'NewPassw0rd!',
+            'password_confirmation' => 'NewPassw0rd!',
+        ])->assertNoContent();
+
+        $this->assertTrue(Hash::check('NewPassw0rd!', $user->fresh()->password));
+    }
+
+    /** The whole point of requiring current_password at all — otherwise anyone at an unlocked, still-logged-in session could lock the real owner out. */
+    public function test_changing_the_password_with_the_wrong_current_password_is_rejected(): void
+    {
+        $user = $this->actingAsUser();
+
+        $this->putJson('/api/me/password', [
+            'current_password' => 'not-the-real-password',
+            'password' => 'NewPassw0rd!',
+            'password_confirmation' => 'NewPassw0rd!',
+        ])
+            ->assertStatus(422)
+            ->assertJsonPath('error_code', 'invalid_current_password');
+
+        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+    }
+
+    /** GitHub issue #174, briefing 12.1 — the same MedInvPasswordPolicy every other password field in this app already enforces. */
+    public function test_changing_the_password_enforces_the_password_policy(): void
+    {
+        $this->actingAsUser();
+
+        $this->putJson('/api/me/password', [
+            'current_password' => 'password',
+            'password' => 'short',
+            'password_confirmation' => 'short',
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('password');
+    }
+
+    public function test_changing_the_password_requires_the_confirmation_to_match(): void
+    {
+        $this->actingAsUser();
+
+        $this->putJson('/api/me/password', [
+            'current_password' => 'password',
+            'password' => 'NewPassw0rd!',
+            'password_confirmation' => 'SomethingElse1!',
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('password');
+    }
+
+    public function test_an_unauthenticated_request_cannot_change_the_password(): void
+    {
+        $this->putJson('/api/me/password', [
+            'current_password' => 'password',
+            'password' => 'NewPassw0rd!',
+            'password_confirmation' => 'NewPassw0rd!',
+        ])->assertUnauthorized();
     }
 }

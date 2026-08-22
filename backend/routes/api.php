@@ -101,6 +101,9 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/me/settings', [AccountSettingsController::class, 'update']);
+    // Self-service password change (GitHub issue #174) — see
+    // AccountSettingsController::updatePassword()'s docblock.
+    Route::put('/me/password', [AccountSettingsController::class, 'updatePassword']);
     // Self-service account deletion (GitHub issue #86) — see
     // AccountSettingsController::destroy()'s docblock.
     Route::delete('/me', [AccountSettingsController::class, 'destroy']);

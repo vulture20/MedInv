@@ -280,6 +280,14 @@
         "de": "Þýska",
         "en": "Enska"
       },
+      "password": {
+        "label": "Breyta lykilorði",
+        "hint": "Breyttu lykilorði reikningsins þíns.",
+        "current": "Núverandi lykilorð",
+        "new": "Nýtt lykilorð",
+        "confirm": "Staðfestu nýtt lykilorð",
+        "submit": "Breyta lykilorði"
+      },
       "deleteAccount": {
         "title": "Eyða reikningi",
         "hint": "Eyðir reikningnum þínum varanlega. Þessu er ekki hægt að afturkalla.",
@@ -417,6 +425,7 @@
         "import_invalid_library": "Safn #{{number}} í skránni er ekki með gilt „{{field}}“-svæði.",
         "import_invalid_item": "Færsla (færsla #{{number}}) í safninu „{{library}}“ er ekki með gildan titil eða EAN.",
         "protected_account": "Þetta er fyrirfram skilgreindur stjórnandareikningur og ekki er hægt að breyta honum, óvirkja hann eða eyða honum.",
+        "invalidCurrentPassword": "Núverandi lykilorð er rangt.",
         "passwordPolicy": "Lykilorðið verður að vera að minnsta kosti 10 stafir og innihalda hástaf, lágstaf, tölustaf og sérstakt tákn.",
         "ownsLibraries": "Þessi reikningur á enn eftirfarandi söfn og ekki er hægt að eyða honum fyrr en þau hafa verið flutt til annars eiganda eða þeim eytt: {{libraries}}"
       },

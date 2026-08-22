@@ -280,6 +280,14 @@
         "de": "Alemão",
         "en": "Inglês"
       },
+      "password": {
+        "label": "Alterar senha",
+        "hint": "Altere a senha da sua conta.",
+        "current": "Senha atual",
+        "new": "Nova senha",
+        "confirm": "Confirmar nova senha",
+        "submit": "Alterar senha"
+      },
       "deleteAccount": {
         "title": "Excluir conta",
         "hint": "Exclui sua conta permanentemente. Esta ação não pode ser desfeita.",
@@ -398,6 +406,7 @@
         "import_invalid_library": "A biblioteca nº {{number}} no arquivo não tem um campo \"{{field}}\" válido.",
         "import_invalid_item": "Um item (entrada nº {{number}}) na biblioteca \"{{library}}\" não tem título ou EAN válido.",
         "protected_account": "Esta é a conta de administrador predefinida e não pode ser editada, desativada ou excluída.",
+        "invalidCurrentPassword": "A senha atual está incorreta.",
         "passwordPolicy": "A senha deve ter pelo menos 10 caracteres e conter uma letra maiúscula, uma minúscula, um dígito e um caractere especial.",
         "ownsLibraries": "Esta conta ainda é proprietária das seguintes bibliotecas e não pode ser excluída até que sejam transferidas para outro proprietário ou excluídas: {{libraries}}"
       },

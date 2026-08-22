@@ -14,6 +14,11 @@ export interface User {
   // registered runtime template's code too, same reasoning as
   // preferred_language above.
   preferred_template: string
+  // Set for an SSO-provisioned account (OidcAuthController::findOrCreateUser())
+  // — such an account has no local password its owner could ever know, so
+  // SettingsPage.tsx's password-change section is hidden whenever this is
+  // non-null (GitHub issue #174).
+  oidc_subject: string | null
 }
 
 interface AuthContextValue {

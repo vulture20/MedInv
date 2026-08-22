@@ -280,6 +280,14 @@
         "de": "Almanca",
         "en": "İngilizce"
       },
+      "password": {
+        "label": "Parolayı değiştir",
+        "hint": "Hesabınızın parolasını değiştirin.",
+        "current": "Mevcut parola",
+        "new": "Yeni parola",
+        "confirm": "Yeni parolayı onaylayın",
+        "submit": "Parolayı değiştir"
+      },
       "deleteAccount": {
         "title": "Hesabı sil",
         "hint": "Hesabınızı kalıcı olarak siler. Bu işlem geri alınamaz.",
@@ -398,6 +406,7 @@
         "import_invalid_library": "Dosyadaki {{number}} numaralı kitaplığın geçerli bir \"{{field}}\" alanı yok.",
         "import_invalid_item": "\"{{library}}\" kitaplığındaki bir öğenin ({{number}} numaralı kayıt) geçerli bir başlığı veya EAN'ı yok.",
         "protected_account": "Bu, önceden tanımlanmış yönetici hesabıdır ve düzenlenemez, devre dışı bırakılamaz veya silinemez.",
+        "invalidCurrentPassword": "Mevcut parola yanlış.",
         "passwordPolicy": "Parola en az 10 karakter uzunluğunda olmalı ve bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.",
         "ownsLibraries": "Bu hesap hâlâ şu kitaplıklara sahip ve başka bir sahibe devredilene veya silinene kadar silinemez: {{libraries}}"
       },

@@ -280,6 +280,14 @@
         "de": "Niemiecki",
         "en": "Angielski"
       },
+      "password": {
+        "label": "Zmień hasło",
+        "hint": "Zmień hasło do swojego konta.",
+        "current": "Obecne hasło",
+        "new": "Nowe hasło",
+        "confirm": "Potwierdź nowe hasło",
+        "submit": "Zmień hasło"
+      },
       "deleteAccount": {
         "title": "Usuń konto",
         "hint": "Trwale usuwa Twoje konto. Tej czynności nie można cofnąć.",
@@ -398,6 +406,7 @@
         "import_invalid_library": "Biblioteka nr {{number}} w pliku nie ma prawidłowego pola „{{field}}”.",
         "import_invalid_item": "Pozycja (wpis nr {{number}}) w bibliotece „{{library}}” nie ma prawidłowego tytułu ani EAN.",
         "protected_account": "To jest wstępnie zdefiniowane konto administratora i nie można go edytować, dezaktywować ani usunąć.",
+        "invalidCurrentPassword": "Obecne hasło jest nieprawidłowe.",
         "passwordPolicy": "Hasło musi mieć co najmniej 10 znaków i zawierać wielką literę, małą literę, cyfrę i znak specjalny.",
         "ownsLibraries": "To konto nadal posiada następujące biblioteki i nie można go usunąć, dopóki nie zostaną przeniesione na innego właściciela lub usunięte: {{libraries}}"
       },

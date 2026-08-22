@@ -32,6 +32,8 @@ export function describeError(err: unknown, t: TFunction): string {
       }
     | undefined
   if (data?.error_code === 'protected_account') return t('admin.errors.protected_account')
+  // GitHub issue #174 — SettingsPage.tsx's self-service password change.
+  if (data?.error_code === 'invalid_current_password') return t('admin.errors.invalidCurrentPassword')
   if (data?.error_code === 'owns_libraries') {
     const names = (data.libraries ?? []).map((l) => l.name).join(', ')
     return t('admin.errors.ownsLibraries', { libraries: names })

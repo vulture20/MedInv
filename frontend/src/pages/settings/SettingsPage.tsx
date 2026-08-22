@@ -78,7 +78,7 @@ function ThemeSwatchPreview({ colors }: { colors: PreviewColors }) {
  */
 export function SettingsPage() {
   const { t } = useTranslation()
-  const { deleteAccount } = useAuth()
+  const { user, deleteAccount } = useAuth()
   const { template, setTemplate, runtimeTemplates } = useTheme()
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null)
@@ -99,7 +99,19 @@ export function SettingsPage() {
   const [templateError, setTemplateError] = useState<string | null>(null)
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
-  const savedTimeouts = useRef<Partial<Record<'template' | 'language', ReturnType<typeof setTimeout>>>>({})
+  const savedTimeouts = useRef<Partial<Record<'template' | 'language' | 'password', ReturnType<typeof setTimeout>>>>({})
+
+  // GitHub issue #174 — self-service password change. Unlike template/
+  // language above (a single value, saved immediately on change), this is
+  // a real multi-field form: current password, new password, confirmation,
+  // submitted explicitly, cleared on success rather than re-showing what
+  // was just typed.
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
+  const [passwordSaved, setPasswordSaved] = useState(false)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
 
   useEffect(() => {
     const onLanguageChanged = (lng: string) => setLanguage(lng)
@@ -122,8 +134,8 @@ export function SettingsPage() {
     }
   }, [])
 
-  function flashSaved(field: 'template' | 'language') {
-    const setSaved = field === 'template' ? setTemplateSaved : setLanguageSaved
+  function flashSaved(field: 'template' | 'language' | 'password') {
+    const setSaved = field === 'template' ? setTemplateSaved : field === 'language' ? setLanguageSaved : setPasswordSaved
     clearTimeout(savedTimeouts.current[field])
     setSaved(true)
     savedTimeouts.current[field] = setTimeout(() => setSaved(false), SAVED_CONFIRMATION_MS)
@@ -158,6 +170,28 @@ export function SettingsPage() {
     } catch (err) {
       setDeleteAccountError(describeError(err, t))
       setDeletingAccount(false)
+    }
+  }
+
+  /** GitHub issue #174. Fields are cleared on success only — left as typed on failure, so the user can correct e.g. a mistyped confirmation without re-entering the current password too. */
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault()
+    setPasswordError(null)
+    setChangingPassword(true)
+    try {
+      await apiClient.put('/me/password', {
+        current_password: currentPassword,
+        password: newPassword,
+        password_confirmation: confirmPassword,
+      })
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      flashSaved('password')
+    } catch (err) {
+      setPasswordError(describeError(err, t))
+    } finally {
+      setChangingPassword(false)
     }
   }
 
@@ -258,6 +292,63 @@ export function SettingsPage() {
         )}
         {languageError && <p role="alert">{languageError}</p>}
       </section>
+
+      {/* GitHub issue #174 — hidden for an SSO-provisioned account, which
+          has no local password its owner could ever know (see
+          AccountSettingsController::updatePassword()'s own docblock) —
+          showing this form would only ever fail with a confusing "wrong
+          password" for a password that was never really theirs to know. */}
+      {!user?.oidc_subject && (
+        <section className="panel-card">
+          <h2>{t('settings.password.label')}</h2>
+          <p className="hint">{t('settings.password.hint')}</p>
+
+          <form onSubmit={(e) => void changePassword(e)}>
+            <label>
+              {t('settings.password.current')}
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </label>
+            <label>
+              {t('settings.password.new')}
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </label>
+            <label>
+              {t('settings.password.confirm')}
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </label>
+            <p className="hint">{t('admin.passwordHint')}</p>
+
+            <button type="submit" disabled={changingPassword}>
+              {t('settings.password.submit')}
+            </button>
+          </form>
+
+          {passwordSaved && (
+            <p role="status" className="panel-confirmation">
+              {t('settings.saved')}
+            </p>
+          )}
+          {passwordError && <p role="alert">{passwordError}</p>}
+        </section>
+      )}
 
       <section className="panel-card">
         <h2>{t('settings.deleteAccount.title')}</h2>

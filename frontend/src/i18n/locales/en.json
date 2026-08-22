@@ -346,6 +346,14 @@
       "de": "German",
       "en": "English"
     },
+    "password": {
+      "label": "Change password",
+      "hint": "Change the password for your account.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Change password"
+    },
     "deleteAccount": {
       "title": "Delete account",
       "hint": "Permanently deletes your account. This cannot be undone.",
@@ -483,6 +491,7 @@
       "import_invalid_library": "Library #{{number}} in the file has no valid \"{{field}}\" field.",
       "import_invalid_item": "An item (entry #{{number}}) in library \"{{library}}\" has no valid title or EAN.",
       "protected_account": "This is the predefined administrator account and cannot be edited, deactivated or deleted.",
+      "invalidCurrentPassword": "The current password is incorrect.",
       "passwordPolicy": "The password must be at least 10 characters long and contain an uppercase letter, a lowercase letter, a digit and a special character.",
       "ownsLibraries": "This account still owns the following libraries and cannot be deleted until they're transferred to another owner or deleted: {{libraries}}"
     },
