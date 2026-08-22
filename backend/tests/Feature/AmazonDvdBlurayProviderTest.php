@@ -64,7 +64,9 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertSame(117, $candidate->attributes['runtime_minutes']);
         $this->assertSame('Ridley Scott', $candidate->attributes['director']);
         $this->assertSame('English', $candidate->attributes['languages']);
-        // GitHub issue #140: unconfirmed guesses — see this provider's own docblock.
+        // GitHub issue #140/#141: 'genre' was originally an unconfirmed
+        // guess, then confirmed via a real product page — see this
+        // provider's own docblock.
         $this->assertSame('Science Fiction', $candidate->attributes['genre']);
         $this->assertSame('English', $candidate->attributes['subtitles']);
         $this->assertSame('2007-10-04', $candidate->attributes['release_date']);
@@ -76,6 +78,65 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertSame(['https://m.media-amazon.com/images/I/br-large.jpg'], $candidate->coverUrls);
         // GitHub issue #150: cast is deliberately never set — see this provider's own docblock.
         $this->assertArrayNotHasKey('cast', $candidate->attributes);
+    }
+
+    /**
+     * GitHub issue #141: a real product page provided by the user
+     * ("Ant-Man" Blu-ray, B07447J2TS) showed "Genre" living in a third
+     * detail-bullet shape, `#productOverview_feature_div` — a compact
+     * table with `<tr class="… po-{field}">` rows — entirely separate
+     * from `detailBullets_feature_div`, which didn't carry a Genre bullet
+     * at all on that page. Mirrors that real shape rather than the
+     * original `detailBullets_feature_div` fixture used above, so this
+     * specifically exercises the merge added to
+     * AmazonScraping::amazonDetailBullets() rather than re-testing what
+     * the first test already covers.
+     */
+    public function test_genre_is_extracted_from_the_product_overview_table(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Ant-Man</span>'
+                .'<div id="productOverview_feature_div"><table><tbody>'
+                .'<tr class="a-spacing-small po-genre"><td><span class="a-text-bold">Genre</span></td><td><span class="po-break-word">Action/Adventure</span></td></tr>'
+                .'<tr class="a-spacing-small po-format"><td><span class="a-text-bold">Format</span></td><td><span class="po-break-word">Blu-ray</span></td></tr>'
+                .'</tbody></table></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('012569783680')[0];
+
+        $this->assertSame('Action/Adventure', $candidate->attributes['genre']);
+        $this->assertSame('Blu-ray', $candidate->attributes['medium']);
+    }
+
+    /**
+     * GitHub issue #141: the same real page that confirmed 'Genre' was
+     * served in German — "Subtitles" itself was never confirmed in
+     * English, but the real "Untertitel"/"Medienformat" labels found
+     * there were added as purely additive fallbacks (never matching an
+     * English page, so this can't regress the primary English guess).
+     */
+    public function test_subtitles_and_medium_fall_back_to_their_confirmed_german_labels(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Ant-Man</span>'
+                .'<div id="detailBullets_feature_div"><ul>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Medienformat &rlm;: &lrm;</span><span>Blu-ray</span></span></li>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Untertitel: &rlm;: &lrm;</span><span>Französisch, Spanisch</span></span></li>'
+                .'</ul></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('012569783680')[0];
+
+        $this->assertSame('Blu-ray', $candidate->attributes['medium']);
+        $this->assertSame('Französisch, Spanisch', $candidate->attributes['subtitles']);
     }
 
     /**

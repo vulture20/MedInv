@@ -78,11 +78,25 @@ use Illuminate\Support\Facades\Log;
  *   already carried — and was not repeated beyond that single fetch; the
  *   rest of this trait's fields remain unconfirmed against live markup,
  *   and are not to be re-checked without the same explicit, one-time
- *   authorization this exception required.
+ *   authorization this exception required. GitHub issue #141 later
+ *   established a different, lower-cost way to extend this same
+ *   authorized-exception model: rather than this trait fetching
+ *   amazon.com itself again, the user provided an already-saved real
+ *   product-page HTML dump directly — no additional request against
+ *   Amazon at all. That dump confirmed `amazonDetailBullets()`'s own
+ *   docblock's `#productOverview_feature_div` finding, and, being served
+ *   in German (reached via a `/-/de/` URL segment this trait's own
+ *   requests never add), incidentally showed several bullet labels in
+ *   German rather than English — see `AmazonDvdBlurayProvider`'s docblock
+ *   for exactly which fields that did and didn't end up affecting.
  *
  * `en-US`/`en-GB` is explicitly requested (Accept-Language) since field
  * extraction matches English label text — a different Amazon locale would
- * need its own label translations, not attempted here.
+ * need its own label translations, not attempted here as a rule, though
+ * GitHub issue #141 added one narrow, real-evidence-backed exception (a
+ * German 'Untertitel' fallback for DVD/Blu-ray subtitles — see
+ * `AmazonDvdBlurayProvider`'s docblock) rather than translating every
+ * field speculatively.
  */
 trait AmazonScraping
 {
@@ -321,6 +335,29 @@ trait AmazonScraping
      * label => value map, since only one is normally present on a given
      * page at a time and this trait doesn't need to know which.
      *
+     * GitHub issue #141: a real DVD/Blu-ray product page provided by the
+     * user (a "clp" video/DVD page for "Ant-Man", B07447J2TS) confirmed a
+     * *third* shape, `#productOverview_feature_div` — a compact "product
+     * overview" table Amazon renders above the fuller bullet list, each
+     * row a `<tr class="… po-{field}">` with a bold label `<span>` and a
+     * `po-break-word` value `<span>`. This is specifically where "Genre"
+     * turned out to actually live on that page — it was entirely absent
+     * from `detailBullets_feature_div`, confirming the label guess
+     * (`AmazonDvdBlurayProvider::mapProductPageToCandidate()`'s
+     * `amazonBullet($bullets, 'Genre', 'Genres')`) had been looking in a
+     * container that genuinely never carries it, not using a wrong label.
+     * The page checked was served in German (`html lang="de-de"`, reached
+     * via a `/-/de/` URL segment — Amazon's own International Customer
+     * Program locale override, not something this trait's own requests
+     * ever add), so most of its bullet labels came back German
+     * ("Regisseur", "Sprache", "Laufzeit", …) and stayed out of scope
+     * here — but "Genre" and "Format" were both still the plain English
+     * words even on that German rendering, which is what let this
+     * specific merge be added with confidence. Whether this trait's own
+     * plain `/dp/{asin}` requests (no `/-/de/` segment, explicit
+     * `Accept-Language: en-US`) would ever be served this same localized
+     * shape is not itself confirmed either way.
+     *
      * @return array<string, string>
      */
     private function amazonDetailBullets(DOMXPath $xpath): array
@@ -349,6 +386,20 @@ trait AmazonScraping
         foreach ($xpath->query('//*[@id="productDetails_detailBullets_sections1" or @id="productDetails_db_sections"]//tr') as $row) {
             $label = rtrim($this->cleanText($xpath->query('.//th', $row)->item(0)?->textContent) ?? '', ": \t\n\r\0\x0B");
             $value = $this->cleanText($xpath->query('.//td', $row)->item(0)?->textContent);
+            if ($label !== '' && $value !== null && ! isset($bullets[$label])) {
+                $bullets[$label] = $value;
+            }
+        }
+
+        // "Product overview" table (GitHub issue #141) — see this method's
+        // own docblock. Scoped to the feature container's own id, not a
+        // loose `po-` class match, since that prefix is also used on this
+        // widget's unrelated expander/truncate controls.
+        foreach ($xpath->query('//*[@id="productOverview_feature_div"]//tr[contains(concat(" ", normalize-space(@class), " "), " po-")]') as $row) {
+            $labelNode = $xpath->query('.//span[contains(concat(" ", normalize-space(@class), " "), " a-text-bold ")]', $row)->item(0);
+            $valueNode = $xpath->query('.//span[contains(concat(" ", normalize-space(@class), " "), " po-break-word ")]', $row)->item(0);
+            $label = rtrim($this->cleanText($labelNode?->textContent) ?? '', ": \t\n\r\0\x0B");
+            $value = $this->cleanText($valueNode?->textContent);
             if ($label !== '' && $value !== null && ! isset($bullets[$label])) {
                 $bullets[$label] = $value;
             }

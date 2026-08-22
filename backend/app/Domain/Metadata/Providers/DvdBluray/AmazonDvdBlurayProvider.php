@@ -22,31 +22,33 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * left to pin down what was actually still wrong or fix it with any
  * confidence. Removed rather than guessed at further, the same "no
  * confirmed label, don't set the field at all" stance
- * `JpcDvdBlurayProvider` already takes for this exact field. Can be
- * reintroduced later if a more reliable source is found or a live check
- * is ever possible again.
+ * `JpcDvdBlurayProvider` already takes for this exact field. GitHub issue
+ * #141's later real-page check (see below) did confirm a German
+ * "Darsteller" bullet holding exactly the actor list this field would
+ * want — but only the German label; the English spelling this trait's own
+ * requests would actually need (its docblock's own long-standing guess is
+ * "Actors") remains unconfirmed, so `cast` stays removed rather than
+ * reintroduced on a still-partial confirmation. Can be reintroduced later
+ * if a more reliable source is found or a live check confirms the English
+ * label too.
  *
- * `genre`/`subtitles` (GitHub issue #140) are best-effort `amazonBullet()`
- * label guesses ("Genre"/"Genres", "Subtitles") — unlike JPC's equivalent
- * fields, neither label was ever seen on a real Amazon page (the one live
- * check this provider ever got, #137, was a book page, and #139's two DVD
- * re-check attempts were both blocked by Amazon's bot detection before
- * any markup could be inspected), so treat these two specifically as
- * unconfirmed even by this provider's own already-cautious standards.
- * GitHub issue #141 tried again, explicitly authorized, against three
- * different real DVD/Blu-ray product/search pages — every one was
- * blocked (two HTTP 500s, one 503), the same outcome #139 already had. A
- * further authorized re-attempt (also #141) fetched Amazon's search page
- * directly via curl with this trait's own exact User-Agent/Accept-Language
- * headers (bypassing whatever tool/environment quirk might have produced
- * the earlier 500s) and still hit the same standard bot-block response
- * (HTTP 503, Amazon's generic "Sorry! Something went wrong!" interstitial)
- * before any real search-results markup, let alone a product page, was
- * ever reached. Four attempts across two issues, all blocked the same
- * way — still unconfirmed; nothing changed here as a result. Any future
- * re-check needs its own fresh authorization per the standing policy
- * (AmazonScraping's own docblock), not a reason to keep retrying on its
- * own.
+ * `genre`/`subtitles` (GitHub issue #140) were originally best-effort
+ * `amazonBullet()` label guesses ("Genre"/"Genres", "Subtitles") — GitHub
+ * issue #141 tried three further live re-checks, all blocked by Amazon's
+ * bot detection (two HTTP 500s, one 503) the same way #139's own attempts
+ * were, and a fourth attempt (a direct `curl` fetch bypassing whatever
+ * tool produced the earlier 500s) still hit the same generic bot-block
+ * page. `genre` was then confirmed by a real DVD/Blu-ray product page the
+ * user provided directly (a "clp" page for "Ant-Man", B07447J2TS) —
+ * "Genre" does exist, but in a container this trait never looked at
+ * before (`#productOverview_feature_div`, not `detailBullets_feature_div`
+ * — see `AmazonScraping::amazonDetailBullets()`'s own docblock for the
+ * fix). `subtitles` itself is still not confirmed in English on that
+ * page (no `Subtitles`/`Subtitles:` bullet was present at all — only the
+ * German label was), so its English guess remains exactly that; the
+ * confirmed German "Untertitel"/"Untertitel:" label was added as a purely
+ * additive fallback (see `mapProductPageToCandidate()`), not a
+ * replacement for the English guess.
  */
 class AmazonDvdBlurayProvider implements MetadataProviderInterface
 {
@@ -134,18 +136,23 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
             attributes: [
                 'title' => $page['title'],
                 'description' => $page['description'],
-                'medium' => $this->amazonBullet($bullets, 'Format'),
+                // 'Medienformat' (GitHub issue #141) is the German label
+                // confirmed alongside 'Genre' below on the same real page
+                // — see AmazonScraping::amazonDetailBullets()'s docblock.
+                'medium' => $this->amazonBullet($bullets, 'Format', 'Medienformat'),
                 'runtime_minutes' => $this->parseLeadingInt($this->amazonBullet($bullets, 'Run time', 'Runtime')),
                 'languages' => $this->amazonBullet($bullets, 'Language', 'Language:', 'Languages'),
                 'director' => $this->amazonBullet($bullets, 'Director', 'Directors'),
-                // GitHub issue #140: unconfirmed guesses — neither label
-                // was seen on the one real Amazon page ever checked
-                // (#137's book page, a different category), so this is a
-                // plausible-label attempt rather than a confirmed
-                // extraction, same restraint as every other Amazon field
-                // that's never been individually re-verified.
+                // GitHub issue #141 confirmed 'Genre' against a real page
+                // (see AmazonScraping::amazonDetailBullets()'s docblock for
+                // where it actually lives) — no longer an unconfirmed
+                // guess. 'Subtitles' itself is still unconfirmed in
+                // English; 'Untertitel'/'Untertitel:' is the real German
+                // label found on that same page, added as an additional,
+                // purely additive fallback (never matches an English page,
+                // so this can't regress anything already working).
                 'genre' => $this->amazonBullet($bullets, 'Genre', 'Genres'),
-                'subtitles' => $this->amazonBullet($bullets, 'Subtitles', 'Subtitles:'),
+                'subtitles' => $this->amazonBullet($bullets, 'Subtitles', 'Subtitles:', 'Untertitel', 'Untertitel:'),
                 'release_date' => $releaseDate,
                 'production_year' => $releaseDate ? (int) substr($releaseDate, 0, 4) : null,
                 'ean' => $code,
