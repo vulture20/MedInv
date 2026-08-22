@@ -194,9 +194,25 @@ export function SearchPage() {
   // already in the URL on mount (e.g. via the header search box, or a
   // bookmarked/shared search URL) still scrolls once it resolves, same as
   // clicking "Suchen" directly on this page would.
+  //
+  // GitHub issue #172 — `.app-header` (index.css) is `position: sticky;
+  // top: 0` and stays pinned while scrolled. Without accounting for it,
+  // `scrollIntoView`'s default `block: 'start'` aligns the results
+  // section's own top edge with the viewport's top edge, which then sits
+  // directly *behind* that pinned header — the "N Ergebnisse" heading
+  // lands hidden right where a user's eye would land, especially on a
+  // small screen where the scroll then looks like it did nothing at all.
+  // The header's height is measured live via getBoundingClientRect()
+  // rather than hardcoded, so this stays correct if the header's own
+  // height ever changes (responsive layout, added content, ...).
   useEffect(() => {
     if (searchCompletedAt === 0) return
-    resultsRef.current?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+    const target = resultsRef.current
+    if (!target) return
+    const header = document.querySelector('.app-header')
+    const headerHeight = header instanceof HTMLElement ? header.getBoundingClientRect().height : 0
+    target.style.scrollMarginTop = `${headerHeight + 8}px`
+    target.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
   }, [searchCompletedAt])
 
   function submitSearch(e: React.FormEvent) {
