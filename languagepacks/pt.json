@@ -399,6 +399,9 @@
         "sent": "E-mail de convite enviado com sucesso.",
         "failed": "O usuário foi criado, mas não foi possível enviar o e-mail de convite."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Nova senha (opcional)"
+      },
       "errors": {
         "import_invalid_json": "Este arquivo não está em um formato de exportação MedInv válido (arquivo de exportação .zip ilegível).",
         "invalid_backup_file": "Este ficheiro não é um arquivo de cópia de segurança MedInv válido.",

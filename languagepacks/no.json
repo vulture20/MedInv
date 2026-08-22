@@ -418,6 +418,9 @@
         "sent": "Invitasjons-e-post sendt.",
         "failed": "Brukeren ble opprettet, men invitasjons-e-posten kunne ikke sendes."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Nytt passord (valgfritt)"
+      },
       "errors": {
         "import_invalid_json": "Denne filen er ikke et gyldig MedInv-eksportformat (ikke en lesbar .zip-eksportfil).",
         "invalid_backup_file": "Denne filen er ikke et gyldig MedInv-sikkerhetskopiarkiv.",

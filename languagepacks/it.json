@@ -399,6 +399,9 @@
         "sent": "Email di invito inviata correttamente.",
         "failed": "L'utente è stato creato, ma non è stato possibile inviare l'email di invito."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Nuova password (opzionale)"
+      },
       "errors": {
         "import_invalid_json": "Questo file non è in un formato di esportazione MedInv valido (file di esportazione .zip non leggibile).",
         "invalid_backup_file": "Questo file non è un archivio di backup MedInv valido.",

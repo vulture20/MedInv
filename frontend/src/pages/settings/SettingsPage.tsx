@@ -303,10 +303,11 @@ export function SettingsPage() {
           <h2>{t('settings.password.label')}</h2>
           <p className="hint">{t('settings.password.hint')}</p>
 
-          <form onSubmit={(e) => void changePassword(e)}>
+          <form className="settings-password-form" onSubmit={(e) => void changePassword(e)}>
             <label>
               {t('settings.password.current')}
               <input
+                className="panel-select"
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -317,6 +318,7 @@ export function SettingsPage() {
             <label>
               {t('settings.password.new')}
               <input
+                className="panel-select"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -327,6 +329,7 @@ export function SettingsPage() {
             <label>
               {t('settings.password.confirm')}
               <input
+                className="panel-select"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

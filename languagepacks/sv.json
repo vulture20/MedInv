@@ -418,6 +418,9 @@
         "sent": "Inbjudningsmejl skickat.",
         "failed": "Användaren skapades, men inbjudningsmejlet kunde inte skickas."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Nytt lösenord (valfritt)"
+      },
       "errors": {
         "import_invalid_json": "Den här filen är inte ett giltigt MedInv-exportformat (inte en läsbar .zip-exportfil).",
         "invalid_backup_file": "Den här filen är inte ett giltigt MedInv-säkerhetskopiearkiv.",

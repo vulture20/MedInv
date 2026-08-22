@@ -399,6 +399,9 @@
         "sent": "邀请邮件已成功发送。",
         "failed": "用户已创建，但邀请邮件发送失败。"
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "新密码（可选）"
+      },
       "errors": {
         "import_invalid_json": "此文件不是有效的 MedInv 导出格式(不是可读取的 .zip 导出文件)。",
         "invalid_backup_file": "此文件不是有效的 MedInv 备份归档文件。",

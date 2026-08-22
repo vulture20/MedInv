@@ -399,6 +399,9 @@
         "sent": "Davet e-postası başarıyla gönderildi.",
         "failed": "Kullanıcı oluşturuldu, ancak davet e-postası gönderilemedi."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Yeni parola (isteğe bağlı)"
+      },
       "errors": {
         "import_invalid_json": "Bu dosya geçerli bir MedInv dışa aktarma biçiminde değil (okunabilir bir .zip dışa aktarma dosyası değil).",
         "invalid_backup_file": "Bu dosya geçerli bir MedInv yedek arşivi değil.",

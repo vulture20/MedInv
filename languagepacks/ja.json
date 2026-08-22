@@ -399,6 +399,9 @@
         "sent": "招待メールを送信しました。",
         "failed": "ユーザーは作成されましたが、招待メールを送信できませんでした。"
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "新しいパスワード（任意）"
+      },
       "errors": {
         "import_invalid_json": "このファイルは有効なMedInvエクスポート形式ではありません(読み取り可能な.zipエクスポートファイルではありません)。",
         "invalid_backup_file": "このファイルは有効なMedInvバックアップアーカイブではありません。",

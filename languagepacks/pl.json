@@ -399,6 +399,9 @@
         "sent": "E-mail z zaproszeniem wysłany pomyślnie.",
         "failed": "Użytkownik został utworzony, ale nie udało się wysłać e-maila z zaproszeniem."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Nowe hasło (opcjonalnie)"
+      },
       "errors": {
         "import_invalid_json": "Ten plik nie jest w prawidłowym formacie eksportu MedInv (nieprawidłowy plik eksportu .zip).",
         "invalid_backup_file": "Ten plik nie jest prawidłowym archiwum kopii zapasowej MedInv.",

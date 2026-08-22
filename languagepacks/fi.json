@@ -418,6 +418,9 @@
         "sent": "Kutsusähköposti lähetetty.",
         "failed": "Käyttäjä luotiin, mutta kutsusähköpostia ei voitu lähettää."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Uusi salasana (valinnainen)"
+      },
       "errors": {
         "import_invalid_json": "Tämä tiedosto ei ole kelvollinen MedInv-vientimuoto (ei luettavissa oleva .zip-vientitiedosto).",
         "invalid_backup_file": "Tämä tiedosto ei ole kelvollinen MedInv-varmuuskopioarkisto.",

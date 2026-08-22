@@ -37,6 +37,15 @@ const emptyNewUser = {
  * .panel-field (see its own docblock) so it sits on its own row like
  * every other field here, rather than only being forced onto one by
  * whatever happens to precede or follow it.
+ *
+ * GitHub issue #175: the edit row's action cell also carries an optional
+ * password field, blank by default and only sent when actually filled in
+ * (saveEdit()) — the one field the inline edit row doesn't prefill from
+ * the row's own current value, since UserController::update() never
+ * echoes the hash back either way (User::password is #[Hidden]). No
+ * current-password prompt, unlike the user's own self-service change
+ * (SettingsPage.tsx, GitHub issue #174) — see UserController::update()'s
+ * own docblock for why that's a deliberate difference, not an oversight.
  */
 export function UsersPage() {
   const { t } = useTranslation()
@@ -46,7 +55,7 @@ export function UsersPage() {
   const [createUserError, setCreateUserError] = useState<string | null>(null)
   const [inviteStatus, setInviteStatus] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
-  const [editUser, setEditUser] = useState<{ name: string; email: string; level: AdminUser['level'] } | null>(null)
+  const [editUser, setEditUser] = useState<{ name: string; email: string; level: AdminUser['level']; password: string } | null>(null)
   const [editError, setEditError] = useState<string | null>(null)
 
   // GitHub issue #110 — previously missing entirely: a failed request left
@@ -102,15 +111,25 @@ export function UsersPage() {
 
   function startEdit(user: AdminUser) {
     setEditingId(user.id)
-    setEditUser({ name: user.name, email: user.email, level: user.level })
+    // password starts blank — never fetched/prefilled (UserController::update() never
+    // echoes the hash back either way, since User::password is #[Hidden]) and stays
+    // that way unless the admin explicitly types a new one (GitHub issue #175).
+    setEditUser({ name: user.name, email: user.email, level: user.level, password: '' })
     setEditError(null)
   }
 
+  /**
+   * GitHub issue #175 — `password` is only sent at all when the admin
+   * actually typed one, the same "blank means unchanged" convention
+   * MailPage.tsx's own SMTP password field already established for
+   * AdminSettingsController::updateMail().
+   */
   async function saveEdit(id: number) {
     if (!editUser) return
     setEditError(null)
     try {
-      await apiClient.put(`/admin/users/${id}`, editUser)
+      const { name, email, level, password } = editUser
+      await apiClient.put(`/admin/users/${id}`, { name, email, level, ...(password ? { password } : {}) })
       setEditingId(null)
       setEditUser(null)
       await loadUsers()
@@ -171,6 +190,16 @@ export function UsersPage() {
                   </td>
                   <td>{u.is_active ? t('admin.status.active') : t('admin.status.deactivated')}</td>
                   <td>
+                    {/* GitHub issue #175 — blank stays blank, i.e. unchanged (saveEdit() only sends it when non-empty); no current-password prompt, since an admin editing another account already has strictly broader unchecked power over it. */}
+                    <input
+                      className="panel-select"
+                      type="password"
+                      value={editUser.password}
+                      onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
+                      placeholder={t('admin.userEdit.newPasswordPlaceholder')}
+                      title={t('admin.passwordHint')}
+                      autoComplete="new-password"
+                    />
                     <button onClick={() => void saveEdit(u.id)}>{t('admin.actions.save')}</button>
                     <button
                       onClick={() => {

@@ -1560,6 +1560,29 @@ td {
 }
 
 /*
+ * SettingsPage.tsx's password-change form (GitHub issue #174/#175) — the
+ * three stacked fields (current/new/confirm) previously used bare, unstyled
+ * <label>/<input> elements with no vertical gap between them (a plain
+ * <label> only breaks onto its own line at all because its .panel-select
+ * child is block-level; nothing here actually spaced the rows apart), a
+ * visibly rougher, unfinished-looking cousin of every other form in the
+ * app. Mirrors .media-item-dialog label's own established label-above-
+ * input-with-breathing-room shape rather than inventing a new one.
+ */
+.settings-password-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.settings-password-form button {
+  margin-top: 0.25rem;
+}
+
+/*
  * CapturePage.tsx (briefing 7.2), reusing .panel-page/.panel-card from
  * above rather than its own copy — the hardware-scanner/manual-entry input
  * stays a plain, always-mounted form (see the component's own docblock for

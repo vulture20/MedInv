@@ -484,6 +484,9 @@
       "sent": "Einladungsmail erfolgreich versendet.",
       "failed": "Der Benutzer wurde angelegt, aber die Einladungsmail konnte nicht versendet werden."
     },
+    "userEdit": {
+      "newPasswordPlaceholder": "Neues Passwort (optional)"
+    },
     "errors": {
       "protected_account": "Dies ist das vordefinierte Administrator-Konto und kann nicht bearbeitet, deaktiviert oder gelöscht werden.",
       "invalidCurrentPassword": "Das aktuelle Passwort ist nicht korrekt.",

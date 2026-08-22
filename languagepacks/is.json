@@ -418,6 +418,9 @@
         "sent": "Boðspóstur sendur.",
         "failed": "Notandinn var búinn til, en ekki tókst að senda boðspóstinn."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Nýtt lykilorð (valfrjálst)"
+      },
       "errors": {
         "import_invalid_json": "Þessi skrá er ekki gilt MedInv-útflutningssnið (ekki læsileg .zip-útflutningsskrá).",
         "invalid_backup_file": "Þessi skrá er ekki gilt MedInv öryggisafritsskjalasafn.",

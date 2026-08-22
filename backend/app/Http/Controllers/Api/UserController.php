@@ -115,6 +115,27 @@ class UserController extends Controller
         return [true, null];
     }
 
+    /**
+     * `password` (GitHub issue #175) lets an admin set another account's
+     * password directly — previously the only way to change a password
+     * after account creation at all was the email-based "forgot password"
+     * flow (also needing a configured mail server), or the user's own
+     * self-service change (AccountSettingsController::updatePassword(),
+     * GitHub issue #174). Deliberately `sometimes` and never required, the
+     * same "leave blank to keep the current one" shape
+     * AdminSettingsController::updateMail()'s SMTP password field already
+     * established (MailPage.tsx only sends the key at all when its field
+     * is non-empty) — UsersPage.tsx's edit row follows the identical
+     * convention. Unlike AccountSettingsController::updatePassword(),
+     * there is no current-password check here at all: an admin editing
+     * another account already has strictly broader unchecked power over
+     * it (create, delete, deactivate, change its email/level), so a
+     * password set this way is just one more of those, not a new kind of
+     * privilege — and this is also the intended way to restore access to
+     * an OIDC-provisioned account (see AccountSettingsController::
+     * updatePassword()'s own docblock), which has no current password its
+     * owner could ever supply in the first place.
+     */
     public function update(Request $request, User $user)
     {
         if ($user->is_protected) {
@@ -125,14 +146,23 @@ class UserController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'level' => ['sometimes', Rule::in(['guest', 'user', 'admin'])],
+            'password' => ['sometimes', 'string', new MedInvPasswordPolicy],
         ]);
 
         $user->update($data);
 
         // $data only ever contains fields the request actually sent
         // ('sometimes' rules) — logging it shows exactly what an admin
-        // changed, `level` above all: a level change is a privilege change.
-        Log::info('User updated', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'changes' => $data]);
+        // changed, `level` above all: a level change is a privilege
+        // change. `password` is redacted first — the same "never let a
+        // credential change reach the log in the clear" rule
+        // AdminSettingsController::logSettingsChange() already applies to
+        // its own password/client_secret fields.
+        $logged = $data;
+        if (array_key_exists('password', $logged)) {
+            $logged['password'] = '[REDACTED]';
+        }
+        Log::info('User updated', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'changes' => $logged]);
 
         return $user;
     }

@@ -399,6 +399,9 @@
         "sent": "Uitnodigingsmail succesvol verzonden.",
         "failed": "De gebruiker is aangemaakt, maar de uitnodigingsmail kon niet worden verzonden."
       },
+      "userEdit": {
+        "newPasswordPlaceholder": "Nieuw wachtwoord (optioneel)"
+      },
       "errors": {
         "import_invalid_json": "Dit bestand heeft geen geldig MedInv-exportformaat (geen leesbaar .zip-exportbestand).",
         "invalid_backup_file": "Dit bestand is geen geldig MedInv-back-uparchief.",

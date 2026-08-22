@@ -61,6 +61,22 @@ class AdminActionLoggingTest extends TestCase
         $this->putJson("/api/admin/users/{$target->id}", ['level' => 'admin'])->assertOk();
     }
 
+    /** GitHub issue #175 — the same "never let a credential change reach the log in the clear" rule AdminSettingsController::logSettingsChange() already applies to its own password/client_secret fields. */
+    public function test_setting_a_users_password_is_logged_with_the_value_redacted(): void
+    {
+        $admin = $this->actingAsAdmin();
+        $target = User::factory()->create(['level' => 'user', 'is_active' => true]);
+
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
+        Log::shouldReceive('info')->once()->with('User updated', Mockery::on(function ($context) use ($admin, $target) {
+            return $context['actor_id'] === $admin->id
+                && $context['user_id'] === $target->id
+                && $context['changes'] === ['password' => '[REDACTED]'];
+        }));
+
+        $this->putJson("/api/admin/users/{$target->id}", ['password' => 'NewPassw0rd!'])->assertOk();
+    }
+
     public function test_deactivating_a_user_is_logged(): void
     {
         $admin = $this->actingAsAdmin();
