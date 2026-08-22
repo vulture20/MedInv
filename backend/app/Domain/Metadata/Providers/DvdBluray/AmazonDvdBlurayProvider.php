@@ -28,9 +28,9 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * want — but only the German label; the English spelling this trait's own
  * requests would actually need (its docblock's own long-standing guess is
  * "Actors") remains unconfirmed, so `cast` stays removed rather than
- * reintroduced on a still-partial confirmation. Can be reintroduced later
- * if a more reliable source is found or a live check confirms the English
- * label too.
+ * reintroduced on a still-partial confirmation. Tracked as GitHub issue
+ * #173: reintroduce once a further confirmed find (live check or another
+ * user-provided real HTML dump) pins down the actual English label.
  *
  * `genre`/`subtitles` (GitHub issue #140) were originally best-effort
  * `amazonBullet()` label guesses ("Genre"/"Genres", "Subtitles") — GitHub
