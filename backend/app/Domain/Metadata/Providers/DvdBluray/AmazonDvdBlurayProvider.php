@@ -13,24 +13,32 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * docblock for the full legal/technical/reliability picture this is
  * built under.
  *
- * `cast` is deliberately never set (GitHub issue #150) — #139 already
- * found and fixed one confirmed contamination pattern ("Format: DVD"
- * bleeding into this field), but a further user report that the field
- * comes out wrong in general, combined with #141's live re-check attempt
- * (against three different real pages) being blocked before the actual
- * "Actors" bullet label could even be inspected, meant there was no way
- * left to pin down what was actually still wrong or fix it with any
- * confidence. Removed rather than guessed at further, the same "no
- * confirmed label, don't set the field at all" stance
- * `JpcDvdBlurayProvider` already takes for this exact field. GitHub issue
- * #141's later real-page check (see below) did confirm a German
- * "Darsteller" bullet holding exactly the actor list this field would
- * want — but only the German label; the English spelling this trait's own
- * requests would actually need (its docblock's own long-standing guess is
- * "Actors") remains unconfirmed, so `cast` stays removed rather than
- * reintroduced on a still-partial confirmation. Tracked as GitHub issue
- * #173: reintroduce once a further confirmed find (live check or another
- * user-provided real HTML dump) pins down the actual English label.
+ * `cast` (GitHub issue #173, reintroduced after being removed entirely by
+ * #150) is sourced from the `Actors` bullet in `detailBullets_feature_div`
+ * — confirmed live via a real English "clp" product page the user
+ * provided directly (Ant-Man [4K UHD], B07TPYXN5C): a clean, plain
+ * comma-separated actor list ("Bobby Cannavale, Corey Stoll, Evangeline
+ * Lilly, Michael Peña, Paul Rudd"), no role annotations, no stray "Format:"
+ * text — the exact English spelling ("Actors") this trait's docblock had
+ * only ever guessed at before now. `Darsteller`/`Darsteller:` stays as the
+ * purely additive German fallback GitHub issue #141 already confirmed on
+ * an earlier real dump (same container, same field). Still passed through
+ * `AmazonScraping::stripAmazonFormatContamination()` as defensive
+ * hardening (GitHub issue #139) even though this particular confirmed page
+ * showed no such contamination — that finding was never disproven, only
+ * not re-observed here, so the belt-and-suspenders stripping stays.
+ *
+ * Unlike the pre-#150 version of this field, there is deliberately no
+ * `?? $page['byline']` fallback for a page with no `Actors` bullet at all:
+ * that same confirmed dump's own `#bylineInfo` turned out to mix actors
+ * *and* crew in one run-on string (e.g. "Paul Rudd (Actor, Writer), ...
+ * Peyton Reed (Director) ...", with per-person role annotations `cast`
+ * has no business carrying) — very plausibly the real, previously
+ * undiagnosed cause behind #150's "wrong in general" report, not the
+ * "Format: DVD" contamination #139 had already fixed. A page with no
+ * `Actors`/`Darsteller` bullet now just leaves `cast` unset (`null`, same
+ * as `genre`/`director`/`subtitles` when their own bullet is absent)
+ * rather than risking that same mixed-roles data again.
  *
  * `genre`/`subtitles` (GitHub issue #140) were originally best-effort
  * `amazonBullet()` label guesses ("Genre"/"Genres", "Subtitles") — GitHub
@@ -153,6 +161,12 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
                 // so this can't regress anything already working).
                 'genre' => $this->amazonBullet($bullets, 'Genre', 'Genres'),
                 'subtitles' => $this->amazonBullet($bullets, 'Subtitles', 'Subtitles:', 'Untertitel', 'Untertitel:'),
+                // GitHub issue #173 — see this class's own docblock for
+                // the real page that confirmed 'Actors' and for why there
+                // is deliberately no `?? $page['byline']` fallback here.
+                'cast' => $this->stripAmazonFormatContamination(
+                    $this->amazonBullet($bullets, 'Actors', 'Actors:', 'Darsteller', 'Darsteller:')
+                ),
                 'release_date' => $releaseDate,
                 'production_year' => $releaseDate ? (int) substr($releaseDate, 0, 4) : null,
                 'ean' => $code,

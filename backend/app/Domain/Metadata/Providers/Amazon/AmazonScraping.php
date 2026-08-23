@@ -568,6 +568,12 @@ trait AmazonScraping
      * confirmed live, this is deliberately a broader, unverified
      * hardening rather than a targeted fix for a confirmed shape.
      * Returns the original trimmed string unchanged if it doesn't match.
+     *
+     * GitHub issue #173: a real page later confirmed the "Actors" bullet's
+     * exact English label and content (see `AmazonDvdBlurayProvider`'s own
+     * docblock) — that page showed no "Format:" contamination in it, but
+     * that only means it wasn't re-observed there, not that #139's report
+     * was wrong; this stripping stays applied to `cast` regardless.
      */
     private function stripAmazonFormatContamination(?string $text): ?string
     {

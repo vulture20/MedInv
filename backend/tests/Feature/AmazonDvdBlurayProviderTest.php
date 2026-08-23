@@ -40,6 +40,7 @@ class AmazonDvdBlurayProviderTest extends TestCase
                 <li><span class="a-list-item"><span class="a-text-bold">Format &rlm;: &lrm;</span><span>Blu-ray</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Run time &rlm;: &lrm;</span><span>117 minutes</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Director &rlm;: &lrm;</span><span>Ridley Scott</span></span></li>
+                <li><span class="a-list-item"><span class="a-text-bold">Actors &rlm;: &lrm;</span><span>Harrison Ford, Rutger Hauer, Sean Young</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Language &rlm;: &lrm;</span><span>English</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Genre &rlm;: &lrm;</span><span>Science Fiction</span></span></li>
                 <li><span class="a-list-item"><span class="a-text-bold">Subtitles &rlm;: &lrm;</span><span>English</span></span></li>
@@ -76,8 +77,12 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $this->assertSame(19.99, $candidate->attributes['price']);
         $this->assertSame('USD', $candidate->attributes['currency']);
         $this->assertSame(['https://m.media-amazon.com/images/I/br-large.jpg'], $candidate->coverUrls);
-        // GitHub issue #150: cast is deliberately never set — see this provider's own docblock.
-        $this->assertArrayNotHasKey('cast', $candidate->attributes);
+        // GitHub issue #173: sourced from the 'Actors' bullet, not
+        // #bylineInfo (still "Starring: Harrison Ford, Rutger Hauer" in
+        // this fixture, deliberately different text) — proves the bullet
+        // is what's actually used, not a byline fallback (removed for
+        // good reason, see this provider's own docblock).
+        $this->assertSame('Harrison Ford, Rutger Hauer, Sean Young', $candidate->attributes['cast']);
     }
 
     /**
@@ -140,23 +145,23 @@ class AmazonDvdBlurayProviderTest extends TestCase
     }
 
     /**
-     * GitHub issue #150: #139 already fixed one confirmed contamination
-     * pattern in `cast`, but a further report that the field is wrong in
-     * general — combined with #141's live re-check being blocked before
-     * the underlying "Actors" bullet label could even be inspected — left
-     * no way to actually fix it with any confidence, so the field was
-     * removed entirely instead. This asserts that holds even when a real
-     * "Actors" bullet (the field's own original, unconfirmed source) is
-     * present on the page.
+     * GitHub issue #139: a user reported "Format: DVD" landing in `cast`
+     * for a real item — not independently confirmed live at the time
+     * (both re-check attempts were blocked by Amazon), so
+     * stripAmazonFormatContamination() was applied here as defensive,
+     * unverified-shape hardening. Still applies now that `cast` has been
+     * reintroduced (GitHub issue #173) — the contamination sits in the
+     * *middle* of the "Actors" bullet value here, proving the widened
+     * regex handles that shape too, not just a trailing one.
      */
-    public function test_cast_is_never_set_even_when_an_actors_bullet_is_present(): void
+    public function test_cast_strips_format_contamination_from_the_actors_bullet(): void
     {
         Http::fake([
             self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
             self::PRODUCT_API => Http::response(
                 '<html><body><span id="productTitle">Hogfather</span>'
                 .'<div id="detailBullets_feature_div"><ul>'
-                .'<li><span class="a-list-item"><span class="a-text-bold">Actors &rlm;: &lrm;</span><span>David Warner, Ian Richardson, Michelle Dockery</span></span></li>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Actors &rlm;: &lrm;</span><span>David Warner, Ian Richardson Format: DVD Michelle Dockery</span></span></li>'
                 .'</ul></div></body></html>',
                 200
             ),
@@ -164,7 +169,60 @@ class AmazonDvdBlurayProviderTest extends TestCase
 
         $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('4009750242353')[0];
 
-        $this->assertArrayNotHasKey('cast', $candidate->attributes);
+        $this->assertSame('David Warner, Ian Richardson Michelle Dockery', $candidate->attributes['cast']);
+    }
+
+    /**
+     * GitHub issue #141's real dump confirmed a German "Darsteller" bullet
+     * holding exactly this same field's data, on the same real page that
+     * later (GitHub issue #173) confirmed the English "Actors" label too
+     * — added as a purely additive fallback, same as `subtitles`/`medium`
+     * already have their own confirmed German fallbacks.
+     */
+    public function test_cast_falls_back_to_the_confirmed_german_darsteller_label(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Ant-Man</span>'
+                .'<div id="detailBullets_feature_div"><ul>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Darsteller &rlm;: &lrm;</span><span>Evangeline Lilly, Michael Douglas, Paul Rudd</span></span></li>'
+                .'</ul></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('012569783680')[0];
+
+        $this->assertSame('Evangeline Lilly, Michael Douglas, Paul Rudd', $candidate->attributes['cast']);
+    }
+
+    /**
+     * GitHub issue #173: unlike the pre-#150 version of this field, a page
+     * with no `Actors`/`Darsteller` bullet no longer falls back to
+     * `#bylineInfo` — the real page that confirmed `Actors` also showed
+     * `bylineInfo` mixing actors *and* crew in one run-on string (e.g.
+     * "Paul Rudd (Actor, Writer), ... Peyton Reed (Director) ..."), very
+     * plausibly the real cause behind #150's "cast is wrong in general"
+     * report. `cast` now just stays null in that case, same as
+     * `genre`/`director`/`subtitles` already do when their own bullet is
+     * absent, rather than risking that mixed-roles data again.
+     */
+    public function test_cast_is_not_set_from_byline_when_no_actors_bullet_is_present(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Ant-Man</span>'
+                .'<div id="bylineInfo">Paul Rudd (Actor, Writer), Peyton Reed (Director)</div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('012569783680')[0];
+
+        $this->assertNull($candidate->attributes['cast']);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void
