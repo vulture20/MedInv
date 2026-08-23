@@ -201,7 +201,9 @@
       "foundViaTitle": "(löytyi nimen perusteella)",
       "cameraScan": "Skannaa kameralla",
       "cameraClose": "Sulje kamera",
-      "cameraHint": "Pidä viivakoodia kameran edessä.",
+      "cameraHint": "Pidä viivakoodi kehyksen sisällä kameran edessä.",
+      "cameraTorchOn": "Kytke taskulamppu päälle",
+      "cameraTorchOff": "Sammuta taskulamppu",
       "cameraAccessError": "Kameraa ei voitu käyttää. Myönnä käyttöoikeus tai anna EAN/ISBN manuaalisesti."
     },
     "search": {

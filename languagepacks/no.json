@@ -201,7 +201,9 @@
       "foundViaTitle": "(funnet via tittel)",
       "cameraScan": "Skann med kamera",
       "cameraClose": "Lukk kamera",
-      "cameraHint": "Hold en strekkode foran kameraet.",
+      "cameraHint": "Hold en strekkode innenfor rammen foran kameraet.",
+      "cameraTorchOn": "Slå på lommelykt",
+      "cameraTorchOff": "Slå av lommelykt",
       "cameraAccessError": "Fikk ikke tilgang til kameraet. Gi tillatelse eller angi en EAN/ISBN manuelt."
     },
     "search": {

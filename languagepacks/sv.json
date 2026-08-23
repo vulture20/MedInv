@@ -201,7 +201,9 @@
       "foundViaTitle": "(hittades via titel)",
       "cameraScan": "Skanna med kamera",
       "cameraClose": "Stäng kamera",
-      "cameraHint": "Håll en streckkod framför kameran.",
+      "cameraHint": "Håll en streckkod inom ramen framför kameran.",
+      "cameraTorchOn": "Slå på ficklampan",
+      "cameraTorchOff": "Slå av ficklampan",
       "cameraAccessError": "Kunde inte komma åt kameran. Ge behörighet eller ange en EAN/ISBN manuellt."
     },
     "search": {

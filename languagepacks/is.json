@@ -201,7 +201,9 @@
       "foundViaTitle": "(fannst með titli)",
       "cameraScan": "Skanna með myndavél",
       "cameraClose": "Loka myndavél",
-      "cameraHint": "Haltu strikamerki fyrir framan myndavélina.",
+      "cameraHint": "Haltu strikamerki innan rammans fyrir framan myndavélina.",
+      "cameraTorchOn": "Kveikja á vasaljósi",
+      "cameraTorchOff": "Slökkva á vasaljósi",
       "cameraAccessError": "Ekki tókst að nálgast myndavélina. Veittu heimild eða sláðu inn EAN/ISBN handvirkt."
     },
     "search": {

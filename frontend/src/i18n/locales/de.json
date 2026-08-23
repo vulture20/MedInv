@@ -198,7 +198,9 @@
     "foundViaTitle": "(über Titel gefunden)",
     "cameraScan": "Mit Kamera scannen",
     "cameraClose": "Kamera schließen",
-    "cameraHint": "Barcode vor die Kamera halten.",
+    "cameraHint": "Barcode innerhalb des Rahmens vor die Kamera halten.",
+    "cameraTorchOn": "Taschenlampe einschalten",
+    "cameraTorchOff": "Taschenlampe ausschalten",
     "cameraAccessError": "Kein Kamerazugriff möglich. Bitte Berechtigung erteilen oder eine EAN/ISBN manuell eingeben."
   },
   "search": {

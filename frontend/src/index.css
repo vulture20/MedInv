@@ -750,6 +750,39 @@ td {
   background: #000;
 }
 
+/* GitHub issue #178 — wraps the video so .camera-scanner__guide below can
+   be positioned absolutely against it (its own size, not the page's).
+   `overflow: hidden` matters here, not just cosmetics: the guide's own
+   oversized box-shadow (see its own comment) would otherwise bleed out
+   past the video and darken the rest of the page. */
+.camera-scanner__viewport {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+/* GitHub issue #178 — a centered "viewfinder" box the user aims the
+   barcode into. The oversized box-shadow (spread far beyond the video's
+   own bounds) dims everything *outside* the box without needing a
+   separate overlay element or clip-path — a common lightweight trick for
+   this exact "spotlight" effect. Purely a visual aiming aid; the decoder
+   itself scans the whole frame regardless (CameraScanner.tsx's own
+   TRY_HARDER hint). */
+.camera-scanner__guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 32%;
+  border: 2px solid var(--color-accent);
+  border-radius: 6px;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
 /*
  * Statistics distributions (briefing 14., StatisticsPage.tsx) — a
  * single-hue "compare magnitude" bar list per dimension
