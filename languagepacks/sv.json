@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} poster",
       "confirmDelete": "Ta bort biblioteket ”{{name}}”? Detta kan inte ångras.",
       "descriptionLabel": "Beskrivning",
+      "exclusion": {
+        "fromStatistics": "Exkludera från statistik",
+        "fromReports": "Exkludera från rapporter",
+        "hint": "Påverkar endast statistik/rapporter — biblioteket förblir synligt och sökbart."
+      },
       "mediaTypeLabel": "Medietyp",
       "mediaType": {
         "book": "Bok",

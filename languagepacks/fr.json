@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} éléments",
       "confirmDelete": "Supprimer la bibliothèque « {{name}} » ? Cette action est irréversible.",
       "descriptionLabel": "Description",
+      "exclusion": {
+        "fromStatistics": "Exclure des statistiques",
+        "fromReports": "Exclure des rapports",
+        "hint": "N'affecte que les statistiques/rapports — la bibliothèque reste visible et consultable dans la recherche."
+      },
       "mediaTypeLabel": "Type de média",
       "mediaType": {
         "book": "Livre",

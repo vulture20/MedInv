@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} 个项目",
       "confirmDelete": "删除媒体库“{{name}}”？此操作无法撤销。",
       "descriptionLabel": "描述",
+      "exclusion": {
+        "fromStatistics": "从统计中排除",
+        "fromReports": "从报表中排除",
+        "hint": "仅影响统计/报表——该库仍然可见且可被搜索到。"
+      },
       "mediaTypeLabel": "媒体类型",
       "mediaType": {
         "book": "图书",

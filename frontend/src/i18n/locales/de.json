@@ -50,6 +50,11 @@
     "itemsTitle_other": "{{count}} Einträge",
     "confirmDelete": "Bibliothek „{{name}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
     "descriptionLabel": "Beschreibung",
+    "exclusion": {
+      "fromStatistics": "Aus Statistiken ausschließen",
+      "fromReports": "Aus Auswertungen ausschließen",
+      "hint": "Betrifft nur Statistiken/Auswertungen — die Bibliothek bleibt weiterhin sichtbar und durchsuchbar."
+    },
     "mediaTypeLabel": "Medienart",
     "mediaType": {
       "book": "Buch",

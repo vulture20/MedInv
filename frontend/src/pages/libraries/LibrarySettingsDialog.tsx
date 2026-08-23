@@ -36,6 +36,12 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
 
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  // GitHub issue #176 — excludes this library from StatisticsService/
+  // ReportsService respectively (e.g. a wishlist that shouldn't skew value
+  // totals or show up in "recent additions") without affecting its normal
+  // visibility (listing, opening, search) at all.
+  const [excludeFromStatistics, setExcludeFromStatistics] = useState(false)
+  const [excludeFromReports, setExcludeFromReports] = useState(false)
   const [infoError, setInfoError] = useState<string | null>(null)
 
   const [guestShare, setGuestShare] = useState(false)
@@ -64,6 +70,8 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
     if (open) {
       setEditName(library.name)
       setEditDescription(library.description ?? '')
+      setExcludeFromStatistics(library.exclude_from_statistics)
+      setExcludeFromReports(library.exclude_from_reports)
       setInfoError(null)
       setGuestShare(library.shares?.some((s) => s.scope === 'guest') ?? false)
       setAllUsersShare(library.shares?.some((s) => s.scope === 'all_users') ?? false)
@@ -116,6 +124,8 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
       await apiClient.put(`/libraries/${library.id}`, {
         name: editName,
         description: editDescription === '' ? null : editDescription,
+        exclude_from_statistics: excludeFromStatistics,
+        exclude_from_reports: excludeFromReports,
       })
       onSaved()
     } catch (err) {
@@ -196,6 +206,16 @@ export function LibrarySettingsDialog({ library, shareableUsers, open, onClose, 
               {t('libraries.descriptionLabel')}
               <textarea className="panel-select" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
             </label>
+            {/* GitHub issue #176 — doesn't affect visibility (listing/opening/search) at all, only whether this library's data feeds StatisticsService/ReportsService. */}
+            <label className="panel-field">
+              <input type="checkbox" checked={excludeFromStatistics} onChange={(e) => setExcludeFromStatistics(e.target.checked)} />
+              {t('libraries.exclusion.fromStatistics')}
+            </label>
+            <label className="panel-field">
+              <input type="checkbox" checked={excludeFromReports} onChange={(e) => setExcludeFromReports(e.target.checked)} />
+              {t('libraries.exclusion.fromReports')}
+            </label>
+            <p className="hint">{t('libraries.exclusion.hint')}</p>
             <button type="submit">{t('admin.actions.save')}</button>
             {infoError && <p role="alert">{infoError}</p>}
           </form>

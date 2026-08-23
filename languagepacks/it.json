@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} elementi",
       "confirmDelete": "Eliminare la biblioteca «{{name}}»? Questa azione non può essere annullata.",
       "descriptionLabel": "Descrizione",
+      "exclusion": {
+        "fromStatistics": "Escludi dalle statistiche",
+        "fromReports": "Escludi dai report",
+        "hint": "Riguarda solo statistiche/report: la biblioteca resta visibile e ricercabile."
+      },
       "mediaTypeLabel": "Tipo di media",
       "mediaType": {
         "book": "Libro",

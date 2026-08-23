@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} elementos",
       "confirmDelete": "¿Eliminar la biblioteca «{{name}}»? Esta acción no se puede deshacer.",
       "descriptionLabel": "Descripción",
+      "exclusion": {
+        "fromStatistics": "Excluir de las estadísticas",
+        "fromReports": "Excluir de los informes",
+        "hint": "Solo afecta a las estadísticas/informes: la biblioteca sigue siendo visible y localizable."
+      },
       "mediaTypeLabel": "Tipo de medio",
       "mediaType": {
         "book": "Libro",

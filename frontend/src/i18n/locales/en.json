@@ -50,6 +50,11 @@
     "itemsTitle_other": "{{count}} items",
     "confirmDelete": "Delete library “{{name}}”? This cannot be undone.",
     "descriptionLabel": "Description",
+    "exclusion": {
+      "fromStatistics": "Exclude from statistics",
+      "fromReports": "Exclude from reports",
+      "hint": "Only affects statistics/reports — the library stays visible and searchable."
+    },
     "mediaTypeLabel": "Media type",
     "mediaType": {
       "book": "Book",

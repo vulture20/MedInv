@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} oppføringer",
       "confirmDelete": "Slette biblioteket «{{name}}»? Dette kan ikke angres.",
       "descriptionLabel": "Beskrivelse",
+      "exclusion": {
+        "fromStatistics": "Ekskluder fra statistikk",
+        "fromReports": "Ekskluder fra rapporter",
+        "hint": "Påvirker kun statistikk/rapporter — biblioteket forblir synlig og søkbart."
+      },
       "mediaTypeLabel": "Medietype",
       "mediaType": {
         "book": "Bok",

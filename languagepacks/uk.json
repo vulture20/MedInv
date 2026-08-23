@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} елементів",
       "confirmDelete": "Видалити бібліотеку «{{name}}»? Цю дію не можна скасувати.",
       "descriptionLabel": "Опис",
+      "exclusion": {
+        "fromStatistics": "Виключити зі статистики",
+        "fromReports": "Виключити зі звітів",
+        "hint": "Стосується лише статистики/звітів — бібліотека залишається видимою та доступною для пошуку."
+      },
       "mediaTypeLabel": "Тип носія",
       "mediaType": {
         "book": "Книга",

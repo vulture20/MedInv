@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} kohdetta",
       "confirmDelete": "Poistetaanko kirjasto ”{{name}}”? Tätä ei voi perua.",
       "descriptionLabel": "Kuvaus",
+      "exclusion": {
+        "fromStatistics": "Sulje pois tilastoista",
+        "fromReports": "Sulje pois raporteista",
+        "hint": "Vaikuttaa vain tilastoihin/raportteihin – kirjasto pysyy näkyvänä ja haettavissa."
+      },
       "mediaTypeLabel": "Mediatyyppi",
       "mediaType": {
         "book": "Kirja",

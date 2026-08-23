@@ -34,9 +34,15 @@ class StatisticsService
 
     public function overviewFor(User $user): array
     {
-        $libraries = $this->accessService->visibleLibrariesQuery($user)->withCount([
-            'mediaBooks', 'mediaCds', 'mediaDvdBlurays',
-        ])->get();
+        // GitHub issue #176: a library flagged exclude_from_statistics
+        // (LibrarySettingsDialog.tsx's edit form) is otherwise still fully
+        // visible/writable per LibraryAccessService — this only removes it
+        // from this method's own aggregates, not from LibraryController's
+        // listing or SearchService's results.
+        $libraries = $this->accessService->visibleLibrariesQuery($user)
+            ->where('exclude_from_statistics', false)
+            ->withCount(['mediaBooks', 'mediaCds', 'mediaDvdBlurays'])
+            ->get();
 
         // GitHub issue #62: `total_value` still sums `price` as a bare
         // number regardless of `currency` (#58) — a real gap this doesn't
@@ -87,12 +93,16 @@ class StatisticsService
      * calendar day; updateOrCreate() makes re-running it the same day (a
      * crash, a manual `php artisan medinv:snapshot-library-values`)
      * overwrite rather than duplicate today's row.
+     *
+     * Skips exclude_from_statistics libraries (GitHub issue #176) — there's
+     * no point recording history for a series valueHistoryFor() below will
+     * never surface anyway.
      */
     public function snapshotAll(): void
     {
         $today = Carbon::today()->toDateString();
 
-        foreach (Library::all() as $library) {
+        foreach (Library::where('exclude_from_statistics', false)->get() as $library) {
             LibraryValueSnapshot::query()->updateOrCreate(
                 ['library_id' => $library->id, 'snapshot_date' => $today],
                 [
@@ -115,13 +125,14 @@ class StatisticsService
      * calendar day, and a single global cutover is enough (no need to
      * track one per library). Scoped through LibraryAccessService like
      * overviewFor(), so an unshared library contributes nothing here
-     * either.
+     * either — and, like overviewFor(), also excludes exclude_from_statistics
+     * libraries (GitHub issue #176).
      *
      * @return array{libraries: array<int, array{library_id:int, library_name:string, series: array}>, accumulated: array{series: array}, cutover_date: ?string}
      */
     public function valueHistoryFor(User $user): array
     {
-        $libraries = $this->accessService->visibleLibrariesQuery($user)->get();
+        $libraries = $this->accessService->visibleLibrariesQuery($user)->where('exclude_from_statistics', false)->get();
         $cutoverDate = LibraryValueSnapshot::query()->min('snapshot_date');
 
         $perLibrary = $libraries->map(fn (Library $library) => [

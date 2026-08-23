@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * type-specific tables (mediaBooks/mediaCds/mediaDvdBlurays) depending on
  * this value.
  */
-#[Fillable(['name', 'description', 'media_type', 'owner_id', 'is_sample_library'])]
+#[Fillable(['name', 'description', 'media_type', 'owner_id', 'is_sample_library', 'exclude_from_statistics', 'exclude_from_reports'])]
 class Library extends Model
 {
     use HasFactory;
@@ -24,6 +24,9 @@ class Library extends Model
     {
         return [
             'is_sample_library' => 'boolean',
+            // GitHub issue #176 — see the creating migration's docblock.
+            'exclude_from_statistics' => 'boolean',
+            'exclude_from_reports' => 'boolean',
         ];
     }
 

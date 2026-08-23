@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} færslur",
       "confirmDelete": "Eyða safninu „{{name}}“? Þessu er ekki hægt að afturkalla.",
       "descriptionLabel": "Lýsing",
+      "exclusion": {
+        "fromStatistics": "Undanskilja frá tölfræði",
+        "fromReports": "Undanskilja frá skýrslum",
+        "hint": "Hefur aðeins áhrif á tölfræði/skýrslur — safnið er áfram sýnilegt og leitanlegt."
+      },
       "mediaTypeLabel": "Efnistegund",
       "mediaType": {
         "book": "Bók",

@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} itens",
       "confirmDelete": "Excluir a biblioteca \"{{name}}\"? Esta ação não pode ser desfeita.",
       "descriptionLabel": "Descrição",
+      "exclusion": {
+        "fromStatistics": "Excluir das estatísticas",
+        "fromReports": "Excluir dos relatórios",
+        "hint": "Afeta apenas estatísticas/relatórios — a biblioteca continua visível e pesquisável."
+      },
       "mediaTypeLabel": "Tipo de mídia",
       "mediaType": {
         "book": "Livro",

@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} pozycji",
       "confirmDelete": "Usunąć bibliotekę „{{name}}”? Tej czynności nie można cofnąć.",
       "descriptionLabel": "Opis",
+      "exclusion": {
+        "fromStatistics": "Wyklucz ze statystyk",
+        "fromReports": "Wyklucz z raportów",
+        "hint": "Dotyczy tylko statystyk/raportów — biblioteka pozostaje widoczna i przeszukiwalna."
+      },
       "mediaTypeLabel": "Typ multimediów",
       "mediaType": {
         "book": "Książka",

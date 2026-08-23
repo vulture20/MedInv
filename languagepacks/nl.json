@@ -53,6 +53,11 @@
       "itemsTitle_other": "{{count}} items",
       "confirmDelete": "Bibliotheek \"{{name}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "descriptionLabel": "Beschrijving",
+      "exclusion": {
+        "fromStatistics": "Uitsluiten van statistieken",
+        "fromReports": "Uitsluiten van rapportages",
+        "hint": "Heeft alleen invloed op statistieken/rapportages — de bibliotheek blijft zichtbaar en doorzoekbaar."
+      },
       "mediaTypeLabel": "Mediatype",
       "mediaType": {
         "book": "Boek",
