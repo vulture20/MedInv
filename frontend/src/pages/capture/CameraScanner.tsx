@@ -24,17 +24,50 @@ const POSSIBLE_FORMATS = [BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeForm
 const REPEAT_SUPPRESSION_MS = 3000
 
 /**
+ * GitHub issue #177: a short synthesized confirmation beep, played on every
+ * accepted decode — the "did that register?" feedback a dedicated hardware
+ * barcode scanner already gives via its own built-in speaker, which this
+ * camera-based path otherwise has none of at all. A plain oscillator via
+ * the Web Audio API rather than a bundled sound file: a ~150ms tone needs
+ * no real audio asset, and generating it in code avoids adding a network
+ * request/bundle asset for something this small. `ctx` is created lazily on
+ * the first successful decode (not at module/mount time — constructing an
+ * AudioContext before any user gesture triggers a browser autoplay warning
+ * on some browsers) and reused for every later beep in the same session
+ * rather than recreated each time.
+ */
+function playScanBeep(ctx: AudioContext) {
+  if (ctx.state === 'suspended') void ctx.resume()
+
+  const oscillator = ctx.createOscillator()
+  const gain = ctx.createGain()
+  oscillator.type = 'sine'
+  oscillator.frequency.value = 1046.5 // C6 — high enough to read as a clear "beep" over typical device speakers.
+  // A short exponential decay reads as a crisp "beep" rather than an abrupt
+  // click (jumping straight to 0 discontinuously) or a lingering tone.
+  gain.gain.setValueAtTime(0.2, ctx.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.15)
+  oscillator.connect(gain)
+  gain.connect(ctx.destination)
+  oscillator.start()
+  oscillator.stop(ctx.currentTime + 0.15)
+}
+
+/**
  * Camera-based barcode scanning (briefing 7.2) — the third capture path
  * alongside the hardware scanner and manual entry, both of which already
  * funnel into CapturePage's scan handler; this component only decodes and
  * hands the result to that same handler via onDecode, exactly like a
- * hardware scanner "typing" a code would.
+ * hardware scanner "typing" a code would. Also plays a short confirmation
+ * beep on every accepted decode (GitHub issue #177) — see playScanBeep()'s
+ * own docblock.
  */
 export function CameraScanner({ onDecode, onClose }: CameraScannerProps) {
   const { t } = useTranslation()
   const videoRef = useRef<HTMLVideoElement>(null)
   const controlsRef = useRef<IScannerControls | null>(null)
   const lastDecodeRef = useRef<{ code: string; at: number } | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
   // Kept in a ref rather than the effect's dependency array: onDecode is
   // typically a fresh closure every render on the caller's side, and
   // restarting the camera stream on every such render would be janky.
@@ -62,6 +95,16 @@ export function CameraScanner({ onDecode, onClose }: CameraScannerProps) {
         if (last && last.code === code && now - last.at < REPEAT_SUPPRESSION_MS) return
 
         lastDecodeRef.current = { code, at: now }
+
+        try {
+          audioContextRef.current ??= new AudioContext()
+          playScanBeep(audioContextRef.current)
+        } catch {
+          // Audio is a nice-to-have here, not essential to capture itself —
+          // a failure (no Web Audio support, a blocked autoplay policy, ...)
+          // should never stop the decode from being handed to onDecode below.
+        }
+
         onDecodeRef.current(code)
       })
       .then((controls) => {
@@ -79,6 +122,8 @@ export function CameraScanner({ onDecode, onClose }: CameraScannerProps) {
     return () => {
       cancelled = true
       controlsRef.current?.stop()
+      void audioContextRef.current?.close()
+      audioContextRef.current = null
     }
   }, [])
 

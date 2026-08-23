@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
 import { Spinner } from '../../components/Spinner'
 import { describeError } from '../admin/adminErrors'
+import { scrollPastStickyHeader } from '../../utils/scrollIntoView'
 import { CreateMediaItemDialog } from '../libraries/CreateMediaItemDialog'
 import type { LibraryRef, MediaItem } from '../libraries/mediaItemFields'
 import { formatProviderKey, MetadataMergeReview, ProviderStatusList, type MergedMetadata, type ProviderStatus } from './MetadataMergeReview'
@@ -159,6 +160,15 @@ export function CapturePage() {
   // (not `results.length` compared against 0 directly).
   const codeInputRef = useRef<HTMLInputElement>(null)
   const previousResultsLength = useRef(0)
+  // GitHub issue #177 — see the effect below (mirrors SearchPage.tsx's own
+  // #122/#172 fix, now shared via scrollPastStickyHeader): bumped whenever
+  // an EAN is actually submitted for lookup (manual entry, hardware
+  // scanner, camera decode, or a text-file batch), not just once the
+  // lookup resolves — the results section already shows a pending spinner
+  // entry the instant this happens, and that's exactly the "something just
+  // happened" feedback a small screen otherwise misses entirely.
+  const resultsRef = useRef<HTMLElement>(null)
+  const [scanActivityAt, setScanActivityAt] = useState(0)
   // GitHub issue #110 — previously missing entirely, on this effect and on
   // scanCode()/submitTextFile()/confirmMerged() below: a failed request
   // just silently did nothing (the initial library list stayed empty with
@@ -198,6 +208,22 @@ export function CapturePage() {
     previousResultsLength.current = results.length
   }, [results.length])
 
+  /**
+   * GitHub issue #177: scrolls the results panel into view every time an
+   * EAN is submitted, so it's visible even on a small screen where it
+   * would otherwise sit below the fold — the whole point being that a
+   * successful scan is visibly acknowledged, not just recorded silently
+   * off-screen. A plain effect (not inline in scanCode()/submitTextFile()
+   * themselves) so it runs after the results <section> has actually
+   * (re-)rendered — it's conditionally mounted only once results.length ||
+   * pendingLookups.length > 0, so resultsRef.current can be null on the
+   * very first scan of a session until that render lands.
+   */
+  useEffect(() => {
+    if (scanActivityAt === 0) return
+    if (resultsRef.current) scrollPastStickyHeader(resultsRef.current)
+  }, [scanActivityAt])
+
   async function scanCode(code: string) {
     const library = libraries.find((l) => l.id === libraryId)
     const ean = code.trim()
@@ -214,6 +240,7 @@ export function CapturePage() {
     // provider server-side.
     const pendingId = nextResultId.current++
     setPendingLookups((prev) => [{ ean, library, id: pendingId }, ...prev])
+    setScanActivityAt(Date.now())
     setError(null)
     try {
       const { data } = await apiClient.post<ScanResult>(`/libraries/${library.id}/capture/scan`, { ean })
@@ -251,6 +278,7 @@ export function CapturePage() {
       .filter(Boolean)
     const pendingEntries = eans.map((ean) => ({ ean, library, id: nextResultId.current++ }))
     setPendingLookups((prev) => [...pendingEntries, ...prev])
+    if (pendingEntries.length > 0) setScanActivityAt(Date.now())
 
     const form = new FormData()
     form.append('file', file)
@@ -452,7 +480,7 @@ export function CapturePage() {
       </section>
 
       {(results.length > 0 || pendingLookups.length > 0) && (
-        <section className="panel-card">
+        <section className="panel-card" ref={resultsRef}>
           <h2>{t('capture.resultsTitle', { count: results.length })}</h2>
 
           <ul className="capture-results">

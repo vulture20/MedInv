@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { apiClient } from '../../api/client'
 import { describeError } from '../admin/adminErrors'
 import { SortableHeader } from '../../components/SortableHeader'
+import { scrollPastStickyHeader } from '../../utils/scrollIntoView'
 import { MediaItemDetailDialog } from '../libraries/MediaItemDetailDialog'
 import { coverSrc, formatPrice, subtitleField, type LibraryRef, type MediaItem } from '../libraries/mediaItemFields'
 import { SearchFilterPanel, type SearchFilterOptions } from './SearchFilterPanel'
@@ -22,11 +23,6 @@ import {
 /** GET /search's response shape: a full media item (SearchService returns the whole Eloquent model, no field selection) plus its owning library — unlike LibraryDetailPage's item list, results can span several libraries/media types at once, so each hit carries its own `library` rather than the page having one fixed library for all of them. */
 interface SearchHit extends MediaItem {
   library: LibraryRef
-}
-
-/** GitHub issue #122's auto-scroll-to-results respects `prefers-reduced-motion`, same care index.css's own CSS-only checks (e.g. DashboardPage.tsx's carousel animation) already take — `scrollIntoView`'s `behavior` has no CSS equivalent, so this is a JS-level check instead, same `window.matchMedia` primitive ThemeContext.tsx already uses for its own (unrelated) dark-mode detection. */
-function prefersReducedMotion(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 /**
@@ -193,26 +189,11 @@ export function SearchPage() {
   // first render (before any fetch has ever completed) — a search that's
   // already in the URL on mount (e.g. via the header search box, or a
   // bookmarked/shared search URL) still scrolls once it resolves, same as
-  // clicking "Suchen" directly on this page would.
-  //
-  // GitHub issue #172 — `.app-header` (index.css) is `position: sticky;
-  // top: 0` and stays pinned while scrolled. Without accounting for it,
-  // `scrollIntoView`'s default `block: 'start'` aligns the results
-  // section's own top edge with the viewport's top edge, which then sits
-  // directly *behind* that pinned header — the "N Ergebnisse" heading
-  // lands hidden right where a user's eye would land, especially on a
-  // small screen where the scroll then looks like it did nothing at all.
-  // The header's height is measured live via getBoundingClientRect()
-  // rather than hardcoded, so this stays correct if the header's own
-  // height ever changes (responsive layout, added content, ...).
+  // clicking "Suchen" directly on this page would. See scrollPastStickyHeader's
+  // own docblock (GitHub issue #172) for why this isn't a plain scrollIntoView().
   useEffect(() => {
     if (searchCompletedAt === 0) return
-    const target = resultsRef.current
-    if (!target) return
-    const header = document.querySelector('.app-header')
-    const headerHeight = header instanceof HTMLElement ? header.getBoundingClientRect().height : 0
-    target.style.scrollMarginTop = `${headerHeight + 8}px`
-    target.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+    if (resultsRef.current) scrollPastStickyHeader(resultsRef.current)
   }, [searchCompletedAt])
 
   function submitSearch(e: React.FormEvent) {
