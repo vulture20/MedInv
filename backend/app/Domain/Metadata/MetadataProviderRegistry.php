@@ -10,6 +10,7 @@ use App\Domain\Metadata\Providers\Book\GeminiBookProvider;
 use App\Domain\Metadata\Providers\Book\GoogleBooksProvider;
 use App\Domain\Metadata\Providers\Book\HardcoverProvider;
 use App\Domain\Metadata\Providers\Book\JpcBookProvider;
+use App\Domain\Metadata\Providers\Book\MistralBookProvider;
 use App\Domain\Metadata\Providers\Book\OpenAiBookProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
 use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
@@ -17,12 +18,14 @@ use App\Domain\Metadata\Providers\Cd\ClaudeCdProvider;
 use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
 use App\Domain\Metadata\Providers\Cd\GeminiCdProvider;
 use App\Domain\Metadata\Providers\Cd\JpcCdProvider;
+use App\Domain\Metadata\Providers\Cd\MistralCdProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use App\Domain\Metadata\Providers\Cd\OpenAiCdProvider;
 use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\ClaudeDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\GeminiDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\JpcDvdBlurayProvider;
+use App\Domain\Metadata\Providers\DvdBluray\MistralDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\OpenAiDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\TmdbProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
@@ -73,15 +76,22 @@ class MetadataProviderRegistry
      * left in the plugin list as a permanently dead, misleading option.
      *
      * The three Claude providers (GitHub issue #59), the three
-     * OpenAI-backed ones (GitHub issue #65), and the three Gemini-backed
-     * ones (GitHub issue #66) — offering the same LLM-as-metadata-source
-     * concept via a second and third vendor — are added here for a
-     * related but distinct reason: an LLM-backed source costs real money
-     * per lookup (unlike every non-Beta provider above, which is free or
-     * has a generous free tier) and carries a hallucination risk that, per
-     * #59's own proposal, is exactly why it shouldn't turn on just
-     * because an admin installed/updated MedInv — a wrong, invented detail
-     * is quieter and easier to miss than a plain "no match".
+     * OpenAI-backed ones (GitHub issue #65), the three Gemini-backed ones
+     * (GitHub issue #66), and the three Mistral-backed ones (GitHub issue
+     * #68) — offering the same LLM-as-metadata-source concept via a
+     * second, third, and fourth vendor — are added here for a related but
+     * distinct reason: an LLM-backed source costs real money per lookup
+     * (unlike every non-Beta provider above, which is free or has a
+     * generous free tier) and carries a hallucination risk that, per #59's
+     * own proposal, is exactly why it shouldn't turn on just because an
+     * admin installed/updated MedInv — a wrong, invented detail is quieter
+     * and easier to miss than a plain "no match". The Mistral providers
+     * carry one further reason beyond the other three: whether their
+     * structured-output schema even combines with the web_search tool on
+     * Mistral's Conversations API is itself unconfirmed (see
+     * MistralMetadataProvider's own docblock) — a real, disclosed
+     * uncertainty on top of the hallucination risk every LLM source here
+     * already carries.
      *
      * `dvd_bluray.tmdb` (GitHub issue #157) is disabled by default for yet
      * another reason, distinct from every case above: TMDB's own API
@@ -98,6 +108,7 @@ class MetadataProviderRegistry
         'book.claude', 'cd.claude', 'dvd_bluray.claude',
         'book.openai', 'cd.openai', 'dvd_bluray.openai',
         'book.gemini', 'cd.gemini', 'dvd_bluray.gemini',
+        'book.mistral', 'cd.mistral', 'dvd_bluray.mistral',
         'dvd_bluray.tmdb',
     ];
 
@@ -112,6 +123,7 @@ class MetadataProviderRegistry
             ClaudeBookProvider::class,
             OpenAiBookProvider::class,
             GeminiBookProvider::class,
+            MistralBookProvider::class,
             JpcBookProvider::class,
             MusicBrainzProvider::class,
             DiscogsProvider::class,
@@ -119,12 +131,14 @@ class MetadataProviderRegistry
             ClaudeCdProvider::class,
             OpenAiCdProvider::class,
             GeminiCdProvider::class,
+            MistralCdProvider::class,
             JpcCdProvider::class,
             UpcMdbProvider::class,
             AmazonDvdBlurayProvider::class,
             ClaudeDvdBlurayProvider::class,
             OpenAiDvdBlurayProvider::class,
             GeminiDvdBlurayProvider::class,
+            MistralDvdBlurayProvider::class,
             JpcDvdBlurayProvider::class,
             TmdbProvider::class,
             // TODO: EmunationProvider (briefing 8.2 — DVD/Blu-ray)
