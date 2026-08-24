@@ -277,7 +277,15 @@ class StatisticsService
                 'year' => $this->dateYearDistribution($library, 'release_date'),
             ],
             'dvd_bluray' => [
-                'director' => $this->valueDistribution($library, 'director'),
+                // `director`/`cast` (GitHub issue #188) can each hold a
+                // comma-separated list too (a film with co-directors; an
+                // ensemble cast) — same reasoning as `languages` below:
+                // split so each person is counted on their own instead of
+                // the whole combination becoming one category. Harmless for
+                // the common single-value case, which just becomes a list
+                // of one.
+                'director' => $this->multiValueDistribution($library, 'director'),
+                'cast' => $this->multiValueDistribution($library, 'cast'),
                 // `languages` holds a comma-separated list (e.g. "Deutsch,
                 // Englisch") — split so each language is counted on its own
                 // instead of the whole combination becoming one category.

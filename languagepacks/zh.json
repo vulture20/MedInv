@@ -260,6 +260,7 @@
         "publisher": "出版社",
         "artist": "艺术家",
         "director": "导演",
+        "cast": "演员表",
         "year": "出版年份"
       },
       "moreCount": "另有 {{count}} 项",

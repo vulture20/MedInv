@@ -257,6 +257,7 @@
       "publisher": "Herausgeber",
       "artist": "Künstler",
       "director": "Regisseur",
+      "cast": "Darsteller",
       "year": "Erscheinungsjahr"
     },
     "moreCount": "+{{count}} weitere",

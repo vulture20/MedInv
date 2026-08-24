@@ -257,6 +257,7 @@
       "publisher": "Publisher",
       "artist": "Artist",
       "director": "Director",
+      "cast": "Cast",
       "year": "Publication year"
     },
     "moreCount": "+{{count}} more",

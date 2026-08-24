@@ -105,6 +105,29 @@ class StatisticsDistributionsTest extends TestCase
         $this->assertSame(['2020' => 2], $stats['distributions']['year']);
     }
 
+    /** GitHub issue #188: `director` (co-directors) and `cast` (ensemble casts) can each hold a comma-separated list too, same as `languages` — each name must be counted on its own, not the whole combination as one category. */
+    public function test_dvd_bluray_library_splits_the_comma_separated_director_and_cast_columns(): void
+    {
+        $user = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $user->id]);
+
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'A', 'ean' => '3000000000003',
+            'director' => 'Anthony Russo, Joe Russo', 'cast' => 'Robert Downey Jr., Chris Evans',
+        ]);
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'B', 'ean' => '3000000000004',
+            'director' => 'Joe Russo', 'cast' => 'Chris Evans, Scarlett Johansson',
+        ]);
+        // No director/cast at all — must not appear in either distribution.
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'C', 'ean' => '3000000000005']);
+
+        $stats = $this->statsFor($library->id);
+
+        $this->assertSame(['Joe Russo' => 2, 'Anthony Russo' => 1], $stats['distributions']['director']);
+        $this->assertSame(['Chris Evans' => 2, 'Robert Downey Jr.' => 1, 'Scarlett Johansson' => 1], $stats['distributions']['cast']);
+    }
+
     public function test_distributions_respect_library_visibility(): void
     {
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);

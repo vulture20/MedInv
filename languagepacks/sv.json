@@ -260,6 +260,7 @@
         "publisher": "Förlag",
         "artist": "Artist",
         "director": "Regissör",
+        "cast": "Skådespelare",
         "year": "Utgivningsår"
       },
       "moreCount": "+{{count}} till",

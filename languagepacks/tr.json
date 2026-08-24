@@ -260,6 +260,7 @@
         "publisher": "Yayıncı",
         "artist": "Sanatçı",
         "director": "Yönetmen",
+        "cast": "Oyuncular",
         "year": "Yayın yılı"
       },
       "moreCount": "+{{count}} tane daha",

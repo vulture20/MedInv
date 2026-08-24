@@ -260,6 +260,7 @@
         "publisher": "Wydawca",
         "artist": "Artysta",
         "director": "Reżyser",
+        "cast": "Obsada",
         "year": "Rok wydania"
       },
       "moreCount": "+{{count}} więcej",

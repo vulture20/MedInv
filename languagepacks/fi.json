@@ -260,6 +260,7 @@
         "publisher": "Kustantaja",
         "artist": "Esittäjä",
         "director": "Ohjaaja",
+        "cast": "Näyttelijät",
         "year": "Julkaisuvuosi"
       },
       "moreCount": "+{{count}} lisää",

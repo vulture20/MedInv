@@ -260,6 +260,7 @@
         "publisher": "Editorial",
         "artist": "Artista",
         "director": "Director",
+        "cast": "Reparto",
         "year": "Año de publicación"
       },
       "moreCount": "+{{count}} más",
