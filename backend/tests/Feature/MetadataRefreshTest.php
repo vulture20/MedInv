@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Domain\Metadata\CurlImageFetcher;
+use App\Domain\Metadata\HostnameResolver;
 use App\Models\Library;
 use App\Models\MediaBook;
 use App\Models\MediaCd;
@@ -174,6 +175,8 @@ class MetadataRefreshTest extends TestCase
     public function test_reimport_downloads_and_replaces_the_cover(): void
     {
         Storage::fake('local');
+        // GitHub issue #184's SSRF-guard hardening resolves an ordinary hostname before allowing a fetch.
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldReceive('resolve')->andReturn(['93.184.216.34']));
         $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn($this->fakeJpegBytes()));
         $owner = $this->actingAsUser();
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);

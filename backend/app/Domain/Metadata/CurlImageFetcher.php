@@ -52,8 +52,18 @@ class CurlImageFetcher
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => self::TIMEOUT_SECONDS,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 5,
+            // GitHub issue #184: deliberately does NOT follow redirects.
+            // CoverDownloadService::download() validates $url's own host
+            // against the SSRF guard before ever calling fetch() — letting
+            // curl transparently follow a redirect here would let a
+            // response from an already-validated *public* host retarget
+            // the actual request to an internal address (e.g. a 302 to
+            // http://169.254.169.254/...) with no re-validation at all. A
+            // provider whose cover URL happens to redirect simply gets
+            // treated as a failed fetch (this class's own "best effort"
+            // framing, see this class's docblock) rather than transparently
+            // followed.
+            CURLOPT_FOLLOWLOCATION => false,
         ]);
 
         $startedAt = microtime(true);

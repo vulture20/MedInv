@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Domain\Metadata\CurlImageFetcher;
+use App\Domain\Metadata\HostnameResolver;
 use App\Models\Library;
 use App\Models\MediaBook;
 use App\Models\User;
@@ -41,9 +42,16 @@ class MetadataImportCoverTest extends TestCase
         return $bytes;
     }
 
+    /** GitHub issue #184's SSRF-guard hardening resolves an ordinary hostname before allowing a fetch — a public IP here matches CoverDownloadServiceTest's own default. */
+    private function fakeResolvesToPublicIp(): void
+    {
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldReceive('resolve')->andReturn(['93.184.216.34']));
+    }
+
     public function test_import_downloads_and_attaches_the_chosen_cover(): void
     {
         Storage::fake('local');
+        $this->fakeResolvesToPublicIp();
         $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn($this->fakeJpegBytes()));
         $owner = $this->actingAsOwner();
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
@@ -61,6 +69,7 @@ class MetadataImportCoverTest extends TestCase
     public function test_import_succeeds_even_when_the_cover_download_fails(): void
     {
         Storage::fake('local');
+        $this->fakeResolvesToPublicIp();
         $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn(null));
         $owner = $this->actingAsOwner();
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);

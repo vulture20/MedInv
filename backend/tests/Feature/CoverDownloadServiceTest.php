@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Domain\Metadata\CoverDownloadService;
 use App\Domain\Metadata\CurlImageFetcher;
+use App\Domain\Metadata\HostnameResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -58,9 +59,26 @@ class CoverDownloadServiceTest extends TestCase
         $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn($bytes));
     }
 
+    /**
+     * Mocks HostnameResolver::resolve() to return $ips (a public IP by
+     * default) for any hostname — GitHub issue #184. Every existing test
+     * here uses the `covers.example.com`-style fixture hostname, which
+     * would otherwise depend on that domain's real (currently absent) DNS
+     * records resolving to nothing every single test run; mocking this
+     * makes the "ordinary external host" case deterministic the same way
+     * fakeFetch() already makes the transport deterministic, rather than
+     * relying on a real, unmocked DNS lookup happening to keep behaving the
+     * same way indefinitely.
+     */
+    private function fakeResolve(array $ips = ['93.184.216.34']): void
+    {
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldReceive('resolve')->andReturn($ips));
+    }
+
     public function test_downloads_and_stores_a_valid_image(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
         $this->fakeFetch($this->fakeJpegBytes());
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
@@ -75,6 +93,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_downloading_also_generates_a_thumbnail(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
         $this->fakeFetch($this->fakeJpegBytes(400, 300));
         $service = app(CoverDownloadService::class);
 
@@ -86,6 +105,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_thumbnail_is_scaled_down_but_never_upscaled(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
 
         // A large source: the thumbnail must be smaller than the original in both dimensions.
         $this->fakeFetch($this->fakeJpegBytes(800, 600));
@@ -106,6 +126,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_thumbnail_preserves_png_transparency(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
         $this->fakeFetch($this->fakeTransparentPngBytes());
         $service = app(CoverDownloadService::class);
 
@@ -120,6 +141,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_rejects_non_image_content(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
         $this->fakeFetch('<html>not an image</html>');
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
@@ -131,6 +153,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_rejects_a_failed_response(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
         // CurlImageFetcher itself already turns a non-2xx status into null — see its own unit-level coverage.
         $this->fakeFetch(null);
 
@@ -142,6 +165,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_rejects_oversized_content(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
         $this->fakeFetch(str_repeat('a', 6 * 1024 * 1024));
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
@@ -153,6 +177,7 @@ class CoverDownloadServiceTest extends TestCase
     {
         Storage::fake('local');
         $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldNotReceive('resolve'));
 
         $path = app(CoverDownloadService::class)->download('file:///etc/passwd', 'book', '9780000000001');
 
@@ -165,12 +190,15 @@ class CoverDownloadServiceTest extends TestCase
      * upstream restricting it to a public host. A literal loopback/link-
      * local/RFC1918 IP — e.g. a cloud metadata endpoint — must be rejected
      * before this server ever makes the request, not merely have its
-     * response discarded afterward.
+     * response discarded afterward. Also confirms a literal IP host never
+     * needs DNS resolution at all (shouldNotReceive('resolve')) — the
+     * isDisallowedHost() short-circuit for that case.
      */
     public function test_rejects_a_url_targeting_a_private_or_reserved_ip_without_attempting_a_request(): void
     {
         Storage::fake('local');
         $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldNotReceive('resolve'));
 
         foreach (['http://169.254.169.254/latest/meta-data/', 'http://127.0.0.1/x.jpg', 'http://[::1]/x.jpg', 'http://10.0.0.5/x.jpg'] as $url) {
             $path = app(CoverDownloadService::class)->download($url, 'book', '9780000000001');
@@ -178,10 +206,47 @@ class CoverDownloadServiceTest extends TestCase
         }
     }
 
-    /** A hostname (as opposed to a literal IP) is never resolved by the guard itself — see download()'s comment for why — so an ordinary external image host still reaches the (here, mocked) fetcher. */
-    public function test_a_url_with_an_ordinary_hostname_is_not_blocked_by_the_ssrf_guard(): void
+    /** GitHub issue #184: the core fix. A hostname resolving to a private/reserved IP — e.g. `localhost`, an internal Docker service name, a cloud metadata hostname — must be rejected exactly like a literal private IP already was, not sail straight through the way it used to. */
+    public function test_rejects_a_url_whose_hostname_resolves_to_a_private_or_reserved_ip(): void
     {
         Storage::fake('local');
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
+        $this->fakeResolve(['127.0.0.1']);
+
+        $path = app(CoverDownloadService::class)->download('http://localhost/x.jpg', 'book', '9780000000001');
+
+        $this->assertNull($path);
+    }
+
+    /** Same as above, but the hostname resolves to *multiple* addresses and only one of them is private — must still be rejected (blocking on any private address, not requiring all of them to be). */
+    public function test_rejects_a_url_whose_hostname_resolves_to_a_mix_of_public_and_private_ips(): void
+    {
+        Storage::fake('local');
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
+        $this->fakeResolve(['93.184.216.34', '10.0.0.5']);
+
+        $path = app(CoverDownloadService::class)->download('http://attacker-controlled.example/x.jpg', 'book', '9780000000001');
+
+        $this->assertNull($path);
+    }
+
+    /** An ordinary hostname resolving only to public addresses is not blocked — the guard's whole point is distinguishing this case from the one above, not blocking hostnames outright. */
+    public function test_allows_a_url_whose_hostname_resolves_only_to_public_ips(): void
+    {
+        Storage::fake('local');
+        $this->fakeResolve(['93.184.216.34']);
+        $this->fakeFetch($this->fakeJpegBytes());
+
+        $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
+
+        $this->assertNotNull($path);
+    }
+
+    /** An unresolvable hostname (this test suite's fake fixture domains, or a genuinely dead one) is not blocked by the guard itself — see isDisallowedHost()'s own docblock for why that's safe: CurlImageFetcher::fetch() already turns that into a harmless null on its own. */
+    public function test_an_unresolvable_hostname_is_not_blocked_by_the_guard_itself(): void
+    {
+        Storage::fake('local');
+        $this->fakeResolve([]);
         $this->fakeFetch($this->fakeJpegBytes());
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
@@ -193,6 +258,7 @@ class CoverDownloadServiceTest extends TestCase
     public function test_a_connection_failure_is_handled_gracefully(): void
     {
         Storage::fake('local');
+        $this->fakeResolve();
         $this->fakeFetch(null);
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');

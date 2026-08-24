@@ -38,7 +38,10 @@ class CoverDownloadService
     /** Longest side a thumbnail is scaled down to, preserving aspect ratio; never upscaled past the original. */
     private const THUMBNAIL_MAX_DIMENSION = 160;
 
-    public function __construct(private readonly CurlImageFetcher $imageFetcher) {}
+    public function __construct(
+        private readonly CurlImageFetcher $imageFetcher,
+        private readonly HostnameResolver $hostnameResolver,
+    ) {}
 
     /**
      * @return string|null The relative path to store as the item's `cover_path`,
@@ -53,24 +56,18 @@ class CoverDownloadService
         }
 
         // SSRF guard: `$url` reaches here straight from admin/user-facing
-        // input (MetadataController::import()/reimport()'s `cover_url`,
-        // itself sourced from a metadata provider's response or the
-        // frontend's MetadataMergeReview picker) — nothing upstream
-        // restricts it to a public host. Blocks the direct case (a literal
-        // loopback/link-local/RFC1918 IP, e.g. the cloud metadata address
-        // 169.254.169.254, or 127.0.0.1) before this server ever makes a
-        // request to it. Deliberately checks only a *literal* IP host, not
-        // one requiring DNS resolution — resolving every hostname here would
-        // also make this method (and its test suite, which mocks the actual
-        // request but exercises this exact code path) depend on real DNS
-        // even for entirely fake test domains. This does not close a
-        // DNS-rebinding attack (a hostname resolving to a public IP at
-        // request-validation time but a private one at connect time) or a
-        // redirect-based one (CurlImageFetcher::fetch() still follows
-        // redirects without re-checking each hop's host) — both are known,
-        // accepted residual gaps for this best-effort feature, not fixed here.
-        if ($this->isDisallowedLiteralIpHost($url)) {
-            Log::info('Cover download blocked: URL host is a private/reserved IP address.', ['url' => $url]);
+        // input (MediaItemController::store(), MetadataController::
+        // import()/reimport()'s `cover_url`, itself sourced from a metadata
+        // provider's response or the frontend's MetadataMergeReview picker)
+        // — nothing upstream restricts it to a public host, and any
+        // non-guest account can reach all three of those endpoints. Blocks
+        // a literal loopback/link-local/RFC1918 IP (e.g. the cloud metadata
+        // address 169.254.169.254, or 127.0.0.1) *and*, since GitHub issue
+        // #184, an ordinary hostname that resolves to one (localhost, an
+        // internal Docker service name, metadata.google.internal, ...) —
+        // see isDisallowedHost()'s own docblock for the resolution details.
+        if ($this->isDisallowedHost($url)) {
+            Log::info('Cover download blocked: URL host is a private/reserved address.', ['url' => $url]);
 
             return null;
         }
@@ -138,8 +135,28 @@ class CoverDownloadService
         return dirname($coverPath).'/thumb_'.basename($coverPath);
     }
 
-    /** See download()'s SSRF-guard comment for what this does and does not cover. */
-    private function isDisallowedLiteralIpHost(string $url): bool
+    /**
+     * See download()'s SSRF-guard comment for the "why" — this is the
+     * "how". Handles both a literal IP host (checked directly) and an
+     * ordinary hostname (resolved via HostnameResolver, then every
+     * resolved address is checked the same way) — GitHub issue #184 found
+     * the previous, literal-IP-only version let straight through the
+     * overwhelmingly common real-world SSRF target shape: any plain
+     * hostname at all, including `localhost`, an internal Docker service
+     * name, or a cloud metadata hostname like `metadata.google.internal`
+     * (none of which are literal IPs, so the old check never even looked
+     * at them).
+     *
+     * A hostname that fails to resolve at all (this test suite's fake
+     * `covers.example.com`-style fixtures, when HostnameResolver isn't
+     * mocked to return something) is deliberately *not* blocked here —
+     * CurlImageFetcher::fetch() already turns that into a harmless null via
+     * its own transport-level-failure handling (no request ever actually
+     * reaches anywhere), so there is no SSRF risk in letting an
+     * unresolvable host proceed to that stage; blocking it here too would
+     * only reject an operation that already safely fails on its own.
+     */
+    private function isDisallowedHost(string $url): bool
     {
         $host = parse_url($url, PHP_URL_HOST);
 
@@ -153,17 +170,25 @@ class CoverDownloadService
         // filter_var(..., FILTER_VALIDATE_IP) rejects the bracketed form
         // outright, so without stripping them first, an IPv6 loopback/link-
         // local literal would silently fall through as "not a recognized
-        // IP" -> treated as a hostname -> never blocked.
+        // IP" -> treated as a hostname needing resolution instead.
         $host = trim($host, '[]');
 
-        // filter_var() only recognizes a canonical dotted-quad/colon-hex IP
-        // string, not a hostname — so this is a no-op (never blocks) for an
-        // ordinary domain name, which is the overwhelmingly common case and
-        // exactly what lets test fixtures use a non-resolvable fake domain
-        // (e.g. https://covers.example.com/...) without this ever touching
-        // DNS.
-        return filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false
-            && filter_var($host, FILTER_VALIDATE_IP) !== false;
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            return $this->isPrivateOrReservedIp($host);
+        }
+
+        foreach ($this->hostnameResolver->resolve($host) as $ip) {
+            if ($this->isPrivateOrReservedIp($ip)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isPrivateOrReservedIp(string $ip): bool
+    {
+        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
     }
 
     /**
