@@ -65,8 +65,11 @@ class CoverDownloadService
         // address 169.254.169.254, or 127.0.0.1) *and*, since GitHub issue
         // #184, an ordinary hostname that resolves to one (localhost, an
         // internal Docker service name, metadata.google.internal, ...) —
-        // see isDisallowedHost()'s own docblock for the resolution details.
-        if ($this->isDisallowedHost($url)) {
+        // see resolveAndValidateHost()'s own docblock for the resolution
+        // details.
+        $resolvedIps = $this->resolveAndValidateHost($url);
+
+        if ($resolvedIps === null) {
             Log::info('Cover download blocked: URL host is a private/reserved address.', ['url' => $url]);
 
             return null;
@@ -75,7 +78,14 @@ class CoverDownloadService
         // CurlImageFetcher, not Http::get() — see that class's docblock for why
         // (a real, live-confirmed bug: Cloudflare-fronted image CDNs, e.g.
         // Discogs', block Laravel's Guzzle-based client but not raw curl).
-        $body = $this->imageFetcher->fetch($url);
+        // $resolvedIps (GitHub issue #83) is forwarded so the actual
+        // connection is pinned to exactly the address(es) just validated
+        // above via CURLOPT_RESOLVE, rather than letting curl re-resolve
+        // the hostname itself when it connects — see fetch()'s own
+        // docblock for why that second, independent lookup would otherwise
+        // reopen a DNS-rebinding gap between this check and the real
+        // request.
+        $body = $this->imageFetcher->fetch($url, $resolvedIps);
 
         return $body === null ? null : $this->store($body, $mediaType, $ean);
     }
@@ -155,13 +165,37 @@ class CoverDownloadService
      * reaches anywhere), so there is no SSRF risk in letting an
      * unresolvable host proceed to that stage; blocking it here too would
      * only reject an operation that already safely fails on its own.
+     *
+     * @return string[]|null null when the host is disallowed and the
+     *                       download must be blocked outright. Otherwise,
+     *                       the exact list of already-validated public IPs
+     *                       the caller must pin the real request to
+     *                       (GitHub issue #83) — empty for a literal IP
+     *                       host (nothing to pin; curl already targets
+     *                       exactly that address, no DNS involved at all)
+     *                       or an unresolvable hostname (also nothing to
+     *                       pin; left to fail naturally at the transport
+     *                       layer, same as before this method existed).
+     *                       This return value being the *same* resolved
+     *                       set that was just checked above — not a fresh,
+     *                       second HostnameResolver::resolve() call made
+     *                       later — is the whole point: DNS-rebinding
+     *                       specifically exploits a gap between "the
+     *                       address that was checked" and "the address
+     *                       that was actually connected to", most
+     *                       realistically via a second, independent lookup
+     *                       answering differently (a short TTL is trivial
+     *                       for an attacker who controls the domain).
+     *                       Checking once and reusing that exact result
+     *                       for both the validation and the pin closes
+     *                       that gap; resolving twice would not.
      */
-    private function isDisallowedHost(string $url): bool
+    private function resolveAndValidateHost(string $url): ?array
     {
         $host = parse_url($url, PHP_URL_HOST);
 
         if (! is_string($host)) {
-            return false;
+            return [];
         }
 
         // parse_url() returns a literal-IPv6 host's brackets as part of the
@@ -174,16 +208,18 @@ class CoverDownloadService
         $host = trim($host, '[]');
 
         if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
-            return $this->isPrivateOrReservedIp($host);
+            return $this->isPrivateOrReservedIp($host) ? null : [];
         }
 
-        foreach ($this->hostnameResolver->resolve($host) as $ip) {
+        $resolvedIps = $this->hostnameResolver->resolve($host);
+
+        foreach ($resolvedIps as $ip) {
             if ($this->isPrivateOrReservedIp($ip)) {
-                return true;
+                return null;
             }
         }
 
-        return false;
+        return $resolvedIps;
     }
 
     private function isPrivateOrReservedIp(string $ip): bool

@@ -242,7 +242,7 @@ class CoverDownloadServiceTest extends TestCase
         $this->assertNotNull($path);
     }
 
-    /** An unresolvable hostname (this test suite's fake fixture domains, or a genuinely dead one) is not blocked by the guard itself — see isDisallowedHost()'s own docblock for why that's safe: CurlImageFetcher::fetch() already turns that into a harmless null on its own. */
+    /** An unresolvable hostname (this test suite's fake fixture domains, or a genuinely dead one) is not blocked by the guard itself — see resolveAndValidateHost()'s own docblock for why that's safe: CurlImageFetcher::fetch() already turns that into a harmless null on its own. */
     public function test_an_unresolvable_hostname_is_not_blocked_by_the_guard_itself(): void
     {
         Storage::fake('local');
@@ -250,6 +250,47 @@ class CoverDownloadServiceTest extends TestCase
         $this->fakeFetch($this->fakeJpegBytes());
 
         $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
+
+        $this->assertNotNull($path);
+    }
+
+    /**
+     * GitHub issue #83: the exact, already-validated public IPs that
+     * resolveAndValidateHost() just checked must be the *same* ones the
+     * real request is pinned to via CurlImageFetcher::fetch()'s
+     * $resolveToIps parameter — a second, independent
+     * HostnameResolver::resolve() call made later (e.g. inside fetch()
+     * itself) would reopen the DNS-rebinding gap this whole mechanism
+     * exists to close. Storage::fake() intentionally not set up beyond
+     * what fetch()'s mock needs — this test only cares about the
+     * arguments fetch() is called with.
+     */
+    public function test_forwards_the_exact_validated_resolved_ips_to_curlimagefetcher_for_pinning(): void
+    {
+        Storage::fake('local');
+        $this->fakeResolve(['93.184.216.34', '2606:2800:220:1:248:1893:25c8:1946']);
+        $this->mock(CurlImageFetcher::class, function ($mock) {
+            $mock->shouldReceive('fetch')
+                ->once()
+                ->with('https://covers.example.com/dune.jpg', ['93.184.216.34', '2606:2800:220:1:248:1893:25c8:1946'])
+                ->andReturn($this->fakeJpegBytes());
+        });
+
+        $path = app(CoverDownloadService::class)->download('https://covers.example.com/dune.jpg', 'book', '9780000000001');
+
+        $this->assertNotNull($path);
+    }
+
+    /** A literal-IP host has nothing to pin (curl already connects to exactly that address, no DNS involved at all) — an empty array is forwarded rather than the literal IP itself, which fetch() correctly treats as "no CURLOPT_RESOLVE needed". */
+    public function test_forwards_no_resolved_ips_for_a_literal_public_ip_host(): void
+    {
+        Storage::fake('local');
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldNotReceive('resolve'));
+        $this->mock(CurlImageFetcher::class, function ($mock) {
+            $mock->shouldReceive('fetch')->once()->with('http://93.184.216.34/dune.jpg', [])->andReturn($this->fakeJpegBytes());
+        });
+
+        $path = app(CoverDownloadService::class)->download('http://93.184.216.34/dune.jpg', 'book', '9780000000001');
 
         $this->assertNotNull($path);
     }

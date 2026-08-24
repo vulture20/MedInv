@@ -45,11 +45,39 @@ class CurlImageFetcher
 {
     private const TIMEOUT_SECONDS = 10;
 
-    /** @return string|null Raw response body, or null on any non-2xx status, transport failure, or empty body. */
-    public function fetch(string $url): ?string
+    /**
+     * @param  string[]  $resolveToIps  GitHub issue #83: the exact, already-
+     *                                  validated public IP(s) CoverDownloadService's
+     *                                  SSRF guard resolved `$url`'s host to
+     *                                  (empty for a literal-IP URL or an
+     *                                  unresolvable hostname — nothing to
+     *                                  pin either way, see
+     *                                  CoverDownloadService::
+     *                                  resolveAndValidateHost()'s docblock).
+     *                                  When non-empty, the real connection
+     *                                  is pinned to exactly these addresses
+     *                                  via CURLOPT_RESOLVE instead of
+     *                                  letting curl resolve the hostname
+     *                                  itself at connect time — without
+     *                                  this, a second, independent DNS
+     *                                  lookup happening here, after the
+     *                                  caller's own check already passed,
+     *                                  would reopen the exact DNS-rebinding
+     *                                  gap that check exists to close (a
+     *                                  short-TTL attacker-controlled domain
+     *                                  could answer the two lookups
+     *                                  differently). CURLOPT_RESOLVE only
+     *                                  redirects which IP the TCP
+     *                                  connection is made to — it does not
+     *                                  touch the Host header or the TLS SNI
+     *                                  hostname sent for the handshake, so
+     *                                  HTTPS certificate validation against
+     *                                  the original hostname is unaffected.
+     * @return string|null Raw response body, or null on any non-2xx status, transport failure, or empty body.
+     */
+    public function fetch(string $url, array $resolveToIps = []): ?string
     {
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
+        $curlOptions = [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => self::TIMEOUT_SECONDS,
             // GitHub issue #184: deliberately does NOT follow redirects.
@@ -64,7 +92,20 @@ class CurlImageFetcher
             // framing, see this class's docblock) rather than transparently
             // followed.
             CURLOPT_FOLLOWLOCATION => false,
-        ]);
+        ];
+
+        if ($resolveToIps !== []) {
+            $host = trim((string) parse_url($url, PHP_URL_HOST), '[]');
+            $scheme = parse_url($url, PHP_URL_SCHEME) ?? 'http';
+            $port = parse_url($url, PHP_URL_PORT) ?? ($scheme === 'https' ? 443 : 80);
+            // "host:port:ip1,ip2,..." — curl's own documented CURLOPT_RESOLVE
+            // syntax for pinning a hostname to one or more literal addresses,
+            // taking priority over its normal DNS resolution for this request.
+            $curlOptions[CURLOPT_RESOLVE] = ["{$host}:{$port}:".implode(',', $resolveToIps)];
+        }
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, $curlOptions);
 
         $startedAt = microtime(true);
         $body = curl_exec($ch);

@@ -132,6 +132,37 @@ class CurlImageFetcherTest extends TestCase
         $this->assertNull($body);
     }
 
+    /**
+     * GitHub issue #83: proves $resolveToIps actually takes effect, not
+     * just that passing it doesn't error. `pin-test.invalid` uses the
+     * `.invalid` TLD (RFC 2606 — reserved to never resolve, by design) so
+     * this can only possibly succeed via CURLOPT_RESOLVE pinning it to the
+     * local fixture server; a real, unmocked DNS lookup for this hostname
+     * is guaranteed to fail everywhere, making this deterministic without
+     * needing to fake curl or DNS itself.
+     */
+    public function test_pins_the_connection_to_the_given_resolved_ips_instead_of_letting_curl_resolve_the_hostname(): void
+    {
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+
+        $body = (new CurlImageFetcher)->fetch('http://pin-test.invalid:'.self::$port.'/image.jpg', ['127.0.0.1']);
+
+        $this->assertNotNull($body);
+        $this->assertGreaterThan(0, strlen($body));
+    }
+
+    /** Without a pin, the same never-resolvable `.invalid` hostname correctly fails at the transport level — confirms the test above's success is really down to CURLOPT_RESOLVE, not some other fallback. */
+    public function test_an_unpinned_never_resolvable_hostname_fails(): void
+    {
+        Log::shouldReceive('debug')->zeroOrMoreTimes();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+
+        $body = (new CurlImageFetcher)->fetch('http://pin-test.invalid:'.self::$port.'/image.jpg');
+
+        $this->assertNull($body);
+    }
+
     /** A transport-level failure (e.g. connection refused) has no status/content-type/size at all — logged as null, not omitted or a crash — and still fires the existing 'Cover download failed.' INFO line unchanged. */
     public function test_a_connection_failure_is_logged_with_null_status_and_still_logs_the_existing_failure_line(): void
     {
