@@ -226,7 +226,7 @@ export function DashboardPage() {
       <header className="panel-page__header">
         <h1>{t('nav.home')}</h1>
         <p className="hint">
-          {user?.name} ({user?.level})
+          {user?.name} ({user ? t(`admin.level.${user.level}`) : ''})
         </p>
       </header>
 

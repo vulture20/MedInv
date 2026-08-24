@@ -346,6 +346,11 @@
         "active": "Etkin",
         "deactivated": "Devre dışı"
       },
+      "level": {
+        "guest": "Misafir",
+        "user": "Kullanıcı",
+        "admin": "Yönetici"
+      },
       "actions": {
         "deactivate": "Devre dışı bırak",
         "reactivate": "Yeniden etkinleştir",

@@ -347,6 +347,11 @@
         "active": "Aktiv",
         "deactivated": "Inaktiverad"
       },
+      "level": {
+        "guest": "Gäst",
+        "user": "Användare",
+        "admin": "Administratör"
+      },
       "actions": {
         "deactivate": "Inaktivera",
         "reactivate": "Återaktivera",

@@ -413,6 +413,11 @@
       "active": "Active",
       "deactivated": "Deactivated"
     },
+    "level": {
+      "guest": "Guest",
+      "user": "User",
+      "admin": "Administrator"
+    },
     "actions": {
       "deactivate": "Deactivate",
       "reactivate": "Reactivate",

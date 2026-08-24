@@ -346,6 +346,11 @@
         "active": "活跃",
         "deactivated": "已停用"
       },
+      "level": {
+        "guest": "访客",
+        "user": "用户",
+        "admin": "管理员"
+      },
       "actions": {
         "deactivate": "停用",
         "reactivate": "重新启用",

@@ -346,6 +346,11 @@
         "active": "Attivo",
         "deactivated": "Disattivato"
       },
+      "level": {
+        "guest": "Ospite",
+        "user": "Utente",
+        "admin": "Amministratore"
+      },
       "actions": {
         "deactivate": "Disattiva",
         "reactivate": "Riattiva",

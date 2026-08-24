@@ -191,9 +191,9 @@ export function UsersPage() {
                       value={editUser.level}
                       onChange={(e) => setEditUser({ ...editUser, level: e.target.value as AdminUser['level'] })}
                     >
-                      <option value="guest">guest</option>
-                      <option value="user">user</option>
-                      <option value="admin">admin</option>
+                      <option value="guest">{t('admin.level.guest')}</option>
+                      <option value="user">{t('admin.level.user')}</option>
+                      <option value="admin">{t('admin.level.admin')}</option>
                     </select>
                   </td>
                   <td>{u.is_active ? t('admin.status.active') : t('admin.status.deactivated')}</td>
@@ -226,7 +226,7 @@ export function UsersPage() {
                 <tr key={u.id}>
                   <td>{u.name}</td>
                   <td>{u.email}</td>
-                  <td>{u.level}</td>
+                  <td>{t(`admin.level.${u.level}`)}</td>
                   <td>{u.is_active ? t('admin.status.active') : t('admin.status.deactivated')}</td>
                   <td>{formatLastLogin(u.last_login_at)}</td>
                   <td>
@@ -286,9 +286,9 @@ export function UsersPage() {
               value={newUser.level}
               onChange={(e) => setNewUser({ ...newUser, level: e.target.value as AdminUser['level'] })}
             >
-              <option value="guest">guest</option>
-              <option value="user">user</option>
-              <option value="admin">admin</option>
+              <option value="guest">{t('admin.level.guest')}</option>
+              <option value="user">{t('admin.level.user')}</option>
+              <option value="admin">{t('admin.level.admin')}</option>
             </select>
           </label>
           <label className="panel-field">

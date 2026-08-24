@@ -346,6 +346,11 @@
         "active": "有効",
         "deactivated": "無効化済み"
       },
+      "level": {
+        "guest": "ゲスト",
+        "user": "ユーザー",
+        "admin": "管理者"
+      },
       "actions": {
         "deactivate": "無効化",
         "reactivate": "再有効化",

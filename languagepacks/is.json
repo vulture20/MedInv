@@ -347,6 +347,11 @@
         "active": "Virkt",
         "deactivated": "Óvirkjað"
       },
+      "level": {
+        "guest": "Gestur",
+        "user": "Notandi",
+        "admin": "Stjórnandi"
+      },
       "actions": {
         "deactivate": "Óvirkja",
         "reactivate": "Endurvirkja",
