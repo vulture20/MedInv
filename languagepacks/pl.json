@@ -327,6 +327,7 @@
       "table": {
         "level": "Poziom",
         "status": "Status",
+        "lastLogin": "Ostatnie logowanie",
         "enabled": "Włączone",
         "priority": "Priorytet",
         "mediaType": "Typ multimediów",

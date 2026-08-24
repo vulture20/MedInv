@@ -327,6 +327,7 @@
       "table": {
         "level": "レベル",
         "status": "ステータス",
+        "lastLogin": "最終ログイン",
         "enabled": "有効",
         "priority": "優先度",
         "mediaType": "メディア種別",

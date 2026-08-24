@@ -394,6 +394,7 @@
     "table": {
       "level": "Level",
       "status": "Status",
+      "lastLogin": "Last login",
       "enabled": "Enabled",
       "priority": "Priority",
       "mediaType": "Media type",

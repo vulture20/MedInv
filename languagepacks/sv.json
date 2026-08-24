@@ -328,6 +328,7 @@
       "table": {
         "level": "Nivå",
         "status": "Status",
+        "lastLogin": "Senaste inloggning",
         "enabled": "Aktiverad",
         "priority": "Prioritet",
         "mediaType": "Medietyp",

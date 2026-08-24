@@ -328,6 +328,7 @@
       "table": {
         "level": "Stig",
         "status": "Staða",
+        "lastLogin": "Síðasta innskráning",
         "enabled": "Virkt",
         "priority": "Forgangur",
         "mediaType": "Efnistegund",

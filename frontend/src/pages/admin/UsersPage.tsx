@@ -11,11 +11,18 @@ interface AdminUser {
   level: 'guest' | 'user' | 'admin'
   is_active: boolean
   is_protected: boolean
+  /** GitHub issue #181 — set by AuthController::login()/OidcAuthController::callback(), null for an account that has never logged in yet. */
+  last_login_at: string | null
 }
 
 interface CreateUserResponse extends AdminUser {
   invite_sent?: boolean
   invite_error?: string | null
+}
+
+/** GitHub issue #181 — same "date+time, em dash when null" convention ReportDetailPage.tsx's own last_captured_at column already uses. */
+function formatLastLogin(lastLoginAt: string | null): string {
+  return lastLoginAt ? new Date(lastLoginAt).toLocaleString() : '—'
 }
 
 const emptyNewUser = {
@@ -159,6 +166,7 @@ export function UsersPage() {
               <th>{t('common.email')}</th>
               <th>{t('admin.table.level')}</th>
               <th>{t('admin.table.status')}</th>
+              <th>{t('admin.table.lastLogin')}</th>
               <th />
             </tr>
           </thead>
@@ -189,6 +197,7 @@ export function UsersPage() {
                     </select>
                   </td>
                   <td>{u.is_active ? t('admin.status.active') : t('admin.status.deactivated')}</td>
+                  <td>{formatLastLogin(u.last_login_at)}</td>
                   <td>
                     {/* GitHub issue #175 — blank stays blank, i.e. unchanged (saveEdit() only sends it when non-empty); no current-password prompt, since an admin editing another account already has strictly broader unchecked power over it. */}
                     <input
@@ -219,6 +228,7 @@ export function UsersPage() {
                   <td>{u.email}</td>
                   <td>{u.level}</td>
                   <td>{u.is_active ? t('admin.status.active') : t('admin.status.deactivated')}</td>
+                  <td>{formatLastLogin(u.last_login_at)}</td>
                   <td>
                     {/* The predefined admin (is_protected) can never be edited, (de)activated
                         or deleted — see UserController::update()/deactivate()/destroy(). */}

@@ -328,6 +328,7 @@
       "table": {
         "level": "Taso",
         "status": "Tila",
+        "lastLogin": "Viimeisin kirjautuminen",
         "enabled": "Käytössä",
         "priority": "Prioriteetti",
         "mediaType": "Mediatyyppi",

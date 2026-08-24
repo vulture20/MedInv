@@ -138,6 +138,10 @@ class OidcAuthController extends Controller
         Auth::login($user, remember: true);
         $request->session()->regenerate();
 
+        // GitHub issue #181 — same forceFill() as AuthController::login()'s
+        // own email/password path; see that call's own comment.
+        $user->forceFill(['last_login_at' => now()])->save();
+
         Log::info('User logged in via OIDC', ['user_id' => $user->id, 'email' => $user->email, 'ip' => $request->ip()]);
 
         return redirect($this->frontendUrl('/'));

@@ -38,6 +38,14 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'is_protected' => 'boolean',
+            // GitHub issue #181 — see the creating migration's docblock.
+            // Deliberately not in #[Fillable(...)] above, same reasoning as
+            // created_at/updated_at everywhere else in this app: a caller
+            // going through the ordinary update()/store() request-validation
+            // whitelists in UserController/AccountSettingsController can
+            // never spoof it, only AuthController::login()/
+            // OidcAuthController::callback() ever set it, via forceFill().
+            'last_login_at' => 'datetime',
         ];
     }
 

@@ -327,6 +327,7 @@
       "table": {
         "level": "Seviye",
         "status": "Durum",
+        "lastLogin": "Son giriş",
         "enabled": "Etkin",
         "priority": "Öncelik",
         "mediaType": "Medya türü",

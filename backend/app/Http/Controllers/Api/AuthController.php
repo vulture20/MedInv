@@ -53,6 +53,13 @@ class AuthController extends Controller
         $this->bruteForce->clearFailures($credentials['email']);
         $request->session()->regenerate();
 
+        // GitHub issue #181 — feeds UsersPage.tsx's "last login" column.
+        // forceFill() rather than mass assignment: last_login_at is
+        // deliberately not in User::$fillable (see the creating migration's
+        // docblock) — this is the one legitimate place that's allowed to
+        // set it, an ordinary request must never be able to.
+        $user->forceFill(['last_login_at' => now()])->save();
+
         // No error_code here (this isn't an error) — just enough to answer "who
         // logged in, from where, when" for an audit trail, same motivation as
         // loginError() below already logging every failed attempt.

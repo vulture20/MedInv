@@ -327,6 +327,7 @@
       "table": {
         "level": "级别",
         "status": "状态",
+        "lastLogin": "上次登录",
         "enabled": "已启用",
         "priority": "优先级",
         "mediaType": "媒体类型",

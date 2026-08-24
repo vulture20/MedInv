@@ -327,6 +327,7 @@
       "table": {
         "level": "Уровень",
         "status": "Статус",
+        "lastLogin": "Последний вход",
         "enabled": "Включено",
         "priority": "Приоритет",
         "mediaType": "Тип носителя",

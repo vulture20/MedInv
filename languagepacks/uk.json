@@ -327,6 +327,7 @@
       "table": {
         "level": "Рівень",
         "status": "Статус",
+        "lastLogin": "Останній вхід",
         "enabled": "Увімкнено",
         "priority": "Пріоритет",
         "mediaType": "Тип носія",

@@ -327,6 +327,7 @@
       "table": {
         "level": "Nivel",
         "status": "Estado",
+        "lastLogin": "Último acceso",
         "enabled": "Activado",
         "priority": "Prioridad",
         "mediaType": "Tipo de medio",
