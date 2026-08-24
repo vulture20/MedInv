@@ -7,6 +7,7 @@ use App\Domain\Libraries\MediaItemService;
 use App\Domain\Metadata\CoverDownloadService;
 use App\Models\Library;
 use App\Models\LibraryShare;
+use App\Models\LibraryUserPreference;
 use App\Models\MetadataPlugin;
 use App\Models\SavedSearch;
 use App\Models\SystemSetting;
@@ -73,12 +74,22 @@ class ExportImportService
      *                              export's UI suggested system configuration was involved at
      *                              all. BackupService::create() is the one caller that passes
      *                              true — a backup is meant to be a full snapshot of this
-     *                              instance, all three included.
+     *                              instance, all three included. GitHub issue #180: each
+     *                              library's own `user_preferences` (GitHub issue #179 —
+     *                              who excluded it from *their own* Statistics/Reports/
+     *                              Dashboard) is gated behind this same flag too, for the
+     *                              same "personal, per-user data" reasoning as
+     *                              `captured_by_email` below rather than being
+     *                              unconditional like `owner_email`/`shares[].user_email`.
      * @return array{format_version: int, exported_at: string, libraries: array, system_settings?: array, users?: array, metadata_plugins?: array}
      */
     public function exportLibraries(?array $libraryIds = null, bool $includeUsers = false): array
     {
-        $query = Library::query()->with(['shares', 'owner']);
+        $query = Library::query()->with(['shares', 'owner'])
+            // GitHub issue #180 — only ever needed when `user_preferences`
+            // below is actually going to be embedded (see that field's own
+            // comment for why it's gated behind $includeUsers the same way).
+            ->when($includeUsers, fn ($q) => $q->with('userPreferences.user:id,email'));
 
         if ($libraryIds !== null) {
             $query->whereIn('id', $libraryIds);
@@ -129,6 +140,28 @@ class ExportImportService
                     'created_at' => $s->created_at?->toIso8601String(),
                     'updated_at' => $s->updated_at?->toIso8601String(),
                 ])->all(),
+                // GitHub issue #180: like `captured_by_email` below (not
+                // `owner_email`/`shares[].user_email` above), gated behind
+                // $includeUsers rather than present unconditionally —
+                // LibraryUserPreference (GitHub issue #179) is personal,
+                // per-user data (which specific user excluded this library
+                // from *their own* Statistics/Reports/Dashboard), not
+                // library structure a plain instance-to-instance export
+                // needs to reproduce the library correctly the way sharing
+                // config does. Resolved back by email on import
+                // (restoreUserPreferences()) with the same stale-email
+                // tolerance restoreShares() already has, but — unlike
+                // shares — only when this key is present in the payload at
+                // all, never as a destructive full-replace otherwise; see
+                // that method's own docblock.
+                ...($includeUsers ? ['user_preferences' => $library->userPreferences->map(fn (LibraryUserPreference $p) => [
+                    'user_email' => $p->user?->email,
+                    'exclude_from_statistics' => $p->exclude_from_statistics,
+                    'exclude_from_reports' => $p->exclude_from_reports,
+                    'exclude_from_dashboard' => $p->exclude_from_dashboard,
+                    'created_at' => $p->created_at?->toIso8601String(),
+                    'updated_at' => $p->updated_at?->toIso8601String(),
+                ])->all()] : []),
                 // GitHub issue #148: the raw `captured_by_user_id` (GitHub
                 // issue #74) is instance-local exactly like `id`/
                 // `library_id` — a plain foreign key with no meaning on a
@@ -572,6 +605,13 @@ class ExportImportService
         $this->applyHistoricalTimestamps($library, $libraryData);
 
         $this->insertItems($library, $libraryData['items'] ?? []);
+        // GitHub issue #180 — unconditional (unlike $restoreShares just
+        // below), matching owner_email/shares[].user_email/captured_by_email's
+        // own precedent for "resolved whenever present in the payload,
+        // regardless of any other restore flag"; see the method's own
+        // docblock for why it's still safe against a payload that never
+        // carried this key at all.
+        $this->restoreUserPreferences($library, $libraryData);
 
         if ($restoreShares) {
             $result['shares_skipped'] += $this->restoreShares($library, $libraryData['shares'] ?? []);
@@ -629,6 +669,8 @@ class ExportImportService
             'description' => $libraryData['description'] ?? null,
         ]);
         $this->insertItems($library, $libraryData['items'] ?? []);
+        // GitHub issue #180 — same unconditional-when-present resolution as createLibraryFromExport() above.
+        $this->restoreUserPreferences($library, $libraryData);
 
         if ($restoreShares) {
             // Full replace, same as LibraryController::updateShares() and
@@ -692,6 +734,53 @@ class ExportImportService
         }
 
         return $skipped;
+    }
+
+    /**
+     * GitHub issue #180: recreates $library's LibraryUserPreference rows
+     * from an exportLibraries() `user_preferences` array (GitHub issue
+     * #179), present only when that export was made with
+     * `includeUsers: true` — see that field's own comment. Same
+     * stale-email tolerance as restoreShares(): a `user_email` matching no
+     * account on this instance is silently skipped rather than failing the
+     * whole restore.
+     *
+     * Deliberately keyed off `array_key_exists()`, not `!empty()` — a
+     * library with the key present but genuinely empty (nobody had set any
+     * preference for it) must still replace whatever preferences already
+     * exist locally with "none", the same "full replace" overwriteLibrary()
+     * gives shares. But when the key is *absent* entirely — an ordinary
+     * library export/import (never `includeUsers: true`, so this key never
+     * existed in the file to begin with), or a backup made before this
+     * feature shipped — this is a no-op, leaving whatever preferences
+     * already exist on this instance (for `overwriteLibrary()`'s existing
+     * library) completely untouched rather than wiping them out based on a
+     * payload that never claimed to say anything about them at all.
+     */
+    private function restoreUserPreferences(Library $library, array $libraryData): void
+    {
+        if (! array_key_exists('user_preferences', $libraryData)) {
+            return;
+        }
+
+        $library->userPreferences()->delete();
+
+        foreach ($libraryData['user_preferences'] as $preferenceData) {
+            $user = User::query()->where('email', $preferenceData['user_email'] ?? null)->first();
+            if (! $user) {
+                continue;
+            }
+
+            $preference = LibraryUserPreference::query()->create([
+                'library_id' => $library->id,
+                'user_id' => $user->id,
+                'exclude_from_statistics' => $preferenceData['exclude_from_statistics'] ?? false,
+                'exclude_from_reports' => $preferenceData['exclude_from_reports'] ?? false,
+                'exclude_from_dashboard' => $preferenceData['exclude_from_dashboard'] ?? false,
+            ]);
+            // GitHub issue #154.
+            $this->applyHistoricalTimestamps($preference, $preferenceData);
+        }
     }
 
     /**
