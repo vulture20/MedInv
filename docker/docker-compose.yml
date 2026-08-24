@@ -44,6 +44,10 @@ services:
       # to leak into the sqlite driver as a bogus relative file path).
       MEDINV_DB_DATABASE: ${MEDINV_DB_DATABASE:-medinv}
       MEDINV_DB_USERNAME: ${MEDINV_DB_USERNAME:-medinv}
+      # "medinv" is a quick-start default only, not a production-safe
+      # password — see docker/.env.template's own warning next to this
+      # variable. Unlike MEDINV_ADMINPASS below, this is not enforced via
+      # `:?error`, since sqlite (the default backend) never uses it at all.
       MEDINV_DB_PASSWORD: ${MEDINV_DB_PASSWORD:-medinv}
       MEDINV_DB_PREFIX: ${MEDINV_DB_PREFIX:-MEDINV_}
       SESSION_DRIVER: database
