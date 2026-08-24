@@ -84,10 +84,21 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
         return [];
     }
 
-    /** See MetadataProviderInterface::version()'s docblock — "-beta" is exactly the free-form-string escape hatch it was written to allow. */
+    /**
+     * See MetadataProviderInterface::version()'s docblock — "-beta" is
+     * exactly the free-form-string escape hatch it was written to allow.
+     * Bumped from v0.1-beta to v0.2-beta (same "bump on a real, verified
+     * fix" precedent TmdbProvider::version()'s own docblock already
+     * establishes) for the accumulated, live-verified fixes since v0.1-beta:
+     * #137's shared amazonPriceAndCurrency() fix, #139's "Format: DVD"
+     * cast-contamination stripping, #140/#141's genre/subtitles extraction,
+     * and #150/#173's cast field being removed and then reintroduced on a
+     * confirmed English "Actors" bullet — see this class's own docblock and
+     * AmazonScraping's for the full history.
+     */
     public function version(): string
     {
-        return 'v0.1-beta';
+        return 'v0.2-beta';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes amazon.com's pages, see AmazonScraping's docblock. */

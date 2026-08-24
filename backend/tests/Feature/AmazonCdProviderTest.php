@@ -115,6 +115,6 @@ class AmazonCdProviderTest extends TestCase
         $provider = app(AmazonCdProvider::class);
 
         $this->assertSame('Amazon', $provider->name());
-        $this->assertSame('v0.1-beta', $provider->version());
+        $this->assertSame('v0.2-beta', $provider->version());
     }
 }

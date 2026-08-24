@@ -45,10 +45,20 @@ class AmazonBookProvider implements MetadataProviderInterface
         return [];
     }
 
-    /** See MetadataProviderInterface::version()'s docblock — "-beta" is exactly the free-form-string escape hatch it was written to allow. */
+    /**
+     * See MetadataProviderInterface::version()'s docblock — "-beta" is
+     * exactly the free-form-string escape hatch it was written to allow.
+     * Bumped from v0.1-beta to v0.2-beta (same "bump on a real, verified
+     * fix" precedent TmdbProvider::version()'s own docblock already
+     * establishes) for GitHub issue #137's one-time live re-check: it
+     * fixed AmazonScraping::amazonPriceAndCurrency() (shared by all three
+     * Amazon providers — the "always USD" assumption was wrong) and, book-
+     * specifically, discovered `#bookDescription_feature_div` as the real
+     * source for `description`, which had silently always been null before.
+     */
     public function version(): string
     {
-        return 'v0.1-beta';
+        return 'v0.2-beta';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes amazon.com's pages, see AmazonScraping's docblock. */
