@@ -60,15 +60,18 @@ interface Props {
    * option defaults to whichever one already matches the current item
    * instead of just the first, provider-ranked option — so confirming
    * without touching anything reproduces the existing record rather than
-   * silently overwriting it with an unrelated provider guess — and the
-   * cover picker defaults to "keep the current cover" (see selectedCoverUrl
-   * below) instead of the first candidate image, since none of the fetched
-   * candidate URLs can ever equal the item's own already-stored cover path.
-   * Falls back to the previous "first option" default per field when
-   * nothing matches it (e.g. every provider disagrees with the current
-   * value too).
+   * silently overwriting it with an unrelated provider guess.
+   *
+   * `coverUrl` (GitHub issue #187) is the item's current, already-rendered
+   * cover image src (e.g. mediaItemFields.ts's coverSrc()), or null/absent
+   * when the item has no cover right now — shown and preselected as its
+   * own dedicated "Cover beibehalten" option (see selectedCoverUrl below),
+   * distinct from "Kein Cover": none of the fetched candidate cover URLs
+   * can ever equal it (they're always hosted by the metadata provider, not
+   * this app), so it can't just be matched against `merged.covers` the way
+   * an ordinary field value is matched against its options above.
    */
-  current?: { values: Record<string, string>; tracks: Track[] | null }
+  current?: { values: Record<string, string>; tracks: Track[] | null; coverUrl?: string | null }
   /**
    * `providerKeys` (GitHub issue #74) is the union of every field/tracks/
    * cover option's `provider_keys` that actually ended up in `attributes`/
@@ -77,8 +80,19 @@ interface Props {
    * proposed *something* for this lookup. The caller forwards it as
    * `metadata_providers` to POST .../metadata/import or .../metadata/refresh,
    * which join it into MediaBook/MediaCd/MediaDvdBluray::metadata_provider.
+   *
+   * `coverUrl` (GitHub issue #187) is now tri-state, not just `string |
+   * null`: a candidate's URL when chosen, `null` for an explicit "Kein
+   * Cover" (no cover at all — MetadataController::import()'s ordinary
+   * behavior, and reimport()'s new `remove_cover` signal), or `undefined`
+   * for "Cover beibehalten" (only reachable when `current.coverUrl` was
+   * passed in — leave the item's existing cover untouched, the refresh
+   * review's own default). CapturePage/CreateMediaItemDialog's own
+   * onConfirm handlers never actually receive `undefined` in practice
+   * (they never pass `current`, so selectedCoverUrl below can never become
+   * that sentinel there) but still type against it for consistency.
    */
-  onConfirm: (attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) => void
+  onConfirm: (attributes: Record<string, unknown>, coverUrl: string | null | undefined, providerKeys: string[]) => void
   onReject: () => void
 }
 
@@ -262,15 +276,21 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
     }
     return initial
   })
-  // GitHub issue #186: refreshing an existing item defaults to "keep the
-  // current cover" (null — see confirm()'s/the caller's handling of a null
-  // coverUrl, which leaves the item's existing cover untouched) rather than
-  // the first candidate image, since none of the fetched candidate URLs
-  // can ever equal the item's own already-stored cover path — there's
-  // nothing to match against, so "don't change it" is the option that
-  // actually corresponds to the current state. A brand-new capture (no
+  // GitHub issue #186/#187: refreshing an existing item that currently has
+  // a cover defaults to `undefined` — the dedicated "Cover beibehalten"
+  // option below, leaving it untouched — rather than the first candidate
+  // image, since none of the fetched candidate URLs can ever equal the
+  // item's own already-stored cover path; there's nothing to match
+  // against, so "don't change it" is the option that actually corresponds
+  // to the current state. Refreshing an item that currently has *no* cover
+  // defaults to `null` ("Kein Cover") instead — equally a correct match
+  // for "no cover" being the current state, and there's no cover to show a
+  // "keep current" option for in the first place. A brand-new capture (no
   // `current`) keeps defaulting to the first candidate, unchanged.
-  const [selectedCoverUrl, setSelectedCoverUrl] = useState<string | null>(current ? null : merged.covers[0]?.url ?? null)
+  const [selectedCoverUrl, setSelectedCoverUrl] = useState<string | null | undefined>(() => {
+    if (current) return current.coverUrl ? undefined : null
+    return merged.covers[0]?.url ?? null
+  })
   const [selectedTracks, setSelectedTracks] = useState<Track[] | null>(() => {
     if (!tracksField || tracksField.agreed || tracksField.options.length === 0) return null
     const matching = current?.tracks ? tracksField.options.find((option) => tracksMatchCurrent(option.value, current.tracks!)) : undefined
@@ -412,10 +432,41 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
         </div>
       )}
 
-      {merged.covers.length > 0 && (
+      {/*
+        GitHub issue #187: also shown when there are no fetched candidate
+        covers at all, as long as the item currently has one to keep/remove
+        — otherwise a refresh that found no new cover candidates would
+        offer no way to explicitly remove the existing cover here (only via
+        the dialog's separate, always-available "remove cover" action).
+      */}
+      {(merged.covers.length > 0 || current?.coverUrl) && (
         <div className="metadata-merge__field">
           <span className="metadata-merge__field-label">{t('capture.mergeCover')}</span>
           <div className="metadata-merge__covers" role="radiogroup" aria-label={t('capture.mergeCover')}>
+            {/* GitHub issue #187: the item's own current cover, shown and preselected the same way a candidate is — distinct from, and listed before, "Kein Cover" below. */}
+            {current?.coverUrl && (
+              <label className="metadata-merge__cover-option">
+                <input
+                  type="radio"
+                  name={`${groupId}-cover`}
+                  checked={selectedCoverUrl === undefined}
+                  onChange={() => setSelectedCoverUrl(undefined)}
+                />
+                <button
+                  type="button"
+                  className="metadata-merge__cover-thumb-button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setFullscreenCoverUrl(current.coverUrl ?? null)
+                  }}
+                  aria-label={t('mediaItem.viewCoverFullscreen')}
+                >
+                  <img src={current.coverUrl} alt={t('capture.mergeKeepCover')} className="metadata-merge__cover-thumb" />
+                </button>
+                <span className="metadata-merge__option-source">{t('capture.mergeKeepCover')}</span>
+              </label>
+            )}
             {merged.covers.map((cover) => (
               <label key={cover.url} className="metadata-merge__cover-option">
                 <input

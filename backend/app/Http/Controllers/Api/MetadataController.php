@@ -217,6 +217,19 @@ class MetadataController extends Controller
      * to import()'s create. A replaced cover follows the same
      * store-then-delete-old order uploadCover() already uses, so a failed
      * download never leaves the item without the cover it had before.
+     *
+     * `remove_cover` (GitHub issue #187) is the refresh-review's own,
+     * explicit "delete the current cover" signal, distinct from simply
+     * omitting `cover_url` (which means "leave the current cover
+     * untouched" — MetadataMergeReview.tsx's "Cover beibehalten" option).
+     * Both existed as a single, ambiguous "Kein Cover" choice before this
+     * issue: selecting it never actually removed anything, since an empty
+     * `cover_url` was — and still is — the "don't touch it" case; there
+     * was no way for a genuine "remove the cover" choice to exist here at
+     * all before this field, only via the separate deleteCover() action
+     * elsewhere in the dialog. `cover_url` still wins if both are somehow
+     * set at once — replacing with a freshly chosen candidate is a clearer
+     * signal of intent than a stale "remove" flag would be.
      */
     public function reimport(Request $request, Library $library, int $item)
     {
@@ -227,6 +240,7 @@ class MetadataController extends Controller
         $data = $request->validate([
             'attributes' => ['required', 'array'],
             'cover_url' => ['nullable', 'string'],
+            'remove_cover' => ['sometimes', 'boolean'],
             // GitHub issue #74 — see import()'s matching field for why this
             // isn't part of `attributes`. Unlike import(), capture_method is
             // deliberately NOT touched here: a metadata refresh doesn't
@@ -249,6 +263,9 @@ class MetadataController extends Controller
                 $record->update(['cover_path' => $coverPath]);
                 $this->coverDownloadService->delete($oldCoverPath);
             }
+        } elseif (! empty($data['remove_cover'])) {
+            $this->coverDownloadService->delete($record->cover_path);
+            $record->update(['cover_path' => null]);
         }
 
         return response()->json($record->fresh());

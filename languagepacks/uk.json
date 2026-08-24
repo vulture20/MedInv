@@ -192,6 +192,7 @@
       "cameraTorchOff": "Вимкнути ліхтарик",
       "cameraAccessError": "Не вдалося отримати доступ до камери. Надайте дозвіл або введіть EAN/ISBN вручну.",
       "mergeCover": "Обкладинка",
+      "mergeKeepCover": "Зберегти обкладинку",
       "mergeNoCover": "Без обкладинки",
       "mergeConfirm": "Використати ці значення",
       "mergeTracksCount_one": "{{count}} трек",

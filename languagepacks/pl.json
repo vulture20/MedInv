@@ -192,6 +192,7 @@
       "cameraTorchOff": "Wyłącz latarkę",
       "cameraAccessError": "Nie można uzyskać dostępu do aparatu. Przyznaj uprawnienia lub wprowadź EAN/ISBN ręcznie.",
       "mergeCover": "Okładka",
+      "mergeKeepCover": "Zachowaj okładkę",
       "mergeNoCover": "Brak okładki",
       "mergeConfirm": "Użyj tych wartości",
       "mergeTracksCount_one": "{{count}} utwór",

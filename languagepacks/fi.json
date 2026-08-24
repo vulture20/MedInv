@@ -186,6 +186,7 @@
       "chooseCandidate": "Arvot, joista kaikki lähteet ovat samaa mieltä, täytetään automaattisesti. Kun ne poikkeavat, valitse arvo alta.",
       "rejectAll": "Hylkää kaikki osumat",
       "mergeCover": "Kansikuva",
+      "mergeKeepCover": "Säilytä nykyinen kansikuva",
       "mergeNoCover": "Ei kansikuvaa",
       "mergeConfirm": "Käytä näitä arvoja",
       "mergeTracksCount_one": "{{count}} kappale",

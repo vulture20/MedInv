@@ -327,7 +327,11 @@ export function CapturePage() {
     }
   }
 
-  async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) {
+  // coverUrl's type is widened to match MetadataMergeReview's tri-state onConfirm
+  // (GitHub issue #187) even though this capture flow never passes `current` to
+  // it and so can never actually receive its `undefined` ("keep current cover")
+  // sentinel — `?? undefined` below already treats it exactly like `null` either way.
+  async function confirmMerged(result: PendingResult, attributes: Record<string, unknown>, coverUrl: string | null | undefined, providerKeys: string[]) {
     setError(null)
     try {
       await apiClient.post(`/libraries/${result.library.id}/metadata/import`, {

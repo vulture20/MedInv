@@ -186,6 +186,7 @@
       "chooseCandidate": "Verdier alle kildene er enige om, fylles inn automatisk. Der de er uenige, velg en verdi nedenfor.",
       "rejectAll": "Avvis alle treff",
       "mergeCover": "Omslag",
+      "mergeKeepCover": "Behold omslag",
       "mergeNoCover": "Ikke noe omslag",
       "mergeConfirm": "Bruk disse verdiene",
       "mergeTracksCount_one": "{{count}} spor",

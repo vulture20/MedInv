@@ -192,6 +192,7 @@
       "cameraTorchOff": "Feneri kapat",
       "cameraAccessError": "Kameraya erişilemedi. İzin verin veya EAN/ISBN'i elle girin.",
       "mergeCover": "Kapak",
+      "mergeKeepCover": "Mevcut kapağı koru",
       "mergeNoCover": "Kapak yok",
       "mergeConfirm": "Bu değerleri kullan",
       "mergeTracksCount_one": "{{count}} parça",

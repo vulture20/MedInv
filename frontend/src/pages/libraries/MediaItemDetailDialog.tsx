@@ -218,14 +218,28 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     }
   }
 
-  /** Applies the user's per-field picks from MetadataMergeReview onto the existing item (POST, not the create-path's PUT-equivalent). */
-  async function confirmRefresh(attributes: Record<string, unknown>, coverUrl: string | null, providerKeys: string[]) {
+  /**
+   * Applies the user's per-field picks from MetadataMergeReview onto the
+   * existing item (POST, not the create-path's PUT-equivalent).
+   *
+   * `coverUrl` is tri-state (GitHub issue #187): a candidate's URL to
+   * download and replace the cover with; `undefined` for "Cover
+   * beibehalten" (the default — leave the existing cover exactly as it
+   * is, so neither `cover_url` nor `remove_cover` is sent at all); or
+   * `null` for an explicit "Kein Cover", which — unlike the create-path's
+   * import() (where it simply means no cover is ever set) — now actually
+   * removes the item's current cover via reimport()'s `remove_cover` flag,
+   * since there IS a current cover here that could otherwise never be
+   * removed through this dialog's own metadata-refresh action.
+   */
+  async function confirmRefresh(attributes: Record<string, unknown>, coverUrl: string | null | undefined, providerKeys: string[]) {
     if (!item) return
     setRefreshError(null)
     try {
       const { data } = await apiClient.post<MediaItem>(`/libraries/${library.id}/items/${item.id}/metadata/refresh`, {
         attributes,
-        cover_url: coverUrl ?? undefined,
+        cover_url: typeof coverUrl === 'string' ? coverUrl : undefined,
+        remove_cover: coverUrl === null,
         // GitHub issue #74 — updates metadata_provider only, capture_method
         // stays untouched (MetadataController::reimport()).
         metadata_providers: providerKeys,
@@ -459,8 +473,10 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
               merged={refreshMerged}
               // GitHub issue #186: preselects whichever disagreed option
               // already matches the item's current, already-stored state
-              // instead of just the first provider-ranked one.
-              current={{ values: valuesFromItem(item, specs), tracks: item.tracks ?? null }}
+              // instead of just the first provider-ranked one. coverUrl
+              // (GitHub issue #187) is the item's current cover, if any —
+              // renders/preselects the dedicated "Cover beibehalten" option.
+              current={{ values: valuesFromItem(item, specs), tracks: item.tracks ?? null, coverUrl: item.cover_path ? coverSrc(library.id, item.id, item.cover_path) : null }}
               onConfirm={(attributes, coverUrl, providerKeys) => void confirmRefresh(attributes, coverUrl, providerKeys)}
               onReject={() => {
                 setRefreshStatus('idle')

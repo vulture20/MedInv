@@ -186,6 +186,7 @@
       "chooseCandidate": "Värden som alla källor är överens om fylls i automatiskt. Där de skiljer sig åt, välj ett värde nedan.",
       "rejectAll": "Avvisa alla träffar",
       "mergeCover": "Omslag",
+      "mergeKeepCover": "Behåll omslag",
       "mergeNoCover": "Inget omslag",
       "mergeConfirm": "Använd dessa värden",
       "mergeTracksCount_one": "{{count}} spår",

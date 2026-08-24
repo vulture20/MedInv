@@ -183,6 +183,7 @@
     "chooseCandidate": "Werte, in denen sich alle Quellen einig sind, werden automatisch übernommen. Bei abweichenden Angaben bitte unten einen Wert auswählen.",
     "rejectAll": "Alle Treffer ablehnen",
     "mergeCover": "Cover",
+    "mergeKeepCover": "Cover beibehalten",
     "mergeNoCover": "Kein Cover",
     "mergeConfirm": "Diese Werte übernehmen",
     "mergeTracksCount_one": "{{count}} Titel",

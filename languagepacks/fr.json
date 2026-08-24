@@ -192,6 +192,7 @@
       "cameraTorchOff": "Désactiver la lampe torche",
       "cameraAccessError": "Impossible d'accéder à la caméra. Veuillez autoriser l'accès ou saisir un EAN/ISBN manuellement.",
       "mergeCover": "Pochette",
+      "mergeKeepCover": "Conserver la pochette actuelle",
       "mergeNoCover": "Aucune pochette",
       "mergeConfirm": "Utiliser ces valeurs",
       "mergeTracksCount_one": "{{count}} piste",

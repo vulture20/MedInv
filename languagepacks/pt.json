@@ -192,6 +192,7 @@
       "cameraTorchOff": "Desligar a lanterna",
       "cameraAccessError": "Não foi possível acessar a câmera. Conceda a permissão ou insira um EAN/ISBN manualmente.",
       "mergeCover": "Capa",
+      "mergeKeepCover": "Manter capa atual",
       "mergeNoCover": "Sem capa",
       "mergeConfirm": "Usar estes valores",
       "mergeTracksCount_one": "{{count}} faixa",

@@ -192,6 +192,70 @@ class MetadataRefreshTest extends TestCase
         Storage::disk('local')->assertExists($item->fresh()->cover_path);
     }
 
+    /** GitHub issue #187: neither `cover_url` nor `remove_cover` sent at all — "Cover beibehalten" — must leave an existing cover exactly as it is. */
+    public function test_reimport_leaves_the_existing_cover_untouched_when_neither_cover_url_nor_remove_cover_is_sent(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('covers/book/existing.jpg', 'existing-cover-bytes');
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldNotReceive('resolve'));
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001', 'cover_path' => 'covers/book/existing.jpg']);
+
+        $response = $this->postJson("/api/libraries/{$library->id}/items/{$item->id}/metadata/refresh", [
+            'attributes' => ['ean' => '9780000000001', 'title' => 'Dune'],
+        ]);
+
+        $response->assertOk();
+        $this->assertSame('covers/book/existing.jpg', $item->fresh()->cover_path);
+        Storage::disk('local')->assertExists('covers/book/existing.jpg');
+    }
+
+    /** GitHub issue #187: `remove_cover: true` with no `cover_url` — the refresh review's explicit "Kein Cover" — actually deletes the existing cover, unlike the ambiguous single "no cover" choice this replaces. */
+    public function test_reimport_removes_the_existing_cover_when_remove_cover_is_sent(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('covers/book/existing.jpg', 'existing-cover-bytes');
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldNotReceive('resolve'));
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldNotReceive('fetch'));
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001', 'cover_path' => 'covers/book/existing.jpg']);
+
+        $response = $this->postJson("/api/libraries/{$library->id}/items/{$item->id}/metadata/refresh", [
+            'attributes' => ['ean' => '9780000000001', 'title' => 'Dune'],
+            'remove_cover' => true,
+        ]);
+
+        $response->assertOk();
+        $this->assertNull($item->fresh()->cover_path);
+        Storage::disk('local')->assertMissing('covers/book/existing.jpg');
+    }
+
+    /** A freshly chosen candidate cover wins even if `remove_cover` was somehow also sent — replacing is a clearer signal of intent than a stale "remove" flag. */
+    public function test_reimport_prefers_a_replacement_cover_over_remove_cover_when_both_are_sent(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('covers/book/existing.jpg', 'existing-cover-bytes');
+        $this->mock(HostnameResolver::class, fn ($mock) => $mock->shouldReceive('resolve')->andReturn(['93.184.216.34']));
+        $this->mock(CurlImageFetcher::class, fn ($mock) => $mock->shouldReceive('fetch')->andReturn($this->fakeJpegBytes()));
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001', 'cover_path' => 'covers/book/existing.jpg']);
+
+        $response = $this->postJson("/api/libraries/{$library->id}/items/{$item->id}/metadata/refresh", [
+            'attributes' => ['ean' => '9780000000001', 'title' => 'Dune'],
+            'cover_url' => 'https://covers.example.com/dune.jpg',
+            'remove_cover' => true,
+        ]);
+
+        $response->assertOk();
+        $this->assertNotNull($item->fresh()->cover_path);
+        $this->assertNotSame('covers/book/existing.jpg', $item->fresh()->cover_path);
+        Storage::disk('local')->assertExists($item->fresh()->cover_path);
+    }
+
     private function fakeJpegBytes(): string
     {
         $image = imagecreatetruecolor(2, 2);

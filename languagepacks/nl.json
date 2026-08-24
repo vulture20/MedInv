@@ -192,6 +192,7 @@
       "cameraTorchOff": "Zaklamp uitschakelen",
       "cameraAccessError": "Geen toegang tot de camera. Verleen toestemming of voer handmatig een EAN/ISBN in.",
       "mergeCover": "Cover",
+      "mergeKeepCover": "Cover behouden",
       "mergeNoCover": "Geen cover",
       "mergeConfirm": "Deze waarden gebruiken",
       "mergeTracksCount_one": "{{count}} track",

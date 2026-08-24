@@ -192,6 +192,7 @@
       "cameraTorchOff": "Выключить фонарик",
       "cameraAccessError": "Не удалось получить доступ к камере. Разрешите доступ или введите EAN/ISBN вручную.",
       "mergeCover": "Обложка",
+      "mergeKeepCover": "Сохранить обложку",
       "mergeNoCover": "Без обложки",
       "mergeConfirm": "Использовать эти значения",
       "mergeTracksCount_one": "{{count}} трек",

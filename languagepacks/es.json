@@ -192,6 +192,7 @@
       "cameraTorchOff": "Apagar la linterna",
       "cameraAccessError": "No se pudo acceder a la cámara. Concede el permiso o introduce un EAN/ISBN manualmente.",
       "mergeCover": "Portada",
+      "mergeKeepCover": "Mantener portada actual",
       "mergeNoCover": "Sin portada",
       "mergeConfirm": "Usar estos valores",
       "mergeTracksCount_one": "{{count}} pista",

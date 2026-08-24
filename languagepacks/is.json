@@ -186,6 +186,7 @@
       "chooseCandidate": "Gildi sem allar heimildir eru sammála um eru fyllt út sjálfkrafa. Þar sem þau eru ólík, veldu gildi hér að neðan.",
       "rejectAll": "Hafna öllum niðurstöðum",
       "mergeCover": "Kápa",
+      "mergeKeepCover": "Halda núverandi kápu",
       "mergeNoCover": "Engin kápa",
       "mergeConfirm": "Nota þessi gildi",
       "mergeTracksCount_one": "{{count}} lag",

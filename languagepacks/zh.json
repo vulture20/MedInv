@@ -192,6 +192,7 @@
       "cameraTorchOff": "关闭手电筒",
       "cameraAccessError": "无法访问摄像头。请授予权限，或手动输入 EAN/ISBN。",
       "mergeCover": "封面",
+      "mergeKeepCover": "保留当前封面",
       "mergeNoCover": "无封面",
       "mergeConfirm": "使用这些值",
       "mergeTracksCount_one": "{{count}} 首",
