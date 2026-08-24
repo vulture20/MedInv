@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "İstatistiklerden hariç tut",
         "fromReports": "Raporlardan hariç tut",
-        "hint": "Yalnızca istatistikleri/raporları etkiler — kütüphane görünür ve aranabilir kalmaya devam eder."
+        "fromDashboard": "Ana sayfadan hariç tut"
       },
       "mediaTypeLabel": "Medya türü",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "Arayüz dilini seçin.",
         "de": "Almanca",
         "en": "İngilizce"
+      },
+      "libraryPreferences": {
+        "title": "İstatistikler, raporlar ve ana sayfa",
+        "hint": "Sizin görebildiğiniz her kütüphane için, istatistiklerinize, raporlarınıza veya ana sayfaya dahil edilip edilmeyeceğini seçin. Bu yalnızca kendi görünümünüzü etkiler — kütüphane herkes için görünür ve aranabilir kalmaya devam eder.",
+        "none": "Henüz sizin görebileceğiniz bir kütüphane yok."
       },
       "password": {
         "label": "Parolayı değiştir",

@@ -133,6 +133,27 @@ class LibraryAccessService
             ->exists();
     }
 
+    /**
+     * Same as visibleLibrariesQuery() above, additionally excluding any
+     * library the requesting user has personally opted out of for one
+     * LibraryUserPreference flag (GitHub issue #179 — see that model's own
+     * docblock for why this replaced GitHub issue #176's global,
+     * admin/owner-set Library columns). $preferenceColumn is one of
+     * 'exclude_from_statistics'/'exclude_from_reports'/
+     * 'exclude_from_dashboard' — StatisticsService/ReportsService/
+     * SearchService::randomItemsFor() each pass their own. A library with
+     * no LibraryUserPreference row at all for this user is never excluded
+     * (whereDoesntHave() matches that case naturally), matching the
+     * column's own former default of false.
+     */
+    public function visibleLibrariesQueryExcluding(User $user, string $preferenceColumn): Builder
+    {
+        return $this->visibleLibrariesQuery($user)->whereDoesntHave(
+            'userPreferences',
+            fn (Builder $q) => $q->where('user_id', $user->id)->where($preferenceColumn, true)
+        );
+    }
+
     /** Query scoped to libraries visible to the given user (used for listing/search). */
     public function visibleLibrariesQuery(User $user): Builder
     {

@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "Wyklucz ze statystyk",
         "fromReports": "Wyklucz z raportów",
-        "hint": "Dotyczy tylko statystyk/raportów — biblioteka pozostaje widoczna i przeszukiwalna."
+        "fromDashboard": "Wyklucz ze strony głównej"
       },
       "mediaTypeLabel": "Typ multimediów",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "Wybierz język interfejsu.",
         "de": "Niemiecki",
         "en": "Angielski"
+      },
+      "libraryPreferences": {
+        "title": "Statystyki, raporty i strona główna",
+        "hint": "Wybierz dla każdej widocznej dla Ciebie biblioteki, czy ma być uwzględniana w Twoich statystykach, raportach lub na stronie głównej. Dotyczy to tylko Twojego własnego widoku — biblioteka pozostaje widoczna i przeszukiwalna dla wszystkich.",
+        "none": "Żadna biblioteka nie jest jeszcze dla Ciebie widoczna."
       },
       "password": {
         "label": "Zmień hasło",

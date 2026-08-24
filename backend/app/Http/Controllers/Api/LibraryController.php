@@ -129,11 +129,6 @@ class LibraryController extends Controller
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            // GitHub issue #176 — the two "Aus Statistiken/Auswertungen
-            // ausschließen" toggles in LibrarySettingsDialog.tsx's edit
-            // form; see the migration that added these columns.
-            'exclude_from_statistics' => ['sometimes', 'boolean'],
-            'exclude_from_reports' => ['sometimes', 'boolean'],
         ]);
 
         $library->update($data);

@@ -34,13 +34,14 @@ class StatisticsService
 
     public function overviewFor(User $user): array
     {
-        // GitHub issue #176: a library flagged exclude_from_statistics
-        // (LibrarySettingsDialog.tsx's edit form) is otherwise still fully
+        // GitHub issue #179 (previously GitHub issue #176's global,
+        // admin/owner-set flag): a library the requesting user has
+        // personally excluded from statistics is otherwise still fully
         // visible/writable per LibraryAccessService — this only removes it
         // from this method's own aggregates, not from LibraryController's
-        // listing or SearchService's results.
-        $libraries = $this->accessService->visibleLibrariesQuery($user)
-            ->where('exclude_from_statistics', false)
+        // listing or SearchService's results, and doesn't affect any other
+        // user's own Statistics view of the same library.
+        $libraries = $this->accessService->visibleLibrariesQueryExcluding($user, 'exclude_from_statistics')
             ->withCount(['mediaBooks', 'mediaCds', 'mediaDvdBlurays'])
             ->get();
 
@@ -94,15 +95,20 @@ class StatisticsService
      * crash, a manual `php artisan medinv:snapshot-library-values`)
      * overwrite rather than duplicate today's row.
      *
-     * Skips exclude_from_statistics libraries (GitHub issue #176) — there's
-     * no point recording history for a series valueHistoryFor() below will
-     * never surface anyway.
+     * Snapshots every library unconditionally, regardless of any user's own
+     * exclude_from_statistics preference (GitHub issue #179 — this replaced
+     * GitHub issue #176's global column, which this method used to filter
+     * on directly): now that the flag is per-user, "should this library be
+     * snapshotted" no longer has one global answer — different users can
+     * disagree about the very same library. Filtering happens at read time
+     * instead, in valueHistoryFor() below, via LibraryAccessService::
+     * visibleLibrariesQueryExcluding() scoped to whichever user is asking.
      */
     public function snapshotAll(): void
     {
         $today = Carbon::today()->toDateString();
 
-        foreach (Library::where('exclude_from_statistics', false)->get() as $library) {
+        foreach (Library::all() as $library) {
             LibraryValueSnapshot::query()->updateOrCreate(
                 ['library_id' => $library->id, 'snapshot_date' => $today],
                 [
@@ -125,14 +131,14 @@ class StatisticsService
      * calendar day, and a single global cutover is enough (no need to
      * track one per library). Scoped through LibraryAccessService like
      * overviewFor(), so an unshared library contributes nothing here
-     * either — and, like overviewFor(), also excludes exclude_from_statistics
-     * libraries (GitHub issue #176).
+     * either — and, like overviewFor(), also excludes any library this user
+     * has personally excluded from statistics (GitHub issue #179).
      *
      * @return array{libraries: array<int, array{library_id:int, library_name:string, series: array}>, accumulated: array{series: array}, cutover_date: ?string}
      */
     public function valueHistoryFor(User $user): array
     {
-        $libraries = $this->accessService->visibleLibrariesQuery($user)->where('exclude_from_statistics', false)->get();
+        $libraries = $this->accessService->visibleLibrariesQueryExcluding($user, 'exclude_from_statistics')->get();
         $cutoverDate = LibraryValueSnapshot::query()->min('snapshot_date');
 
         $perLibrary = $libraries->map(fn (Library $library) => [

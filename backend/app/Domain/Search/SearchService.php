@@ -485,7 +485,12 @@ class SearchService
      */
     public function randomItemsFor(User $user): array
     {
-        $visibleLibraryIds = $this->accessService->visibleLibrariesQuery($user)->pluck('id', 'id');
+        // GitHub issue #179 — the "Von Startseite ausschließen" preference,
+        // same LibraryAccessService::visibleLibrariesQueryExcluding() every
+        // other per-user reporting exclusion (Statistics/Reports) already
+        // uses. New with this issue: the Startseite carousels had no
+        // exclusion mechanism at all before.
+        $visibleLibraryIds = $this->accessService->visibleLibrariesQueryExcluding($user, 'exclude_from_dashboard')->pluck('id', 'id');
 
         $result = [];
         foreach (['book', 'cd', 'dvd_bluray'] as $mediaType) {

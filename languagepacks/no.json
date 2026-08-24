@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "Ekskluder fra statistikk",
         "fromReports": "Ekskluder fra rapporter",
-        "hint": "Påvirker kun statistikk/rapporter — biblioteket forblir synlig og søkbart."
+        "fromDashboard": "Ekskluder fra hjemmesiden"
       },
       "mediaTypeLabel": "Medietype",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "Velg språket for grensesnittet.",
         "de": "Tysk",
         "en": "Engelsk"
+      },
+      "libraryPreferences": {
+        "title": "Statistikk, rapporter og hjemmeside",
+        "hint": "Velg for hvert bibliotek som er synlig for deg, om det skal inkluderes i statistikken, rapportene eller på hjemmesiden din. Dette påvirker kun din egen visning — biblioteket forblir synlig og søkbart for alle.",
+        "none": "Ingen bibliotek er synlige for deg ennå."
       },
       "password": {
         "label": "Endre passord",

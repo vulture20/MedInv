@@ -27,9 +27,6 @@ export interface Library {
   media_type: 'book' | 'cd' | 'dvd_bluray'
   owner: { id: number; name: string }
   shares?: Share[]
-  /** GitHub issue #176 — LibrarySettingsDialog.tsx's "Aus Statistiken/Auswertungen ausschließen" toggles. */
-  exclude_from_statistics: boolean
-  exclude_from_reports: boolean
 }
 
 /** GET /api/users (UserController::shareable()) — the share-target picker's option list (LibrarySettingsDialog.tsx's sharing/ownership sections). */

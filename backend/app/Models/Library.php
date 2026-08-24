@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * type-specific tables (mediaBooks/mediaCds/mediaDvdBlurays) depending on
  * this value.
  */
-#[Fillable(['name', 'description', 'media_type', 'owner_id', 'is_sample_library', 'exclude_from_statistics', 'exclude_from_reports'])]
+#[Fillable(['name', 'description', 'media_type', 'owner_id', 'is_sample_library'])]
 class Library extends Model
 {
     use HasFactory;
@@ -24,9 +24,6 @@ class Library extends Model
     {
         return [
             'is_sample_library' => 'boolean',
-            // GitHub issue #176 — see the creating migration's docblock.
-            'exclude_from_statistics' => 'boolean',
-            'exclude_from_reports' => 'boolean',
         ];
     }
 
@@ -38,6 +35,18 @@ class Library extends Model
     public function shares(): HasMany
     {
         return $this->hasMany(LibraryShare::class);
+    }
+
+    /**
+     * GitHub issue #179 — a row per user who has personally set at least
+     * one exclude_from_statistics/exclude_from_reports/exclude_from_dashboard
+     * flag for this library (see LibraryUserPreference's own docblock).
+     * Read through LibraryAccessService::visibleLibrariesQueryExcluding()
+     * rather than loaded/iterated directly in most places.
+     */
+    public function userPreferences(): HasMany
+    {
+        return $this->hasMany(LibraryUserPreference::class);
     }
 
     public function mediaBooks(): HasMany

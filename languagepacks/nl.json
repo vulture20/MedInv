@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "Uitsluiten van statistieken",
         "fromReports": "Uitsluiten van rapportages",
-        "hint": "Heeft alleen invloed op statistieken/rapportages — de bibliotheek blijft zichtbaar en doorzoekbaar."
+        "fromDashboard": "Uitsluiten van startpagina"
       },
       "mediaTypeLabel": "Mediatype",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "Kies de taal van de interface.",
         "de": "Duits",
         "en": "Engels"
+      },
+      "libraryPreferences": {
+        "title": "Statistieken, rapportages & startpagina",
+        "hint": "Kies voor elke voor u zichtbare bibliotheek of deze wordt meegenomen in uw statistieken, rapportages of op de startpagina. Dit heeft alleen invloed op uw eigen weergave — de bibliotheek blijft voor iedereen zichtbaar en doorzoekbaar.",
+        "none": "Er zijn nog geen bibliotheken voor u zichtbaar."
       },
       "password": {
         "label": "Wachtwoord wijzigen",

@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "Sulje pois tilastoista",
         "fromReports": "Sulje pois raporteista",
-        "hint": "Vaikuttaa vain tilastoihin/raportteihin – kirjasto pysyy näkyvänä ja haettavissa."
+        "fromDashboard": "Sulje pois etusivulta"
       },
       "mediaTypeLabel": "Mediatyyppi",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "Valitse käyttöliittymän kieli.",
         "de": "Saksa",
         "en": "Englanti"
+      },
+      "libraryPreferences": {
+        "title": "Tilastot, raportit ja etusivu",
+        "hint": "Valitse jokaiselle sinulle näkyvälle kirjastolle, sisältyykö se tilastoihisi, raportteihisi vai etusivulle. Tämä vaikuttaa vain omaan näkymääsi – kirjasto pysyy kaikille edelleen näkyvänä ja haettavissa.",
+        "none": "Sinulle ei ole vielä näkyvissä yhtään kirjastoa."
       },
       "password": {
         "label": "Vaihda salasana",

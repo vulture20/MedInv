@@ -305,14 +305,16 @@ class ReportsService
      * Every method in this class that builds its own item query (all but
      * sharingFor(), which loads Library rows directly) resolves its scope
      * through here — visible libraries per LibraryAccessService, minus any
-     * flagged exclude_from_reports (GitHub issue #176's second toggle,
-     * LibrarySettingsDialog.tsx's edit form). Such a library is otherwise
-     * fully visible/writable as normal; it just contributes nothing to any
-     * "Auswertung" below.
+     * the requesting user has personally excluded from reports (GitHub
+     * issue #179, replacing GitHub issue #176's global exclude_from_reports
+     * column — see LibraryUserPreference's own docblock). Such a library is
+     * otherwise fully visible/writable as normal, for this user and every
+     * other one; it just contributes nothing to any "Auswertung" below for
+     * whoever excluded it.
      */
     private function visibleLibraryIds(User $user): Collection
     {
-        return $this->accessService->visibleLibrariesQuery($user)->where('exclude_from_reports', false)->pluck('id');
+        return $this->accessService->visibleLibrariesQueryExcluding($user, 'exclude_from_reports')->pluck('id');
     }
 
     /**
@@ -333,8 +335,7 @@ class ReportsService
      */
     public function sharingFor(User $user): array
     {
-        return $this->accessService->visibleLibrariesQuery($user)
-            ->where('exclude_from_reports', false)
+        return $this->accessService->visibleLibrariesQueryExcluding($user, 'exclude_from_reports')
             ->with('shares.user:id,name')
             ->get()
             ->filter(fn (Library $library) => $this->accessService->canWrite($user, $library))

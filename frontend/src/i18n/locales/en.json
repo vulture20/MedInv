@@ -53,7 +53,7 @@
     "exclusion": {
       "fromStatistics": "Exclude from statistics",
       "fromReports": "Exclude from reports",
-      "hint": "Only affects statistics/reports — the library stays visible and searchable."
+      "fromDashboard": "Exclude from homepage"
     },
     "mediaTypeLabel": "Media type",
     "mediaType": {
@@ -352,6 +352,11 @@
       "hint": "Choose the language of the interface.",
       "de": "German",
       "en": "English"
+    },
+    "libraryPreferences": {
+      "title": "Statistics, Reports & Homepage",
+      "hint": "Choose, for each library visible to you, whether it's included in your Statistics, Reports, or on the homepage. This only affects your own view — the library stays visible and searchable for everyone.",
+      "none": "No libraries are visible to you yet."
     },
     "password": {
       "label": "Change password",

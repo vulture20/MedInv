@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "Exclure des statistiques",
         "fromReports": "Exclure des rapports",
-        "hint": "N'affecte que les statistiques/rapports — la bibliothèque reste visible et consultable dans la recherche."
+        "fromDashboard": "Exclure de la page d'accueil"
       },
       "mediaTypeLabel": "Type de média",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "Choisissez la langue de l'interface.",
         "de": "Allemand",
         "en": "Anglais"
+      },
+      "libraryPreferences": {
+        "title": "Statistiques, rapports et accueil",
+        "hint": "Choisissez, pour chaque bibliothèque qui vous est visible, si elle est prise en compte dans vos statistiques, vos rapports ou sur la page d'accueil. Cela n'affecte que votre propre vue — la bibliothèque reste visible et consultable pour tout le monde.",
+        "none": "Aucune bibliothèque ne vous est encore visible."
       },
       "password": {
         "label": "Modifier le mot de passe",

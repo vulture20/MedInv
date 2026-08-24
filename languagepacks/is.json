@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "Undanskilja frá tölfræði",
         "fromReports": "Undanskilja frá skýrslum",
-        "hint": "Hefur aðeins áhrif á tölfræði/skýrslur — safnið er áfram sýnilegt og leitanlegt."
+        "fromDashboard": "Undanskilja frá heimasíðu"
       },
       "mediaTypeLabel": "Efnistegund",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "Veldu tungumál viðmótsins.",
         "de": "Þýska",
         "en": "Enska"
+      },
+      "libraryPreferences": {
+        "title": "Tölfræði, skýrslur og heimasíða",
+        "hint": "Veldu fyrir hvert safn sem er sýnilegt þér hvort það sé tekið með í tölfræði þinni, skýrslum eða á heimasíðunni. Þetta hefur aðeins áhrif á þína eigin sýn — safnið er áfram sýnilegt og leitanlegt fyrir alla.",
+        "none": "Ekkert safn er enn sýnilegt þér."
       },
       "password": {
         "label": "Breyta lykilorði",

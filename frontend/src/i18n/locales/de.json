@@ -53,7 +53,7 @@
     "exclusion": {
       "fromStatistics": "Aus Statistiken ausschließen",
       "fromReports": "Aus Auswertungen ausschließen",
-      "hint": "Betrifft nur Statistiken/Auswertungen — die Bibliothek bleibt weiterhin sichtbar und durchsuchbar."
+      "fromDashboard": "Von Startseite ausschließen"
     },
     "mediaTypeLabel": "Medienart",
     "mediaType": {
@@ -352,6 +352,11 @@
       "hint": "Legen Sie die Sprache der Oberfläche fest.",
       "de": "Deutsch",
       "en": "Englisch"
+    },
+    "libraryPreferences": {
+      "title": "Statistiken, Auswertungen & Startseite",
+      "hint": "Legen Sie für jede für Sie sichtbare Bibliothek fest, ob sie in Ihren Statistiken, Auswertungen oder auf der Startseite berücksichtigt wird. Dies betrifft nur Ihre eigene Ansicht — die Bibliothek bleibt für alle weiterhin sichtbar und durchsuchbar.",
+      "none": "Für Sie sind noch keine Bibliotheken sichtbar."
     },
     "password": {
       "label": "Passwort ändern",

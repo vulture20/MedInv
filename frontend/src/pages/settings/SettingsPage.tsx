@@ -7,6 +7,21 @@ import i18n, { AVAILABLE_LANGUAGES } from '../../i18n'
 import { getRuntimeLanguagePacks, onRuntimeLanguagePacksChanged, type LanguagePackSummary } from '../../i18n/languagePackEvents'
 import { describeError } from '../admin/adminErrors'
 
+/**
+ * GET /library-preferences (LibraryPreferenceController::index()) — every
+ * library visible to the requesting user, with their own exclude_from_*
+ * preference for it (GitHub issue #179, see LibraryUserPreference's own
+ * docblock).
+ */
+interface LibraryPreference {
+  library_id: number
+  library_name: string
+  media_type: 'book' | 'cd' | 'dvd_bluray'
+  exclude_from_statistics: boolean
+  exclude_from_reports: boolean
+  exclude_from_dashboard: boolean
+}
+
 /** How long the "Saved" confirmation stays visible after a successful save, before fading back out on its own. */
 const SAVED_CONFIRMATION_MS = 2000
 
@@ -113,6 +128,25 @@ export function SettingsPage() {
   const [passwordSaved, setPasswordSaved] = useState(false)
   const [passwordError, setPasswordError] = useState<string | null>(null)
 
+  // GitHub issue #179 — exclude_from_statistics/exclude_from_reports were
+  // previously a single, global, admin/owner-set toggle per library
+  // (GitHub issue #176); now every user sets their own preference for every
+  // library visible to them here, plus a new "Von Startseite ausschließen"
+  // toggle the Dashboard's random-cover carousels never had before.
+  const [libraryPreferences, setLibraryPreferences] = useState<LibraryPreference[]>([])
+  const [libraryPreferencesError, setLibraryPreferencesError] = useState<string | null>(null)
+  // Per-library, since one row's save can fail (e.g. a stale library since
+  // deleted) without that meaning anything about any other row.
+  const [preferenceSaveErrors, setPreferenceSaveErrors] = useState<Record<number, string>>({})
+
+  useEffect(() => {
+    apiClient
+      .get<LibraryPreference[]>('/library-preferences')
+      .then(({ data }) => setLibraryPreferences(data))
+      .catch((err) => setLibraryPreferencesError(describeError(err, t)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     const onLanguageChanged = (lng: string) => setLanguage(lng)
     i18n.on('languageChanged', onLanguageChanged)
@@ -210,6 +244,30 @@ export function SettingsPage() {
     }
   }
 
+  /**
+   * PUT /libraries/{id}/preference (GitHub issue #179) — same immediate-
+   * save-on-change pattern as saveTemplate()/saveLanguage() above, applied
+   * one checkbox at a time rather than a whole-row submit so ticking one
+   * box never risks clobbering a value already saved for a different box
+   * on the same row from a still-in-flight request. Optimistically updates
+   * local state, reverting just this one row's field on failure.
+   */
+  async function togglePreference(libraryId: number, field: keyof Omit<LibraryPreference, 'library_id' | 'library_name' | 'media_type'>, value: boolean) {
+    const previous = libraryPreferences
+    setLibraryPreferences((prev) => prev.map((p) => (p.library_id === libraryId ? { ...p, [field]: value } : p)))
+    setPreferenceSaveErrors((prev) => {
+      const next = { ...prev }
+      delete next[libraryId]
+      return next
+    })
+    try {
+      await apiClient.put(`/libraries/${libraryId}/preference`, { [field]: value })
+    } catch (err) {
+      setLibraryPreferences(previous)
+      setPreferenceSaveErrors((prev) => ({ ...prev, [libraryId]: describeError(err, t) }))
+    }
+  }
+
   return (
     <div className="panel-page">
       <header className="panel-page__header">
@@ -291,6 +349,65 @@ export function SettingsPage() {
           </p>
         )}
         {languageError && <p role="alert">{languageError}</p>}
+      </section>
+
+      <section className="panel-card">
+        <h2>{t('settings.libraryPreferences.title')}</h2>
+        <p className="hint">{t('settings.libraryPreferences.hint')}</p>
+
+        {libraryPreferencesError && <p role="alert">{libraryPreferencesError}</p>}
+
+        {!libraryPreferencesError && libraryPreferences.length === 0 && <p className="hint">{t('settings.libraryPreferences.none')}</p>}
+
+        {libraryPreferences.length > 0 && (
+          <table className="media-item-table">
+            <thead>
+              <tr>
+                <th>{t('common.name')}</th>
+                <th>{t('libraries.exclusion.fromStatistics')}</th>
+                <th>{t('libraries.exclusion.fromReports')}</th>
+                <th>{t('libraries.exclusion.fromDashboard')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {libraryPreferences.map((pref) => (
+                <tr key={pref.library_id}>
+                  <td>{pref.library_name}</td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={pref.exclude_from_statistics}
+                      onChange={(e) => void togglePreference(pref.library_id, 'exclude_from_statistics', e.target.checked)}
+                      aria-label={t('libraries.exclusion.fromStatistics')}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={pref.exclude_from_reports}
+                      onChange={(e) => void togglePreference(pref.library_id, 'exclude_from_reports', e.target.checked)}
+                      aria-label={t('libraries.exclusion.fromReports')}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={pref.exclude_from_dashboard}
+                      onChange={(e) => void togglePreference(pref.library_id, 'exclude_from_dashboard', e.target.checked)}
+                      aria-label={t('libraries.exclusion.fromDashboard')}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {Object.entries(preferenceSaveErrors).map(([libraryId, message]) => (
+          <p role="alert" key={libraryId}>
+            {libraryPreferences.find((p) => p.library_id === Number(libraryId))?.library_name}: {message}
+          </p>
+        ))}
       </section>
 
       {/* GitHub issue #174 — hidden for an SSO-provisioned account, which

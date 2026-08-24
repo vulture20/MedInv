@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportImportController;
 use App\Http\Controllers\Api\LanguagePackController;
 use App\Http\Controllers\Api\LibraryController;
+use App\Http\Controllers\Api\LibraryPreferenceController;
 use App\Http\Controllers\Api\MediaItemController;
 use App\Http\Controllers\Api\MetadataController;
 use App\Http\Controllers\Api\OidcAuthController;
@@ -166,6 +167,14 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     // binding + in-controller check is what actually enforces it.
     Route::get('/libraries', [LibraryController::class, 'index']);
     Route::get('/libraries/{library}', [LibraryController::class, 'show']);
+
+    // GitHub issue #179: per-user exclude_from_statistics/exclude_from_reports/
+    // exclude_from_dashboard preferences (LibraryUserPreference) — a personal
+    // setting anyone who can *read* a library may set for themselves, so this
+    // deliberately sits outside the level:user,admin group below just like the
+    // library-read routes just above (a guest with a shared library included).
+    Route::get('/library-preferences', [LibraryPreferenceController::class, 'index']);
+    Route::put('/libraries/{library}/preference', [LibraryPreferenceController::class, 'update']);
 
     // Pure reads of a library's contents — like the library routes just
     // above, gated only by MediaItemController's own canRead() check, not

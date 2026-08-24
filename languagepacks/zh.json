@@ -56,7 +56,7 @@
       "exclusion": {
         "fromStatistics": "从统计中排除",
         "fromReports": "从报表中排除",
-        "hint": "仅影响统计/报表——该库仍然可见且可被搜索到。"
+        "fromDashboard": "从首页中排除"
       },
       "mediaTypeLabel": "媒体类型",
       "mediaType": {
@@ -286,6 +286,11 @@
         "hint": "选择界面语言。",
         "de": "德语",
         "en": "英语"
+      },
+      "libraryPreferences": {
+        "title": "统计、报表与首页",
+        "hint": "为您可见的每个库选择是否将其计入您的统计、报表或首页。此设置仅影响您自己的视图——该库对所有人仍然可见且可搜索。",
+        "none": "目前还没有对您可见的库。"
       },
       "password": {
         "label": "更改密码",
