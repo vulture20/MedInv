@@ -457,6 +457,10 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
               ean={item.ean}
               mediaType={library.media_type}
               merged={refreshMerged}
+              // GitHub issue #186: preselects whichever disagreed option
+              // already matches the item's current, already-stored state
+              // instead of just the first provider-ranked one.
+              current={{ values: valuesFromItem(item, specs), tracks: item.tracks ?? null }}
               onConfirm={(attributes, coverUrl, providerKeys) => void confirmRefresh(attributes, coverUrl, providerKeys)}
               onReject={() => {
                 setRefreshStatus('idle')

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FIELD_SPECS, formatDuration, type MediaType, type Track } from '../libraries/mediaItemFields'
+import { FIELD_SPECS, dateOnly, formatDuration, type FieldSpec, type MediaType, type Track } from '../libraries/mediaItemFields'
 
 interface MergedFieldOption {
   value: string | number
@@ -50,6 +50,25 @@ interface Props {
   ean: string
   mediaType: MediaType
   merged: MergedMetadata
+  /**
+   * The item's own already-stored values (GitHub issue #186) — passed only
+   * when this review is re-querying metadata for an *already captured*
+   * item (MediaItemDetailDialog's "Metadaten erneut abfragen", GitHub
+   * issue #56), never for a brand-new capture (CapturePage and
+   * CreateMediaItemDialog have no "current state" to preselect against, so
+   * they simply omit this prop). When present, a disagreed field/tracks
+   * option defaults to whichever one already matches the current item
+   * instead of just the first, provider-ranked option — so confirming
+   * without touching anything reproduces the existing record rather than
+   * silently overwriting it with an unrelated provider guess — and the
+   * cover picker defaults to "keep the current cover" (see selectedCoverUrl
+   * below) instead of the first candidate image, since none of the fetched
+   * candidate URLs can ever equal the item's own already-stored cover path.
+   * Falls back to the previous "first option" default per field when
+   * nothing matches it (e.g. every provider disagrees with the current
+   * value too).
+   */
+  current?: { values: Record<string, string>; tracks: Track[] | null }
   /**
    * `providerKeys` (GitHub issue #74) is the union of every field/tracks/
    * cover option's `provider_keys` that actually ended up in `attributes`/
@@ -149,6 +168,45 @@ export function ProviderStatusList({ statuses }: { statuses: ProviderStatus[] })
   )
 }
 
+/**
+ * GitHub issue #186: does a merge option's value already match the item's
+ * current, already-stored value for this field — used to preselect "what's
+ * already there" instead of just the first provider-ranked option when
+ * refreshing an existing item's metadata. Comparing by plain `===` (like
+ * `confirm()` above does for a *selected* option) doesn't work here since
+ * the two sides come from genuinely different representations: `current`
+ * is always a form-input string (mediaItemFields.ts's `valuesFromItem()`),
+ * while a number-type field's option value is a real number and a
+ * date-type field's option value may carry more than just the date (e.g.
+ * a full ISO timestamp) — each type gets its own tolerant comparison
+ * instead.
+ */
+function optionMatchesCurrentValue(optionValue: string | number, currentValue: string, fieldType: FieldSpec['type']): boolean {
+  if (currentValue === '') return false
+  if (fieldType === 'date') {
+    return dateOnly(String(optionValue)) === dateOnly(currentValue)
+  }
+  if (fieldType === 'number') {
+    const optionNumber = typeof optionValue === 'number' ? optionValue : Number(optionValue)
+    const currentNumber = Number(currentValue)
+    return !Number.isNaN(optionNumber) && !Number.isNaN(currentNumber) && optionNumber === currentNumber
+  }
+  return String(optionValue).trim() === currentValue.trim()
+}
+
+/** Same idea as optionMatchesCurrentValue() above, but for a CD's `tracks` option (GitHub issue #186) — position/title/duration_seconds compared field-by-field rather than by reference, since the current item's tracks and a freshly merged option's tracks are always distinct array instances even when they describe the same track list. */
+function tracksMatchCurrent(optionTracks: Track[], currentTracks: Track[]): boolean {
+  if (optionTracks.length !== currentTracks.length) return false
+  return optionTracks.every((track, index) => {
+    const current = currentTracks[index]
+    return (
+      String(track.position ?? '') === String(current.position ?? '') &&
+      (track.title ?? '') === (current.title ?? '') &&
+      (track.duration_seconds ?? null) === (current.duration_seconds ?? null)
+    )
+  })
+}
+
 /** Total duration of a track list, formatted, only when every track's duration is known — mirrors the backend's TrackListRuntimeCalculator (a confidently-wrong partial sum is worse than no total at all), used here purely to help the user tell two same-length-looking track list options apart at a glance. */
 function totalTracksDuration(tracks: Track[]): string | null {
   if (tracks.some((t) => typeof t.duration_seconds !== 'number')) return null
@@ -175,7 +233,7 @@ function totalTracksDuration(tracks: Track[]): string | null {
  * runtime from whichever `tracks` ends up submitted here), so `tracks`
  * itself is the only thing this component needs to let the user pick.
  */
-export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm, onReject }: Props) {
+export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, onConfirm, onReject }: Props) {
   const { t } = useTranslation()
   const specs = FIELD_SPECS[mediaType]
   // `merged.fields.tracks` (GitHub issue #48) has a genuinely different
@@ -185,24 +243,39 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, onConfirm
   // at all (it isn't in FIELD_SPECS), so it never needs to know about it.
   const tracksField = merged.fields.tracks as unknown as MergedTracksField | undefined
 
-  // Undecided fields default to their first (provider-ranked) option, so
-  // clicking "confirm" without touching anything still produces a complete,
-  // reasonable record rather than forcing the user to resolve every
-  // disagreement by hand.
+  // Undecided fields default to whichever option already matches the
+  // item's current value (GitHub issue #186, only known when `current` is
+  // passed — i.e. refreshing an already-captured item), falling back to
+  // the first (provider-ranked) option otherwise — same fallback as before
+  // this fix, and the only behavior for a brand-new capture, which has no
+  // "current" value to match at all. Either way, clicking "confirm" without
+  // touching anything still produces a complete, reasonable record.
   const [selectedValues, setSelectedValues] = useState<Record<string, string | number>>(() => {
     const initial: Record<string, string | number> = {}
     for (const spec of specs) {
       const field = merged.fields[spec.key]
       if (field && !field.agreed && field.options.length > 0) {
-        initial[spec.key] = field.options[0].value
+        const currentValue = current?.values[spec.key]
+        const matching = currentValue !== undefined ? field.options.find((option) => optionMatchesCurrentValue(option.value, currentValue, spec.type)) : undefined
+        initial[spec.key] = matching ? matching.value : field.options[0].value
       }
     }
     return initial
   })
-  const [selectedCoverUrl, setSelectedCoverUrl] = useState<string | null>(merged.covers[0]?.url ?? null)
-  const [selectedTracks, setSelectedTracks] = useState<Track[] | null>(
-    tracksField && !tracksField.agreed && tracksField.options.length > 0 ? tracksField.options[0].value : null
-  )
+  // GitHub issue #186: refreshing an existing item defaults to "keep the
+  // current cover" (null — see confirm()'s/the caller's handling of a null
+  // coverUrl, which leaves the item's existing cover untouched) rather than
+  // the first candidate image, since none of the fetched candidate URLs
+  // can ever equal the item's own already-stored cover path — there's
+  // nothing to match against, so "don't change it" is the option that
+  // actually corresponds to the current state. A brand-new capture (no
+  // `current`) keeps defaulting to the first candidate, unchanged.
+  const [selectedCoverUrl, setSelectedCoverUrl] = useState<string | null>(current ? null : merged.covers[0]?.url ?? null)
+  const [selectedTracks, setSelectedTracks] = useState<Track[] | null>(() => {
+    if (!tracksField || tracksField.agreed || tracksField.options.length === 0) return null
+    const matching = current?.tracks ? tracksField.options.find((option) => tracksMatchCurrent(option.value, current.tracks!)) : undefined
+    return matching ? matching.value : tracksField.options[0].value
+  })
   // GitHub issue #99: a larger view of a candidate cover, opened by clicking
   // its thumbnail — same native-<dialog> pattern as MediaItemDetailDialog's
   // own fullscreen cover view (issue #45), reusing its .media-item-cover-
