@@ -185,6 +185,7 @@
     "mergeCover": "Cover",
     "mergeKeepCover": "Keep current cover",
     "mergeNoCover": "No cover",
+    "mergeRejectField": "Don't use this",
     "mergeConfirm": "Use these values",
     "mergeTracksCount_one": "{{count}} track",
     "mergeTracksCount_other": "{{count}} tracks",

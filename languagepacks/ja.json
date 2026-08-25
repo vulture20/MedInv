@@ -194,6 +194,7 @@
       "mergeCover": "カバー",
       "mergeKeepCover": "現在のカバーを維持",
       "mergeNoCover": "カバーなし",
+      "mergeRejectField": "この値を使用しない",
       "mergeConfirm": "この値を使用",
       "mergeTracksCount_one": "{{count}}曲",
       "mergeTracksCount_other": "{{count}}曲",

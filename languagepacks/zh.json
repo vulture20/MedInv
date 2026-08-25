@@ -194,6 +194,7 @@
       "mergeCover": "封面",
       "mergeKeepCover": "保留当前封面",
       "mergeNoCover": "无封面",
+      "mergeRejectField": "不使用",
       "mergeConfirm": "使用这些值",
       "mergeTracksCount_one": "{{count}} 首",
       "mergeTracksCount_other": "{{count}} 首",

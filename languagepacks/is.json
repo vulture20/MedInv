@@ -188,6 +188,7 @@
       "mergeCover": "Kápa",
       "mergeKeepCover": "Halda núverandi kápu",
       "mergeNoCover": "Engin kápa",
+      "mergeRejectField": "Ekki nota þetta",
       "mergeConfirm": "Nota þessi gildi",
       "mergeTracksCount_one": "{{count}} lag",
       "mergeTracksCount_other": "{{count}} lög",

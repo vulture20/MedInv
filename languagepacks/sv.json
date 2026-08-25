@@ -188,6 +188,7 @@
       "mergeCover": "Omslag",
       "mergeKeepCover": "Behåll omslag",
       "mergeNoCover": "Inget omslag",
+      "mergeRejectField": "Använd inte",
       "mergeConfirm": "Använd dessa värden",
       "mergeTracksCount_one": "{{count}} spår",
       "mergeTracksCount_other": "{{count}} spår",

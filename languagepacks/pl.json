@@ -194,6 +194,7 @@
       "mergeCover": "Okładka",
       "mergeKeepCover": "Zachowaj okładkę",
       "mergeNoCover": "Brak okładki",
+      "mergeRejectField": "Nie używaj",
       "mergeConfirm": "Użyj tych wartości",
       "mergeTracksCount_one": "{{count}} utwór",
       "mergeTracksCount_other": "{{count}} utworów",

@@ -194,6 +194,7 @@
       "mergeCover": "Kapak",
       "mergeKeepCover": "Mevcut kapağı koru",
       "mergeNoCover": "Kapak yok",
+      "mergeRejectField": "Bunu kullanma",
       "mergeConfirm": "Bu değerleri kullan",
       "mergeTracksCount_one": "{{count}} parça",
       "mergeTracksCount_other": "{{count}} parça",

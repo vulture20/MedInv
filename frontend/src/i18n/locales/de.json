@@ -185,6 +185,7 @@
     "mergeCover": "Cover",
     "mergeKeepCover": "Cover beibehalten",
     "mergeNoCover": "Kein Cover",
+    "mergeRejectField": "Nicht übernehmen",
     "mergeConfirm": "Diese Werte übernehmen",
     "mergeTracksCount_one": "{{count}} Titel",
     "mergeTracksCount_other": "{{count}} Titel",

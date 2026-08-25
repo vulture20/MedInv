@@ -188,6 +188,7 @@
       "mergeCover": "Kansikuva",
       "mergeKeepCover": "Säilytä nykyinen kansikuva",
       "mergeNoCover": "Ei kansikuvaa",
+      "mergeRejectField": "Älä käytä tätä",
       "mergeConfirm": "Käytä näitä arvoja",
       "mergeTracksCount_one": "{{count}} kappale",
       "mergeTracksCount_other": "{{count}} kappaletta",

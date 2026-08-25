@@ -194,6 +194,7 @@
       "mergeCover": "Portada",
       "mergeKeepCover": "Mantener portada actual",
       "mergeNoCover": "Sin portada",
+      "mergeRejectField": "No usar este valor",
       "mergeConfirm": "Usar estos valores",
       "mergeTracksCount_one": "{{count}} pista",
       "mergeTracksCount_other": "{{count}} pistas",

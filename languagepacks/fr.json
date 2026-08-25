@@ -194,6 +194,7 @@
       "mergeCover": "Pochette",
       "mergeKeepCover": "Conserver la pochette actuelle",
       "mergeNoCover": "Aucune pochette",
+      "mergeRejectField": "Ne pas utiliser",
       "mergeConfirm": "Utiliser ces valeurs",
       "mergeTracksCount_one": "{{count}} piste",
       "mergeTracksCount_other": "{{count}} pistes",

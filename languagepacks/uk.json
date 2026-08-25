@@ -194,6 +194,7 @@
       "mergeCover": "Обкладинка",
       "mergeKeepCover": "Зберегти обкладинку",
       "mergeNoCover": "Без обкладинки",
+      "mergeRejectField": "Не використовувати",
       "mergeConfirm": "Використати ці значення",
       "mergeTracksCount_one": "{{count}} трек",
       "mergeTracksCount_other": "{{count}} треків",

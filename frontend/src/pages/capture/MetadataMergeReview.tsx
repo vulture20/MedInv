@@ -296,6 +296,20 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
     const matching = current?.tracks ? tracksField.options.find((option) => tracksMatchCurrent(option.value, current.tracks!)) : undefined
     return matching ? matching.value : tracksField.options[0].value
   })
+  /**
+   * GitHub issue #189: which non-`required` fields the user explicitly
+   * chose not to take over at all — e.g. a found `description` that
+   * clearly belongs to a different work entirely. Previously the only
+   * choices were "accept the single agreed value" or "pick one of several
+   * disagreeing options"; there was no way to end up with no value for a
+   * field a provider *did* report something for, unlike the cover picker's
+   * existing "Kein Cover" option. Checking this overrides whatever's
+   * selected/agreed above (see confirm() below) rather than requiring the
+   * selection itself to somehow represent "nothing" — same reasoning
+   * `tracksField`/covers already get their own dedicated null-representing
+   * state instead of overloading `selectedValues`.
+   */
+  const [rejectedFields, setRejectedFields] = useState<Set<string>>(() => new Set())
   // GitHub issue #99: a larger view of a candidate cover, opened by clicking
   // its thumbnail — same native-<dialog> pattern as MediaItemDetailDialog's
   // own fullscreen cover view (issue #45), reusing its .media-item-cover-
@@ -324,6 +338,13 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
     for (const spec of specs) {
       const field = merged.fields[spec.key]
       if (!field) continue
+      // GitHub issue #189: an explicit rejection wins over whatever's
+      // agreed/selected above — the field ends up with no value at all,
+      // and none of its options' providers are credited for it.
+      if (rejectedFields.has(spec.key)) {
+        attributes[spec.key] = null
+        continue
+      }
       if (field.agreed) {
         attributes[spec.key] = field.value
         field.options[0]?.provider_keys.forEach((key) => providerKeys.add(key))
@@ -361,26 +382,55 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
         const field = merged.fields[spec.key]
         if (!field) return null
 
+        const rejected = rejectedFields.has(spec.key)
+
         return (
           <div className="metadata-merge__field" key={spec.key}>
             <span className="metadata-merge__field-label">{t(`mediaItem.fields.${spec.key}`)}</span>
-            {field.agreed ? (
-              <span className="metadata-merge__agreed-value">{String(field.value)}</span>
-            ) : (
-              <div className="metadata-merge__options" role="radiogroup" aria-label={t(`mediaItem.fields.${spec.key}`)}>
-                {field.options.map((option) => (
-                  <label key={String(option.value)} className="metadata-merge__option">
-                    <input
-                      type="radio"
-                      name={`${groupId}-${spec.key}`}
-                      checked={selectedValues[spec.key] === option.value}
-                      onChange={() => setSelectedValues((prev) => ({ ...prev, [spec.key]: option.value }))}
-                    />
-                    <span>{String(option.value)}</span>
-                    <span className="metadata-merge__option-source">{option.provider_keys.map(formatProviderKey).join(', ')}</span>
-                  </label>
-                ))}
-              </div>
+            <div className={rejected ? 'metadata-merge__field-value--rejected' : undefined}>
+              {field.agreed ? (
+                <span className="metadata-merge__agreed-value">{String(field.value)}</span>
+              ) : (
+                <div className="metadata-merge__options" role="radiogroup" aria-label={t(`mediaItem.fields.${spec.key}`)}>
+                  {field.options.map((option) => (
+                    <label key={String(option.value)} className="metadata-merge__option">
+                      <input
+                        type="radio"
+                        name={`${groupId}-${spec.key}`}
+                        disabled={rejected}
+                        checked={selectedValues[spec.key] === option.value}
+                        onChange={() => setSelectedValues((prev) => ({ ...prev, [spec.key]: option.value }))}
+                      />
+                      <span>{String(option.value)}</span>
+                      <span className="metadata-merge__option-source">{option.provider_keys.map(formatProviderKey).join(', ')}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/*
+              GitHub issue #189: a required field (only `title`) always
+              needs a value to create the item at all, so it gets no
+              rejection option — every other field can legitimately end up
+              empty, the same way a brand-new manual capture leaves most
+              fields blank to begin with.
+            */}
+            {!spec.required && (
+              <label className="metadata-merge__reject">
+                <input
+                  type="checkbox"
+                  checked={rejected}
+                  onChange={(e) =>
+                    setRejectedFields((prev) => {
+                      const next = new Set(prev)
+                      if (e.target.checked) next.add(spec.key)
+                      else next.delete(spec.key)
+                      return next
+                    })
+                  }
+                />
+                <span>{t('capture.mergeRejectField')}</span>
+              </label>
             )}
           </div>
         )
