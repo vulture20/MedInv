@@ -173,6 +173,7 @@
       "or": "または",
       "resultsTitle_one": "{{count}} 件の結果",
       "resultsTitle_other": "{{count}} 件の結果",
+      "resultLibrary": "ライブラリ",
       "searching": "検索中…",
       "dismiss": "破棄",
       "textFileImport": "テキストファイルのインポート",

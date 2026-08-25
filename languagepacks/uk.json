@@ -173,6 +173,7 @@
       "or": "або",
       "resultsTitle_one": "{{count}} результат",
       "resultsTitle_other": "{{count}} результатів",
+      "resultLibrary": "Бібліотека",
       "searching": "Триває пошук…",
       "dismiss": "Відхилити",
       "textFileImport": "Імпорт текстового файлу",

@@ -173,6 +173,7 @@
       "or": "或者",
       "resultsTitle_one": "{{count}} 个结果",
       "resultsTitle_other": "{{count}} 个结果",
+      "resultLibrary": "媒体库",
       "searching": "搜索中…",
       "dismiss": "忽略",
       "textFileImport": "文本文件导入",

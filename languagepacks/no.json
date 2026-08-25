@@ -173,6 +173,7 @@
       "or": "eller",
       "resultsTitle_one": "{{count}} resultat",
       "resultsTitle_other": "{{count}} resultater",
+      "resultLibrary": "Bibliotek",
       "searching": "Søker…",
       "dismiss": "Forkast",
       "textFileImport": "Import fra tekstfil",

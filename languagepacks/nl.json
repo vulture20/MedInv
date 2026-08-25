@@ -173,6 +173,7 @@
       "or": "of",
       "resultsTitle_one": "{{count}} resultaat",
       "resultsTitle_other": "{{count}} resultaten",
+      "resultLibrary": "Bibliotheek",
       "searching": "Bezig met zoeken…",
       "dismiss": "Negeren",
       "textFileImport": "Tekstbestand importeren",

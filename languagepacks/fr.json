@@ -173,6 +173,7 @@
       "or": "ou",
       "resultsTitle_one": "{{count}} résultat",
       "resultsTitle_other": "{{count}} résultats",
+      "resultLibrary": "Bibliothèque",
       "searching": "Recherche en cours…",
       "dismiss": "Ignorer",
       "textFileImport": "Import de fichier texte",

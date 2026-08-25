@@ -173,6 +173,7 @@
       "or": "veya",
       "resultsTitle_one": "{{count}} sonuç",
       "resultsTitle_other": "{{count}} sonuç",
+      "resultLibrary": "Kitaplık",
       "searching": "Aranıyor…",
       "dismiss": "Yoksay",
       "textFileImport": "Metin dosyası içe aktarma",

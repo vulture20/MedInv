@@ -176,6 +176,12 @@ export function CapturePage() {
   // sign it never actually succeeded), the same gap already fixed on
   // several other pages this session.
   const [error, setError] = useState<string | null>(null)
+  // GitHub issue #191: which still-pending results are currently being
+  // re-resolved against a newly chosen library (changeResultLibrary()
+  // below) — shown as a spinner in place of the library select while the
+  // request is in flight, and used to disable that select against a
+  // second change landing mid-request.
+  const [reresolvingIds, setReresolvingIds] = useState<Set<number>>(() => new Set())
 
   useEffect(() => {
     apiClient
@@ -352,6 +358,44 @@ export function CapturePage() {
     }
   }
 
+  /**
+   * GitHub issue #191: a still-pending result's `library` is captured once
+   * at scan time (see PendingResult's own docblock) and never tracks the
+   * picker above again — deliberately, so an unrelated later scan can't
+   * retroactively change an already-pending result. That also means
+   * switching the picker *after* scanning an item, then confirming, used
+   * to still create it in the *original* library — a real gap the user
+   * ran into: scan into the wrong library, notice, switch libraries,
+   * confirm, and the item lands in the first one anyway. This lets a
+   * pending result be redirected explicitly, from its own library select
+   * below, by re-running the exact same scan against the newly chosen
+   * library — not just relabeling `result.library` in place, since the
+   * duplicate-EAN check (briefing 5.1) is per-library and this result's
+   * `status`/`merged`/`provider_statuses` can genuinely differ there.
+   */
+  async function changeResultLibrary(result: PendingResult, newLibraryId: number) {
+    const newLibrary = libraries.find((l) => l.id === newLibraryId)
+    if (!newLibrary || newLibrary.id === result.library.id) return
+
+    setError(null)
+    setReresolvingIds((prev) => new Set(prev).add(result.id))
+    try {
+      const { data } = await apiClient.post<ScanResult>(`/libraries/${newLibrary.id}/capture/scan`, { ean: result.ean })
+      setResults((prev) => prev.map((r) => (r.id === result.id ? { ...data, library: newLibrary, id: result.id } : r)))
+    } catch (err) {
+      // The select below is controlled by result.library.id, which is left
+      // untouched on failure — it snaps back to the original library on its
+      // own, same as any other controlled input reverting after a rejected change.
+      setError(describeError(err, t))
+    } finally {
+      setReresolvingIds((prev) => {
+        const next = new Set(prev)
+        next.delete(result.id)
+        return next
+      })
+    }
+  }
+
   /** Removes a result the user has no other action to take on (a 'duplicate' has none at all; a 'no_match' has "add manually" but may just as well not be wanted) — 'candidates' already has its own dismissal via MetadataMergeReview's "reject all". Keyed by `id`, not `ean` — see PendingResult's docblock for why more than one result can share an ean. */
   function dismissResult(id: number) {
     setResults((prev) => prev.filter((r) => r.id !== id))
@@ -503,6 +547,37 @@ export function CapturePage() {
               <li key={result.id} className="capture-result">
                 <div className="capture-result__header">
                   <span className="capture-result__ean">{result.ean}</span>
+                  {/*
+                    GitHub issue #191: lets a still-pending result be
+                    redirected to a different library after the fact —
+                    switching the picker above no longer has any effect on
+                    an already-scanned result (see PendingResult's own
+                    docblock), so without this the only way to fix a scan
+                    into the wrong library was discarding it and rescanning.
+                    Restricted to libraries of the same media_type as the
+                    one this result was scanned against — MetadataMergeReview's
+                    fields are media-type-specific, and only shown at all
+                    when there's an actual alternative to switch to.
+                  */}
+                  {libraries.filter((l) => l.media_type === result.library.media_type).length > 1 &&
+                    (reresolvingIds.has(result.id) ? (
+                      <Spinner />
+                    ) : (
+                      <select
+                        className="capture-result__library-select"
+                        value={result.library.id}
+                        aria-label={t('capture.resultLibrary')}
+                        onChange={(e) => void changeResultLibrary(result, Number(e.target.value))}
+                      >
+                        {libraries
+                          .filter((l) => l.media_type === result.library.media_type)
+                          .map((lib) => (
+                            <option key={lib.id} value={lib.id}>
+                              {lib.name}
+                            </option>
+                          ))}
+                      </select>
+                    ))}
                   {result.status === 'duplicate' && <span className="warning warning--danger">{t('capture.duplicate')}</span>}
                   {result.status !== 'candidates' && (
                     <button

@@ -170,6 +170,7 @@
     "or": "or",
     "resultsTitle_one": "{{count}} result",
     "resultsTitle_other": "{{count}} results",
+    "resultLibrary": "Library",
     "searching": "Searching…",
     "dismiss": "Dismiss",
     "textFileImport": "Text file import",

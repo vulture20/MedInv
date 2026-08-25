@@ -173,6 +173,7 @@
       "or": "eller",
       "resultsTitle_one": "{{count}} resultat",
       "resultsTitle_other": "{{count}} resultat",
+      "resultLibrary": "Bibliotek",
       "searching": "Söker…",
       "dismiss": "Ignorera",
       "textFileImport": "Import från textfil",

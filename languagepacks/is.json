@@ -173,6 +173,7 @@
       "or": "eða",
       "resultsTitle_one": "{{count}} niðurstaða",
       "resultsTitle_other": "{{count}} niðurstöður",
+      "resultLibrary": "Safn",
       "searching": "Leita…",
       "dismiss": "Hafna",
       "textFileImport": "Innflutningur úr textaskrá",

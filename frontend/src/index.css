@@ -1725,6 +1725,19 @@ td {
   font-weight: 600;
 }
 
+/* GitHub issue #191: a compact, inline variant of .panel-select — that one is `display: block; width: 100%` for a standalone form field, which would break .capture-result__header's flex row. */
+.capture-result__library-select {
+  width: auto;
+  max-width: 12rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
 .capture-result__dismiss {
   margin-left: auto;
   padding: 0;
