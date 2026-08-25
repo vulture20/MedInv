@@ -1261,24 +1261,6 @@ td {
   color: var(--color-text-muted);
 }
 
-/* GitHub issue #189: the found value/options for a field, dimmed and
- * non-interactive once its "Nicht übernehmen" checkbox below is checked —
- * still visible so the user can see what they're rejecting, but visually
- * subordinate to that decision. */
-.metadata-merge__field-value--rejected {
-  opacity: 0.45;
-}
-
-.metadata-merge__reject {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  color: var(--color-text-muted) !important;
-  margin-bottom: 0 !important;
-}
-
 .metadata-merge__covers {
   display: flex;
   flex-wrap: wrap;
