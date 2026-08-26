@@ -202,6 +202,7 @@
         "skipped": "hoppet over (ingen tydelig tittel ennå)"
       },
       "foundViaTitle": "(funnet via tittel)",
+      "foundViaFallback": "(generisk reservedatabase)",
       "cameraScan": "Skann med kamera",
       "cameraClose": "Lukk kamera",
       "cameraHint": "Hold en strekkode innenfor rammen foran kameraet.",

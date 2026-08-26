@@ -207,7 +207,8 @@
         "failed": "aanvraag mislukt",
         "skipped": "overgeslagen (nog geen duidelijke titel)"
       },
-      "foundViaTitle": "(gevonden via titel)"
+      "foundViaTitle": "(gevonden via titel)",
+      "foundViaFallback": "(generieke fallback-database)"
     },
     "search": {
       "placeholder": "Zoeken…",

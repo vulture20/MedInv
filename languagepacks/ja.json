@@ -207,7 +207,8 @@
         "failed": "リクエスト失敗",
         "skipped": "スキップ（明確なタイトル未確定）"
       },
-      "foundViaTitle": "（タイトル検索で発見）"
+      "foundViaTitle": "（タイトル検索で発見）",
+      "foundViaFallback": "（汎用フォールバックデータベース）"
     },
     "search": {
       "placeholder": "検索…",

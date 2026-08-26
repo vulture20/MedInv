@@ -202,6 +202,7 @@
         "skipped": "ohitettu (ei vielä selkeää nimeä)"
       },
       "foundViaTitle": "(löytyi nimen perusteella)",
+      "foundViaFallback": "(yleinen varatietokanta)",
       "cameraScan": "Skannaa kameralla",
       "cameraClose": "Sulje kamera",
       "cameraHint": "Pidä viivakoodi kehyksen sisällä kameran edessä.",

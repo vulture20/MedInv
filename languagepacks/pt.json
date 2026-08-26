@@ -207,7 +207,8 @@
         "failed": "falha na solicitação",
         "skipped": "ignorado (ainda sem título claro)"
       },
-      "foundViaTitle": "(encontrado através do título)"
+      "foundViaTitle": "(encontrado através do título)",
+      "foundViaFallback": "(base de dados de fallback genérica)"
     },
     "search": {
       "placeholder": "Pesquisar…",

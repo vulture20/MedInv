@@ -199,6 +199,7 @@
       "skipped": "skipped (no clear title yet)"
     },
     "foundViaTitle": "(found via title)",
+    "foundViaFallback": "(generic fallback database)",
     "cameraScan": "Scan with camera",
     "cameraClose": "Close camera",
     "cameraHint": "Hold a barcode inside the frame in front of the camera.",

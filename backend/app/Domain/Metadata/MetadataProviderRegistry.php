@@ -13,6 +13,7 @@ use App\Domain\Metadata\Providers\Book\JpcBookProvider;
 use App\Domain\Metadata\Providers\Book\MistralBookProvider;
 use App\Domain\Metadata\Providers\Book\OpenAiBookProvider;
 use App\Domain\Metadata\Providers\Book\OpenLibraryProvider;
+use App\Domain\Metadata\Providers\Book\UpcItemDbBookProvider;
 use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
 use App\Domain\Metadata\Providers\Cd\ClaudeCdProvider;
 use App\Domain\Metadata\Providers\Cd\DiscogsProvider;
@@ -21,6 +22,7 @@ use App\Domain\Metadata\Providers\Cd\JpcCdProvider;
 use App\Domain\Metadata\Providers\Cd\MistralCdProvider;
 use App\Domain\Metadata\Providers\Cd\MusicBrainzProvider;
 use App\Domain\Metadata\Providers\Cd\OpenAiCdProvider;
+use App\Domain\Metadata\Providers\Cd\UpcItemDbCdProvider;
 use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\ClaudeDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\GeminiDvdBlurayProvider;
@@ -28,6 +30,7 @@ use App\Domain\Metadata\Providers\DvdBluray\JpcDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\MistralDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\OpenAiDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\TmdbProvider;
+use App\Domain\Metadata\Providers\DvdBluray\UpcItemDbDvdBlurayProvider;
 use App\Domain\Metadata\Providers\DvdBluray\UpcMdbProvider;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Collection;
@@ -102,6 +105,17 @@ class MetadataProviderRegistry
      * legal/compliance question worth an admin's own explicit decision,
      * not something to enable silently on install/update the way a
      * merely-Beta-but-unproblematic provider could be.
+     *
+     * `{book,cd,dvd_bluray}.upcitemdb` (GitHub issue #192, following a
+     * requested feasibility study) is Beta/opt-in for a reason distinct
+     * from every case above: it isn't a media-specific source at all, only
+     * a generic barcode database queried as a last-resort name fallback
+     * (App\Domain\Metadata\Contracts\NameOnlyFallbackProvider) — its own
+     * feasibility study found real, confirmed data-quality issues even on
+     * a successful match (see UpcItemDbLookup's own docblock), and its DVD/
+     * CD coverage specifically was never live-confirmed at all. An
+     * operator should opt into a source with those caveats explicitly,
+     * the same as any other not-yet-fully-trusted provider here.
      */
     private const DEFAULT_DISABLED_PROVIDER_KEYS = [
         'book.amazon', 'cd.amazon', 'dvd_bluray.amazon',
@@ -110,6 +124,7 @@ class MetadataProviderRegistry
         'book.gemini', 'cd.gemini', 'dvd_bluray.gemini',
         'book.mistral', 'cd.mistral', 'dvd_bluray.mistral',
         'dvd_bluray.tmdb',
+        'book.upcitemdb', 'cd.upcitemdb', 'dvd_bluray.upcitemdb',
     ];
 
     /** @return class-string<MetadataProviderInterface>[] */
@@ -117,6 +132,7 @@ class MetadataProviderRegistry
     {
         return [
             OpenLibraryProvider::class,
+            UpcItemDbBookProvider::class,
             GoogleBooksProvider::class,
             HardcoverProvider::class,
             AmazonBookProvider::class,
@@ -126,6 +142,7 @@ class MetadataProviderRegistry
             MistralBookProvider::class,
             JpcBookProvider::class,
             MusicBrainzProvider::class,
+            UpcItemDbCdProvider::class,
             DiscogsProvider::class,
             AmazonCdProvider::class,
             ClaudeCdProvider::class,
@@ -134,6 +151,7 @@ class MetadataProviderRegistry
             MistralCdProvider::class,
             JpcCdProvider::class,
             UpcMdbProvider::class,
+            UpcItemDbDvdBlurayProvider::class,
             AmazonDvdBlurayProvider::class,
             ClaudeDvdBlurayProvider::class,
             OpenAiDvdBlurayProvider::class,

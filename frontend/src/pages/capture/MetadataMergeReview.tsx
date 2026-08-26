@@ -124,8 +124,16 @@ export interface ProviderStatus {
    * indistinguishable from an ordinary EAN match — title-based matching is
    * inherently less certain (no barcode to confirm it), worth knowing at
    * a glance.
+   *
+   * GitHub issue #192: 'fallback' for a NameOnlyFallbackProvider (today,
+   * upcitemdb.com) — a generic, non-media-specific barcode database only
+   * ever queried as a last resort, when every ordinary code-capable
+   * provider found nothing at all in round 1. Surfaced with its own hint
+   * for the same reason 'title' gets one: this contribution is
+   * lower-confidence than an ordinary media-specific match and shouldn't
+   * look identical to one.
    */
-  stage: 'code' | 'title'
+  stage: 'code' | 'title' | 'fallback'
 }
 
 /**
@@ -176,6 +184,8 @@ export function ProviderStatusList({ statuses }: { statuses: ProviderStatus[] })
             status ('ok'/'no_match'/'failed') instead.
           */}
           {s.stage === 'title' && s.status !== 'skipped' && <span className="hint provider-status-list__via">{t('capture.foundViaTitle')}</span>}
+          {/* GitHub issue #192: a NameOnlyFallbackProvider's contribution is always labeled, regardless of status — unlike 'title', there's no 'skipped' variant to avoid contradicting here. */}
+          {s.stage === 'fallback' && <span className="hint provider-status-list__via">{t('capture.foundViaFallback')}</span>}
         </li>
       ))}
     </ul>

@@ -4,6 +4,7 @@ namespace App\Domain\Metadata;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Contracts\NameOnlyFallbackProvider;
 use App\Models\Library;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -47,6 +48,16 @@ use Illuminate\Support\Facades\Log;
  * round-1 providers actually reported each one — a single title when
  * everyone agrees (the previous behavior, unchanged in that case), up to
  * three when they don't, rather than an all-or-nothing skip.
+ *
+ * GitHub issue #192: a provider implementing NameOnlyFallbackProvider
+ * (today, upcitemdb.com's three media-type variants) is held back from
+ * round 1 entirely and only queried, as an explicit extra round, when
+ * round 1's ordinary code-capable providers found literally nothing — its
+ * result is folded into the same candidate list as everything else (so its
+ * title can still seed round 2 below), but always stamped with its own
+ * `stage: 'fallback'` so it's never confused with a genuine media-specific
+ * match. See collectCandidatesByCode()'s own docblock for the exact
+ * gating.
  */
 class MetadataImportService
 {
@@ -147,15 +158,33 @@ class MetadataImportService
      * *why* it didn't contribute, the same transparency #53 already
      * established for `failed` vs `no_match`.
      *
+     * GitHub issue #192: a NameOnlyFallbackProvider is set aside before
+     * round 1 even runs and only queried afterwards, as its own explicit
+     * round (reusing queryProviders() below with `stage: 'fallback'`),
+     * when round 1's *ordinary* code-capable providers found nothing at
+     * all — deliberately gated on "round 1 found zero candidates", not
+     * "round 1 found no title" (which resolveCandidateTitles() already
+     * covers, separately, for round 2): a code provider that found a
+     * candidate without a title is still a genuine answer this app
+     * shouldn't second-guess by also asking a generic fallback database.
+     *
      * @return array{candidates: MetadataCandidate[], provider_statuses: array<int, array{provider_key: string, status: string, candidate_count: int, stage: string}>}
      */
     private function collectCandidatesByCode(Library $library, string $code): array
     {
         $providers = $this->registry->enabledProvidersFor($library->media_type);
+        $fallbackProviders = $providers->filter(fn (MetadataProviderInterface $p) => $p instanceof NameOnlyFallbackProvider);
+        $providers = $providers->reject(fn (MetadataProviderInterface $p) => $p instanceof NameOnlyFallbackProvider);
         $codeProviders = $providers->filter(fn (MetadataProviderInterface $p) => $p->supportsCodeLookup());
         $titleOnlyProviders = $providers->reject(fn (MetadataProviderInterface $p) => $p->supportsCodeLookup());
 
         [$candidates, $statuses] = $this->queryProviders($codeProviders, fn (MetadataProviderInterface $p) => $p->lookupByCode($code), "code {$code}", 'code');
+
+        if ($candidates === [] && $fallbackProviders->isNotEmpty()) {
+            [$fallbackCandidates, $fallbackStatuses] = $this->queryProviders($fallbackProviders, fn (MetadataProviderInterface $p) => $p->lookupByCode($code), "code {$code} (fallback)", 'fallback');
+            $candidates = [...$candidates, ...$fallbackCandidates];
+            $statuses = [...$statuses, ...$fallbackStatuses];
+        }
 
         if ($titleOnlyProviders->isNotEmpty()) {
             $titles = $this->resolveCandidateTitles($candidates);

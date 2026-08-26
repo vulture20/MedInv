@@ -207,7 +207,8 @@
         "failed": "żądanie nieudane",
         "skipped": "pominięto (brak jednoznacznego tytułu)"
       },
-      "foundViaTitle": "(znaleziono po tytule)"
+      "foundViaTitle": "(znaleziono po tytule)",
+      "foundViaFallback": "(ogólna baza danych zapasowych)"
     },
     "search": {
       "placeholder": "Szukaj…",

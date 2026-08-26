@@ -199,6 +199,7 @@
       "skipped": "übersprungen (noch kein eindeutiger Titel)"
     },
     "foundViaTitle": "(über Titel gefunden)",
+    "foundViaFallback": "(generische Fallback-Datenbank)",
     "cameraScan": "Mit Kamera scannen",
     "cameraClose": "Kamera schließen",
     "cameraHint": "Barcode innerhalb des Rahmens vor die Kamera halten.",

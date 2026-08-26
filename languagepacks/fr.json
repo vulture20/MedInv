@@ -207,7 +207,8 @@
         "failed": "requête échouée",
         "skipped": "ignoré (pas encore de titre clair)"
       },
-      "foundViaTitle": "(trouvé via le titre)"
+      "foundViaTitle": "(trouvé via le titre)",
+      "foundViaFallback": "(base de données de secours générique)"
     },
     "search": {
       "placeholder": "Rechercher…",

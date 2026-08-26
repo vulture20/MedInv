@@ -207,7 +207,8 @@
         "failed": "请求失败",
         "skipped": "已跳过（尚无明确标题）"
       },
-      "foundViaTitle": "（通过标题找到）"
+      "foundViaTitle": "（通过标题找到）",
+      "foundViaFallback": "（通用后备数据库）"
     },
     "search": {
       "placeholder": "搜索…",

@@ -207,7 +207,8 @@
         "failed": "istek başarısız",
         "skipped": "atlandı (henüz net bir başlık yok)"
       },
-      "foundViaTitle": "(başlık üzerinden bulundu)"
+      "foundViaTitle": "(başlık üzerinden bulundu)",
+      "foundViaFallback": "(genel yedek veritabanı)"
     },
     "search": {
       "placeholder": "Ara…",

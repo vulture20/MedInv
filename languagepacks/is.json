@@ -202,6 +202,7 @@
         "skipped": "sleppt (enginn skýr titill ennþá)"
       },
       "foundViaTitle": "(fannst með titli)",
+      "foundViaFallback": "(almennur varagagnagrunnur)",
       "cameraScan": "Skanna með myndavél",
       "cameraClose": "Loka myndavél",
       "cameraHint": "Haltu strikamerki innan rammans fyrir framan myndavélina.",
