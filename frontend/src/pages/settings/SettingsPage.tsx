@@ -96,7 +96,7 @@ function ThemeSwatchPreview({ colors }: { colors: PreviewColors }) {
  */
 export function SettingsPage() {
   const { t } = useTranslation()
-  const { user, deleteAccount } = useAuth()
+  const { user, deleteAccount, updateUser } = useAuth()
   const { template, setTemplate, runtimeTemplates } = useTheme()
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null)
@@ -256,13 +256,22 @@ export function SettingsPage() {
     }
   }
 
-  /** GitHub issue #194 — see ITEMS_PER_PAGE_OPTIONS's own comment for the fixed set of values this is ever called with. */
+  /**
+   * GitHub issue #194's own follow-up bug report: the saved value kept
+   * reverting to 50 after navigating away from this page and back. Root
+   * cause was this function only ever updating its own local `itemsPerPage`
+   * state, never AuthContext's shared `user` object — so a remount's
+   * `useState(user?.items_per_page ?? 50)` initializer above kept reading
+   * the same stale snapshot from whenever `/me` was last fetched. See
+   * updateUser()'s own doc on AuthContextValue for the general fix.
+   */
   async function saveItemsPerPage(value: number) {
     const previous = itemsPerPage
     setItemsPerPage(value)
     setItemsPerPageError(null)
     try {
       await apiClient.put('/me/settings', { items_per_page: value })
+      updateUser({ items_per_page: value })
       flashSaved('itemsPerPage')
     } catch (err) {
       setItemsPerPage(previous)

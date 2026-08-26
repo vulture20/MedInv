@@ -44,6 +44,27 @@ interface AuthContextValue {
    */
   deleteAccount: () => Promise<void>
   /**
+   * GitHub issue #194's own follow-up bug report: SettingsPage.tsx's
+   * `items_per_page` select initialized its local state from
+   * `user.items_per_page` once, at mount — but nothing ever wrote a saved
+   * value back into this context's own `user`, so navigating away and back
+   * (an ordinary React remount, not a full page reload) re-read the exact
+   * same stale snapshot `/me` returned at login/last load, silently
+   * reverting the displayed selection to whatever it was back then (50, for
+   * any account that hadn't changed it before this fix). preferred_template/
+   * preferred_language never had this problem because they each already
+   * read from a different, always-current live source instead of `user`
+   * directly (ThemeContext's own `template` state, `i18n.language`) — see
+   * SettingsPage.tsx's own docblock for why. `items_per_page` has no
+   * equivalent global store of its own (nothing outside this one page reads
+   * it at render time), so the fix here is the other, more general
+   * direction: let a caller patch the *shared* `user` object itself right
+   * after a successful save, so anything reading `user.<field>` afterward —
+   * now or from a future remount — sees the real value instead of only ever
+   * updating a component-local copy of it.
+   */
+  updateUser: (patch: Partial<User>) => void
+  /**
    * Re-fetches `mail_server_healthy` from `/me` without touching `loading`/`user`
    * flow. Call this after saving mail settings or sending a test mail
    * (AdminSettingsController::updateMail/testMail) so the app-wide indicator
@@ -136,6 +157,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  /** See this function's own doc on AuthContextValue above. A no-op while logged out (current is null) — there's no user object to patch. */
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((current) => (current ? { ...current, ...patch } : current))
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
@@ -145,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         deleteAccount,
+        updateUser,
         refreshMailStatus,
         sessionEndReason,
         clearSessionEndReason,
