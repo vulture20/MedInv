@@ -304,7 +304,21 @@ class MetadataController extends Controller
      */
     public function testPluginConfig(Request $request, MetadataPlugin $plugin)
     {
-        $data = $request->validate(['config' => ['required', 'array']]);
+        // GitHub issue #197 (user-reported, hit live on the UpcMdbProvider
+        // dialog): 'present', not 'required' — clicking "Test" before
+        // typing anything into the (still-empty) settings form sends
+        // `config: {}`, which Laravel's `required` rule treats as *absent*
+        // for an array (an empty array fails `required`, not just a
+        // missing key), throwing a raw, untranslated ValidationException
+        // ("The config field is required.") straight through describeError()'s
+        // generic fallback instead of ever reaching testConfig() below.
+        // Every TestableMetadataProvider implementation here (TmdbProvider,
+        // UpcMdbProvider, ...) already handles a missing/empty required
+        // field gracefully by returning `false` — 'present' still rejects a
+        // genuinely malformed request missing the `config` key entirely,
+        // but lets a present-but-empty one reach that already-correct,
+        // already-translated (admin.pluginConfig.testConfigInvalid) path.
+        $data = $request->validate(['config' => ['present', 'array']]);
 
         $provider = $this->registry->providerByKey($plugin->provider_key);
 

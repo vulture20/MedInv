@@ -107,14 +107,50 @@ class MetadataPluginConfigTestTest extends TestCase
         ]);
 
         $response = $this->actingAs($admin)->postJson("/api/admin/metadata/plugins/{$plugin->id}/test", [
-            // A non-empty array — 'config' => [] itself fails the endpoint's
-            // own 'required' validation first (an empty array counts as
-            // absent to Laravel), which isn't the case this test is about.
-            'config' => ['unused' => 'value'],
+            // GitHub issue #197 — an empty array is fine here since the
+            // validation fix below ('present' not 'required'); this test is
+            // about the not_testable branch, not the validation itself.
+            'config' => [],
         ]);
 
         $response->assertStatus(422);
         $this->assertSame('not_testable', $response->json('error_code'));
+    }
+
+    /**
+     * GitHub issue #197 (user-reported): clicking "Test" before typing
+     * anything into the settings form sent `config: {}`, which used to fail
+     * the endpoint's own 'required' validation before ever reaching
+     * testConfig() — surfacing as a raw, untranslated
+     * "The config field is required." via describeError()'s generic
+     * fallback, instead of the already-translated "invalid" result every
+     * TestableMetadataProvider here already produces for a missing
+     * credential on its own.
+     */
+    public function test_an_empty_config_reaches_test_config_instead_of_failing_validation(): void
+    {
+        $admin = $this->admin();
+        $plugin = MetadataPlugin::query()->create([
+            'provider_key' => 'dvd_bluray.upcmdb', 'name' => 'UPCMDB', 'media_type' => 'dvd_bluray', 'enabled' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->postJson("/api/admin/metadata/plugins/{$plugin->id}/test", [
+            'config' => [],
+        ]);
+
+        $response->assertOk();
+        $this->assertFalse($response->json('valid'));
+    }
+
+    /** The endpoint still guards against a genuinely malformed request that omits `config` entirely. */
+    public function test_a_request_missing_the_config_key_entirely_still_fails_validation(): void
+    {
+        $admin = $this->admin();
+        $plugin = $this->tmdbPlugin();
+
+        $response = $this->actingAs($admin)->postJson("/api/admin/metadata/plugins/{$plugin->id}/test", []);
+
+        $response->assertStatus(422);
     }
 
     public function test_requires_admin(): void
