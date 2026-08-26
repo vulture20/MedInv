@@ -36,19 +36,23 @@ class MetadataPluginConfigTestTest extends TestCase
         ]);
     }
 
-    public function test_plugins_endpoint_flags_tmdb_as_testable_and_upcmdb_as_not(): void
+    /** GitHub issue #161: dvd_bluray.upcmdb also implements TestableMetadataProvider now — book.open_library (no config concept at all) is the still-genuinely-non-testable contrast. */
+    public function test_plugins_endpoint_flags_tmdb_and_upcmdb_as_testable_and_open_library_as_not(): void
     {
         $admin = $this->admin();
         MetadataPlugin::query()->create(['provider_key' => 'dvd_bluray.tmdb', 'name' => 'TMDB', 'media_type' => 'dvd_bluray', 'enabled' => false]);
         MetadataPlugin::query()->create(['provider_key' => 'dvd_bluray.upcmdb', 'name' => 'UPCMDB', 'media_type' => 'dvd_bluray', 'enabled' => true]);
+        MetadataPlugin::query()->create(['provider_key' => 'book.open_library', 'name' => 'Open Library', 'media_type' => 'book', 'enabled' => true]);
 
         $response = $this->actingAs($admin)->getJson('/api/admin/metadata/plugins');
 
         $response->assertOk();
         $tmdb = collect($response->json())->firstWhere('provider_key', 'dvd_bluray.tmdb');
         $upcmdb = collect($response->json())->firstWhere('provider_key', 'dvd_bluray.upcmdb');
+        $openLibrary = collect($response->json())->firstWhere('provider_key', 'book.open_library');
         $this->assertTrue($tmdb['supports_config_test']);
-        $this->assertFalse($upcmdb['supports_config_test']);
+        $this->assertTrue($upcmdb['supports_config_test']);
+        $this->assertFalse($openLibrary['supports_config_test']);
     }
 
     public function test_returns_valid_true_for_a_working_token(): void
@@ -94,16 +98,19 @@ class MetadataPluginConfigTestTest extends TestCase
         $this->assertSame('config_test_failed', $response->json('error_code'));
     }
 
-    /** A provider that doesn't implement TestableMetadataProvider at all — the defensive backstop PluginsPage.tsx's own "Test" button visibility should already prevent reaching in normal use. */
+    /** A provider that doesn't implement TestableMetadataProvider at all (GitHub issue #161 removed dvd_bluray.upcmdb from this category — book.open_library, with no config concept at all, is still genuinely non-testable) — the defensive backstop PluginsPage.tsx's own "Test" button visibility should already prevent reaching in normal use. */
     public function test_a_non_testable_provider_returns_a_422_with_an_error_code(): void
     {
         $admin = $this->admin();
         $plugin = MetadataPlugin::query()->create([
-            'provider_key' => 'dvd_bluray.upcmdb', 'name' => 'UPCMDB', 'media_type' => 'dvd_bluray', 'enabled' => true,
+            'provider_key' => 'book.open_library', 'name' => 'Open Library', 'media_type' => 'book', 'enabled' => true,
         ]);
 
         $response = $this->actingAs($admin)->postJson("/api/admin/metadata/plugins/{$plugin->id}/test", [
-            'config' => ['api_key' => 'whatever'],
+            // A non-empty array — 'config' => [] itself fails the endpoint's
+            // own 'required' validation first (an empty array counts as
+            // absent to Laravel), which isn't the case this test is about.
+            'config' => ['unused' => 'value'],
         ]);
 
         $response->assertStatus(422);

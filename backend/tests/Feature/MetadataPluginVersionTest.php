@@ -25,7 +25,8 @@ class MetadataPluginVersionTest extends TestCase
         $this->assertSame('v1.0', $versions->get('book.open_library'));
         $this->assertSame('v1.0', $versions->get('cd.musicbrainz'));
         $this->assertSame('v1.0', $versions->get('cd.discogs'));
-        $this->assertSame('v1.0', $versions->get('dvd_bluray.upcmdb'));
+        // GitHub issue #161 — bumped for testConfig().
+        $this->assertSame('v1.1', $versions->get('dvd_bluray.upcmdb'));
         $this->assertSame('v1.0', $versions->get('book.hardcover'));
         $this->assertSame('v1.0', $versions->get('book.google_books'));
         // GitHub issue #50: the three Beta Amazon scrapers use the

@@ -5,6 +5,7 @@ namespace App\Domain\Metadata\Providers\DvdBluray;
 use App\Domain\Metadata\Contracts\MetadataCandidate;
 use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
+use App\Domain\Metadata\Contracts\TestableMetadataProvider;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Models\MetadataPlugin;
 use Illuminate\Support\Facades\Http;
@@ -33,9 +34,16 @@ use Illuminate\Support\Facades\Http;
  * "plausible guess, not a confirmed field" caution this session applied to
  * Amazon's equivalent field.
  */
-class UpcMdbProvider implements MetadataProviderInterface
+class UpcMdbProvider implements MetadataProviderInterface, TestableMetadataProvider
 {
     private const BASE_URL = 'https://us-central1-upcmdb-cbae5.cloudfunctions.net/api';
+
+    /**
+     * Guaranteed to never be a real, assigned EAN — the same test value
+     * lookupByCode() itself is already exercised against in
+     * UpcMdbProviderTest (test_lookup_by_code_returns_no_candidates_when_not_found).
+     */
+    private const TEST_EAN = '0000000000000';
 
     public function key(): string
     {
@@ -59,10 +67,10 @@ class UpcMdbProvider implements MetadataProviderInterface
         ];
     }
 
-    /** See MetadataProviderInterface::version()'s docblock (GitHub issue #44). */
+    /** See MetadataProviderInterface::version()'s docblock (GitHub issue #44). Bumped for GitHub issue #161's testConfig(). */
     public function version(): string
     {
-        return 'v1.0';
+        return 'v1.1';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — a real, documented API. */
@@ -75,6 +83,45 @@ class UpcMdbProvider implements MetadataProviderInterface
     public function supportsCodeLookup(): bool
     {
         return true;
+    }
+
+    /**
+     * GitHub issue #161, following the same "Test" button GitHub issue #160
+     * added for TMDB. Unlike TMDB, UPCMDB has no documented dedicated
+     * auth-check endpoint (its API surface is barely documented publicly at
+     * all) — but lookupByCode() below already draws a clean, confirmed
+     * distinction between "key invalid" and "no match" (see its own
+     * comment, GitHub issue #53): a genuine `404` ("UPC not found in
+     * database") only ever happens once the key itself was accepted, while
+     * every other failure status (401/403/429/...) means the request
+     * didn't get that far. Reusing that exact same call with a guaranteed-
+     * unassigned TEST_EAN is therefore a real, already-verified check
+     * rather than a guess at a separate, unconfirmed endpoint:
+     * - `404` → key accepted (`true`)
+     * - `401`/`403` → key rejected (`false`)
+     * - anything else → the check itself didn't complete, thrown rather
+     *   than folded into "invalid" (the same distinction GitHub issue #53
+     *   already established elsewhere, and TmdbProvider::testConfig()'s own
+     *   equivalent case).
+     */
+    public function testConfig(array $config): bool
+    {
+        $apiKey = $config['api_key'] ?? null;
+        if (! is_string($apiKey) || $apiKey === '') {
+            return false;
+        }
+
+        $response = Http::withHeader('x-api-key', $apiKey)->get(self::BASE_URL.'/v1/lookup/ean/'.self::TEST_EAN);
+
+        if ($response->status() === 404) {
+            return true;
+        }
+
+        if (in_array($response->status(), [401, 403], true)) {
+            return false;
+        }
+
+        throw new MetadataProviderRequestException("UPCMDB config test failed with status {$response->status()}.");
     }
 
     /**

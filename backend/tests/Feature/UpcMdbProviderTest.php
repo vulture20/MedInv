@@ -173,4 +173,50 @@ class UpcMdbProviderTest extends TestCase
 
         $this->assertNull($candidate->attributes['runtime_minutes']);
     }
+
+    /** GitHub issue #161: reuses the same 404-means-"key accepted" signal lookupByCode() already relies on (see this class's own testConfig() docblock), against a guaranteed-unassigned test EAN. */
+    public function test_test_config_returns_true_for_a_valid_key(): void
+    {
+        Http::fake([self::BASE_URL.'/v1/lookup/ean/0000000000000' => Http::response(['error' => 'UPC not found in database'], 404)]);
+
+        $valid = app(UpcMdbProvider::class)->testConfig(['api_key' => 'secret-key-123']);
+
+        $this->assertTrue($valid);
+        Http::assertSent(function ($request) {
+            return $request->url() === self::BASE_URL.'/v1/lookup/ean/0000000000000'
+                && $request->hasHeader('x-api-key', 'secret-key-123');
+        });
+    }
+
+    public function test_test_config_returns_false_for_an_invalid_key(): void
+    {
+        Http::fake([self::BASE_URL.'/v1/lookup/ean/0000000000000' => Http::response(['error' => 'Invalid API key'], 401)]);
+
+        $this->assertFalse(app(UpcMdbProvider::class)->testConfig(['api_key' => 'a-bogus-key']));
+    }
+
+    public function test_test_config_returns_false_for_a_forbidden_key(): void
+    {
+        Http::fake([self::BASE_URL.'/v1/lookup/ean/0000000000000' => Http::response(['error' => 'Forbidden'], 403)]);
+
+        $this->assertFalse(app(UpcMdbProvider::class)->testConfig(['api_key' => 'a-revoked-key']));
+    }
+
+    public function test_test_config_returns_false_without_an_api_key_at_all(): void
+    {
+        Http::fake(); // No request should even be attempted.
+
+        $this->assertFalse(app(UpcMdbProvider::class)->testConfig([]));
+        $this->assertFalse(app(UpcMdbProvider::class)->testConfig(['api_key' => '']));
+        Http::assertNothingSent();
+    }
+
+    /** Neither a confirmed-valid nor a confirmed-invalid key — the check itself didn't complete, so this must not be silently folded into "invalid" (GitHub issue #53's own precedent, and TmdbProvider::testConfig()'s equivalent case). */
+    public function test_test_config_throws_on_an_unexpected_status(): void
+    {
+        Http::fake([self::BASE_URL.'/v1/lookup/ean/0000000000000' => Http::response(['error' => 'Too Many Requests'], 429)]);
+
+        $this->expectException(MetadataProviderRequestException::class);
+        app(UpcMdbProvider::class)->testConfig(['api_key' => 'some-key']);
+    }
 }
