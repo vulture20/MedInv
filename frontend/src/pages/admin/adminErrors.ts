@@ -58,6 +58,10 @@ export function describeError(err: unknown, t: TFunction): string {
   }
   // GitHub issue #167 — BackupController::upload() rejecting a file that isn't a real backup archive (not a zip at all, or missing/invalid manifest.json).
   if (data?.error_code === 'invalid_backup_file') return t('admin.errors.invalid_backup_file')
+  // GitHub issue #198 — a duplicate email (UserController::store()/update()) or a taken/reserved language-pack or template code (LanguagePackController::store()/TemplateController::store()), previously Laravel's raw, untranslated "already been taken"/"selected ... is invalid" validation message via the generic fallback below.
+  if (data?.error_code === 'email_taken') return t('admin.errors.emailTaken')
+  if (data?.error_code === 'code_taken') return t('admin.errors.codeTaken')
+  if (data?.error_code === 'code_reserved') return t('admin.errors.codeReserved')
   if (data?.errors) {
     if (data.errors.password) return t('admin.errors.passwordPolicy')
 

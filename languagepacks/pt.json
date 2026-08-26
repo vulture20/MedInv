@@ -438,7 +438,10 @@
         "protected_account": "Esta é a conta de administrador predefinida e não pode ser editada, desativada ou excluída.",
         "invalidCurrentPassword": "A senha atual está incorreta.",
         "passwordPolicy": "A senha deve ter pelo menos 10 caracteres e conter uma letra maiúscula, uma minúscula, um dígito e um caractere especial.",
-        "ownsLibraries": "Esta conta ainda é proprietária das seguintes bibliotecas e não pode ser excluída até que sejam transferidas para outro proprietário ou excluídas: {{libraries}}"
+        "ownsLibraries": "Esta conta ainda é proprietária das seguintes bibliotecas e não pode ser excluída até que sejam transferidas para outro proprietário ou excluídas: {{libraries}}",
+        "emailTaken": "Este endereço de e-mail já está em uso.",
+        "codeTaken": "Este código já está em uso.",
+        "codeReserved": "Este código está reservado e não pode ser utilizado."
       },
       "mailSettings": {
         "host": "Host SMTP",

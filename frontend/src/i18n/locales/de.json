@@ -523,7 +523,10 @@
       "invalid_backup_file": "Diese Datei ist keine gültige MedInv-Backup-Datei.",
       "import_missing_libraries": "Diese Datei enthält keine Bibliotheken — vermutlich keine gültige MedInv-Exportdatei.",
       "import_invalid_library": "Bibliothek Nr. {{number}} in der Datei hat kein gültiges Feld „{{field}}“.",
-      "import_invalid_item": "Ein Medium (Eintrag Nr. {{number}}) in Bibliothek „{{library}}“ hat keinen gültigen Titel oder keine gültige EAN."
+      "import_invalid_item": "Ein Medium (Eintrag Nr. {{number}}) in Bibliothek „{{library}}“ hat keinen gültigen Titel oder keine gültige EAN.",
+      "emailTaken": "Diese E-Mail-Adresse wird bereits verwendet.",
+      "codeTaken": "Dieser Code wird bereits verwendet.",
+      "codeReserved": "Dieser Code ist reserviert und kann nicht verwendet werden."
     },
     "mailSettings": {
       "host": "SMTP-Host",

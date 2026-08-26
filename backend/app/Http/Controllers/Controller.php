@@ -2,11 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 abstract class Controller
 {
+    /**
+     * Shared {error_code, message} 422 JSON response (GitHub issue #198,
+     * CLAUDE.md's own documented "API errors carry a machine-readable
+     * error_code" convention) — logs it via logApiError() first, so a
+     * caller doesn't have to hand-roll the same two lines every existing
+     * one-off version of this already did (UserController::
+     * protectedAccountResponse(), AdminSettingsController::mailError()).
+     * Deliberately not used to replace those two pre-existing call sites —
+     * this is only for new call sites from here on, to avoid an
+     * unrelated refactor of already-working, already-tested code.
+     */
+    protected function errorResponse(Request $request, string $errorCode, string $message, int $status = 422): JsonResponse
+    {
+        $this->logApiError($request, $errorCode, $message);
+
+        return response()->json(['error_code' => $errorCode, 'message' => $message], $status);
+    }
+
     /**
      * Logs a user-facing API error (the {error_code, message} shape from
      * CLAUDE.md's "API errors carry a machine-readable error_code"

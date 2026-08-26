@@ -457,7 +457,10 @@
         "protected_account": "Tämä on ennalta määritetty pääkäyttäjätili, eikä sitä voi muokata, poistaa käytöstä tai poistaa.",
         "invalidCurrentPassword": "Nykyinen salasana on virheellinen.",
         "passwordPolicy": "Salasanan on oltava vähintään 10 merkkiä pitkä ja sisällettävä iso kirjain, pieni kirjain, numero ja erikoismerkki.",
-        "ownsLibraries": "Tällä tilillä on edelleen seuraavat kirjastot, eikä sitä voi poistaa ennen kuin ne siirretään toiselle omistajalle tai poistetaan: {{libraries}}"
+        "ownsLibraries": "Tällä tilillä on edelleen seuraavat kirjastot, eikä sitä voi poistaa ennen kuin ne siirretään toiselle omistajalle tai poistetaan: {{libraries}}",
+        "emailTaken": "Tämä sähköpostiosoite on jo käytössä.",
+        "codeTaken": "Tämä koodi on jo käytössä.",
+        "codeReserved": "Tämä koodi on varattu eikä sitä voi käyttää."
       },
       "mailSettings": {
         "host": "SMTP-palvelin",

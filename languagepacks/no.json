@@ -457,7 +457,10 @@
         "protected_account": "Dette er den forhåndsdefinerte administratorkontoen og kan ikke redigeres, deaktiveres eller slettes.",
         "invalidCurrentPassword": "Gjeldende passord er feil.",
         "passwordPolicy": "Passordet må være minst 10 tegn langt og inneholde en stor bokstav, en liten bokstav, ett tall og ett spesialtegn.",
-        "ownsLibraries": "Denne kontoen eier fortsatt følgende biblioteker og kan ikke slettes før de overføres til en annen eier eller slettes: {{libraries}}"
+        "ownsLibraries": "Denne kontoen eier fortsatt følgende biblioteker og kan ikke slettes før de overføres til en annen eier eller slettes: {{libraries}}",
+        "emailTaken": "Denne e-postadressen er allerede i bruk.",
+        "codeTaken": "Denne koden er allerede i bruk.",
+        "codeReserved": "Denne koden er reservert og kan ikke brukes."
       },
       "mailSettings": {
         "host": "SMTP-vert",

@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Template;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 
 /**
  * Admin-managed additional UI templates beyond the bundled light/dark
@@ -66,16 +65,31 @@ class TemplateController extends Controller
      * to the two bundled templates (frontend/src/index.css's static
      * `:root`/`:root[data-template='dark']` rules), which this table has
      * no row for at all and isn't meant to override.
+     *
+     * GitHub issue #198: the reserved-code and already-taken-code checks
+     * are manual (not the `Rule::notIn`/`unique` validation rules this
+     * used before) so each gets its own translated error_code
+     * (`code_reserved`/`code_taken`, adminErrors.ts, shared with
+     * LanguagePackController::store()'s identical pattern) instead of
+     * Laravel's raw, untranslated validation message leaking through
+     * describeError()'s generic fallback.
      */
     public function store(Request $request)
     {
         $request->merge(['code' => strtolower((string) $request->input('code'))]);
 
         $data = $request->validate([
-            'code' => ['required', 'string', 'max:20', 'unique:templates,code', Rule::notIn(['light', 'dark'])],
+            'code' => ['required', 'string', 'max:20'],
             'name' => ['required', 'string', 'max:255'],
             'css' => ['required', 'string', 'max:'.self::MAX_CSS_LENGTH],
         ]);
+
+        if (in_array($data['code'], ['light', 'dark'], true)) {
+            return $this->errorResponse($request, 'code_reserved', 'This code is reserved and cannot be used.');
+        }
+        if (Template::query()->where('code', $data['code'])->exists()) {
+            return $this->errorResponse($request, 'code_taken', 'This code is already in use.');
+        }
 
         $template = Template::query()->create($data);
 

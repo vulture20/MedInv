@@ -129,6 +129,8 @@ class TemplateTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+        // GitHub issue #198 — a dedicated, translated error_code instead of Laravel's raw Rule::notIn message.
+        $this->assertSame('code_reserved', $response->json('error_code'));
         $this->assertDatabaseMissing((new Template)->getTable(), ['code' => strtolower($code)]);
     }
 
@@ -150,6 +152,8 @@ class TemplateTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+        // GitHub issue #198 — a dedicated, translated error_code instead of Laravel's raw `unique` message.
+        $this->assertSame('code_taken', $response->json('error_code'));
         $this->assertSame(1, Template::query()->where('code', 'solarized')->count());
     }
 

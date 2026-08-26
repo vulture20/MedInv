@@ -438,7 +438,10 @@
         "protected_account": "Dit is het vooraf gedefinieerde beheerdersaccount en kan niet worden bewerkt, gedeactiveerd of verwijderd.",
         "invalidCurrentPassword": "Het huidige wachtwoord is onjuist.",
         "passwordPolicy": "Het wachtwoord moet minimaal 10 tekens lang zijn en een hoofdletter, een kleine letter, een cijfer en een speciaal teken bevatten.",
-        "ownsLibraries": "Dit account bezit nog de volgende bibliotheken en kan pas worden verwijderd nadat deze zijn overgedragen aan een andere eigenaar of verwijderd: {{libraries}}"
+        "ownsLibraries": "Dit account bezit nog de volgende bibliotheken en kan pas worden verwijderd nadat deze zijn overgedragen aan een andere eigenaar of verwijderd: {{libraries}}",
+        "emailTaken": "Dit e-mailadres is al in gebruik.",
+        "codeTaken": "Deze code is al in gebruik.",
+        "codeReserved": "Deze code is gereserveerd en kan niet worden gebruikt."
       },
       "mailSettings": {
         "host": "SMTP-host",

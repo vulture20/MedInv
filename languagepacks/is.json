@@ -457,7 +457,10 @@
         "protected_account": "Þetta er fyrirfram skilgreindur stjórnandareikningur og ekki er hægt að breyta honum, óvirkja hann eða eyða honum.",
         "invalidCurrentPassword": "Núverandi lykilorð er rangt.",
         "passwordPolicy": "Lykilorðið verður að vera að minnsta kosti 10 stafir og innihalda hástaf, lágstaf, tölustaf og sérstakt tákn.",
-        "ownsLibraries": "Þessi reikningur á enn eftirfarandi söfn og ekki er hægt að eyða honum fyrr en þau hafa verið flutt til annars eiganda eða þeim eytt: {{libraries}}"
+        "ownsLibraries": "Þessi reikningur á enn eftirfarandi söfn og ekki er hægt að eyða honum fyrr en þau hafa verið flutt til annars eiganda eða þeim eytt: {{libraries}}",
+        "emailTaken": "Þetta netfang er þegar í notkun.",
+        "codeTaken": "Þessi kóði er þegar í notkun.",
+        "codeReserved": "Þessi kóði er frátekinn og ekki hægt að nota hann."
       },
       "mailSettings": {
         "host": "SMTP-þjónn",

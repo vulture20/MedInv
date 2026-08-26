@@ -457,7 +457,10 @@
         "protected_account": "Det här är det fördefinierade administratörskontot och kan inte redigeras, inaktiveras eller tas bort.",
         "invalidCurrentPassword": "Nuvarande lösenord är felaktigt.",
         "passwordPolicy": "Lösenordet måste vara minst 10 tecken långt och innehålla en stor bokstav, en liten bokstav, en siffra och ett specialtecken.",
-        "ownsLibraries": "Det här kontot äger fortfarande följande bibliotek och kan inte tas bort förrän de överförs till en annan ägare eller tas bort: {{libraries}}"
+        "ownsLibraries": "Det här kontot äger fortfarande följande bibliotek och kan inte tas bort förrän de överförs till en annan ägare eller tas bort: {{libraries}}",
+        "emailTaken": "Den här e-postadressen används redan.",
+        "codeTaken": "Den här koden används redan.",
+        "codeReserved": "Den här koden är reserverad och kan inte användas."
       },
       "mailSettings": {
         "host": "SMTP-värd",

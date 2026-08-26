@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\LanguagePack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 
 /**
  * Admin-managed additional UI language packs beyond the bundled German/
@@ -44,13 +43,21 @@ class LanguagePackController extends Controller
      * `de`/`en` are rejected case-insensitively — those codes belong to the
      * two bundled packs (frontend/src/i18n/locales/{de,en}.json), which
      * this table has no row for at all and isn't meant to override.
+     *
+     * GitHub issue #198: the reserved-code and already-taken-code checks
+     * are manual (not the `Rule::notIn`/`unique` validation rules this
+     * used before) so each gets its own translated error_code
+     * (`code_reserved`/`code_taken`, adminErrors.ts) instead of Laravel's
+     * raw, untranslated validation message leaking through describeError()'s
+     * generic fallback — see UserController::store()'s own docblock for the
+     * identical reasoning applied there for a duplicate email.
      */
     public function store(Request $request)
     {
         $request->merge(['code' => strtolower((string) $request->input('code'))]);
 
         $data = $request->validate([
-            'code' => ['required', 'string', 'max:10', 'unique:language_packs,code', Rule::notIn(['de', 'en'])],
+            'code' => ['required', 'string', 'max:10'],
             'name' => ['required', 'string', 'max:255'],
             // Deliberately no nested 'translations.*' rule alongside this
             // top-level 'array' one — combining the two makes Laravel treat
@@ -60,6 +67,13 @@ class LanguagePackController extends Controller
             // on MetadataController::import()'s `attributes` field.
             'translations' => ['required', 'array', 'min:1'],
         ]);
+
+        if (in_array($data['code'], ['de', 'en'], true)) {
+            return $this->errorResponse($request, 'code_reserved', 'This code is reserved and cannot be used.');
+        }
+        if (LanguagePack::query()->where('code', $data['code'])->exists()) {
+            return $this->errorResponse($request, 'code_taken', 'This code is already in use.');
+        }
 
         $pack = LanguagePack::query()->create($data);
 

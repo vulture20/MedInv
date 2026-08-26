@@ -438,7 +438,10 @@
         "protected_account": "Bu, önceden tanımlanmış yönetici hesabıdır ve düzenlenemez, devre dışı bırakılamaz veya silinemez.",
         "invalidCurrentPassword": "Mevcut parola yanlış.",
         "passwordPolicy": "Parola en az 10 karakter uzunluğunda olmalı ve bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.",
-        "ownsLibraries": "Bu hesap hâlâ şu kitaplıklara sahip ve başka bir sahibe devredilene veya silinene kadar silinemez: {{libraries}}"
+        "ownsLibraries": "Bu hesap hâlâ şu kitaplıklara sahip ve başka bir sahibe devredilene veya silinene kadar silinemez: {{libraries}}",
+        "emailTaken": "Bu e-posta adresi zaten kullanılıyor.",
+        "codeTaken": "Bu kod zaten kullanılıyor.",
+        "codeReserved": "Bu kod ayrılmıştır ve kullanılamaz."
       },
       "mailSettings": {
         "host": "SMTP sunucusu",

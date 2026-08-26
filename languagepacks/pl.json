@@ -438,7 +438,10 @@
         "protected_account": "To jest wstępnie zdefiniowane konto administratora i nie można go edytować, dezaktywować ani usunąć.",
         "invalidCurrentPassword": "Obecne hasło jest nieprawidłowe.",
         "passwordPolicy": "Hasło musi mieć co najmniej 10 znaków i zawierać wielką literę, małą literę, cyfrę i znak specjalny.",
-        "ownsLibraries": "To konto nadal posiada następujące biblioteki i nie można go usunąć, dopóki nie zostaną przeniesione na innego właściciela lub usunięte: {{libraries}}"
+        "ownsLibraries": "To konto nadal posiada następujące biblioteki i nie można go usunąć, dopóki nie zostaną przeniesione na innego właściciela lub usunięte: {{libraries}}",
+        "emailTaken": "Ten adres e-mail jest już używany.",
+        "codeTaken": "Ten kod jest już używany.",
+        "codeReserved": "Ten kod jest zarezerwowany i nie może być użyty."
       },
       "mailSettings": {
         "host": "Host SMTP",

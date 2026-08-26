@@ -523,7 +523,10 @@
       "protected_account": "This is the predefined administrator account and cannot be edited, deactivated or deleted.",
       "invalidCurrentPassword": "The current password is incorrect.",
       "passwordPolicy": "The password must be at least 10 characters long and contain an uppercase letter, a lowercase letter, a digit and a special character.",
-      "ownsLibraries": "This account still owns the following libraries and cannot be deleted until they're transferred to another owner or deleted: {{libraries}}"
+      "ownsLibraries": "This account still owns the following libraries and cannot be deleted until they're transferred to another owner or deleted: {{libraries}}",
+      "emailTaken": "This email address is already in use.",
+      "codeTaken": "This code is already in use.",
+      "codeReserved": "This code is reserved and cannot be used."
     },
     "mailSettings": {
       "host": "SMTP host",

@@ -58,15 +58,30 @@ class UserController extends Controller
             ->get(['id', 'name']);
     }
 
+    /**
+     * GitHub issue #198 (user-reported, following #197's own root cause):
+     * `email` is validated for format only here, not uniqueness — a
+     * duplicate address is checked explicitly below instead of via
+     * Laravel's `unique` rule, so it gets its own translated `email_taken`
+     * error_code (adminErrors.ts's describeError()) rather than Laravel's
+     * raw, untranslated "The email has already been taken." leaking
+     * through describeError()'s generic validation-error fallback — a
+     * completely ordinary admin scenario (a typo, or genuinely re-adding
+     * an existing account), not a rare edge case.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
+            'email' => ['required', 'email'],
             'password' => ['required', new MedInvPasswordPolicy],
             'level' => ['required', Rule::in(['guest', 'user', 'admin'])],
             'send_invite' => ['sometimes', 'boolean'],
         ]);
+
+        if (User::query()->where('email', $data['email'])->exists()) {
+            return $this->errorResponse($request, 'email_taken', 'This email address is already in use.');
+        }
 
         $sendInvite = (bool) ($data['send_invite'] ?? false);
         unset($data['send_invite']);
@@ -144,10 +159,16 @@ class UserController extends Controller
 
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['sometimes', 'email'],
             'level' => ['sometimes', Rule::in(['guest', 'user', 'admin'])],
             'password' => ['sometimes', 'string', new MedInvPasswordPolicy],
         ]);
+
+        // GitHub issue #198 — see store()'s own docblock for why this is a
+        // manual check rather than a `unique` validation rule.
+        if (isset($data['email']) && User::query()->where('email', $data['email'])->where('id', '!=', $user->id)->exists()) {
+            return $this->errorResponse($request, 'email_taken', 'This email address is already in use.');
+        }
 
         $user->update($data);
 

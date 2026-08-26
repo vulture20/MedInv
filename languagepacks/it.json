@@ -438,7 +438,10 @@
         "protected_account": "Questo è l'account amministratore predefinito e non può essere modificato, disattivato o eliminato.",
         "invalidCurrentPassword": "La password attuale non è corretta.",
         "passwordPolicy": "La password deve contenere almeno 10 caratteri, con una lettera maiuscola, una minuscola, una cifra e un carattere speciale.",
-        "ownsLibraries": "Questo account possiede ancora le seguenti biblioteche e non può essere eliminato finché non vengono trasferite a un altro proprietario o eliminate: {{libraries}}"
+        "ownsLibraries": "Questo account possiede ancora le seguenti biblioteche e non può essere eliminato finché non vengono trasferite a un altro proprietario o eliminate: {{libraries}}",
+        "emailTaken": "Questo indirizzo email è già in uso.",
+        "codeTaken": "Questo codice è già in uso.",
+        "codeReserved": "Questo codice è riservato e non può essere utilizzato."
       },
       "mailSettings": {
         "host": "Host SMTP",

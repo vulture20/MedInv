@@ -438,7 +438,10 @@
         "protected_account": "这是预定义的管理员账户，无法编辑、停用或删除。",
         "invalidCurrentPassword": "当前密码不正确。",
         "passwordPolicy": "密码长度必须至少为 10 个字符，且必须包含大写字母、小写字母、数字和特殊字符各一个。",
-        "ownsLibraries": "此账户仍拥有以下媒体库，必须先将其转让给其他所有者或删除，才能删除此账户：{{libraries}}"
+        "ownsLibraries": "此账户仍拥有以下媒体库，必须先将其转让给其他所有者或删除，才能删除此账户：{{libraries}}",
+        "emailTaken": "该电子邮件地址已被使用。",
+        "codeTaken": "该代码已被使用。",
+        "codeReserved": "该代码已被保留，无法使用。"
       },
       "mailSettings": {
         "host": "SMTP 主机",
