@@ -24,21 +24,6 @@ interface CoverCleanupSettings {
 }
 
 /**
- * IANA timezone identifiers, sourced from the browser's own Intl data
- * (same underlying tzdata PHP's DateTimeZone validates against
- * server-side, see AdminSettingsController::updateTimezone()) rather than
- * a hand-maintained list that could drift out of sync or omit a zone the
- * backend would otherwise accept.
- */
-const TIMEZONES: string[] = (() => {
-  try {
-    return Intl.supportedValuesOf('timeZone')
-  } catch {
-    return ['UTC']
-  }
-})()
-
-/**
  * The remaining runtime settings that don't have a page of their own:
  * brute-force throttling (briefing 12.4, enforced by BruteForceProtection),
  * the log level, the default language, the daily orphaned-cover-file
@@ -72,6 +57,15 @@ export function SystemSettingsPage() {
   const [coverCleanupSaved, setCoverCleanupSaved] = useState(false)
   const [coverCleanupError, setCoverCleanupError] = useState<string | null>(null)
   const [timezone, setTimezone] = useState<string | null>(null)
+  // GitHub issue #199 — the backend's own validation list
+  // (AdminSettingsController::index()'s `timezone_options`,
+  // \DateTimeZone::listIdentifiers()), replacing a previous
+  // browser-Intl-sourced list that had no guaranteed parity with what
+  // updateTimezone() would actually accept. Empty until load() resolves,
+  // same as every other section here — the <select> below is only ever
+  // rendered once `timezone` itself is non-null, by which point this has
+  // loaded too (both come from the same response).
+  const [timezoneOptions, setTimezoneOptions] = useState<string[]>([])
   const [timezoneSaved, setTimezoneSaved] = useState(false)
   const [timezoneError, setTimezoneError] = useState<string | null>(null)
   // GitHub issue #62 (alternative 3). `undefined` is "not loaded yet" (the
@@ -107,6 +101,7 @@ export function SystemSettingsPage() {
         locale: { default_language: DefaultLanguage }
         covers: CoverCleanupSettings
         timezone: string
+        timezone_options: string[]
         statistics: { default_currency: string | null }
       }>('/admin/settings')
       setSecurity(data.security)
@@ -114,6 +109,7 @@ export function SystemSettingsPage() {
       setDefaultLanguage(data.locale.default_language)
       setCoverCleanup(data.covers)
       setTimezone(data.timezone)
+      setTimezoneOptions(data.timezone_options)
       setDefaultCurrency(data.statistics.default_currency)
     } catch (err) {
       setLoadError(describeError(err, t))
@@ -335,7 +331,7 @@ export function SystemSettingsPage() {
             <label>
               {t('admin.timezoneSettings.timezone')}
               <select className="panel-select" value={timezone} onChange={(e) => setTimezone(e.target.value)}>
-                {TIMEZONES.map((tz) => (
+                {timezoneOptions.map((tz) => (
                   <option key={tz} value={tz}>
                     {tz}
                   </option>

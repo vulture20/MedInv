@@ -156,6 +156,24 @@ class TimezoneSettingTest extends TestCase
         $response->assertOk()->assertJsonPath('timezone', 'Europe/Berlin');
     }
 
+    /**
+     * GitHub issue #199: the browser-Intl-sourced <select> options on
+     * SystemSettingsPage.tsx had no guaranteed parity with what
+     * updateTimezone() below would actually accept — timezone_options now
+     * exposes that exact same server-side list, the same list this
+     * endpoint validates timezone values against.
+     */
+    public function test_the_admin_settings_index_includes_every_identifier_this_endpoint_accepts(): void
+    {
+        $this->actingAsAdmin();
+
+        $response = $this->getJson('/api/admin/settings');
+
+        $response->assertOk();
+        $this->assertSame(\DateTimeZone::listIdentifiers(), $response->json('timezone_options'));
+        $this->assertContains('Europe/Berlin', $response->json('timezone_options'));
+    }
+
     public function test_an_admin_can_set_the_timezone(): void
     {
         $this->actingAsAdmin();

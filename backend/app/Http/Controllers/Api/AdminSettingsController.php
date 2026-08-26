@@ -55,6 +55,17 @@ class AdminSettingsController extends Controller
                 'default_language' => SystemSetting::get('locale.default_language', 'en'),
             ],
             'timezone' => SystemSetting::get('timezone', SystemSetting::defaultTimezone()),
+            // GitHub issue #199: SystemSettingsPage.tsx's timezone <select>
+            // used to source its own options from the browser's
+            // Intl.supportedValuesOf('timeZone') — a different, independently
+            // versioned tzdata/ICU build than whatever PHP was compiled
+            // against, with no guaranteed parity between the two. Exposing
+            // updateTimezone()'s own validation list here means the dropdown
+            // can only ever offer a value the backend is guaranteed to
+            // accept, the same "the server is the source of truth for its
+            // own allowed values" shape updateLocale()'s $allowedCodes
+            // already establishes for default_language.
+            'timezone_options' => \DateTimeZone::listIdentifiers(),
             'statistics' => [
                 'default_currency' => SystemSetting::get('statistics.default_currency'),
             ],
