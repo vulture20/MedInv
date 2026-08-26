@@ -292,6 +292,10 @@
         "de": "Almanca",
         "en": "İngilizce"
       },
+      "itemsPerPage": {
+        "label": "Sayfa başına sonuç",
+        "hint": "Bir kitaplıkta sayfa başına kaç öğe gösterileceğini seçin."
+      },
       "libraryPreferences": {
         "title": "İstatistikler, raporlar ve ana sayfa",
         "hint": "Sizin görebildiğiniz her kütüphane için, istatistiklerinize, raporlarınıza veya ana sayfaya dahil edilip edilmeyeceğini seçin. Bu yalnızca kendi görünümünüzü etkiler — kütüphane herkes için görünür ve aranabilir kalmaya devam eder.",

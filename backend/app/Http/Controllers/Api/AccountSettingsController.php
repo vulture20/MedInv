@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Domain\Users\UserDeletionService;
 use App\Http\Controllers\Controller;
 use App\Models\Template;
+use App\Models\User;
 use App\Rules\MedInvPasswordPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,6 +42,8 @@ class AccountSettingsController extends Controller
         $data = $request->validate([
             'preferred_language' => ['sometimes', 'string', 'max:10'],
             'preferred_template' => ['sometimes', Rule::in($allowedTemplates)],
+            // GitHub issue #194 — see User::ITEMS_PER_PAGE_OPTIONS's own docblock.
+            'items_per_page' => ['sometimes', Rule::in(User::ITEMS_PER_PAGE_OPTIONS)],
         ]);
 
         $user = $request->user();

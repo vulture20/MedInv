@@ -292,6 +292,10 @@
         "de": "Saksa",
         "en": "Englanti"
       },
+      "itemsPerPage": {
+        "label": "Tuloksia per sivu",
+        "hint": "Valitse, kuinka monta kohdetta näytetään sivua kohden kirjastossa."
+      },
       "libraryPreferences": {
         "title": "Tilastot, raportit ja etusivu",
         "hint": "Valitse jokaiselle sinulle näkyvälle kirjastolle, sisältyykö se tilastoihisi, raportteihisi vai etusivulle. Tämä vaikuttaa vain omaan näkymääsi – kirjasto pysyy kaikille edelleen näkyvänä ja haettavissa.",

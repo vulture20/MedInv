@@ -19,12 +19,21 @@ use Laravel\Sanctum\HasApiTokens;
  * read access on top of that is governed by LibraryShare (4.3), not by this
  * model.
  */
-#[Fillable(['name', 'email', 'password', 'level', 'is_active', 'is_protected', 'preferred_language', 'preferred_template', 'oidc_subject'])]
+#[Fillable(['name', 'email', 'password', 'level', 'is_active', 'is_protected', 'preferred_language', 'preferred_template', 'items_per_page', 'oidc_subject'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * GitHub issue #194: the fixed set of choices AccountSettingsController::
+     * update() validates `items_per_page` against — a plain array rather
+     * than a DB-level enum (see the creating migration's own docblock for
+     * why). 50 is both the column's own default and the value a fresh
+     * account effectively starts with.
+     */
+    public const ITEMS_PER_PAGE_OPTIONS = [20, 50, 100, 200];
 
     /**
      * Get the attributes that should be cast.

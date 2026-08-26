@@ -292,6 +292,10 @@
         "de": "Niemiecki",
         "en": "Angielski"
       },
+      "itemsPerPage": {
+        "label": "Wyniki na stronę",
+        "hint": "Wybierz, ile pozycji ma być wyświetlanych na stronę w bibliotece."
+      },
       "libraryPreferences": {
         "title": "Statystyki, raporty i strona główna",
         "hint": "Wybierz dla każdej widocznej dla Ciebie biblioteki, czy ma być uwzględniana w Twoich statystykach, raportach lub na stronie głównej. Dotyczy to tylko Twojego własnego widoku — biblioteka pozostaje widoczna i przeszukiwalna dla wszystkich.",

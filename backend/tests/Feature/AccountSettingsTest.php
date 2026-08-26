@@ -77,6 +77,32 @@ class AccountSettingsTest extends TestCase
             ->assertJsonPath('preferred_language', 'fr');
     }
 
+    /** GitHub issue #194 — see User::ITEMS_PER_PAGE_OPTIONS's own docblock. */
+    public function test_a_user_can_set_items_per_page_to_an_allowed_value(): void
+    {
+        $user = $this->actingAsUser();
+
+        $this->putJson('/api/me/settings', ['items_per_page' => 200])
+            ->assertOk()
+            ->assertJsonPath('items_per_page', 200);
+        $this->assertSame(200, $user->fresh()->items_per_page);
+    }
+
+    public function test_setting_an_unlisted_items_per_page_value_is_rejected(): void
+    {
+        $this->actingAsUser();
+
+        $this->putJson('/api/me/settings', ['items_per_page' => 75])
+            ->assertStatus(422);
+    }
+
+    public function test_a_fresh_account_defaults_to_50_items_per_page(): void
+    {
+        $user = $this->actingAsUser();
+
+        $this->assertSame(50, $user->fresh()->items_per_page);
+    }
+
     public function test_an_unauthenticated_request_cannot_update_settings(): void
     {
         $this->putJson('/api/me/settings', ['preferred_template' => 'dark'])->assertUnauthorized();

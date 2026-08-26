@@ -292,6 +292,10 @@
         "de": "Tedesco",
         "en": "Inglese"
       },
+      "itemsPerPage": {
+        "label": "Risultati per pagina",
+        "hint": "Scegli quanti elementi vengono mostrati per pagina in una biblioteca."
+      },
       "libraryPreferences": {
         "title": "Statistiche, report e home",
         "hint": "Scegli, per ogni biblioteca a te visibile, se includerla nelle tue statistiche, nei tuoi report o nella home. Questo riguarda solo la tua vista personale: la biblioteca resta visibile e ricercabile per tutti.",

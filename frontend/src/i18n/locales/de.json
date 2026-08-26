@@ -358,6 +358,10 @@
       "de": "Deutsch",
       "en": "Englisch"
     },
+    "itemsPerPage": {
+      "label": "Ergebnisse pro Seite",
+      "hint": "Legen Sie fest, wie viele Einträge in einer Bibliothek pro Seite angezeigt werden."
+    },
     "libraryPreferences": {
       "title": "Statistiken, Auswertungen & Startseite",
       "hint": "Legen Sie für jede für Sie sichtbare Bibliothek fest, ob sie in Ihren Statistiken, Auswertungen oder auf der Startseite berücksichtigt wird. Dies betrifft nur Ihre eigene Ansicht — die Bibliothek bleibt für alle weiterhin sichtbar und durchsuchbar.",

@@ -292,6 +292,10 @@
         "de": "Alemão",
         "en": "Inglês"
       },
+      "itemsPerPage": {
+        "label": "Resultados por página",
+        "hint": "Escolha quantos itens são exibidos por página numa biblioteca."
+      },
       "libraryPreferences": {
         "title": "Estatísticas, relatórios e início",
         "hint": "Escolha, para cada biblioteca visível para você, se ela é incluída nas suas estatísticas, relatórios ou na página inicial. Isso afeta apenas a sua própria visualização — a biblioteca continua visível e pesquisável para todos.",

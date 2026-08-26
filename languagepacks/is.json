@@ -292,6 +292,10 @@
         "de": "Þýska",
         "en": "Enska"
       },
+      "itemsPerPage": {
+        "label": "Niðurstöður á síðu",
+        "hint": "Veldu hversu margir hlutir birtast á síðu í safni."
+      },
       "libraryPreferences": {
         "title": "Tölfræði, skýrslur og heimasíða",
         "hint": "Veldu fyrir hvert safn sem er sýnilegt þér hvort það sé tekið með í tölfræði þinni, skýrslum eða á heimasíðunni. Þetta hefur aðeins áhrif á þína eigin sýn — safnið er áfram sýnilegt og leitanlegt fyrir alla.",

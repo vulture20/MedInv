@@ -25,6 +25,9 @@ interface LibraryPreference {
 /** How long the "Saved" confirmation stays visible after a successful save, before fading back out on its own. */
 const SAVED_CONFIRMATION_MS = 2000
 
+/** GitHub issue #194 — mirrors backend/app/Models/User.php's ITEMS_PER_PAGE_OPTIONS; kept in sync by hand, the same as every other backend-defined fixed choice list duplicated on this page (e.g. the 'light'/'dark' template codes above). */
+const ITEMS_PER_PAGE_OPTIONS = [20, 50, 100, 200] as const
+
 interface PreviewColors {
   bg: string
   surface: string
@@ -114,7 +117,15 @@ export function SettingsPage() {
   const [templateError, setTemplateError] = useState<string | null>(null)
   const [languageSaved, setLanguageSaved] = useState(false)
   const [languageError, setLanguageError] = useState<string | null>(null)
-  const savedTimeouts = useRef<Partial<Record<'template' | 'language' | 'password', ReturnType<typeof setTimeout>>>>({})
+  // GitHub issue #194 — same immediate-save-on-change pattern as
+  // template/language above. Initialized from `user.items_per_page` (unlike
+  // `language` above, there's no separate live source of truth to prefer
+  // over it — MediaItemController::index() is the only consumer, and this
+  // page's own PUT is the only writer).
+  const [itemsPerPage, setItemsPerPage] = useState(user?.items_per_page ?? 50)
+  const [itemsPerPageSaved, setItemsPerPageSaved] = useState(false)
+  const [itemsPerPageError, setItemsPerPageError] = useState<string | null>(null)
+  const savedTimeouts = useRef<Partial<Record<'template' | 'language' | 'itemsPerPage' | 'password', ReturnType<typeof setTimeout>>>>({})
 
   // GitHub issue #174 — self-service password change. Unlike template/
   // language above (a single value, saved immediately on change), this is
@@ -168,8 +179,9 @@ export function SettingsPage() {
     }
   }, [])
 
-  function flashSaved(field: 'template' | 'language' | 'password') {
-    const setSaved = field === 'template' ? setTemplateSaved : field === 'language' ? setLanguageSaved : setPasswordSaved
+  function flashSaved(field: 'template' | 'language' | 'itemsPerPage' | 'password') {
+    const setSaved =
+      field === 'template' ? setTemplateSaved : field === 'language' ? setLanguageSaved : field === 'itemsPerPage' ? setItemsPerPageSaved : setPasswordSaved
     clearTimeout(savedTimeouts.current[field])
     setSaved(true)
     savedTimeouts.current[field] = setTimeout(() => setSaved(false), SAVED_CONFIRMATION_MS)
@@ -241,6 +253,20 @@ export function SettingsPage() {
       setLanguage(previous)
       void i18n.changeLanguage(previous)
       setLanguageError(describeError(err, t))
+    }
+  }
+
+  /** GitHub issue #194 — see ITEMS_PER_PAGE_OPTIONS's own comment for the fixed set of values this is ever called with. */
+  async function saveItemsPerPage(value: number) {
+    const previous = itemsPerPage
+    setItemsPerPage(value)
+    setItemsPerPageError(null)
+    try {
+      await apiClient.put('/me/settings', { items_per_page: value })
+      flashSaved('itemsPerPage')
+    } catch (err) {
+      setItemsPerPage(previous)
+      setItemsPerPageError(describeError(err, t))
     }
   }
 
@@ -349,6 +375,26 @@ export function SettingsPage() {
           </p>
         )}
         {languageError && <p role="alert">{languageError}</p>}
+      </section>
+
+      <section className="panel-card">
+        <h2>{t('settings.itemsPerPage.label')}</h2>
+        <p className="hint">{t('settings.itemsPerPage.hint')}</p>
+
+        <select className="panel-select" value={itemsPerPage} onChange={(e) => void saveItemsPerPage(Number(e.target.value))}>
+          {ITEMS_PER_PAGE_OPTIONS.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+
+        {itemsPerPageSaved && (
+          <p role="status" className="panel-confirmation">
+            {t('settings.saved')}
+          </p>
+        )}
+        {itemsPerPageError && <p role="alert">{itemsPerPageError}</p>}
       </section>
 
       <section className="panel-card">

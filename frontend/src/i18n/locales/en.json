@@ -358,6 +358,10 @@
       "de": "German",
       "en": "English"
     },
+    "itemsPerPage": {
+      "label": "Results per page",
+      "hint": "Choose how many items are shown per page in a library."
+    },
     "libraryPreferences": {
       "title": "Statistics, Reports & Homepage",
       "hint": "Choose, for each library visible to you, whether it's included in your Statistics, Reports, or on the homepage. This only affects your own view — the library stays visible and searchable for everyone.",

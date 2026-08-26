@@ -40,7 +40,13 @@ class MediaItemController extends Controller
             $query->orderBy($sortBy, $direction);
         }
 
-        return $query->paginate($request->integer('per_page', 50));
+        // GitHub issue #194: an explicit `per_page` query param still wins
+        // (unchanged behavior for any existing caller), but the default
+        // when none is given is now the requesting user's own stored
+        // preference (User::ITEMS_PER_PAGE_OPTIONS) rather than a flat 50 —
+        // this is the *only* place that preference needs to be read, since
+        // LibraryDetailPage.tsx never sends per_page itself.
+        return $query->paginate($request->integer('per_page', $request->user()?->items_per_page ?? 50));
     }
 
     public function show(Request $request, Library $library, int $item)

@@ -292,6 +292,10 @@
         "de": "Tysk",
         "en": "Engelsk"
       },
+      "itemsPerPage": {
+        "label": "Resultater per side",
+        "hint": "Velg hvor mange elementer som vises per side i et bibliotek."
+      },
       "libraryPreferences": {
         "title": "Statistikk, rapporter og hjemmeside",
         "hint": "Velg for hvert bibliotek som er synlig for deg, om det skal inkluderes i statistikken, rapportene eller på hjemmesiden din. Dette påvirker kun din egen visning — biblioteket forblir synlig og søkbart for alle.",

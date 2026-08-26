@@ -292,6 +292,10 @@
         "de": "Duits",
         "en": "Engels"
       },
+      "itemsPerPage": {
+        "label": "Resultaten per pagina",
+        "hint": "Kies hoeveel items er per pagina in een bibliotheek worden weergegeven."
+      },
       "libraryPreferences": {
         "title": "Statistieken, rapportages & startpagina",
         "hint": "Kies voor elke voor u zichtbare bibliotheek of deze wordt meegenomen in uw statistieken, rapportages of op de startpagina. Dit heeft alleen invloed op uw eigen weergave — de bibliotheek blijft voor iedereen zichtbaar en doorzoekbaar.",
