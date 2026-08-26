@@ -42,6 +42,41 @@ interface Paginated<T> {
   total: number
 }
 
+/** GitHub issue #196 — the `?page=` URL query param, defaulting to 1 for anything missing/invalid (a non-numeric value, 0, negative, a fraction) rather than letting a malformed/hand-edited URL crash the page. */
+function parsePage(value: string | null): number {
+  const parsed = value === null ? NaN : Number(value)
+  return Number.isInteger(parsed) && parsed >= 1 ? parsed : 1
+}
+
+/**
+ * GitHub issue #196 — the numbered page strip's entries: always the first
+ * and last page, plus a window of `delta` pages on either side of
+ * `current`, collapsing any gap larger than one page into a single
+ * `'ellipsis'` entry (e.g. current=6, last=42 -> `1, ellipsis, 4, 5, 6, 7,
+ * 8, ellipsis, 42`). A plain Set + sort rather than hand-built range
+ * arithmetic, so the "is there a gap here" check below is the one place
+ * that needs to reason about adjacency at all — page numbers outside
+ * [1, last] (e.g. current computed from a stale/out-of-range `?page=`) are
+ * simply never added, rather than needing their own bounds check.
+ */
+function buildPageWindow(current: number, last: number, delta = 2): (number | 'ellipsis')[] {
+  const pages = new Set<number>([1, last])
+  for (let p = current - delta; p <= current + delta; p++) {
+    if (p >= 1 && p <= last) pages.add(p)
+  }
+
+  const sorted = Array.from(pages).sort((a, b) => a - b)
+  const window: (number | 'ellipsis')[] = []
+  let previous: number | null = null
+  for (const p of sorted) {
+    if (previous !== null && p - previous > 1) window.push('ellipsis')
+    window.push(p)
+    previous = p
+  }
+
+  return window
+}
+
 /**
  * A single library's contents (briefing 5.) — reachable from the "view"
  * link in LibrariesPage.tsx. GET /libraries/{id} already applies
@@ -61,7 +96,14 @@ export function LibraryDetailPage() {
   // point independent of the capture/scan workflow, so an item can be added
   // even without ever attempting a scan first.
   const [creating, setCreating] = useState(false)
-  const [page, setPage] = useState(1)
+  // GitHub issue #196: the current page is derived straight from the
+  // `?page=` URL query param rather than kept as its own useState — the URL
+  // *is* the state, so there's no separate "now sync the two" step that
+  // could ever drift apart. setPage() below is a plain function, not a
+  // useState setter, but supports the exact same `setPage(n)`/
+  // `setPage((p) => p + 1)` call shape every existing call site already
+  // uses.
+  const page = parsePage(searchParams.get('page'))
   const [loading, setLoading] = useState(true)
   // GitHub issue #108 — a lighter-weight indicator for loadItems() below,
   // which (unlike `loading`) never blanks the rest of the page; only the
@@ -185,12 +227,46 @@ export function LibraryDetailPage() {
     setBulkUpdateError(null)
   }
 
+  /**
+   * GitHub issue #196 — writes `page` back into the URL rather than into a
+   * useState (see the `page` const's own comment). `resolved <= 1` deletes
+   * the param instead of writing `page=1`, so the common case (viewing the
+   * first page, which is where every library/sort reset above already
+   * lands) keeps the URL clean — a bare `/libraries/5` instead of
+   * `/libraries/5?page=1`, matching how `?item=` is only ever present when
+   * it means something.
+   */
+  function setPage(next: number | ((previous: number) => number)) {
+    const resolved = typeof next === 'function' ? next(page) : next
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev)
+      if (resolved <= 1) {
+        params.delete('page')
+      } else {
+        params.set('page', String(resolved))
+      }
+      return params
+    })
+  }
+
   // GitHub issue #108: the page/sort effect below would otherwise also
   // fire right after the id effect resets page/sortBy/sortDir back to
   // their defaults for the newly opened library — this flag tells it to
   // skip that one redundant run, since loadAll() below already loads the
   // (correctly reset) first page unsorted.
   const skipNextItemsReload = useRef(false)
+
+  // GitHub issue #196: distinguishes this component's very first mount
+  // (where an incoming `?page=N` is a genuine deep link — e.g. a shared
+  // link, a browser reload, or the back/forward button — and should be
+  // honored) from every later run of the effect below (an in-app switch to
+  // a *different* library, where GitHub issue #108's own reasoning still
+  // applies: always reset to page 1, never carry anything over). A `Link`
+  // to another library normally has no query string at all, which already
+  // clears any `?page=` on its own — this ref only matters for the
+  // narrower case of a stale page param somehow surviving a library
+  // switch (e.g. the id segment hand-edited in the address bar).
+  const isInitialMount = useRef(true)
 
   // A different library entirely (id changed) — full reload, and reset
   // pagination/sort back to defaults rather than carrying over whatever
@@ -199,17 +275,22 @@ export function LibraryDetailPage() {
   // last page and wrongly appear empty.
   useEffect(() => {
     skipNextItemsReload.current = true
-    setPage(1)
+    const initialPage = isInitialMount.current ? page : 1
+    isInitialMount.current = false
     setSortBy(null)
     setSortDir('asc')
-    void loadAll(1, null, 'asc')
+    void loadAll(initialPage, null, 'asc')
+    if (initialPage === 1) setPage(1)
     resetBulkState()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   // Same library, just a different page or sort column (GitHub issue
   // #108) — see loadItems()'s own docblock for why this doesn't repeat
-  // the id effect's full reload.
+  // the id effect's full reload. Depends on the `?page=` string itself
+  // (GitHub issue #196), the same pattern the `?item=` deep-link effect
+  // below already uses, since `page` itself is derived state, not a
+  // useState value this effect could depend on directly.
   useEffect(() => {
     if (skipNextItemsReload.current) {
       skipNextItemsReload.current = false
@@ -218,7 +299,7 @@ export function LibraryDetailPage() {
     void loadItems(page, sortBy, sortDir)
     resetBulkState()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, sortBy, sortDir])
+  }, [searchParams.get('page'), sortBy, sortDir])
 
   /** Clicking a sortable column header (GitHub issue #77) — same column toggles asc/desc, a different one starts at asc, either way back to page 1 since the sort applies across the whole result set, not just this page. */
   function handleSort(column: string) {
@@ -565,9 +646,27 @@ export function LibraryDetailPage() {
             <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
               ←
             </button>
-            <span>
-              {items.current_page} / {items.last_page}
-            </span>
+            {/* GitHub issue #196: replaces the previous plain "current / last" text with a numbered strip (1 … 4 5 [6] 7 8 … 42) — see buildPageWindow()'s own docblock. */}
+            <div className="library-pagination__pages">
+              {buildPageWindow(items.current_page, items.last_page).map((entry, index) =>
+                entry === 'ellipsis' ? (
+                  <span key={`ellipsis-${index}`} className="library-pagination__ellipsis" aria-hidden="true">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={entry}
+                    type="button"
+                    className={`library-pagination__page${entry === items.current_page ? ' library-pagination__page--current' : ''}`}
+                    aria-current={entry === items.current_page ? 'page' : undefined}
+                    disabled={entry === items.current_page}
+                    onClick={() => setPage(entry)}
+                  >
+                    {entry}
+                  </button>
+                ),
+              )}
+            </div>
             <button type="button" disabled={page >= items.last_page} onClick={() => setPage((p) => p + 1)}>
               →
             </button>

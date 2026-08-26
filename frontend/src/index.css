@@ -1838,6 +1838,37 @@ td {
   color: var(--color-text-muted);
 }
 
+/* GitHub issue #196 — the numbered page strip between the prev/next arrows. */
+.library-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.library-pagination__page {
+  min-width: 1.75rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Disabled (see the "disabled={entry === items.current_page}" comment at its call site) rather than merely styled — clicking the current page again would just re-fetch the same data. */
+.library-pagination__page--current {
+  font-weight: 600;
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  cursor: default;
+}
+
+.library-pagination__ellipsis {
+  padding: 0 0.15rem;
+}
+
 /*
  * DashboardPage.tsx's three cover carousels (GitHub issue #116) — a
  * classic marquee: .dashboard-carousel__track renders its tiles twice back
