@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Excluir \"{{title}}\"? Esta ação não pode ser desfeita.",
+      "confirmDiscardChanges": "Há alterações não salvas. Fechar e descartá-las?",
       "moveToLibrary": "Mover para uma biblioteca",
       "selectLibrary": "Selecionar uma biblioteca…",
       "selectValue": "Selecionar…",

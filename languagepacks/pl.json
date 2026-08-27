@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Usunąć „{{title}}”? Tej czynności nie można cofnąć.",
+      "confirmDiscardChanges": "Istnieją niezapisane zmiany. Zamknąć i je odrzucić?",
       "moveToLibrary": "Przenieś do biblioteki",
       "selectLibrary": "Wybierz bibliotekę…",
       "selectValue": "Wybierz…",

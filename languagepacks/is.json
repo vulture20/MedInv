@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Eyða „{{title}}“? Þessu er ekki hægt að afturkalla.",
+      "confirmDiscardChanges": "Það eru óvistaðar breytingar. Loka og henda þeim?",
       "moveToLibrary": "Flytja í safn",
       "selectLibrary": "Veldu safn…",
       "selectValue": "Veldu…",

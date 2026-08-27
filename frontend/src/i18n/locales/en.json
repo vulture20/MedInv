@@ -84,6 +84,7 @@
   },
   "mediaItem": {
     "confirmDelete": "Delete “{{title}}”? This cannot be undone.",
+    "confirmDiscardChanges": "There are unsaved changes. Close and discard them?",
     "moveToLibrary": "Move to library",
     "selectLibrary": "Select a library…",
     "selectValue": "Select…",

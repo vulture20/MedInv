@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "\"{{title}}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "confirmDiscardChanges": "Er zijn niet-opgeslagen wijzigingen. Sluiten en wijzigingen verwerpen?",
       "moveToLibrary": "Verplaatsen naar bibliotheek",
       "selectLibrary": "Selecteer een bibliotheek…",
       "selectValue": "Selecteren…",

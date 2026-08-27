@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "删除“{{title}}”？此操作无法撤销。",
+      "confirmDiscardChanges": "存在未保存的更改。关闭并放弃这些更改吗?",
       "moveToLibrary": "移动到媒体库",
       "selectLibrary": "选择媒体库…",
       "selectValue": "选择…",

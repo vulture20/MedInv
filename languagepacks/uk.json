@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Видалити «{{title}}»? Цю дію не можна скасувати.",
+      "confirmDiscardChanges": "Є незбережені зміни. Закрити та скасувати їх?",
       "moveToLibrary": "Перемістити до бібліотеки",
       "selectLibrary": "Виберіть бібліотеку…",
       "selectValue": "Вибрати…",

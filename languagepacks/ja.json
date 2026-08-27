@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "「{{title}}」を削除しますか? この操作は元に戻せません。",
+      "confirmDiscardChanges": "未保存の変更があります。閉じて破棄しますか?",
       "moveToLibrary": "ライブラリへ移動",
       "selectLibrary": "ライブラリを選択…",
       "selectValue": "選択…",

@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Eliminare «{{title}}»? Questa azione non può essere annullata.",
+      "confirmDiscardChanges": "Ci sono modifiche non salvate. Chiudere e scartarle?",
       "moveToLibrary": "Sposta in una biblioteca",
       "selectLibrary": "Seleziona una biblioteca…",
       "selectValue": "Seleziona…",

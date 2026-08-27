@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Ta bort ”{{title}}”? Detta kan inte ångras.",
+      "confirmDiscardChanges": "Det finns osparade ändringar. Stänga och förkasta dem?",
       "moveToLibrary": "Flytta till bibliotek",
       "selectLibrary": "Välj ett bibliotek…",
       "selectValue": "Välj…",

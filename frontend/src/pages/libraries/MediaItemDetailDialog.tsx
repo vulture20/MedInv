@@ -109,6 +109,27 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
   const canWrite = user?.level === 'admin' || library.owner.id === user?.id
 
+  /**
+   * The window used to close (Esc, or a stray click on the backdrop) mid-
+   * edit with no warning, silently discarding whatever had been typed —
+   * a real, reported loss-of-work bug. `values`/`tracks` are only ever
+   * reset from `item` on open (see the `[item]` effect above) or right
+   * after a successful save, so comparing them back against a freshly
+   * derived valuesFromItem(item, specs)/item.tracks is exactly "has
+   * anything changed since the form was last in sync with the server".
+   */
+  function hasUnsavedChanges(): boolean {
+    if (!item || !editing) return false
+    if (JSON.stringify(values) !== JSON.stringify(valuesFromItem(item, specs))) return true
+    if (library.media_type === 'cd' && JSON.stringify(tracks) !== JSON.stringify(item.tracks ?? [])) return true
+    return false
+  }
+
+  /** Returns whether it's OK to proceed with closing/discarding — either there's nothing to lose, or the user confirmed losing it. */
+  function confirmDiscardChanges(): boolean {
+    return !hasUnsavedChanges() || window.confirm(t('mediaItem.confirmDiscardChanges'))
+  }
+
   const moveTargets = libraries.filter(
     (lib) => lib.id !== library.id && lib.media_type === library.media_type && (user?.level === 'admin' || lib.owner.id === user?.id)
   )
@@ -269,13 +290,19 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     <dialog
       ref={dialogRef}
       onClose={onClose}
+      // Esc fires a cancelable 'cancel' event before the browser closes a
+      // native <dialog> — preventDefault() here keeps it open (and in edit
+      // mode) when there are unsaved changes the user didn't confirm losing.
+      onCancel={(e) => {
+        if (!confirmDiscardChanges()) e.preventDefault()
+      }}
       // Clicking the ::backdrop (outside the dialog's own content) fires a
       // click event whose target is the <dialog> element itself, never a
       // descendant — a click on any actual content inside always has that
       // content element as the target instead, so this can't misfire on a
       // normal in-dialog click. Native <dialog> doesn't close on backdrop
       // click by default, only Esc/a real close()/form method="dialog".
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => e.target === e.currentTarget && confirmDiscardChanges() && onClose()}
       className="media-item-dialog"
     >
       {item && (

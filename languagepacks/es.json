@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "¿Eliminar «{{title}}»? Esta acción no se puede deshacer.",
+      "confirmDiscardChanges": "Hay cambios sin guardar. ¿Cerrar y descartarlos?",
       "moveToLibrary": "Mover a otra biblioteca",
       "selectLibrary": "Seleccionar una biblioteca…",
       "selectValue": "Seleccionar…",

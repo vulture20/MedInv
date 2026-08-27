@@ -84,6 +84,7 @@
   },
   "mediaItem": {
     "confirmDelete": "„{{title}}“ löschen? Dies kann nicht rückgängig gemacht werden.",
+    "confirmDiscardChanges": "Es gibt ungespeicherte Änderungen. Wirklich schließen und Änderungen verwerfen?",
     "moveToLibrary": "In Bibliothek verschieben",
     "selectLibrary": "Bibliothek auswählen…",
     "selectValue": "Auswählen…",

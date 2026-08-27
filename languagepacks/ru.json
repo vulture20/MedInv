@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Удалить «{{title}}»? Это действие нельзя отменить.",
+      "confirmDiscardChanges": "Есть несохранённые изменения. Закрыть и отменить их?",
       "moveToLibrary": "Переместить в библиотеку",
       "selectLibrary": "Выберите библиотеку…",
       "selectValue": "Выбрать…",

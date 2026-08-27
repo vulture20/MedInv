@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "\"{{title}}\" silinsin mi? Bu işlem geri alınamaz.",
+      "confirmDiscardChanges": "Kaydedilmemiş değişiklikler var. Kapatılsın ve değişiklikler atılsın mı?",
       "moveToLibrary": "Kitaplığa taşı",
       "selectLibrary": "Bir kitaplık seçin…",
       "selectValue": "Seç…",

@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Supprimer « {{title}} » ? Cette action est irréversible.",
+      "confirmDiscardChanges": "Il y a des modifications non enregistrées. Fermer et les abandonner ?",
       "moveToLibrary": "Déplacer vers une bibliothèque",
       "selectLibrary": "Sélectionner une bibliothèque…",
       "selectValue": "Sélectionner…",

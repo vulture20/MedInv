@@ -87,6 +87,7 @@
     },
     "mediaItem": {
       "confirmDelete": "Slette «{{title}}»? Dette kan ikke angres.",
+      "confirmDiscardChanges": "Det finnes ulagrede endringer. Lukke og forkaste dem?",
       "moveToLibrary": "Flytt til bibliotek",
       "selectLibrary": "Velg et bibliotek…",
       "selectValue": "Velg…",
