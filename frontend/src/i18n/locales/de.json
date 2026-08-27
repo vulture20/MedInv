@@ -111,6 +111,11 @@
     "computedHint": "(berechnet)",
     "refreshMetadata": "Metadaten erneut abfragen",
     "refreshMetadataDisabledNoEan": "Nicht verfügbar — dieser Eintrag hat keine echte EAN.",
+    "eanEditor": {
+      "keep": "Bisherige EAN behalten ({{ean}})",
+      "new": "Neue EAN eingeben:",
+      "generate": "Automatisch generieren (ohne EAN)"
+    },
     "bulkDelete": {
       "enter": "Auswählen",
       "exit": "Auswahl abbrechen",

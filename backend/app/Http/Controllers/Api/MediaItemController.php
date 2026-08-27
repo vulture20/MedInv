@@ -228,9 +228,17 @@ class MediaItemController extends Controller
 
         $record = $library->mediaItems()->findOrFail($item);
         $rules = $this->rulesFor($library->media_type);
-        // EAN changes go through the same duplicate check as creation would; simplest to
-        // disallow here and require delete+recreate, since briefing 5.1 focuses on capture.
-        unset($rules['ean']);
+        // GitHub issue #201: editing the EAN is admin-only, deliberately
+        // narrower than canWriteItems() above (which also lets a plain
+        // owner or write-share user through) — "für normale Benutzer soll
+        // diese Möglichkeit bewusst nicht bestehen" was explicit. A
+        // non-admin gets exactly the same behavior as before this issue:
+        // 'ean' isn't a recognized field at all, so it's silently dropped
+        // like any other unvalidated key rather than erroring.
+        $isAdmin = $request->user()->isAdmin();
+        if (! $isAdmin) {
+            unset($rules['ean']);
+        }
         // Drop 'required' specifically (title is the only field that has it —
         // everything else in rulesFor() already starts with 'nullable') rather
         // than positionally slicing off index 0. array_slice($rule, 1) used to
@@ -246,6 +254,32 @@ class MediaItemController extends Controller
             fn ($rule) => ['sometimes', ...array_values(array_diff($rule, ['required']))],
             $rules
         ));
+
+        // GitHub issue #201: the edit dialog's three EAN options —
+        // "bisherige EAN behalten" (the 'ean' key simply isn't sent at all,
+        // so it never reaches $data), "neue EAN eingeben" (a non-empty
+        // string), or "automatisch generieren" (an empty/omitted-after-
+        // validation value, the exact same "blank means generate a NoEAN-...
+        // placeholder" convention store() already uses) — collapse to a
+        // single "the value this item's EAN should end up with" here,
+        // checked against the library's own duplicate rule *before* it (or
+        // any other field in this same request) is written to the
+        // database, per the issue's own explicit requirement.
+        if ($isAdmin && array_key_exists('ean', $data)) {
+            $newEan = $data['ean'] !== null && $data['ean'] !== ''
+                ? $data['ean']
+                : $this->mediaItemService->generateNoEanPlaceholder($library);
+
+            try {
+                $this->mediaItemService->assertEanAvailable($library, $newEan, $record->id);
+            } catch (DuplicateEanException $e) {
+                return response()->json(['message' => $e->getMessage(), 'ean' => $e->ean], 409);
+            }
+
+            $data['ean'] = $newEan;
+        } else {
+            unset($data['ean']);
+        }
 
         // GitHub issue #90: a manual edit of a CD's `tracks` (rulesFor('cd')
         // already accepts it) needs the same runtime_seconds/runtime_computed

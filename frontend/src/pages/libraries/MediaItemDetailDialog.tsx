@@ -48,6 +48,14 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   // (like the read-only display it replaces while editing, it isn't a
   // single scalar value FIELD_SPECS's generic string-keyed form can hold).
   const [tracks, setTracks] = useState<Track[]>([])
+  // GitHub issue #201: admin-only EAN editing, kept separate from `values`
+  // the same way `tracks` above is — `ean` isn't part of FIELD_SPECS (it's
+  // a column shared by all three media types, not a per-type attribute),
+  // and unlike every other field here it isn't a plain "type a new value"
+  // input — it's a three-way choice (keep the current one, the default;
+  // type a new one; or fall back to a freshly generated NoEAN-... placeholder).
+  const [eanMode, setEanMode] = useState<'keep' | 'new' | 'generate'>('keep')
+  const [newEan, setNewEan] = useState('')
   const [targetLibraryId, setTargetLibraryId] = useState<number | ''>('')
   const [error, setError] = useState<string | null>(null)
   // Kept separate from `error` so a "this item already exists there" (or
@@ -83,6 +91,8 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       setRefreshProviderStatuses([])
       setValues(valuesFromItem(item, specs))
       setTracks(item.tracks ?? [])
+      setEanMode('keep')
+      setNewEan(item.ean)
       dialogRef.current?.showModal()
     } else {
       dialogRef.current?.close()
@@ -108,6 +118,12 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
 
   // Mirrors LibraryAccessService::canWrite() (admin or owner) — same client-side pattern as LibrariesPage.tsx's canDelete().
   const canWrite = user?.level === 'admin' || library.owner.id === user?.id
+  // GitHub issue #201: EAN editing is deliberately narrower than canWrite()
+  // above — an owner who isn't also a system admin must not see it, per
+  // the issue's own explicit "für normale Benutzer soll diese Möglichkeit
+  // bewusst nicht bestehen". MediaItemController::update() enforces this
+  // server-side regardless of what this constant ever renders.
+  const isAdmin = user?.level === 'admin'
 
   /**
    * The window used to close (Esc, or a stray click on the backdrop) mid-
@@ -122,6 +138,9 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
     if (!item || !editing) return false
     if (JSON.stringify(values) !== JSON.stringify(valuesFromItem(item, specs))) return true
     if (library.media_type === 'cd' && JSON.stringify(tracks) !== JSON.stringify(item.tracks ?? [])) return true
+    // GitHub issue #201 — 'keep' is a no-op regardless of what newEan
+    // happens to hold (e.g. the prefilled current EAN, untouched).
+    if (isAdmin && eanMode !== 'keep') return true
     return false
   }
 
@@ -162,6 +181,17 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
       if (JSON.stringify(tracks) !== JSON.stringify(item.tracks ?? [])) {
         payload.runtime_seconds = null
       }
+    }
+    // GitHub issue #201: 'ean' is deliberately omitted from the payload
+    // entirely for 'keep' (the default) — MediaItemController::update()
+    // treats an absent key as "leave untouched" the same way it already
+    // does for every other field on a PUT. 'new' sends the typed value;
+    // 'generate' sends '', the same "blank means generate a fresh
+    // NoEAN-... placeholder" convention the create form already uses.
+    if (isAdmin && eanMode === 'new') {
+      payload.ean = newEan.trim()
+    } else if (isAdmin && eanMode === 'generate') {
+      payload.ean = ''
     }
     try {
       const { data } = await apiClient.put<MediaItem>(`/libraries/${library.id}/items/${item.id}`, payload)
@@ -349,6 +379,48 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
 
           {editing ? (
             <form onSubmit={(e) => void save(e)}>
+              {/* GitHub issue #201: EAN editing is admin-only — not a FIELD_SPECS entry (it's a column shared by all three media types, not a per-type attribute) and not a plain text field, since it's a three-way choice rather than a single value to type. Mirrors BackupsPage.tsx's retention-mode fieldset: one radio per option, with "neue EAN eingeben"'s own text input enabled/required only while that option is selected. */}
+              {isAdmin && (
+                <fieldset className="media-item-dialog__ean-editor">
+                  <legend>{t('mediaItem.fields.ean')}</legend>
+                  <label>
+                    <input
+                      type="radio"
+                      name={`ean-mode-${item.id}`}
+                      checked={eanMode === 'keep'}
+                      onChange={() => setEanMode('keep')}
+                    />
+                    {t('mediaItem.eanEditor.keep', { ean: item.ean })}
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name={`ean-mode-${item.id}`}
+                      checked={eanMode === 'new'}
+                      onChange={() => setEanMode('new')}
+                    />
+                    {t('mediaItem.eanEditor.new')}
+                    <input
+                      type="text"
+                      maxLength={13}
+                      required={eanMode === 'new'}
+                      disabled={eanMode !== 'new'}
+                      value={newEan}
+                      onChange={(e) => setNewEan(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name={`ean-mode-${item.id}`}
+                      checked={eanMode === 'generate'}
+                      onChange={() => setEanMode('generate')}
+                    />
+                    {t('mediaItem.eanEditor.generate')}
+                  </label>
+                </fieldset>
+              )}
+
               {specs.map((field) => (
                 <label key={field.key}>
                   {t(`mediaItem.fields.${field.key}`)}

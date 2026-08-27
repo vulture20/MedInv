@@ -144,6 +144,11 @@
       "computedHint": "（計算値）",
       "refreshMetadata": "メタデータを再取得",
       "refreshMetadataDisabledNoEan": "利用できません — この項目には実際のEANがありません。",
+      "eanEditor": {
+        "keep": "現在のEANを維持する ({{ean}})",
+        "new": "新しいEANを入力:",
+        "generate": "自動生成する (EANなし)"
+      },
       "bulkDelete": {
         "enter": "選択",
         "exit": "選択を解除",

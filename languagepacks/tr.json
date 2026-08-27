@@ -144,6 +144,11 @@
       "computedHint": "(hesaplandı)",
       "refreshMetadata": "Meta verileri yenile",
       "refreshMetadataDisabledNoEan": "Kullanılamıyor — bu öğenin gerçek bir EAN'ı yok.",
+      "eanEditor": {
+        "keep": "Mevcut EAN'ı koru ({{ean}})",
+        "new": "Yeni bir EAN girin:",
+        "generate": "Otomatik oluştur (EAN olmadan)"
+      },
       "bulkDelete": {
         "enter": "Seç",
         "exit": "Seçimi iptal et",

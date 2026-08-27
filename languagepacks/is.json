@@ -114,6 +114,11 @@
       "computedHint": "(reiknað)",
       "refreshMetadata": "Uppfæra lýsigögn",
       "refreshMetadataDisabledNoEan": "Ekki í boði — þessi færsla er ekki með raunverulegt EAN-númer.",
+      "eanEditor": {
+        "keep": "Halda núverandi EAN ({{ean}})",
+        "new": "Sláðu inn nýtt EAN:",
+        "generate": "Búa til sjálfkrafa (án EAN)"
+      },
       "bulkDelete": {
         "enter": "Velja",
         "exit": "Hætta við val",

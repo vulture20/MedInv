@@ -128,6 +128,35 @@ class MediaItemService
     }
 
     /**
+     * GitHub issue #201: an admin-only manual EAN correction — e.g. fixing
+     * a mis-scanned code, or opting an already-captured item back into (or
+     * out of) the NoEAN placeholder mechanism after the fact
+     * (MediaItemController::update()). This is a second write path that
+     * could just as easily introduce a duplicate EAN into a library as
+     * create() itself, so it goes through the identical per-library
+     * uniqueness rule (briefing 5.1) — CLAUDE.md's own "every write path
+     * routes through [the centralized check] rather than re-implementing
+     * it" note is exactly the risk this method exists to avoid. Scoped to
+     * exclude the item's own row (`$excludeItemId`) so re-saving an item's
+     * current, unchanged EAN — or generating a fresh placeholder, which
+     * generateNoEanPlaceholder() itself already guarantees is free within
+     * the library — never self-collides. Deliberately just a check, not a
+     * write: the caller decides when/how to actually persist the new
+     * value, same division of responsibility create() already has between
+     * validating and inserting.
+     *
+     * @throws DuplicateEanException
+     */
+    public function assertEanAvailable(Library $library, string $ean, int $excludeItemId): void
+    {
+        $modelClass = $this->modelClassFor($library->media_type);
+
+        if ($modelClass::query()->where('library_id', $library->id)->where('ean', $ean)->where('id', '!=', $excludeItemId)->exists()) {
+            throw new DuplicateEanException($ean);
+        }
+    }
+
+    /**
      * Applies a re-run metadata lookup's user-picked fields onto an
      * *existing* item (GitHub issue #56) — the update-path counterpart to
      * create(). EAN is deliberately dropped rather than validated for a

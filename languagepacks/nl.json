@@ -144,6 +144,11 @@
       "computedHint": "(berekend)",
       "refreshMetadata": "Metadata vernieuwen",
       "refreshMetadataDisabledNoEan": "Niet beschikbaar — dit item heeft geen echte EAN.",
+      "eanEditor": {
+        "keep": "Huidige EAN behouden ({{ean}})",
+        "new": "Nieuwe EAN invoeren:",
+        "generate": "Automatisch genereren (zonder EAN)"
+      },
       "bulkDelete": {
         "enter": "Selecteren",
         "exit": "Selectie annuleren",

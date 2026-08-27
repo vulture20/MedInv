@@ -114,6 +114,11 @@
       "computedHint": "(beräknad)",
       "refreshMetadata": "Uppdatera metadata",
       "refreshMetadataDisabledNoEan": "Inte tillgängligt – den här posten har inget riktigt EAN.",
+      "eanEditor": {
+        "keep": "Behåll nuvarande EAN ({{ean}})",
+        "new": "Ange en ny EAN:",
+        "generate": "Generera automatiskt (utan EAN)"
+      },
       "bulkDelete": {
         "enter": "Välj",
         "exit": "Avbryt val",

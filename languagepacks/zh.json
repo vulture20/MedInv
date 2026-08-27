@@ -144,6 +144,11 @@
       "computedHint": "（已计算）",
       "refreshMetadata": "刷新元数据",
       "refreshMetadataDisabledNoEan": "不可用 — 此条目没有真实的EAN。",
+      "eanEditor": {
+        "keep": "保留当前EAN ({{ean}})",
+        "new": "输入新的EAN:",
+        "generate": "自动生成(无EAN)"
+      },
       "bulkDelete": {
         "enter": "选择",
         "exit": "取消选择",

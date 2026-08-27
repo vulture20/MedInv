@@ -144,6 +144,11 @@
       "computedHint": "(obliczone)",
       "refreshMetadata": "Odśwież metadane",
       "refreshMetadataDisabledNoEan": "Niedostępne — ten element nie ma prawdziwego kodu EAN.",
+      "eanEditor": {
+        "keep": "Zachowaj bieżący EAN ({{ean}})",
+        "new": "Wprowadź nowy EAN:",
+        "generate": "Generuj automatycznie (bez EAN)"
+      },
       "bulkDelete": {
         "enter": "Zaznacz",
         "exit": "Anuluj zaznaczanie",

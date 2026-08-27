@@ -144,6 +144,11 @@
       "computedHint": "(вычислено)",
       "refreshMetadata": "Обновить метаданные",
       "refreshMetadataDisabledNoEan": "Недоступно — у этого элемента нет настоящего EAN.",
+      "eanEditor": {
+        "keep": "Оставить текущий EAN ({{ean}})",
+        "new": "Введите новый EAN:",
+        "generate": "Сгенерировать автоматически (без EAN)"
+      },
       "bulkDelete": {
         "enter": "Выбрать",
         "exit": "Отменить выбор",

@@ -144,6 +144,11 @@
       "computedHint": "(calculado)",
       "refreshMetadata": "Actualizar metadatos",
       "refreshMetadataDisabledNoEan": "No disponible: este artículo no tiene un EAN real.",
+      "eanEditor": {
+        "keep": "Mantener el EAN actual ({{ean}})",
+        "new": "Introducir un nuevo EAN:",
+        "generate": "Generar automáticamente (sin EAN)"
+      },
       "bulkDelete": {
         "enter": "Seleccionar",
         "exit": "Cancelar selección",

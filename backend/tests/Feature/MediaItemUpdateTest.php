@@ -19,6 +19,9 @@ use Tests\TestCase;
  * stripped. No prior UI ever sent an explicit null for these fields, so
  * this had gone unnoticed until confirmed live against a running dev
  * server while building that dialog.
+ *
+ * GitHub issue #201 added admin-only EAN editing to this same endpoint —
+ * see the "admin-only EAN editing" section below.
  */
 class MediaItemUpdateTest extends TestCase
 {
@@ -72,7 +75,8 @@ class MediaItemUpdateTest extends TestCase
         $this->assertSame('Frank Herbert', $item->fresh()->authors);
     }
 
-    public function test_ean_cannot_be_changed_via_update(): void
+    /** GitHub issue #201: EAN editing is admin-only — a plain owner/write-share user sending 'ean' still has it silently dropped, exactly as before that issue. */
+    public function test_ean_cannot_be_changed_via_update_by_a_non_admin_owner(): void
     {
         $owner = $this->actingAsUser();
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
@@ -82,6 +86,109 @@ class MediaItemUpdateTest extends TestCase
 
         $response->assertOk();
         $this->assertSame('9780000000001', $item->fresh()->ean);
+    }
+
+    // --- GitHub issue #201: admin-only EAN editing ---
+
+    public function test_an_admin_can_change_the_ean_to_a_new_value(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
+        $this->actingAsUser('admin');
+
+        $response = $this->putJson("/api/libraries/{$library->id}/items/{$item->id}", ['ean' => '9780000000099']);
+
+        $response->assertOk();
+        $this->assertSame('9780000000099', $item->fresh()->ean);
+    }
+
+    /** Omitting 'ean' entirely is "keep the current one" — the dialog's default option — even for an admin. */
+    public function test_an_admin_omitting_ean_leaves_it_unchanged(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
+        $this->actingAsUser('admin');
+
+        $response = $this->putJson("/api/libraries/{$library->id}/items/{$item->id}", ['title' => 'Dune (renamed)']);
+
+        $response->assertOk();
+        $this->assertSame('9780000000001', $item->fresh()->ean);
+    }
+
+    /** An admin re-sending the item's own, unchanged EAN must not be treated as a self-collision. */
+    public function test_an_admin_resending_the_items_own_current_ean_is_not_a_duplicate(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
+        $this->actingAsUser('admin');
+
+        $response = $this->putJson("/api/libraries/{$library->id}/items/{$item->id}", ['ean' => '9780000000001']);
+
+        $response->assertOk();
+        $this->assertSame('9780000000001', $item->fresh()->ean);
+    }
+
+    /**
+     * GitHub issue #201's explicit requirement: the per-library duplicate
+     * check runs before the change (or anything else in the same request)
+     * is applied — a rejected EAN change must not leave the *other* fields
+     * of the same request half-applied.
+     */
+    public function test_an_admin_changing_the_ean_to_one_already_used_in_the_library_is_rejected(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Existing', 'ean' => '9780000000002']);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
+        $this->actingAsUser('admin');
+
+        $response = $this->putJson("/api/libraries/{$library->id}/items/{$item->id}", [
+            'title' => 'Should not be saved either',
+            'ean' => '9780000000002',
+        ]);
+
+        $response->assertStatus(409);
+        $fresh = $item->fresh();
+        $this->assertSame('9780000000001', $fresh->ean);
+        $this->assertSame('Dune', $fresh->title);
+    }
+
+    /** The exact same EAN is allowed across two different libraries (briefing 5.1) — a duplicate elsewhere never blocks this one. */
+    public function test_an_admin_changing_the_ean_to_one_used_only_in_a_different_library_is_allowed(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $libraryA = Library::query()->create(['name' => 'Novels A', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $libraryB = Library::query()->create(['name' => 'Novels B', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $libraryB->id, 'title' => 'Elsewhere', 'ean' => '9780000000002']);
+        $item = MediaBook::query()->create(['library_id' => $libraryA->id, 'title' => 'Dune', 'ean' => '9780000000001']);
+        $this->actingAsUser('admin');
+
+        $response = $this->putJson("/api/libraries/{$libraryA->id}/items/{$item->id}", ['ean' => '9780000000002']);
+
+        $response->assertOk();
+        $this->assertSame('9780000000002', $item->fresh()->ean);
+    }
+
+    /**
+     * The dialog's third option: fall back to the NoEAN placeholder
+     * mechanism (GitHub issue #151) — sending an empty ean, the same
+     * "blank means generate one" convention store() already uses for a
+     * brand-new capture.
+     */
+    public function test_an_admin_can_regenerate_a_noean_placeholder_by_sending_an_empty_ean(): void
+    {
+        $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
+        $this->actingAsUser('admin');
+
+        $response = $this->putJson("/api/libraries/{$library->id}/items/{$item->id}", ['ean' => '']);
+
+        $response->assertOk();
+        $this->assertStringStartsWith('NoEAN-', $item->fresh()->ean);
     }
 
     public function test_a_number_field_can_also_be_cleared_via_null(): void

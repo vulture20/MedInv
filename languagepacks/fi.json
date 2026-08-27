@@ -114,6 +114,11 @@
       "computedHint": "(laskettu)",
       "refreshMetadata": "Päivitä metatiedot",
       "refreshMetadataDisabledNoEan": "Ei käytettävissä – tällä nimekkeellä ei ole todellista EAN-koodia.",
+      "eanEditor": {
+        "keep": "Säilytä nykyinen EAN ({{ean}})",
+        "new": "Anna uusi EAN:",
+        "generate": "Luo automaattisesti (ei EAN-koodia)"
+      },
       "bulkDelete": {
         "enter": "Valitse",
         "exit": "Peru valinta",

@@ -114,6 +114,11 @@
       "computedHint": "(beregnet)",
       "refreshMetadata": "Oppdater metadata",
       "refreshMetadataDisabledNoEan": "Ikke tilgjengelig – denne oppføringen har ingen ekte EAN.",
+      "eanEditor": {
+        "keep": "Behold gjeldende EAN ({{ean}})",
+        "new": "Angi en ny EAN:",
+        "generate": "Generer automatisk (uten EAN)"
+      },
       "bulkDelete": {
         "enter": "Velg",
         "exit": "Avbryt valg",

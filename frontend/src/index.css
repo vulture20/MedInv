@@ -643,6 +643,43 @@ td {
   resize: vertical;
 }
 
+/*
+ * GitHub issue #201: admin-only EAN editing — three radio options rather
+ * than a plain field, so the surrounding label above/input-below column
+ * layout every other .media-item-dialog label uses doesn't fit; overridden
+ * back to a plain horizontal row per option, same shape BackupsPage.tsx's
+ * own retention-mode fieldset already uses (there without needing an
+ * override, since .panel-card label has no flex-column rule to begin with).
+ */
+.media-item-dialog__ean-editor {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.media-item-dialog__ean-editor legend {
+  padding: 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.media-item-dialog__ean-editor label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.media-item-dialog__ean-editor label:last-child {
+  margin-bottom: 0;
+}
+
+.media-item-dialog__ean-editor input[type='text'] {
+  flex: 1;
+  min-width: 0;
+}
+
 .media-item-dialog__actions {
   display: flex;
   gap: 0.5rem;

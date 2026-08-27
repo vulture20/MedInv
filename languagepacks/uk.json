@@ -144,6 +144,11 @@
       "computedHint": "(обчислено)",
       "refreshMetadata": "Оновити метадані",
       "refreshMetadataDisabledNoEan": "Недоступно — цей елемент не має справжнього EAN.",
+      "eanEditor": {
+        "keep": "Залишити поточний EAN ({{ean}})",
+        "new": "Введіть новий EAN:",
+        "generate": "Згенерувати автоматично (без EAN)"
+      },
       "bulkDelete": {
         "enter": "Вибрати",
         "exit": "Скасувати вибір",

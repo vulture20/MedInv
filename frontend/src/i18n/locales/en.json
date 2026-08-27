@@ -111,6 +111,11 @@
     "computedHint": "(computed)",
     "refreshMetadata": "Refresh metadata",
     "refreshMetadataDisabledNoEan": "Not available — this item has no real EAN.",
+    "eanEditor": {
+      "keep": "Keep the current EAN ({{ean}})",
+      "new": "Enter a new EAN:",
+      "generate": "Generate automatically (no EAN)"
+    },
     "bulkDelete": {
       "enter": "Select",
       "exit": "Cancel selection",
