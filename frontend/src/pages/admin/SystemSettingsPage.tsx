@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '../../api/client'
+import { useAuth } from '../../auth/AuthContext'
 import { describeError } from './adminErrors'
 import { AVAILABLE_LANGUAGES } from '../../i18n'
 import { getRuntimeLanguagePacks, onRuntimeLanguagePacksChanged, type LanguagePackSummary } from '../../i18n/languagePackEvents'
@@ -23,12 +24,18 @@ interface CoverCleanupSettings {
   cleanup_enabled: boolean
 }
 
+interface EanEditingSettings {
+  enabled: boolean
+}
+
 /**
  * The remaining runtime settings that don't have a page of their own:
  * brute-force throttling (briefing 12.4, enforced by BruteForceProtection),
  * the log level, the default language, the daily orphaned-cover-file
- * cleanup toggle, and the display timezone used for backup/export
- * filenames (GitHub issue #31). Mail lives on its own page, backup
+ * cleanup toggle, the display timezone used for backup/export filenames
+ * (GitHub issue #31), and whether admins may use the media item detail
+ * dialog's admin-only EAN editor at all (GitHub issue #202, gating GitHub
+ * issue #201's editor). Mail lives on its own page, backup
  * schedule/retention lives with the backups list — see
  * pages/admin/{Mail,Backups}Page.tsx.
  *
@@ -41,6 +48,7 @@ interface CoverCleanupSettings {
  */
 export function SystemSettingsPage() {
   const { t, i18n } = useTranslation()
+  const { refreshEanEditingSetting } = useAuth()
   // GitHub issue #110 — see load()'s own docblock for why this is separate
   // from the six section-specific error states below.
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -56,6 +64,9 @@ export function SystemSettingsPage() {
   const [coverCleanup, setCoverCleanup] = useState<CoverCleanupSettings | null>(null)
   const [coverCleanupSaved, setCoverCleanupSaved] = useState(false)
   const [coverCleanupError, setCoverCleanupError] = useState<string | null>(null)
+  const [eanEditing, setEanEditing] = useState<EanEditingSettings | null>(null)
+  const [eanEditingSaved, setEanEditingSaved] = useState(false)
+  const [eanEditingError, setEanEditingError] = useState<string | null>(null)
   const [timezone, setTimezone] = useState<string | null>(null)
   // GitHub issue #199 — the backend's own validation list
   // (AdminSettingsController::index()'s `timezone_options`,
@@ -100,6 +111,7 @@ export function SystemSettingsPage() {
         loglevel: LogLevel
         locale: { default_language: DefaultLanguage }
         covers: CoverCleanupSettings
+        ean_editing: EanEditingSettings
         timezone: string
         timezone_options: string[]
         statistics: { default_currency: string | null }
@@ -108,6 +120,7 @@ export function SystemSettingsPage() {
       setLoglevel(data.loglevel)
       setDefaultLanguage(data.locale.default_language)
       setCoverCleanup(data.covers)
+      setEanEditing(data.ean_editing)
       setTimezone(data.timezone)
       setTimezoneOptions(data.timezone_options)
       setDefaultCurrency(data.statistics.default_currency)
@@ -208,6 +221,25 @@ export function SystemSettingsPage() {
       setCoverCleanupSaved(true)
     } catch (err) {
       setCoverCleanupError(describeError(err, t))
+      await load()
+    }
+  }
+
+  /** GitHub issue #202 — toggles GitHub issue #201's admin-only EAN editor, same optimistic-checkbox shape as saveCoverCleanup() above. */
+  async function saveEanEditing(enabled: boolean) {
+    setEanEditingError(null)
+    setEanEditingSaved(false)
+    setEanEditing({ enabled })
+    try {
+      const { data } = await apiClient.put<EanEditingSettings>('/admin/settings/ean-editing', { enabled })
+      setEanEditing(data)
+      setEanEditingSaved(true)
+      // So a media item dialog already open elsewhere in this same session
+      // (or opened right after, without a full page reload) reflects the
+      // change immediately — same reasoning as MailPage.tsx's refreshMailStatus() call.
+      void refreshEanEditingSetting()
+    } catch (err) {
+      setEanEditingError(describeError(err, t))
       await load()
     }
   }
@@ -395,6 +427,23 @@ export function SystemSettingsPage() {
             </p>
           )}
           {coverCleanupError && <p role="alert">{coverCleanupError}</p>}
+        </section>
+      )}
+
+      {eanEditing && (
+        <section className="panel-card">
+          <h2>{t('admin.eanEditing.title')}</h2>
+          <p className="hint">{t('admin.eanEditing.hint')}</p>
+          <label>
+            <input type="checkbox" checked={eanEditing.enabled} onChange={(e) => void saveEanEditing(e.target.checked)} />
+            {t('admin.eanEditing.enabled')}
+          </label>
+          {eanEditingSaved && (
+            <p role="status" className="panel-confirmation">
+              {t('admin.eanEditing.saved')}
+            </p>
+          )}
+          {eanEditingError && <p role="alert">{eanEditingError}</p>}
         </section>
       )}
     </div>

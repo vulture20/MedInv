@@ -517,6 +517,12 @@
         "enabled": "Sahipsiz kapak dosyalarını otomatik olarak temizle",
         "saved": "Kapak temizliği ayarı kaydedildi."
       },
+      "eanEditing": {
+        "title": "EAN Düzenleme",
+        "hint": "Yöneticilerin zaten kaydedilmiş bir medya öğesinin EAN'ını düzenleme penceresinden değiştirip değiştiremeyeceğini belirler.",
+        "enabled": "Yöneticiler bir medya öğesinin EAN'ını düzenleyebilir",
+        "saved": "EAN düzenleme ayarı kaydedildi."
+      },
       "timezoneSettings": {
         "title": "Saat dilimi",
         "hint": "Her zaman UTC göstermek yerine yerel saatinizle eşleşmesi için yedekleme ve dışa aktarma dosya adlarında kullanılır.",

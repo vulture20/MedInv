@@ -31,6 +31,14 @@ interface AuthContextValue {
   user: User | null
   /** Surfaces the red admin warning + disables password reset per briefing 12.2. */
   mailServerHealthy: boolean
+  /**
+   * GitHub issue #202: whether an admin may use GitHub issue #201's
+   * admin-only EAN editor at all — MediaItemDetailDialog.tsx gates that
+   * editor's UI on this, mirroring mailServerHealthy's own "surfaced via
+   * /me so it's available wherever it's needed without a dedicated
+   * request" shape. Meaningless for a non-admin.
+   */
+  eanEditingEnabled: boolean
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
@@ -73,6 +81,14 @@ interface AuthContextValue {
    */
   refreshMailStatus: () => Promise<void>
   /**
+   * Re-fetches `ean_editing_enabled` from `/me`, the same way
+   * refreshMailStatus() above does for mail health — call this after saving
+   * the setting (AdminSettingsController::updateEanEditing) so a media item
+   * dialog already open elsewhere in this session doesn't keep showing (or
+   * hiding) the EAN editor based on a now-stale value.
+   */
+  refreshEanEditingSetting: () => Promise<void>
+  /**
    * Why the session just ended, if it was cut short mid-use rather than an
    * ordinary logout — set from apiClient's response interceptor via
    * authEvents.ts on a 401 (session expired) or a 403 `account_deactivated`
@@ -89,6 +105,10 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [mailServerHealthy, setMailServerHealthy] = useState(true)
+  // Default true matches SystemSetting::defaults()'s own 'ean_editing.enabled'
+  // default — the editor is available for admins unless one explicitly
+  // disabled it, same reasoning as mailServerHealthy defaulting to true above.
+  const [eanEditingEnabled, setEanEditingEnabled] = useState(true)
   const [loading, setLoading] = useState(true)
   const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null)
 
@@ -112,9 +132,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      const { data } = await apiClient.get<{ user: User; mail_server_healthy: boolean }>('/me')
+      const { data } = await apiClient.get<{ user: User; mail_server_healthy: boolean; ean_editing_enabled: boolean }>('/me')
       setUser(data.user)
       setMailServerHealthy(data.mail_server_healthy)
+      setEanEditingEnabled(data.ean_editing_enabled)
     } catch {
       setUser(null)
     } finally {
@@ -136,14 +157,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const refreshEanEditingSetting = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get<{ ean_editing_enabled: boolean }>('/me')
+      setEanEditingEnabled(data.ean_editing_enabled)
+    } catch {
+      // Same tolerance as refreshMailStatus() above — leave the current value in place.
+    }
+  }, [])
+
   const login = useCallback(async (email: string, password: string) => {
     await fetchCsrfCookie()
-    const { data } = await apiClient.post<{ user: User; mail_server_healthy: boolean }>('/login', {
+    const { data } = await apiClient.post<{ user: User; mail_server_healthy: boolean; ean_editing_enabled: boolean }>('/login', {
       email,
       password,
     })
     setUser(data.user)
     setMailServerHealthy(data.mail_server_healthy)
+    setEanEditingEnabled(data.ean_editing_enabled)
     setSessionEndReason(null)
   }, [])
 
@@ -167,12 +198,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         mailServerHealthy,
+        eanEditingEnabled,
         loading,
         login,
         logout,
         deleteAccount,
         updateUser,
         refreshMailStatus,
+        refreshEanEditingSetting,
         sessionEndReason,
         clearSessionEndReason,
       }}

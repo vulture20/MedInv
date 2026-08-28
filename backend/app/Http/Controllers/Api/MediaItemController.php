@@ -9,6 +9,7 @@ use App\Domain\Libraries\MediaItemService;
 use App\Domain\Metadata\CoverDownloadService;
 use App\Http\Controllers\Controller;
 use App\Models\Library;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -234,8 +235,14 @@ class MediaItemController extends Controller
         // diese Möglichkeit bewusst nicht bestehen" was explicit. A
         // non-admin gets exactly the same behavior as before this issue:
         // 'ean' isn't a recognized field at all, so it's silently dropped
-        // like any other unvalidated key rather than erroring.
-        $isAdmin = $request->user()->isAdmin();
+        // like any other unvalidated key rather than erroring. GitHub issue
+        // #202 adds a second, admin-configurable gate on top: an admin whose
+        // instance has disabled the editor entirely (AdminSettingsController::
+        // updateEanEditing()) gets the exact same "silently dropped" fallback
+        // — checked server-side on every request rather than trusting that
+        // the frontend has hidden the editor, since a stale page or a direct
+        // API call could still send the field otherwise.
+        $isAdmin = $request->user()->isAdmin() && SystemSetting::get('ean_editing.enabled', true);
         if (! $isAdmin) {
             unset($rules['ean']);
         }

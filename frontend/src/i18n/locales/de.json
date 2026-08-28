@@ -602,6 +602,12 @@
       "enabled": "Verwaiste Cover-Dateien automatisch bereinigen",
       "saved": "Einstellung zur Cover-Bereinigung gespeichert."
     },
+    "eanEditing": {
+      "title": "EAN-Bearbeitung",
+      "hint": "Legt fest, ob Administratoren die EAN eines bereits erfassten Mediums über den Bearbeiten-Dialog ändern können.",
+      "enabled": "Administratoren dürfen die EAN eines Mediums bearbeiten",
+      "saved": "Einstellung zur EAN-Bearbeitung gespeichert."
+    },
     "timezoneSettings": {
       "title": "Zeitzone",
       "hint": "Wird für Backup- und Export-Dateinamen verwendet, damit diese Ihrer Ortszeit entsprechen statt immer UTC anzuzeigen.",

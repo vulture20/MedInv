@@ -517,6 +517,12 @@
         "enabled": "自动清理孤立的封面文件",
         "saved": "封面清理设置已保存。"
       },
+      "eanEditing": {
+        "title": "EAN 编辑",
+        "hint": "控制管理员是否可以在编辑对话框中更改已收录媒体项的 EAN。",
+        "enabled": "允许管理员编辑媒体项的 EAN",
+        "saved": "EAN 编辑设置已保存。"
+      },
       "timezoneSettings": {
         "title": "时区",
         "hint": "用于备份和导出文件名，使其与您的本地时间一致，而不是始终显示 UTC。",

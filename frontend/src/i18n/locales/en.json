@@ -602,6 +602,12 @@
       "enabled": "Automatically clean up orphaned cover files",
       "saved": "Cover cleanup setting saved."
     },
+    "eanEditing": {
+      "title": "EAN editing",
+      "hint": "Controls whether admins can change an already-captured item's EAN from the edit dialog.",
+      "enabled": "Admins may edit a media item's EAN",
+      "saved": "EAN editing setting saved."
+    },
     "timezoneSettings": {
       "title": "Timezone",
       "hint": "Used for backup and export filenames, so they match your local clock instead of always showing UTC.",

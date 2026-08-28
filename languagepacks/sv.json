@@ -536,6 +536,12 @@
         "enabled": "Rensa automatiskt bort övergivna omslagsfiler",
         "saved": "Inställning för rensning av omslag sparad."
       },
+      "eanEditing": {
+        "title": "EAN-redigering",
+        "hint": "Avgör om administratörer kan ändra EAN för ett redan registrerat medieobjekt från redigeringsdialogen.",
+        "enabled": "Administratörer får redigera EAN för ett medieobjekt",
+        "saved": "Inställning för EAN-redigering sparad."
+      },
       "timezoneSettings": {
         "title": "Tidszon",
         "hint": "Används för filnamn på säkerhetskopior och exporter, så att de matchar din lokala klocka i stället för att alltid visa UTC.",

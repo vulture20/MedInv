@@ -517,6 +517,12 @@
         "enabled": "Nettoyer automatiquement les fichiers de couverture orphelins",
         "saved": "Paramètre de nettoyage des couvertures enregistré."
       },
+      "eanEditing": {
+        "title": "Modification de l'EAN",
+        "hint": "Détermine si les administrateurs peuvent modifier l'EAN d'un article déjà capturé depuis la boîte de dialogue de modification.",
+        "enabled": "Les administrateurs peuvent modifier l'EAN d'un article multimédia",
+        "saved": "Paramètre de modification de l'EAN enregistré."
+      },
       "timezoneSettings": {
         "title": "Fuseau horaire",
         "hint": "Utilisé pour les noms de fichiers de sauvegarde et d'export, afin qu'ils correspondent à votre heure locale plutôt que d'afficher systématiquement l'UTC.",

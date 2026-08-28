@@ -517,6 +517,12 @@
         "enabled": "Limpar automaticamente arquivos de capa órfãos",
         "saved": "Configuração de limpeza de capas salva."
       },
+      "eanEditing": {
+        "title": "Edição de EAN",
+        "hint": "Controla se os administradores podem alterar o EAN de um item já capturado através da caixa de diálogo de edição.",
+        "enabled": "Os administradores podem editar o EAN de um item de mídia",
+        "saved": "Configuração de edição de EAN salva."
+      },
       "timezoneSettings": {
         "title": "Fuso horário",
         "hint": "Usado para os nomes de arquivos de backup e exportação, para que correspondam ao seu horário local em vez de sempre mostrar UTC.",

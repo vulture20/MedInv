@@ -517,6 +517,12 @@
         "enabled": "Automatycznie czyść osierocone pliki okładek",
         "saved": "Ustawienie czyszczenia okładek zapisane."
       },
+      "eanEditing": {
+        "title": "Edycja EAN",
+        "hint": "Określa, czy administratorzy mogą zmieniać EAN już zarejestrowanego elementu multimedialnego w oknie edycji.",
+        "enabled": "Administratorzy mogą edytować EAN elementu multimedialnego",
+        "saved": "Ustawienie edycji EAN zapisane."
+      },
       "timezoneSettings": {
         "title": "Strefa czasowa",
         "hint": "Używana w nazwach plików kopii zapasowych i eksportu, aby odpowiadały Twojemu czasowi lokalnemu zamiast zawsze pokazywać UTC.",

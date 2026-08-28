@@ -517,6 +517,12 @@
         "enabled": "Pulisci automaticamente i file di copertina orfani",
         "saved": "Impostazione di pulizia copertine salvata."
       },
+      "eanEditing": {
+        "title": "Modifica EAN",
+        "hint": "Determina se gli amministratori possono modificare l'EAN di un elemento già acquisito dalla finestra di modifica.",
+        "enabled": "Gli amministratori possono modificare l'EAN di un elemento multimediale",
+        "saved": "Impostazione di modifica EAN salvata."
+      },
       "timezoneSettings": {
         "title": "Fuso orario",
         "hint": "Utilizzato per i nomi dei file di backup ed esportazione, così da corrispondere al tuo orario locale invece di mostrare sempre l'UTC.",

@@ -536,6 +536,12 @@
         "enabled": "Rydd automatisk opp foreldreløse omslagsfiler",
         "saved": "Innstilling for opprydding av omslag lagret."
       },
+      "eanEditing": {
+        "title": "EAN-redigering",
+        "hint": "Bestemmer om administratorer kan endre EAN-en til et allerede registrert medieelement fra redigeringsvinduet.",
+        "enabled": "Administratorer kan redigere EAN-en til et medieelement",
+        "saved": "Innstilling for EAN-redigering lagret."
+      },
       "timezoneSettings": {
         "title": "Tidssone",
         "hint": "Brukes for filnavn på sikkerhetskopier og eksporter, slik at de samsvarer med din lokale klokke i stedet for alltid å vise UTC.",

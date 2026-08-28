@@ -536,6 +536,12 @@
         "enabled": "Hreinsa munaðarlausar kápuskrár sjálfkrafa",
         "saved": "Stilling fyrir hreinsun kápa vistuð."
       },
+      "eanEditing": {
+        "title": "EAN-breyting",
+        "hint": "Stjórnar því hvort stjórnendur geti breytt EAN-númeri þegar skráðs miðils úr breytingarglugganum.",
+        "enabled": "Stjórnendur mega breyta EAN-númeri miðils",
+        "saved": "Stilling fyrir EAN-breytingu vistuð."
+      },
       "timezoneSettings": {
         "title": "Tímabelti",
         "hint": "Notað fyrir skráarnöfn öryggisafrita og útflutnings, svo þau samræmist staðartíma þínum í stað þess að sýna alltaf UTC.",

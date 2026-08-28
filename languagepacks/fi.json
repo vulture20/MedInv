@@ -536,6 +536,12 @@
         "enabled": "Siivoa isännättömät kansikuvatiedostot automaattisesti",
         "saved": "Kansikuvien siivousasetus tallennettu."
       },
+      "eanEditing": {
+        "title": "EAN-muokkaus",
+        "hint": "Määrittää, voivatko ylläpitäjät muuttaa jo tallennetun mediakohteen EAN-koodia muokkausikkunasta.",
+        "enabled": "Ylläpitäjät voivat muokata mediakohteen EAN-koodia",
+        "saved": "EAN-muokkauksen asetus tallennettu."
+      },
       "timezoneSettings": {
         "title": "Aikavyöhyke",
         "hint": "Käytetään varmuuskopioiden ja vientien tiedostonimissä, jotta ne vastaavat paikallista kelloasi eivätkä aina näytä UTC-aikaa.",

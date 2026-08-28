@@ -21,7 +21,10 @@ use Tests\TestCase;
  * server while building that dialog.
  *
  * GitHub issue #201 added admin-only EAN editing to this same endpoint —
- * see the "admin-only EAN editing" section below.
+ * see the "admin-only EAN editing" section below. GitHub issue #202 then
+ * made that editor itself admin-toggleable (`ean_editing.enabled`) — see
+ * EanEditingSettingTest for that setting's own admin-settings coverage,
+ * including MediaItemController::update() enforcing it server-side.
  */
 class MediaItemUpdateTest extends TestCase
 {

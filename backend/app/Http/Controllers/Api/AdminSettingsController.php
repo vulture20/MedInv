@@ -50,6 +50,15 @@ class AdminSettingsController extends Controller
             'covers' => [
                 'cleanup_enabled' => SystemSetting::get('covers.cleanup_enabled', true),
             ],
+            // GitHub issue #202: whether admins may edit an already-captured
+            // item's EAN at all (GitHub issue #201's own admin-only editor,
+            // MediaItemController::update()) — also mirrored onto GET /me as
+            // ean_editing_enabled so any already-loaded page can gate the
+            // editor's UI on it without an extra request, see
+            // AuthController::me()'s own docblock.
+            'ean_editing' => [
+                'enabled' => SystemSetting::get('ean_editing.enabled', true),
+            ],
             'loglevel' => SystemSetting::get('loglevel', env('MEDINV_LOGLEVEL', 'WARNING')),
             'locale' => [
                 'default_language' => SystemSetting::get('locale.default_language', 'en'),
@@ -208,6 +217,25 @@ class AdminSettingsController extends Controller
         $this->logSettingsChange($request, 'covers', $data);
 
         return $this->index()['covers'];
+    }
+
+    /**
+     * GitHub issue #202: lets an admin turn off GitHub issue #201's
+     * admin-only EAN editor entirely, e.g. a deployment that wants manual
+     * EAN correction kept out of reach even for admins. MediaItemController::
+     * update() re-reads this same setting on every request rather than
+     * trusting the frontend to have hidden the editor — a disabled admin
+     * still gets exactly the pre-#201 "ean is silently dropped" behavior,
+     * not an error.
+     */
+    public function updateEanEditing(Request $request)
+    {
+        $data = $request->validate(['enabled' => ['required', 'boolean']]);
+
+        SystemSetting::set('ean_editing.enabled', $data['enabled']);
+        $this->logSettingsChange($request, 'ean_editing', $data);
+
+        return $this->index()['ean_editing'];
     }
 
     public function updateLoglevel(Request $request)

@@ -517,6 +517,12 @@
         "enabled": "Limpiar automáticamente los archivos de portada huérfanos",
         "saved": "Configuración de limpieza de portadas guardada."
       },
+      "eanEditing": {
+        "title": "Edición de EAN",
+        "hint": "Controla si los administradores pueden cambiar el EAN de un elemento ya capturado desde el diálogo de edición.",
+        "enabled": "Los administradores pueden editar el EAN de un elemento multimedia",
+        "saved": "Configuración de edición de EAN guardada."
+      },
       "timezoneSettings": {
         "title": "Zona horaria",
         "hint": "Se usa para los nombres de archivo de copias de seguridad y exportaciones, de modo que coincidan con tu hora local en lugar de mostrar siempre UTC.",

@@ -517,6 +517,12 @@
         "enabled": "Verweesde coverbestanden automatisch opschonen",
         "saved": "Instelling voor cover-opschoning opgeslagen."
       },
+      "eanEditing": {
+        "title": "EAN bewerken",
+        "hint": "Bepaalt of beheerders de EAN van een reeds vastgelegd item via het bewerkingsvenster kunnen wijzigen.",
+        "enabled": "Beheerders mogen de EAN van een medium bewerken",
+        "saved": "Instelling voor EAN-bewerking opgeslagen."
+      },
       "timezoneSettings": {
         "title": "Tijdzone",
         "hint": "Wordt gebruikt voor bestandsnamen van back-ups en exports, zodat deze overeenkomen met uw lokale tijd in plaats van altijd UTC te tonen.",

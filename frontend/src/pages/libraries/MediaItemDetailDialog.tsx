@@ -39,7 +39,7 @@ interface Props {
  */
 export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpdated, onDeleted, onMoved }: Props) {
   const { t, i18n } = useTranslation()
-  const { user } = useAuth()
+  const { user, eanEditingEnabled } = useAuth()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const coverDialogRef = useRef<HTMLDialogElement>(null)
   const [editing, setEditing] = useState(false)
@@ -123,7 +123,13 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
   // the issue's own explicit "für normale Benutzer soll diese Möglichkeit
   // bewusst nicht bestehen". MediaItemController::update() enforces this
   // server-side regardless of what this constant ever renders.
-  const isAdmin = user?.level === 'admin'
+  // GitHub issue #202: an admin can additionally turn the whole editor off
+  // instance-wide (SystemSettingsPage.tsx's "EAN-Bearbeitung" card) —
+  // eanEditingEnabled mirrors that same setting, so the fieldset below
+  // disappears the moment it's disabled without needing this dialog to
+  // fetch it separately. Server-side enforcement lives in
+  // MediaItemController::update() too, not just here.
+  const isAdmin = user?.level === 'admin' && eanEditingEnabled
 
   /**
    * The window used to close (Esc, or a stray click on the backdrop) mid-

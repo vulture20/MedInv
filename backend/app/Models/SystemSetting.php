@@ -57,6 +57,12 @@ class SystemSetting extends Model
             'security.throttle_window_minutes' => 5,
             'security.throttle_lock_minutes' => 30,
             'covers.cleanup_enabled' => true,
+            // GitHub issue #202: admin-only EAN editing (GitHub issue #201)
+            // shipped always-on for admins — this lets an admin turn that
+            // override path off entirely, defaulting to true so an existing
+            // deployment upgrading into this setting keeps behaving exactly
+            // as it did before this issue, until an admin explicitly opts out.
+            'ean_editing.enabled' => true,
             'timezone' => static::defaultTimezone(),
             'loglevel' => env('MEDINV_LOGLEVEL', 'WARNING'),
             'locale.default_language' => 'en',

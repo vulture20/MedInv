@@ -41,6 +41,7 @@ class BackupExportTest extends TestCase
             'security.throttle_window_minutes',
             'security.throttle_lock_minutes',
             'covers.cleanup_enabled',
+            'ean_editing.enabled',
             'timezone',
             'loglevel',
             'locale.default_language',

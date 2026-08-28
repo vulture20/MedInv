@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Domain\Mail\MailStatusService;
 use App\Domain\Security\BruteForceProtection;
 use App\Http\Controllers\Controller;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -68,6 +69,7 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user,
             'mail_server_healthy' => $this->mailStatus->isHealthy(),
+            'ean_editing_enabled' => SystemSetting::get('ean_editing.enabled', true),
         ]);
     }
 
@@ -104,6 +106,13 @@ class AuthController extends Controller
         return response()->json([
             'user' => $request->user(),
             'mail_server_healthy' => $this->mailStatus->isHealthy(),
+            // GitHub issue #202: whether an admin may use GitHub issue #201's
+            // EAN editor at all — surfaced here, alongside mail_server_healthy
+            // above, so it's available app-wide (AuthContext.tsx) without a
+            // dedicated request every time a media item dialog opens.
+            // Meaningless for a non-admin, but included regardless of level
+            // for the same reason mail_server_healthy already is.
+            'ean_editing_enabled' => SystemSetting::get('ean_editing.enabled', true),
         ]);
     }
 }
