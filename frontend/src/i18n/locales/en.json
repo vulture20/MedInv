@@ -267,6 +267,7 @@
       "artist": "Artist",
       "director": "Director",
       "cast": "Cast",
+      "medium": "Medium",
       "year": "Publication year"
     },
     "moreCount": "+{{count}} more",

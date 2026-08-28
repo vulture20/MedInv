@@ -270,6 +270,7 @@
         "artist": "艺术家",
         "director": "导演",
         "cast": "演员表",
+        "medium": "介质",
         "year": "出版年份"
       },
       "moreCount": "另有 {{count}} 项",

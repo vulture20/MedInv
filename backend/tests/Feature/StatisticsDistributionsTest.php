@@ -128,6 +128,29 @@ class StatisticsDistributionsTest extends TestCase
         $this->assertSame(['Chris Evans' => 2, 'Robert Downey Jr.' => 1, 'Scarlett Johansson' => 1], $stats['distributions']['cast']);
     }
 
+    /** GitHub issue #204: `genre`/`medium` are now reported for DVD/Blu-ray too, split on comma the same way as `director`/`cast`/`language` (a combo pack's "DVD, Blu-ray"; a film tagged both "Action" and "Thriller"). */
+    public function test_dvd_bluray_library_reports_genre_and_medium_distributions_split_on_comma(): void
+    {
+        $user = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $user->id]);
+
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'A', 'ean' => '3000000000006',
+            'genre' => 'Action, Thriller', 'medium' => 'DVD, Blu-ray',
+        ]);
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'B', 'ean' => '3000000000007',
+            'genre' => 'Action', 'medium' => 'DVD',
+        ]);
+        // No genre/medium at all — must not appear in either distribution.
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'C', 'ean' => '3000000000008']);
+
+        $stats = $this->statsFor($library->id);
+
+        $this->assertSame(['Action' => 2, 'Thriller' => 1], $stats['distributions']['genre']);
+        $this->assertSame(['DVD' => 2, 'Blu-ray' => 1], $stats['distributions']['medium']);
+    }
+
     public function test_distributions_respect_library_visibility(): void
     {
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);

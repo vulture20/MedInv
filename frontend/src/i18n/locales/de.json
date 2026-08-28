@@ -267,6 +267,7 @@
       "artist": "Künstler",
       "director": "Regisseur",
       "cast": "Darsteller",
+      "medium": "Medium",
       "year": "Erscheinungsjahr"
     },
     "moreCount": "+{{count}} weitere",

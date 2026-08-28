@@ -270,6 +270,7 @@
         "artist": "Esittäjä",
         "director": "Ohjaaja",
         "cast": "Näyttelijät",
+        "medium": "Formaatti",
         "year": "Julkaisuvuosi"
       },
       "moreCount": "+{{count}} lisää",

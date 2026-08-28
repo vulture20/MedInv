@@ -270,6 +270,7 @@
         "artist": "Artista",
         "director": "Diretor",
         "cast": "Elenco",
+        "medium": "Suporte",
         "year": "Ano de publicação"
       },
       "moreCount": "+{{count}} mais",

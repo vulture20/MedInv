@@ -270,6 +270,7 @@
         "artist": "Artist",
         "director": "Regissør",
         "cast": "Skuespillere",
+        "medium": "Medium",
         "year": "Utgivelsesår"
       },
       "moreCount": "+{{count}} til",

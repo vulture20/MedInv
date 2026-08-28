@@ -270,6 +270,7 @@
         "artist": "Artiest",
         "director": "Regisseur",
         "cast": "Cast",
+        "medium": "Medium",
         "year": "Publicatiejaar"
       },
       "moreCount": "+{{count}} meer",

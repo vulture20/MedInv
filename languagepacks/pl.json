@@ -270,6 +270,7 @@
         "artist": "Artysta",
         "director": "Reżyser",
         "cast": "Obsada",
+        "medium": "Nośnik",
         "year": "Rok wydania"
       },
       "moreCount": "+{{count}} więcej",

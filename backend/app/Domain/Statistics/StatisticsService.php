@@ -290,6 +290,14 @@ class StatisticsService
                 // Englisch") — split so each language is counted on its own
                 // instead of the whole combination becoming one category.
                 'language' => $this->multiValueDistribution($library, 'languages'),
+                // `genre`/`medium` (GitHub issue #204) can each hold a
+                // comma-separated list too (a combo pack's "DVD, Blu-ray";
+                // a film tagged both "Action" and "Thriller") — same
+                // multiValueDistribution() split as director/cast/language
+                // above, and the same fix SearchService::filterOptionsFor()
+                // now applies to their search-filter option lists.
+                'genre' => $this->multiValueDistribution($library, 'genre'),
+                'medium' => $this->multiValueDistribution($library, 'medium'),
                 // MediaDvdBluray carries a dedicated `production_year` column
                 // alongside `release_date` — that's the more direct source
                 // for "which year" here, unlike book/CD, which only have a

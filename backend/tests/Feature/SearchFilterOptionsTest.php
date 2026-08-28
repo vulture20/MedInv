@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Library;
 use App\Models\MediaBook;
+use App\Models\MediaCd;
 use App\Models\MediaDvdBluray;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,6 +41,58 @@ class SearchFilterOptionsTest extends TestCase
 
         $response->assertOk();
         $this->assertEqualsCanonicalizing(['Romance', 'Sci-Fi'], $response->json('book.genre'));
+    }
+
+    /** GitHub issue #204: a book's `genre` column can hold a comma-separated list too — same split as `languages`/`medium`. */
+    public function test_splits_a_books_comma_separated_genre_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Books', 'media_type' => 'book', 'owner_id' => $owner->id]);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001', 'genre' => 'Sci-Fi, Adventure']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Adventure', 'Sci-Fi'], $response->json('book.genre'));
+    }
+
+    /** GitHub issue #204: `medium` can hold a comma-separated list too (e.g. a combo pack's "DVD, Blu-ray"). */
+    public function test_splits_a_dvd_blurays_comma_separated_medium_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $owner->id]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'Metropolis', 'ean' => '9780000000004', 'medium' => 'DVD, Blu-ray']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Blu-ray', 'DVD'], $response->json('dvd_bluray.medium'));
+    }
+
+    /** GitHub issue #204: same split for CD's own `medium` column. */
+    public function test_splits_a_cds_comma_separated_medium_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'CDs', 'media_type' => 'cd', 'owner_id' => $owner->id]);
+        MediaCd::query()->create(['library_id' => $library->id, 'title' => 'OK Computer', 'ean' => '9780000000002', 'medium' => 'CD, Vinyl']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['CD', 'Vinyl'], $response->json('cd.medium'));
+    }
+
+    /** GitHub issue #204: same split for DVD/Blu-ray's own `genre` column. */
+    public function test_splits_a_dvd_blurays_comma_separated_genre_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $owner->id]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'Metropolis', 'ean' => '9780000000004', 'genre' => 'Sci-Fi, Drama']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Drama', 'Sci-Fi'], $response->json('dvd_bluray.genre'));
     }
 
     public function test_splits_a_dvd_blurays_comma_separated_languages_column(): void

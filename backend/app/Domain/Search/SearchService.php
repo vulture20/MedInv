@@ -185,21 +185,28 @@ class SearchService
 
         return [
             'book' => [
-                'genre' => $this->distinctValues(MediaBook::class, 'genre', $visibleLibraryIds),
+                // GitHub issue #204: `genre` can hold a comma-separated
+                // list too (e.g. "Fiction, Fantasy") — same split as
+                // `languages`/`medium` below, so the merged genre <select>
+                // (see dvd_bluray's own entry) offers each genre on its
+                // own instead of one option per distinct combination.
+                'genre' => $this->distinctMultiValues(MediaBook::class, 'genre', $visibleLibraryIds),
                 'format' => $this->distinctValues(MediaBook::class, 'format', $visibleLibraryIds),
                 'language' => $this->distinctValues(MediaBook::class, 'language', $visibleLibraryIds),
             ],
             'cd' => [
-                'medium' => $this->distinctValues(MediaCd::class, 'medium', $visibleLibraryIds),
+                'medium' => $this->distinctMultiValues(MediaCd::class, 'medium', $visibleLibraryIds),
             ],
             'dvd_bluray' => [
-                'medium' => $this->distinctValues(MediaDvdBluray::class, 'medium', $visibleLibraryIds),
+                // `medium` can also hold a comma-separated list (e.g. a
+                // combo pack's "DVD, Blu-ray") — same split treatment.
+                'medium' => $this->distinctMultiValues(MediaDvdBluray::class, 'medium', $visibleLibraryIds),
                 // `languages` is a comma-separated multi-value column
                 // (e.g. "Deutsch, Englisch") — same split StatisticsService::
                 // multiValueDistribution() already does, just without counts.
                 'languages' => $this->distinctMultiValues(MediaDvdBluray::class, 'languages', $visibleLibraryIds),
                 // GitHub issue #140: shares SearchFilters::$genre with book's own entry above — SearchFilterPanel.tsx merges both option lists into one <select>, same as it already does for medium (cd+dvd_bluray).
-                'genre' => $this->distinctValues(MediaDvdBluray::class, 'genre', $visibleLibraryIds),
+                'genre' => $this->distinctMultiValues(MediaDvdBluray::class, 'genre', $visibleLibraryIds),
             ],
         ];
     }
@@ -395,7 +402,16 @@ class SearchService
             return null;
         }
         if ($filters->genre !== [] && $modelClass !== MediaCd::class) {
-            $query->whereIn('genre', $filters->genre);
+            // `genre` is a comma-separated multi-value column (see
+            // distinctMultiValues() above) — same substring-membership
+            // OR loop `languages` below already uses, not a plain
+            // whereIn(), which would only ever match a row whose genre is
+            // *exactly* one requested value with nothing else alongside it.
+            $query->where(function (Builder $q) use ($filters) {
+                foreach ($filters->genre as $genre) {
+                    $q->orWhere('genre', 'like', '%'.$genre.'%');
+                }
+            });
         }
 
         if ($filters->languages !== [] && $modelClass !== MediaDvdBluray::class) {
@@ -418,7 +434,14 @@ class SearchService
             return null;
         }
         if ($mediumActive && $modelClass !== MediaBook::class) {
-            $query->whereIn('medium', $filters->medium);
+            // `medium` is a comma-separated multi-value column too (e.g. a
+            // combo pack's "DVD, Blu-ray") — same OR-of-LIKE treatment as
+            // `genre`/`languages` above, for the same reason.
+            $query->where(function (Builder $q) use ($filters) {
+                foreach ($filters->medium as $medium) {
+                    $q->orWhere('medium', 'like', '%'.$medium.'%');
+                }
+            });
         }
 
         $discCountActive = $filters->discCountMin !== null || $filters->discCountMax !== null;

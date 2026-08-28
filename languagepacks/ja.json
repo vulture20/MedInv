@@ -270,6 +270,7 @@
         "artist": "アーティスト",
         "director": "監督",
         "cast": "出演者",
+        "medium": "メディア",
         "year": "発行年"
       },
       "moreCount": "他 {{count}} 件",

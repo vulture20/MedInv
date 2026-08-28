@@ -192,6 +192,32 @@ class SearchFiltersTest extends TestCase
         $this->assertEqualsCanonicalizing(['OK Computer', 'Metropolis'], $this->titles($response));
     }
 
+    /** GitHub issue #204: `medium` can hold a comma-separated list too (e.g. a combo pack's "DVD, Blu-ray") — a single requested value must still match a row it's a part of, not just an exact whole-column match. */
+    public function test_medium_filter_matches_a_substring_of_a_comma_separated_medium_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+        MediaDvdBluray::query()->where('title', 'Metropolis')->update(['medium' => 'DVD, Blu-ray']);
+
+        $response = $this->getJson('/api/search?medium[]=DVD');
+
+        $response->assertOk();
+        $this->assertSame(['Metropolis'], $this->titles($response));
+    }
+
+    /** GitHub issue #204: `genre` can hold a comma-separated list too (e.g. a film tagged both "Action" and "Thriller"). */
+    public function test_genre_filter_matches_a_substring_of_a_comma_separated_genre_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+        MediaDvdBluray::query()->where('title', 'Metropolis')->update(['genre' => 'Action, Thriller']);
+
+        $response = $this->getJson('/api/search?genre[]=Thriller');
+
+        $response->assertOk();
+        $this->assertSame(['Metropolis'], $this->titles($response));
+    }
+
     public function test_languages_filter_matches_a_substring_of_the_comma_separated_column(): void
     {
         $owner = $this->actingAsUser();

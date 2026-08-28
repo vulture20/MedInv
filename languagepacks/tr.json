@@ -270,6 +270,7 @@
         "artist": "Sanatçı",
         "director": "Yönetmen",
         "cast": "Oyuncular",
+        "medium": "Ortam",
         "year": "Yayın yılı"
       },
       "moreCount": "+{{count}} tane daha",

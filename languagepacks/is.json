@@ -270,6 +270,7 @@
         "artist": "Flytjandi",
         "director": "Leikstjóri",
         "cast": "Leikarar",
+        "medium": "Miðill",
         "year": "Útgáfuár"
       },
       "moreCount": "+{{count}} til viðbótar",
