@@ -46,10 +46,20 @@ const MAX_BARS = 8
  * horizontal bar list — a sequential "compare magnitude" chart, per the
  * dataviz skill's form guidance for this job. Every value is also given as
  * a direct text label, so nothing is bar-length-only.
+ *
+ * Explicitly sorted by count here (GitHub issue #206) rather than trusting
+ * `data`'s own key order, even though StatisticsService already returns
+ * every distribution — including `year` as of #206 — pre-sorted most-common-
+ * first: a plain-integer-string key (e.g. "2020") is reordered by the JS
+ * engine itself to ascending numeric order on every object/JSON property
+ * access, regardless of insertion order (ECMA-262's integer-index property
+ * ordering rule) — genre/language/etc. keys aren't integer-like and so
+ * happened to preserve the backend's order already, but `year` never would
+ * have without this explicit sort, silently undoing the backend fix.
  */
 function DistributionList({ title, data }: { title: string; data: Record<string, number> }) {
   const { t } = useTranslation()
-  const entries = Object.entries(data)
+  const entries = Object.entries(data).sort(([, a], [, b]) => b - a)
 
   if (entries.length === 0) return null
 

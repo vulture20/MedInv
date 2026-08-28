@@ -377,7 +377,16 @@ class StatisticsService
         return trim($withoutColonSuffix);
     }
 
-    /** @return array<int, int> Year => count, oldest first. */
+    /**
+     * GitHub issue #206: sorted by count like every other distribution
+     * here (valueDistribution()/multiValueDistribution() both already end
+     * in ->sortDesc()) rather than chronologically — a user explicitly
+     * asked for "Erscheinungsjahr" to follow the same "most common first"
+     * convention as genre/language/etc. instead of being the one dimension
+     * still ordered by its own key.
+     *
+     * @return array<int, int> Year => count, most common first.
+     */
     private function dateYearDistribution(Library $library, string $column): array
     {
         return $library->mediaItems()
@@ -385,11 +394,11 @@ class StatisticsService
             ->pluck($column)
             ->map(fn (Carbon $date) => $date->year)
             ->countBy()
-            ->sortKeys()
+            ->sortDesc()
             ->all();
     }
 
-    /** @return array<int, int> Year => count, oldest first. */
+    /** @return array<int, int> Year => count, most common first — see dateYearDistribution()'s docblock (GitHub issue #206). */
     private function integerYearDistribution(Library $library, string $column): array
     {
         return $library->mediaItems()
@@ -397,7 +406,7 @@ class StatisticsService
             ->pluck($column)
             ->map(fn ($year) => (int) $year)
             ->countBy()
-            ->sortKeys()
+            ->sortDesc()
             ->all();
     }
 }

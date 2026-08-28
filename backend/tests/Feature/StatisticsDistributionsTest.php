@@ -63,6 +63,24 @@ class StatisticsDistributionsTest extends TestCase
         $this->assertSame(['2020' => 2, '2021' => 1], $stats['distributions']['year']);
     }
 
+    /** GitHub issue #206: `year` is now sorted by count like every other distribution, not chronologically — a middle year with the most items must come first. */
+    public function test_book_library_sorts_the_year_distribution_by_count_not_chronologically(): void
+    {
+        $user = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $user->id]);
+
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'A', 'ean' => '1000000000005', 'release_date' => '2018-01-01']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'B', 'ean' => '1000000000006', 'release_date' => '2019-01-01']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'C', 'ean' => '1000000000007', 'release_date' => '2019-06-01']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'D', 'ean' => '1000000000008', 'release_date' => '2019-11-01']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'E', 'ean' => '1000000000009', 'release_date' => '2020-01-01']);
+        MediaBook::query()->create(['library_id' => $library->id, 'title' => 'F', 'ean' => '1000000000010', 'release_date' => '2020-06-01']);
+
+        $stats = $this->statsFor($library->id);
+
+        $this->assertSame(['2019' => 3, '2020' => 2, '2018' => 1], $stats['distributions']['year']);
+    }
+
     public function test_cd_library_reports_artist_and_year_distributions_but_no_genre(): void
     {
         $user = $this->actingAsAdmin();
@@ -103,6 +121,24 @@ class StatisticsDistributionsTest extends TestCase
         $this->assertSame(['Englisch' => 2, 'Deutsch' => 1], $stats['distributions']['language']);
         $this->assertSame(['X' => 1, 'Y' => 1], $stats['distributions']['director']);
         $this->assertSame(['2020' => 2], $stats['distributions']['year']);
+    }
+
+    /** GitHub issue #206: same count-not-chronological sort as book's own `year` distribution, here via `production_year` (integerYearDistribution()) instead of `release_date` (dateYearDistribution()). */
+    public function test_dvd_bluray_library_sorts_the_year_distribution_by_count_not_chronologically(): void
+    {
+        $user = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $user->id]);
+
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'A', 'ean' => '3000000000013', 'production_year' => 2015]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'B', 'ean' => '3000000000014', 'production_year' => 2016]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'C', 'ean' => '3000000000015', 'production_year' => 2016]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'D', 'ean' => '3000000000016', 'production_year' => 2016]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'E', 'ean' => '3000000000017', 'production_year' => 2017]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'F', 'ean' => '3000000000018', 'production_year' => 2017]);
+
+        $stats = $this->statsFor($library->id);
+
+        $this->assertSame(['2016' => 3, '2017' => 2, '2015' => 1], $stats['distributions']['year']);
     }
 
     /** GitHub issue #205: individual language values can carry a trailing "Tonart" (audio format) annotation — parenthetical or colon-suffixed — which must be stripped before counting, so two different audio tracks for the same language are counted as one language, not two. */
