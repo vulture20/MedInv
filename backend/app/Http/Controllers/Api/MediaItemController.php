@@ -29,6 +29,60 @@ class MediaItemController extends Controller
         private readonly CurrencyConversionService $currencyConversion,
     ) {}
 
+    /**
+     * GitHub issue #203: this controller's write methods used to call
+     * `abort_unless($this->access->canWriteItems(...), 403)` directly —
+     * `HttpException` (what `abort()` throws) sits on Laravel's own
+     * `$internalDontReport` list, so a denied write left zero trace
+     * anywhere, unlike almost every other controller in this app (see
+     * Controller::logApiError()'s own docblock and its callers). Logged at
+     * `debug` rather than `warning`/`error`: this is usually a benign race
+     * (a share/write-access was revoked, or the account was demoted,
+     * between opening an edit dialog and submitting it), not evidence of
+     * anything malicious by itself.
+     */
+    private function abortUnlessCanWrite(Request $request, Library $library, array $context = []): void
+    {
+        if ($this->access->canWriteItems($request->user(), $library)) {
+            return;
+        }
+
+        $this->logApiError(
+            $request,
+            'write_access_denied',
+            'Write access denied for a media item request.',
+            level: 'debug',
+            context: ['library_id' => $library->id, ...$context],
+        );
+
+        abort(403);
+    }
+
+    /**
+     * GitHub issue #203: same reasoning as abortUnlessCanWrite() above —
+     * `findOrFail()`'s `ModelNotFoundException` is also on Laravel's
+     * `$internalDontReport` list, so a stale/concurrently-deleted item id
+     * left zero log trace. `debug` level for the same "usually a benign
+     * race" reason.
+     */
+    private function findMediaItemOrAbort(Request $request, Library $library, int $itemId)
+    {
+        $record = $library->mediaItems()->find($itemId);
+
+        if (! $record) {
+            $this->logApiError(
+                $request,
+                'media_item_not_found',
+                "Media item {$itemId} not found in library {$library->id}.",
+                level: 'debug',
+                context: ['library_id' => $library->id, 'item_id' => $itemId],
+            );
+            abort(404);
+        }
+
+        return $record;
+    }
+
     public function index(Request $request, Library $library)
     {
         abort_unless($this->access->canRead($request->user(), $library), 403);
@@ -116,9 +170,9 @@ class MediaItemController extends Controller
      */
     public function uploadCover(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library, ['item_id' => $item]);
 
-        $record = $library->mediaItems()->findOrFail($item);
+        $record = $this->findMediaItemOrAbort($request, $library, $item);
         $data = $request->validate([
             // 5120 KB matches CoverDownloadService::MAX_BYTES (5 MB) — kept in sync
             // manually since Laravel's `max:` rule wants kilobytes, not bytes.
@@ -139,9 +193,9 @@ class MediaItemController extends Controller
     /** Removes the item's cover — clears cover_path and deletes both the original and thumbnail files (media item detail dialog's "remove cover" action). */
     public function deleteCover(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library, ['item_id' => $item]);
 
-        $record = $library->mediaItems()->findOrFail($item);
+        $record = $this->findMediaItemOrAbort($request, $library, $item);
         $this->coverDownloadService->delete($record->cover_path);
         $record->update(['cover_path' => null]);
 
@@ -154,7 +208,7 @@ class MediaItemController extends Controller
      */
     public function store(Request $request, Library $library)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library);
 
         $data = $request->validate([
             ...$this->rulesFor($library->media_type),
@@ -204,6 +258,8 @@ class MediaItemController extends Controller
         try {
             $item = $this->mediaItemService->create($library, $data);
         } catch (DuplicateEanException $e) {
+            $this->logApiError($request, 'duplicate_ean', $e->getMessage(), context: ['library_id' => $library->id, 'ean' => $e->ean]);
+
             return response()->json(['message' => $e->getMessage(), 'ean' => $e->ean], 409);
         }
 
@@ -225,9 +281,9 @@ class MediaItemController extends Controller
 
     public function update(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library, ['item_id' => $item]);
 
-        $record = $library->mediaItems()->findOrFail($item);
+        $record = $this->findMediaItemOrAbort($request, $library, $item);
         $rules = $this->rulesFor($library->media_type);
         // GitHub issue #201: editing the EAN is admin-only, deliberately
         // narrower than canWriteItems() above (which also lets a plain
@@ -280,6 +336,8 @@ class MediaItemController extends Controller
             try {
                 $this->mediaItemService->assertEanAvailable($library, $newEan, $record->id);
             } catch (DuplicateEanException $e) {
+                $this->logApiError($request, 'duplicate_ean', $e->getMessage(), context: ['library_id' => $library->id, 'item_id' => $record->id, 'ean' => $e->ean]);
+
                 return response()->json(['message' => $e->getMessage(), 'ean' => $e->ean], 409);
             }
 
@@ -302,9 +360,9 @@ class MediaItemController extends Controller
 
     public function destroy(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library, ['item_id' => $item]);
 
-        $record = $library->mediaItems()->findOrFail($item);
+        $record = $this->findMediaItemOrAbort($request, $library, $item);
         $coverPath = $record->cover_path;
         $record->delete();
         // Otherwise an item's cover+thumbnail files sat on disk forever, orphaned —
@@ -333,7 +391,7 @@ class MediaItemController extends Controller
      */
     public function bulkDestroy(Request $request, Library $library)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library);
 
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
@@ -381,7 +439,7 @@ class MediaItemController extends Controller
      */
     public function bulkUpdate(Request $request, Library $library)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library);
 
         $rules = $this->rulesFor($library->media_type);
         unset($rules['ean'], $rules['tracks'], $rules['runtime_seconds'], $rules['runtime_computed']);
@@ -421,27 +479,29 @@ class MediaItemController extends Controller
      */
     public function move(Request $request, Library $library, int $item)
     {
-        abort_unless($this->access->canWriteItems($request->user(), $library), 403);
+        $this->abortUnlessCanWrite($request, $library, ['item_id' => $item]);
 
-        $record = $library->mediaItems()->findOrFail($item);
+        $record = $this->findMediaItemOrAbort($request, $library, $item);
         $data = $request->validate([
             'target_library_id' => ['required', 'integer', 'exists:'.(new Library)->getTable().',id'],
         ]);
 
         $target = Library::query()->findOrFail($data['target_library_id']);
-        abort_unless($this->access->canWriteItems($request->user(), $target), 403);
+        $this->abortUnlessCanWrite($request, $target, ['item_id' => $item, 'role' => 'target_library']);
 
         if ($target->id === $library->id) {
-            return response()->json(['error_code' => 'same_library', 'message' => 'Item is already in this library.'], 422);
+            return $this->errorResponse($request, 'same_library', 'Item is already in this library.');
         }
 
         if ($target->media_type !== $library->media_type) {
-            return response()->json(['error_code' => 'media_type_mismatch', 'message' => 'Target library has a different media type.'], 422);
+            return $this->errorResponse($request, 'media_type_mismatch', 'Target library has a different media type.');
         }
 
         try {
             $this->mediaItemService->move($record, $target);
         } catch (DuplicateEanException $e) {
+            $this->logApiError($request, 'duplicate_ean', $e->getMessage(), context: ['library_id' => $target->id, 'item_id' => $record->id, 'ean' => $e->ean]);
+
             return response()->json(['message' => $e->getMessage(), 'ean' => $e->ean], 409);
         }
 
