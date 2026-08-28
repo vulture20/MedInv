@@ -57,7 +57,7 @@ class AdminSettingsController extends Controller
             // editor's UI on it without an extra request, see
             // AuthController::me()'s own docblock.
             'ean_editing' => [
-                'enabled' => SystemSetting::get('ean_editing.enabled', true),
+                'enabled' => SystemSetting::get('ean_editing.enabled', false),
             ],
             'loglevel' => SystemSetting::get('loglevel', env('MEDINV_LOGLEVEL', 'WARNING')),
             'locale' => [

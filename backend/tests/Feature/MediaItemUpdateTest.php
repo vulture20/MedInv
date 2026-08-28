@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Library;
 use App\Models\MediaBook;
 use App\Models\MediaCd;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -22,9 +23,12 @@ use Tests\TestCase;
  *
  * GitHub issue #201 added admin-only EAN editing to this same endpoint —
  * see the "admin-only EAN editing" section below. GitHub issue #202 then
- * made that editor itself admin-toggleable (`ean_editing.enabled`) — see
- * EanEditingSettingTest for that setting's own admin-settings coverage,
- * including MediaItemController::update() enforcing it server-side.
+ * made that editor itself admin-toggleable (`ean_editing.enabled`,
+ * defaulting to *disabled*) — see EanEditingSettingTest for that setting's
+ * own admin-settings coverage, including MediaItemController::update()
+ * enforcing it server-side. Every test below that exercises the editor
+ * itself explicitly enables the setting first, since RefreshDatabase gives
+ * each test the real (disabled) default otherwise.
  */
 class MediaItemUpdateTest extends TestCase
 {
@@ -95,6 +99,7 @@ class MediaItemUpdateTest extends TestCase
 
     public function test_an_admin_can_change_the_ean_to_a_new_value(): void
     {
+        SystemSetting::set('ean_editing.enabled', true);
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
         $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
@@ -109,6 +114,7 @@ class MediaItemUpdateTest extends TestCase
     /** Omitting 'ean' entirely is "keep the current one" — the dialog's default option — even for an admin. */
     public function test_an_admin_omitting_ean_leaves_it_unchanged(): void
     {
+        SystemSetting::set('ean_editing.enabled', true);
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
         $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
@@ -123,6 +129,7 @@ class MediaItemUpdateTest extends TestCase
     /** An admin re-sending the item's own, unchanged EAN must not be treated as a self-collision. */
     public function test_an_admin_resending_the_items_own_current_ean_is_not_a_duplicate(): void
     {
+        SystemSetting::set('ean_editing.enabled', true);
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
         $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);
@@ -142,6 +149,7 @@ class MediaItemUpdateTest extends TestCase
      */
     public function test_an_admin_changing_the_ean_to_one_already_used_in_the_library_is_rejected(): void
     {
+        SystemSetting::set('ean_editing.enabled', true);
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
         MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Existing', 'ean' => '9780000000002']);
@@ -162,6 +170,7 @@ class MediaItemUpdateTest extends TestCase
     /** The exact same EAN is allowed across two different libraries (briefing 5.1) — a duplicate elsewhere never blocks this one. */
     public function test_an_admin_changing_the_ean_to_one_used_only_in_a_different_library_is_allowed(): void
     {
+        SystemSetting::set('ean_editing.enabled', true);
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $libraryA = Library::query()->create(['name' => 'Novels A', 'media_type' => 'book', 'owner_id' => $owner->id]);
         $libraryB = Library::query()->create(['name' => 'Novels B', 'media_type' => 'book', 'owner_id' => $owner->id]);
@@ -183,6 +192,7 @@ class MediaItemUpdateTest extends TestCase
      */
     public function test_an_admin_can_regenerate_a_noean_placeholder_by_sending_an_empty_ean(): void
     {
+        SystemSetting::set('ean_editing.enabled', true);
         $owner = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $library = Library::query()->create(['name' => 'Novels', 'media_type' => 'book', 'owner_id' => $owner->id]);
         $item = MediaBook::query()->create(['library_id' => $library->id, 'title' => 'Dune', 'ean' => '9780000000001']);

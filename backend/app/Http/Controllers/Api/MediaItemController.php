@@ -242,7 +242,7 @@ class MediaItemController extends Controller
         // — checked server-side on every request rather than trusting that
         // the frontend has hidden the editor, since a stale page or a direct
         // API call could still send the field otherwise.
-        $isAdmin = $request->user()->isAdmin() && SystemSetting::get('ean_editing.enabled', true);
+        $isAdmin = $request->user()->isAdmin() && SystemSetting::get('ean_editing.enabled', false);
         if (! $isAdmin) {
             unset($rules['ean']);
         }

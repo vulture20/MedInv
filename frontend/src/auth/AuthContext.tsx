@@ -105,10 +105,11 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [mailServerHealthy, setMailServerHealthy] = useState(true)
-  // Default true matches SystemSetting::defaults()'s own 'ean_editing.enabled'
-  // default — the editor is available for admins unless one explicitly
-  // disabled it, same reasoning as mailServerHealthy defaulting to true above.
-  const [eanEditingEnabled, setEanEditingEnabled] = useState(true)
+  // Default false matches SystemSetting::defaults()'s own 'ean_editing.enabled'
+  // default — the editor stays hidden until /me resolves (or an admin
+  // explicitly enables it), rather than briefly flashing visible the way a
+  // true-by-default value would for the (deliberately) common disabled case.
+  const [eanEditingEnabled, setEanEditingEnabled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null)
 

@@ -69,7 +69,7 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user,
             'mail_server_healthy' => $this->mailStatus->isHealthy(),
-            'ean_editing_enabled' => SystemSetting::get('ean_editing.enabled', true),
+            'ean_editing_enabled' => SystemSetting::get('ean_editing.enabled', false),
         ]);
     }
 
@@ -112,7 +112,7 @@ class AuthController extends Controller
             // dedicated request every time a media item dialog opens.
             // Meaningless for a non-admin, but included regardless of level
             // for the same reason mail_server_healthy already is.
-            'ean_editing_enabled' => SystemSetting::get('ean_editing.enabled', true),
+            'ean_editing_enabled' => SystemSetting::get('ean_editing.enabled', false),
         ]);
     }
 }

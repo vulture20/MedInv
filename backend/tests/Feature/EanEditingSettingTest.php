@@ -12,11 +12,15 @@ use Tests\TestCase;
 /**
  * GitHub issue #202: whether admins may use GitHub issue #201's admin-only
  * EAN editor at all is itself admin-toggleable via `ean_editing.enabled`
- * (AdminSettingsController::updateEanEditing()), default enabled — see
- * CoverCleanupSettingTest for the near-identical precedent this mirrors.
- * MediaItemUpdateTest covers MediaItemController::update() enforcing this
- * setting server-side (a disabled admin gets exactly the pre-#201 "ean is
- * silently dropped" behavior).
+ * (AdminSettingsController::updateEanEditing()) — see CoverCleanupSettingTest
+ * for the near-identical precedent this mirrors. Unlike that precedent
+ * (and unlike every other toggle in AdminSettingsController), this one
+ * defaults to *disabled*, not enabled — an explicit user correction after
+ * #202 first shipped defaulting it to enabled: manual EAN correction should
+ * be opted into per instance, not opted out of. MediaItemUpdateTest covers
+ * MediaItemController::update() enforcing this setting server-side (a
+ * disabled admin gets exactly the pre-#201 "ean is silently dropped"
+ * behavior).
  */
 class EanEditingSettingTest extends TestCase
 {
@@ -30,36 +34,25 @@ class EanEditingSettingTest extends TestCase
         return $admin;
     }
 
-    public function test_defaults_to_enabled(): void
+    public function test_defaults_to_disabled(): void
     {
-        $this->assertTrue(SystemSetting::get('ean_editing.enabled', true));
-        $this->assertTrue(SystemSetting::defaults()['ean_editing.enabled']);
+        $this->assertFalse(SystemSetting::get('ean_editing.enabled', false));
+        $this->assertFalse(SystemSetting::defaults()['ean_editing.enabled']);
     }
 
     public function test_the_admin_settings_index_includes_the_current_value(): void
     {
         $this->actingAsAdmin();
-        SystemSetting::set('ean_editing.enabled', false);
+        SystemSetting::set('ean_editing.enabled', true);
 
         $response = $this->getJson('/api/admin/settings');
 
-        $response->assertOk()->assertJsonPath('ean_editing.enabled', false);
+        $response->assertOk()->assertJsonPath('ean_editing.enabled', true);
     }
 
-    public function test_an_admin_can_disable_it(): void
+    public function test_an_admin_can_enable_it(): void
     {
         $this->actingAsAdmin();
-
-        $response = $this->putJson('/api/admin/settings/ean-editing', ['enabled' => false]);
-
-        $response->assertOk()->assertJson(['enabled' => false]);
-        $this->assertFalse(SystemSetting::get('ean_editing.enabled'));
-    }
-
-    public function test_an_admin_can_re_enable_it(): void
-    {
-        $this->actingAsAdmin();
-        SystemSetting::set('ean_editing.enabled', false);
 
         $response = $this->putJson('/api/admin/settings/ean-editing', ['enabled' => true]);
 
@@ -67,15 +60,26 @@ class EanEditingSettingTest extends TestCase
         $this->assertTrue(SystemSetting::get('ean_editing.enabled'));
     }
 
+    public function test_an_admin_can_disable_it_again(): void
+    {
+        $this->actingAsAdmin();
+        SystemSetting::set('ean_editing.enabled', true);
+
+        $response = $this->putJson('/api/admin/settings/ean-editing', ['enabled' => false]);
+
+        $response->assertOk()->assertJson(['enabled' => false]);
+        $this->assertFalse(SystemSetting::get('ean_editing.enabled'));
+    }
+
     public function test_a_non_admin_cannot_change_it(): void
     {
         $user = User::factory()->create(['level' => 'user', 'is_active' => true]);
         $this->actingAs($user);
 
-        $response = $this->putJson('/api/admin/settings/ean-editing', ['enabled' => false]);
+        $response = $this->putJson('/api/admin/settings/ean-editing', ['enabled' => true]);
 
         $response->assertStatus(403);
-        $this->assertTrue(SystemSetting::get('ean_editing.enabled', true));
+        $this->assertFalse(SystemSetting::get('ean_editing.enabled', false));
     }
 
     public function test_a_non_boolean_value_is_rejected(): void
@@ -91,16 +95,16 @@ class EanEditingSettingTest extends TestCase
     public function test_me_reports_the_current_value(): void
     {
         $this->actingAsAdmin();
-        SystemSetting::set('ean_editing.enabled', false);
+        SystemSetting::set('ean_editing.enabled', true);
 
         $response = $this->getJson('/api/me');
 
-        $response->assertOk()->assertJsonPath('ean_editing_enabled', false);
+        $response->assertOk()->assertJsonPath('ean_editing_enabled', true);
     }
 
     public function test_login_reports_the_current_value(): void
     {
-        SystemSetting::set('ean_editing.enabled', false);
+        SystemSetting::set('ean_editing.enabled', true);
         $admin = User::factory()->create(['level' => 'admin', 'is_active' => true, 'password' => 'correct-password']);
 
         $response = $this->postJson(
@@ -109,7 +113,7 @@ class EanEditingSettingTest extends TestCase
             ['Origin' => 'http://localhost:5173']
         );
 
-        $response->assertOk()->assertJsonPath('ean_editing_enabled', false);
+        $response->assertOk()->assertJsonPath('ean_editing_enabled', true);
     }
 
     /** Disabling the setting server-side is enforced even if an admin's own request still sends an 'ean' field. */

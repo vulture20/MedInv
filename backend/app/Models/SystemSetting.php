@@ -59,10 +59,13 @@ class SystemSetting extends Model
             'covers.cleanup_enabled' => true,
             // GitHub issue #202: admin-only EAN editing (GitHub issue #201)
             // shipped always-on for admins — this lets an admin turn that
-            // override path off entirely, defaulting to true so an existing
-            // deployment upgrading into this setting keeps behaving exactly
-            // as it did before this issue, until an admin explicitly opts out.
-            'ean_editing.enabled' => true,
+            // override path off entirely. Defaults to *disabled*, a
+            // deliberate exception to this method's usual "preserve
+            // pre-existing behavior" default (see e.g. covers.cleanup_enabled
+            // above): the user explicitly asked for manual EAN correction to
+            // start out unavailable, opted into per instance rather than
+            // opted out of.
+            'ean_editing.enabled' => false,
             'timezone' => static::defaultTimezone(),
             'loglevel' => env('MEDINV_LOGLEVEL', 'WARNING'),
             'locale.default_language' => 'en',
