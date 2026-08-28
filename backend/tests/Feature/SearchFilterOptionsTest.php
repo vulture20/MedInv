@@ -107,6 +107,46 @@ class SearchFilterOptionsTest extends TestCase
         $this->assertEqualsCanonicalizing(['English', 'German'], $response->json('dvd_bluray.languages'));
     }
 
+    /** GitHub issue #205: a parenthetical "Tonart" (audio format) suffix must be stripped from each split language. */
+    public function test_strips_a_parenthetical_tonart_annotation_from_the_languages_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $owner->id]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'Metropolis', 'ean' => '9780000000004', 'languages' => 'Deutsch (DD 5.1), Englisch (DTS-HD MA)']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Deutsch', 'Englisch'], $response->json('dvd_bluray.languages'));
+    }
+
+    /** GitHub issue #205: same annotation, but colon-suffixed rather than parenthetical. */
+    public function test_strips_a_colon_suffixed_tonart_annotation_from_the_languages_column(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $owner->id]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'Metropolis', 'ean' => '9780000000004', 'languages' => 'Deutsch: DD 5.1, Englisch: DTS-HD MA']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Deutsch', 'Englisch'], $response->json('dvd_bluray.languages'));
+    }
+
+    /** GitHub issue #205: two different Tonart annotations for the same language (two different audio tracks) must collapse into one facet entry, not two. */
+    public function test_collapses_two_tonart_variants_of_the_same_language_into_one_entry(): void
+    {
+        $owner = $this->actingAsUser();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $owner->id]);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'A', 'ean' => '9780000000007', 'languages' => 'Deutsch (DD 5.1)']);
+        MediaDvdBluray::query()->create(['library_id' => $library->id, 'title' => 'B', 'ean' => '9780000000008', 'languages' => 'Deutsch (DD 2.0)']);
+
+        $response = $this->getJson('/api/search/filter-options');
+
+        $response->assertOk();
+        $this->assertSame(['Deutsch'], $response->json('dvd_bluray.languages'));
+    }
+
     /** GitHub issue #140: `genre` now has its own distinct-values list for DVD/Blu-ray too, alongside book's own (SearchFilterPanel.tsx merges both into one combined `<select>`, the same pattern `medium` already uses for cd+dvd_bluray). */
     public function test_returns_distinct_dvd_bluray_genre_values_separately_from_books(): void
     {

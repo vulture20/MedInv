@@ -105,6 +105,46 @@ class StatisticsDistributionsTest extends TestCase
         $this->assertSame(['2020' => 2], $stats['distributions']['year']);
     }
 
+    /** GitHub issue #205: individual language values can carry a trailing "Tonart" (audio format) annotation — parenthetical or colon-suffixed — which must be stripped before counting, so two different audio tracks for the same language are counted as one language, not two. */
+    public function test_dvd_bluray_library_strips_tonart_annotations_from_the_languages_distribution(): void
+    {
+        $user = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $user->id]);
+
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'A', 'ean' => '3000000000009',
+            'languages' => 'Deutsch (DD 5.1), Englisch (DTS-HD MA)', 'production_year' => 2020,
+        ]);
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'B', 'ean' => '3000000000010',
+            'languages' => 'Deutsch: DD 2.0', 'production_year' => 2020,
+        ]);
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'C', 'ean' => '3000000000011',
+            'languages' => 'Englisch', 'production_year' => 2020,
+        ]);
+
+        $stats = $this->statsFor($library->id);
+
+        $this->assertSame(['Deutsch' => 2, 'Englisch' => 2], $stats['distributions']['language']);
+    }
+
+    /** GitHub issue #205: the languages-only Tonart stripping must not leak into genre/medium, which use the same shared multiValueDistribution() helper but never pass a token transform. */
+    public function test_genre_and_medium_distributions_keep_parenthetical_content_untouched(): void
+    {
+        $user = $this->actingAsAdmin();
+        $library = Library::query()->create(['name' => 'Films', 'media_type' => 'dvd_bluray', 'owner_id' => $user->id]);
+        MediaDvdBluray::query()->create([
+            'library_id' => $library->id, 'title' => 'A', 'ean' => '3000000000012',
+            'genre' => "Action (Director's Cut)", 'medium' => 'DVD (Region 2)',
+        ]);
+
+        $stats = $this->statsFor($library->id);
+
+        $this->assertSame(["Action (Director's Cut)" => 1], $stats['distributions']['genre']);
+        $this->assertSame(['DVD (Region 2)' => 1], $stats['distributions']['medium']);
+    }
+
     /** GitHub issue #188: `director` (co-directors) and `cast` (ensemble casts) can each hold a comma-separated list too, same as `languages` — each name must be counted on its own, not the whole combination as one category. */
     public function test_dvd_bluray_library_splits_the_comma_separated_director_and_cast_columns(): void
     {

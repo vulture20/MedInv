@@ -289,7 +289,10 @@ class StatisticsService
                 // `languages` holds a comma-separated list (e.g. "Deutsch,
                 // Englisch") — split so each language is counted on its own
                 // instead of the whole combination becoming one category.
-                'language' => $this->multiValueDistribution($library, 'languages'),
+                // GitHub issue #205: each split token also gets its
+                // "Tonart" annotation stripped — see
+                // stripLanguageTonartAnnotation()'s own docblock.
+                'language' => $this->multiValueDistribution($library, 'languages', $this->stripLanguageTonartAnnotation(...)),
                 // `genre`/`medium` (GitHub issue #204) can each hold a
                 // comma-separated list too (a combo pack's "DVD, Blu-ray";
                 // a film tagged both "Action" and "Thriller") — same
@@ -325,18 +328,53 @@ class StatisticsService
             ->all();
     }
 
-    /** @return array<string, int> Value => count, most common first. */
-    private function multiValueDistribution(Library $library, string $column): array
+    /**
+     * @param  ?callable(string): string  $tokenTransform  Applied to each
+     *                                                     already comma-split token before counting — only `languages`
+     *                                                     passes one (stripLanguageTonartAnnotation() below); every other
+     *                                                     caller (director, cast, genre, medium) leaves this null and is
+     *                                                     completely unaffected.
+     * @return array<string, int> Value => count, most common first.
+     */
+    private function multiValueDistribution(Library $library, string $column, ?callable $tokenTransform = null): array
     {
         return $library->mediaItems()
             ->whereNotNull($column)
             ->where($column, '!=', '')
             ->pluck($column)
-            ->flatMap(fn (string $value) => array_map('trim', explode(',', $value)))
+            ->flatMap(function (string $value) use ($tokenTransform) {
+                $tokens = array_map('trim', explode(',', $value));
+
+                return $tokenTransform !== null ? array_map($tokenTransform, $tokens) : $tokens;
+            })
             ->filter()
             ->countBy()
             ->sortDesc()
             ->all();
+    }
+
+    /**
+     * GitHub issue #205: a user reported that in their real, already-stored
+     * data, individual language values inside `languages` (already split on
+     * comma by multiValueDistribution() above/SearchService::
+     * distinctMultiValues()) carry a trailing "Tonart" (audio format)
+     * annotation contaminating the language name itself — either
+     * parenthetical ("Deutsch (DD 5.1)") or a colon suffix ("Englisch:
+     * DTS-HD MA"). Different audio tracks for the same film otherwise
+     * produce different-looking strings for what is really the same
+     * language, fragmenting this distribution instead of counting them
+     * together. See SearchService::stripLanguageTonartAnnotation()'s own,
+     * identical docblock for the full reasoning (kept as a duplicated,
+     * two-line helper rather than a shared utility — this codebase has no
+     * precedent for a string-cleanup trait shared across domains, and both
+     * docblocks cite this same issue number so they can't silently drift).
+     */
+    private function stripLanguageTonartAnnotation(string $language): string
+    {
+        $withoutParenthetical = preg_replace('/\s*\([^)]*\)\s*$/u', '', $language) ?? $language;
+        $withoutColonSuffix = preg_replace('/\s*:.*$/u', '', $withoutParenthetical) ?? $withoutParenthetical;
+
+        return trim($withoutColonSuffix);
     }
 
     /** @return array<int, int> Year => count, oldest first. */

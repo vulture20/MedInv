@@ -204,7 +204,10 @@ class SearchService
                 // `languages` is a comma-separated multi-value column
                 // (e.g. "Deutsch, Englisch") — same split StatisticsService::
                 // multiValueDistribution() already does, just without counts.
-                'languages' => $this->distinctMultiValues(MediaDvdBluray::class, 'languages', $visibleLibraryIds),
+                // GitHub issue #205: each split token also gets its
+                // "Tonart" annotation stripped — see
+                // stripLanguageTonartAnnotation()'s own docblock.
+                'languages' => $this->distinctMultiValues(MediaDvdBluray::class, 'languages', $visibleLibraryIds, $this->stripLanguageTonartAnnotation(...)),
                 // GitHub issue #140: shares SearchFilters::$genre with book's own entry above — SearchFilterPanel.tsx merges both option lists into one <select>, same as it already does for medium (cd+dvd_bluray).
                 'genre' => $this->distinctMultiValues(MediaDvdBluray::class, 'genre', $visibleLibraryIds),
             ],
@@ -224,20 +227,64 @@ class SearchService
             ->all();
     }
 
-    /** @return string[] Sorted, unique, non-empty individual values after splitting each row's comma-separated list. */
-    private function distinctMultiValues(string $modelClass, string $column, Collection $visibleLibraryIds): array
+    /**
+     * @param  ?callable(string): string  $tokenTransform  Applied to each
+     *                                                     already comma-split token before dedup — only `languages` passes
+     *                                                     one (stripLanguageTonartAnnotation() below); every other caller
+     *                                                     (genre, medium) leaves this null and is completely unaffected.
+     * @return string[] Sorted, unique, non-empty individual values after splitting each row's comma-separated list.
+     */
+    private function distinctMultiValues(string $modelClass, string $column, Collection $visibleLibraryIds, ?callable $tokenTransform = null): array
     {
         return $modelClass::query()
             ->whereIn('library_id', $visibleLibraryIds)
             ->whereNotNull($column)
             ->where($column, '!=', '')
             ->pluck($column)
-            ->flatMap(fn (string $value) => array_map('trim', explode(',', $value)))
+            ->flatMap(function (string $value) use ($tokenTransform) {
+                $tokens = array_map('trim', explode(',', $value));
+
+                return $tokenTransform !== null ? array_map($tokenTransform, $tokens) : $tokens;
+            })
             ->filter()
             ->unique()
             ->sort()
             ->values()
             ->all();
+    }
+
+    /**
+     * GitHub issue #205: a user reported that in their real, already-stored
+     * data, individual language values inside `languages` (already split on
+     * comma by distinctMultiValues()/StatisticsService::
+     * multiValueDistribution() above/below) carry a trailing "Tonart"
+     * (audio format) annotation contaminating the language name itself —
+     * either parenthetical ("Deutsch (DD 5.1)") or a colon suffix
+     * ("Englisch: DTS-HD MA"). Different audio tracks for the same film
+     * otherwise produce different-looking strings for what is really the
+     * same language (e.g. "Deutsch (DD 5.1)" vs "Deutsch (DD 2.0)"),
+     * duplicating it in both this filter's facet list and
+     * StatisticsService's languages distribution. This is live production
+     * data as reported by the user, not a shape independently confirmed
+     * against any metadata provider's own captured output (every DVD/
+     * Blu-ray provider — Amazon, JPC, Claude, OpenAI, Gemini, Mistral,
+     * UpcMdb, TMDB — was checked and produces only plain "Deutsch,
+     * Englisch"-style values) — so this cleans already-stored data at read
+     * time here, rather than at capture time in a provider the way
+     * JpcScraping::stripJpcGenreAnnotation()/AmazonScraping::
+     * stripAmazonFormatContamination() do; a provider-level fix alone would
+     * leave every already-captured item's duplication exactly as broken.
+     *
+     * Strips whichever form is present (defensively handles both at once,
+     * though only one is expected per value) so both collapse to the same
+     * plain language name.
+     */
+    private function stripLanguageTonartAnnotation(string $language): string
+    {
+        $withoutParenthetical = preg_replace('/\s*\([^)]*\)\s*$/u', '', $language) ?? $language;
+        $withoutColonSuffix = preg_replace('/\s*:.*$/u', '', $withoutParenthetical) ?? $withoutParenthetical;
+
+        return trim($withoutColonSuffix);
     }
 
     /** The `!fuzzy` case (unchanged from before #9) and the Postgres/pg_trgm case both stay entirely SQL-side, single round trip per model class — GitHub issue #73's structural filters (media type/library already scoped by search(); everything else in applyStructuralFilters()) ride along as plain AND conditions on the same query. */
@@ -422,6 +469,11 @@ class SearchService
             // distinctMultiValues() above) — a plain LIKE per requested
             // language, OR'd together, same substring-membership check
             // StatisticsService's own distribution takes for granted.
+            // GitHub issue #205: no change needed here for the "Tonart"
+            // stripping distinctMultiValues() now does — $filters->languages
+            // carries the already-cleaned facet value (e.g. "Deutsch"),
+            // which still substring-matches a raw, still-annotated stored
+            // value like "Deutsch (DD 5.1)" via this same LIKE.
             $query->where(function (Builder $q) use ($filters) {
                 foreach ($filters->languages as $language) {
                     $q->orWhere('languages', 'like', '%'.$language.'%');

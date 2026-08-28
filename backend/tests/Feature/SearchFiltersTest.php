@@ -229,6 +229,19 @@ class SearchFiltersTest extends TestCase
         $this->assertSame(['Metropolis'], $this->titles($response));
     }
 
+    /** GitHub issue #205: SearchService::filterOptionsFor() now offers the cleaned language name (no Tonart annotation) as the facet value, but the filter itself must still match a raw stored row that still carries the annotation — no code change was needed in applyStructuralFilters() because LIKE substring-matches "English" inside "English (DTS-HD MA)" either way. */
+    public function test_languages_filter_matches_even_when_the_stored_value_still_has_a_tonart_annotation(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+        MediaDvdBluray::query()->where('title', 'Metropolis')->update(['languages' => 'Deutsch (DD 5.1), English (DTS-HD MA)']);
+
+        $response = $this->getJson('/api/search?languages[]=English');
+
+        $response->assertOk();
+        $this->assertSame(['Metropolis'], $this->titles($response));
+    }
+
     public function test_price_range_filter(): void
     {
         $owner = $this->actingAsUser();
