@@ -224,6 +224,7 @@
       "resultsFor": "Wyszukiwanie: „{{query}}”",
       "submit": "Szukaj",
       "fuzzy": "Wyszukiwanie rozmyte",
+      "duplicates": "Duplikaty",
       "error": "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
       "librariesError": "Nie udało się wczytać listy bibliotek.",
       "noResults": "Nie znaleziono wyników.",

@@ -224,6 +224,7 @@
       "resultsFor": "Arama: \"{{query}}\"",
       "submit": "Ara",
       "fuzzy": "Bulanık arama",
+      "duplicates": "Kopyalar",
       "error": "Arama başarısız oldu. Lütfen tekrar deneyin.",
       "librariesError": "Kitaplık listesi yüklenemedi.",
       "noResults": "Eşleşme bulunamadı.",

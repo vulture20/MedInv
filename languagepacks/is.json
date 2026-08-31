@@ -224,6 +224,7 @@
       "resultsFor": "Leit: „{{query}}“",
       "submit": "Leita",
       "fuzzy": "Óskörp leit",
+      "duplicates": "Afrit",
       "error": "Leit mistókst. Reyndu aftur.",
       "librariesError": "Ekki tókst að hlaða safnalistann.",
       "noResults": "Engar samsvaranir fundust.",

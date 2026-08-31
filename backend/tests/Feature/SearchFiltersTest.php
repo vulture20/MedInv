@@ -310,6 +310,40 @@ class SearchFiltersTest extends TestCase
         $this->assertSame(['OK Computer'], $this->titles($response));
     }
 
+    /**
+     * GitHub issue #209 — matches an item with `has_duplicates=true` OR
+     * `duplicate_count > 0` (the latter can occur without the former since
+     * the checkbox and count are two independent fields, per issue #208).
+     * seedOneOfEach()'s three items all default to has_duplicates=false/
+     * duplicate_count=null, so none should match until explicitly flagged.
+     */
+    public function test_duplicates_filter_matches_has_duplicates_or_a_positive_duplicate_count(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+
+        MediaBook::query()->where('title', 'Dune')->update(['has_duplicates' => true, 'duplicate_count' => 1]);
+        MediaDvdBluray::query()->where('title', 'Metropolis')->update(['duplicate_count' => 2]);
+
+        $response = $this->getJson('/api/search?duplicates=true');
+
+        $response->assertOk();
+        $this->assertEqualsCanonicalizing(['Dune', 'Metropolis'], $this->titles($response));
+    }
+
+    public function test_duplicates_filter_omitted_returns_every_visible_item_regardless_of_duplicate_state(): void
+    {
+        $owner = $this->actingAsUser();
+        $this->seedOneOfEach($owner);
+
+        MediaBook::query()->where('title', 'Dune')->update(['has_duplicates' => true, 'duplicate_count' => 1]);
+
+        $response = $this->getJson('/api/search');
+
+        $response->assertOk();
+        $this->assertCount(3, $response->json());
+    }
+
     public function test_combining_a_query_with_a_filter_applies_both_as_and(): void
     {
         $owner = $this->actingAsUser();

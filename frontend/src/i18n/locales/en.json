@@ -221,6 +221,7 @@
     "resultsFor": "Search: “{{query}}”",
     "submit": "Search",
     "fuzzy": "Fuzzy search",
+    "duplicates": "Duplicates",
     "error": "Search failed. Please try again.",
     "librariesError": "Failed to load the library list.",
     "noResults": "No matches found.",

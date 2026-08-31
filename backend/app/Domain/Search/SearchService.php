@@ -532,6 +532,15 @@ class SearchService
             }
         }
 
+        // GitHub issue #209 — `has_duplicates`/`duplicate_count` (issue #208)
+        // now exist identically on all three media tables, so unlike the
+        // filters above this needs no per-model-class `return null` exclusion.
+        if ($filters->duplicates) {
+            $query->where(function (Builder $q) {
+                $q->where('has_duplicates', true)->orWhere('duplicate_count', '>', 0);
+            });
+        }
+
         return $query;
     }
 

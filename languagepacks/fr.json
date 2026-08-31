@@ -224,6 +224,7 @@
       "resultsFor": "Recherche : « {{query}} »",
       "submit": "Rechercher",
       "fuzzy": "Recherche approximative",
+      "duplicates": "Doublons",
       "error": "La recherche a échoué. Veuillez réessayer.",
       "librariesError": "Le chargement de la liste des bibliothèques a échoué.",
       "noResults": "Aucun résultat trouvé.",

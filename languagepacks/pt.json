@@ -224,6 +224,7 @@
       "resultsFor": "Pesquisa: \"{{query}}\"",
       "submit": "Pesquisar",
       "fuzzy": "Pesquisa aproximada",
+      "duplicates": "Duplicados",
       "error": "A pesquisa falhou. Tente novamente.",
       "librariesError": "Não foi possível carregar a lista de bibliotecas.",
       "noResults": "Nenhuma correspondência encontrada.",

@@ -21,6 +21,8 @@ export type SortColumn = 'title' | 'ean' | 'library' | 'location' | 'release_dat
 export interface SearchFiltersState {
   query: string
   fuzzy: boolean
+  /** GitHub issue #209 — matches an item with has_duplicates=true or duplicate_count>0 (GitHub issue #208's fields). */
+  duplicates: boolean
   field: SearchField
   mediaTypes: MediaType[]
   libraryIds: number[]
@@ -44,6 +46,7 @@ export interface SearchFiltersState {
 export const EMPTY_FILTERS: SearchFiltersState = {
   query: '',
   fuzzy: false,
+  duplicates: false,
   field: 'all',
   mediaTypes: [],
   libraryIds: [],
@@ -73,6 +76,7 @@ export function filtersFromParams(params: URLSearchParams): SearchFiltersState {
   return {
     query: params.get('query') ?? '',
     fuzzy: params.get('fuzzy') === 'true',
+    duplicates: params.get('duplicates') === 'true',
     field: field && (SEARCH_FIELDS as string[]).includes(field) ? (field as SearchField) : 'all',
     mediaTypes: params.getAll('media_types').filter((v): v is MediaType => (MEDIA_TYPES as string[]).includes(v)),
     libraryIds: params
@@ -109,6 +113,7 @@ function toParamsObject(filters: SearchFiltersState): Record<string, string | st
 
   if (filters.query) params.query = filters.query
   if (filters.fuzzy) params.fuzzy = 'true'
+  if (filters.duplicates) params.duplicates = 'true'
   if (filters.field !== 'all') params.field = filters.field
   if (filters.mediaTypes.length > 0) params.media_types = filters.mediaTypes
   if (filters.libraryIds.length > 0) params.library_ids = filters.libraryIds.map(String)

@@ -224,6 +224,7 @@
       "resultsFor": "Zoeken: \"{{query}}\"",
       "submit": "Zoeken",
       "fuzzy": "Fuzzy-zoeken",
+      "duplicates": "Duplicaten",
       "error": "Zoeken mislukt. Probeer het opnieuw.",
       "librariesError": "Laden van de bibliothekenlijst mislukt.",
       "noResults": "Geen overeenkomsten gevonden.",

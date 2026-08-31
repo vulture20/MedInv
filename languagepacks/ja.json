@@ -224,6 +224,7 @@
       "resultsFor": "検索:「{{query}}」",
       "submit": "検索",
       "fuzzy": "あいまい検索",
+      "duplicates": "重複",
       "error": "検索に失敗しました。もう一度お試しください。",
       "librariesError": "ライブラリ一覧の読み込みに失敗しました。",
       "noResults": "一致する項目が見つかりませんでした。",

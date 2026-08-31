@@ -224,6 +224,7 @@
       "resultsFor": "Søk: «{{query}}»",
       "submit": "Søk",
       "fuzzy": "Uklart søk",
+      "duplicates": "Duplikater",
       "error": "Søket mislyktes. Prøv igjen.",
       "librariesError": "Kunne ikke laste biblioteklisten.",
       "noResults": "Ingen treff funnet.",

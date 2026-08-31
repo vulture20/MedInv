@@ -224,6 +224,7 @@
       "resultsFor": "Búsqueda: «{{query}}»",
       "submit": "Buscar",
       "fuzzy": "Búsqueda aproximada",
+      "duplicates": "Duplicados",
       "error": "La búsqueda ha fallado. Inténtalo de nuevo.",
       "librariesError": "No se pudo cargar la lista de bibliotecas.",
       "noResults": "No se encontraron coincidencias.",

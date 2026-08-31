@@ -221,6 +221,7 @@
     "resultsFor": "Suche: „{{query}}“",
     "submit": "Suchen",
     "fuzzy": "Fuzzy-Suche",
+    "duplicates": "Dubletten",
     "error": "Die Suche ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "librariesError": "Die Bibliotheksliste konnte nicht geladen werden.",
     "noResults": "Keine Treffer gefunden.",

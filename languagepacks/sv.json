@@ -224,6 +224,7 @@
       "resultsFor": "Sök: ”{{query}}”",
       "submit": "Sök",
       "fuzzy": "Fuzzy-sökning",
+      "duplicates": "Dubbletter",
       "error": "Sökningen misslyckades. Försök igen.",
       "librariesError": "Det gick inte att läsa in bibliotekslistan.",
       "noResults": "Inga träffar hittades.",

@@ -107,6 +107,7 @@ class SearchController extends Controller
         // unchecked/false) with no visible error, since SearchPage.tsx's request
         // had no .catch() — see the fix there. Request::boolean() handles the
         // common string representations ("true"/"false"/"1"/"0"/...) instead.
-        return SearchFilters::fromValidated($data, $request->boolean('fuzzy'));
+        // `duplicates` (GitHub issue #209) is the same shape for the same reason.
+        return SearchFilters::fromValidated($data, $request->boolean('fuzzy'), $request->boolean('duplicates'));
     }
 }

@@ -39,6 +39,13 @@ final class SearchFilters
     public function __construct(
         public readonly ?string $query,
         public readonly bool $fuzzy,
+        // GitHub issue #209 — has_duplicates=true OR duplicate_count>0.
+        // Same reasoning as $fuzzy for staying a dedicated constructor
+        // parameter rather than a fromValidated() $data key: a query-string
+        // GET param serializes a JS `false` as the literal string "false",
+        // which Laravel's `boolean` validation rule rejects with a 422 (see
+        // SearchController::filtersFromRequest()'s own comment on $fuzzy).
+        public readonly bool $duplicates,
         public readonly string $field,
         public readonly array $mediaTypes,
         public readonly array $libraryIds,
@@ -60,11 +67,12 @@ final class SearchFilters
     ) {}
 
     /** Builds from an already-`$request->validate()`d array (SearchController::__invoke()) — every key optional, same "not restricted"/`null` defaults the constructor docblock describes. */
-    public static function fromValidated(array $data, bool $fuzzy): self
+    public static function fromValidated(array $data, bool $fuzzy, bool $duplicates): self
     {
         return new self(
             query: $data['query'] ?? null,
             fuzzy: $fuzzy,
+            duplicates: $duplicates,
             field: $data['field'] ?? 'all',
             mediaTypes: $data['media_types'] ?? [],
             libraryIds: $data['library_ids'] ?? [],

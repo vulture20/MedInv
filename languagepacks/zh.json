@@ -224,6 +224,7 @@
       "resultsFor": "搜索：“{{query}}”",
       "submit": "搜索",
       "fuzzy": "模糊搜索",
+      "duplicates": "重复",
       "error": "搜索失败，请重试。",
       "librariesError": "无法加载媒体库列表。",
       "noResults": "未找到匹配项。",

@@ -224,6 +224,7 @@
       "resultsFor": "Ricerca: «{{query}}»",
       "submit": "Cerca",
       "fuzzy": "Ricerca approssimata",
+      "duplicates": "Duplicati",
       "error": "Ricerca non riuscita. Riprova.",
       "librariesError": "Impossibile caricare l'elenco delle biblioteche.",
       "noResults": "Nessuna corrispondenza trovata.",

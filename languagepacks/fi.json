@@ -224,6 +224,7 @@
       "resultsFor": "Haku: ”{{query}}”",
       "submit": "Hae",
       "fuzzy": "Sumea haku",
+      "duplicates": "Kaksoiskappaleet",
       "error": "Haku epäonnistui. Yritä uudelleen.",
       "librariesError": "Kirjastoluettelon lataaminen epäonnistui.",
       "noResults": "Osumia ei löytynyt.",
