@@ -579,7 +579,14 @@
         "fields": {
           "api_key": "API-avain",
           "read_access_token": "API-lukuoikeuden käyttöoikeustunnus",
-          "prompt": "Prompt"
+          "prompt": "Prompt",
+          "marketplace": "Markkina-alue"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "Englanti (amazon.com)",
+            "amazon_de": "Saksa (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {

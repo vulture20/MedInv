@@ -3,6 +3,7 @@
 namespace App\Domain\Metadata\Providers\DvdBluray;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
+use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
@@ -57,6 +58,23 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * confirmed German "Untertitel"/"Untertitel:" label was added as a purely
  * additive fallback (see `mapProductPageToCandidate()`), not a
  * replacement for the English guess.
+ *
+ * **Marketplace/country (GitHub issue #210)**: `configFields()` exposes the
+ * `marketplace` select — see `AmazonScraping`'s own docblock for the shared
+ * mechanics. That same research live-checked a real amazon.de page (Ant-Man
+ * Blu-ray, B07447J2TS again) and confirmed two further, purely additive
+ * German fallback labels for `languages`: `Sprache` (a `#productOverview_
+ * feature_div` row, e.g. "Sprache" → "Englisch") and `Synchronisiert:` (a
+ * `#detailBullets_feature_div` bullet, same value on the same page) — both
+ * describe the audio language, exactly what this field already represents.
+ * `medium` ("Format:") and `subtitles` ("Untertitel:") were re-confirmed
+ * unchanged against that same real page. No structured `director`/`genre`/
+ * `cast` bullet was present on that particular page at all (checked
+ * `#bylineInfo`, `#detailBullets_feature_div`, `#productOverview_feature_div`
+ * — all three came up empty for those fields, "Peyton Reed"/"Paul Rudd" only
+ * ever appearing inside free-text customer reviews) — not itself evidence
+ * those fields are broken on amazon.de, just unconfirmed by this one page,
+ * so no new German label is added for them.
  */
 class AmazonDvdBlurayProvider implements MetadataProviderInterface
 {
@@ -78,10 +96,12 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
         return 'dvd_bluray';
     }
 
-    /** No API key — there is no API. */
+    /** GitHub issue #210 — the only config: which Amazon marketplace/country to scrape. See AmazonScraping's docblock. */
     public function configFields(): array
     {
-        return [];
+        return [
+            new MetadataProviderConfigField('marketplace', type: 'select', options: ['amazon.com', 'amazon.de']),
+        ];
     }
 
     /**
@@ -94,11 +114,14 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
      * cast-contamination stripping, #140/#141's genre/subtitles extraction,
      * and #150/#173's cast field being removed and then reintroduced on a
      * confirmed English "Actors" bullet — see this class's own docblock and
-     * AmazonScraping's for the full history.
+     * AmazonScraping's for the full history. Bumped again to v0.3-beta for
+     * #210's marketplace selector plus #211's price-extraction fix (both
+     * live-verified against a real amazon.de page, see this class's and
+     * AmazonScraping's own docblocks).
      */
     public function version(): string
     {
-        return 'v0.2-beta';
+        return 'v0.3-beta';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes amazon.com's pages, see AmazonScraping's docblock. */
@@ -160,7 +183,17 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
                 // — see AmazonScraping::amazonDetailBullets()'s docblock.
                 'medium' => $this->amazonBullet($bullets, 'Format', 'Medienformat'),
                 'runtime_minutes' => $this->parseLeadingInt($this->amazonBullet($bullets, 'Run time', 'Runtime')),
-                'languages' => $this->amazonBullet($bullets, 'Language', 'Language:', 'Languages'),
+                // 'Sprache'/'Synchronisiert' (GitHub issue #210) are the
+                // confirmed German fallbacks — see this class's own
+                // docblock for the real page that confirmed both.
+                // 'Synchronisiert' has no trailing colon here despite the
+                // real page's own label literally reading "Synchronisiert:"
+                // (RLM) ":" (LRM) — amazonDetailBullets() already rtrims
+                // every trailing ASCII colon/space when storing a bullet
+                // key, so the double colon collapses away entirely by the
+                // time this lookup runs; a 'Synchronisiert:' entry here
+                // would never match.
+                'languages' => $this->amazonBullet($bullets, 'Language', 'Language:', 'Languages', 'Sprache', 'Synchronisiert'),
                 'director' => $this->amazonBullet($bullets, 'Director', 'Directors'),
                 // GitHub issue #141 confirmed 'Genre' against a real page
                 // (see AmazonScraping::amazonDetailBullets()'s docblock for

@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Book\AmazonBookProvider;
+use App\Models\MetadataPlugin;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -23,9 +25,31 @@ use Tests\TestCase;
  */
 class AmazonBookProviderTest extends TestCase
 {
+    // GitHub issue #210 — marketplace() reads metadata_plugins.config, so
+    // the table needs to actually exist now, even for tests that never
+    // configure a marketplace explicitly (marketplace() tolerates no row at
+    // all, defaulting to 'amazon.com', but the query itself still needs a
+    // real table to run against).
+    use RefreshDatabase;
+
     private const SEARCH_API = 'https://www.amazon.com/s*';
 
     private const PRODUCT_API = 'https://www.amazon.com/dp/*';
+
+    private const SEARCH_API_DE = 'https://www.amazon.de/s*';
+
+    private const PRODUCT_API_DE = 'https://www.amazon.de/dp/*';
+
+    private function withMarketplace(string $marketplace): void
+    {
+        MetadataPlugin::query()->create([
+            'provider_key' => 'book.amazon',
+            'name' => 'Amazon',
+            'media_type' => 'book',
+            'enabled' => true,
+            'config' => ['marketplace' => $marketplace],
+        ]);
+    }
 
     private function searchResultHtml(): string
     {
@@ -292,9 +316,15 @@ class AmazonBookProviderTest extends TestCase
         Http::assertNotSent(fn ($request) => str_contains($request->url(), '/dp/'));
     }
 
-    public function test_configuration_requires_no_api_key(): void
+    /** GitHub issue #210: no API key, but a marketplace select is now the one config field. */
+    public function test_configuration_offers_only_the_marketplace_select(): void
     {
-        $this->assertSame([], app(AmazonBookProvider::class)->configFields());
+        $fields = app(AmazonBookProvider::class)->configFields();
+
+        $this->assertCount(1, $fields);
+        $this->assertSame('marketplace', $fields[0]->key);
+        $this->assertSame('select', $fields[0]->type);
+        $this->assertSame(['amazon.com', 'amazon.de'], $fields[0]->options);
     }
 
     /** No "(Beta)" suffix in the name (removed per explicit user request) — version()'s "-beta" suffix already conveys this. */
@@ -303,6 +333,59 @@ class AmazonBookProviderTest extends TestCase
         $provider = app(AmazonBookProvider::class);
 
         $this->assertSame('Amazon', $provider->name());
-        $this->assertSame('v0.2-beta', $provider->version());
+        $this->assertSame('v0.3-beta', $provider->version());
+    }
+
+    /** GitHub issue #210: with no metadata_plugins row at all (unconfigured), the default marketplace stays amazon.com — unchanged behavior. */
+    public function test_marketplace_defaults_to_amazon_com_when_unconfigured(): void
+    {
+        Http::fake([self::SEARCH_API => Http::response($this->searchResultHtml(), 200)]);
+
+        app(AmazonBookProvider::class)->search('dune');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.amazon.com/s')
+            && ($request->header('Accept-Language')[0] ?? '') === 'en-US,en;q=0.9');
+    }
+
+    /** GitHub issue #210: an explicit amazon.de marketplace switches both the request host and Accept-Language. */
+    public function test_marketplace_can_be_configured_to_amazon_de(): void
+    {
+        $this->withMarketplace('amazon.de');
+        Http::fake([self::SEARCH_API_DE => Http::response($this->searchResultHtml(), 200)]);
+
+        app(AmazonBookProvider::class)->search('dune');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.amazon.de/s')
+            && ($request->header('Accept-Language')[0] ?? '') === 'de-DE,de;q=0.9');
+    }
+
+    /**
+     * GitHub issue #211: Amazon's buy-box price now renders as plain
+     * a-price-whole/-decimal/-fraction/-symbol spans inside
+     * #corePriceDisplay_desktop_feature_div (confirmed live against a real
+     * amazon.de page during #210's own research) — neither the JSON blob
+     * nor the legacy #corePrice_feature_div id were present there any more.
+     * Currency is derived from the € symbol via CURRENCY_SYMBOL_TO_ISO.
+     */
+    public function test_price_is_read_from_the_current_price_to_pay_markup(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune</span>'
+                .'<div id="corePriceDisplay_desktop_feature_div">'
+                .'<span class="a-price aok-align-center reinventPricePriceToPayMargin priceToPay apex-pricetopay-value">'
+                .'<span class="a-offscreen"> </span><span aria-hidden="true">'
+                .'<span class="a-price-whole">38<span class="a-price-decimal">,</span></span>'
+                .'<span class="a-price-fraction">52</span><span class="a-price-symbol">€</span>'
+                .'</span></span></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertSame(38.52, $candidate->attributes['price']);
+        $this->assertSame('EUR', $candidate->attributes['currency']);
     }
 }

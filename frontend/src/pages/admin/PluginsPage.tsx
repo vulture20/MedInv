@@ -14,11 +14,17 @@ interface ConfigField {
    * 'password' is rendered as a masked input, for secrets like an API key.
    * 'textarea' (GitHub issue #59) is rendered as a multi-line <textarea>,
    * for a longer, free-form value like an LLM provider's grounding prompt.
+   * 'select' (GitHub issue #210) is rendered as a <select> constrained to
+   * `options` — for a closed, small set of admin-chosen values (e.g.
+   * Amazon's marketplace/country) where free text would let an admin type
+   * an unsupported value.
    */
-  type: 'text' | 'password' | 'textarea'
+  type: 'text' | 'password' | 'textarea' | 'select'
   required: boolean
   /** Pre-fills the field when a plugin has no own value for it yet (GitHub issue #59's addendum) — e.g. ClaudeMetadataProvider's default grounding prompt. */
   default: string | null
+  /** Only meaningful for `type: 'select'` — the closed set of values the field may hold; see fieldOptionLabel()'s own docblock for how each one's display label is resolved. */
+  options: string[] | null
 }
 
 interface Plugin {
@@ -53,6 +59,25 @@ function fieldLabel(t: (key: string, opts?: Record<string, unknown>) => string, 
   const translated = t(`admin.pluginConfig.fields.${key}`, { defaultValue: '' })
   if (translated) return translated
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+/**
+ * A 'select' field's own option *values* (e.g. "amazon.de") cross the API
+ * the same way the field's key does — only the stable value, never a
+ * display label (see MetadataProviderConfigField's own docblock). Falls
+ * back to the raw value itself, same "render something reasonable before
+ * anyone adds a translation" tolerance fieldLabel() already has.
+ *
+ * The value is sanitized (every "." replaced with "_") before being used as
+ * an i18next key segment — i18next's default keySeparator is itself ".",
+ * so a raw value containing one (e.g. "amazon.com") would otherwise be
+ * misread as *nested* path segments ("amazon" -> "com") instead of one
+ * literal key, silently failing to resolve. The locale JSON stores the
+ * matching sanitized key ("amazon_com"), never the raw value with dots.
+ */
+function fieldOptionLabel(t: (key: string, opts?: Record<string, unknown>) => string, key: string, value: string): string {
+  const translated = t(`admin.pluginConfig.fieldOptions.${key}.${value.replace(/\./g, '_')}`, { defaultValue: '' })
+  return translated || value
 }
 
 /** Every media type a plugin can belong to (Library.media_type's own union) — fixed order the grouped tables render in below. */
@@ -482,6 +507,19 @@ export function PluginsPage() {
                     value={formValues[field.key] ?? ''}
                     onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
                   />
+                ) : field.type === 'select' ? (
+                  <select
+                    required={field.required}
+                    value={formValues[field.key] ?? ''}
+                    onChange={(e) => setFormValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  >
+                    {!field.required && <option value="">—</option>}
+                    {(field.options ?? []).map((option) => (
+                      <option key={option} value={option}>
+                        {fieldOptionLabel(t, field.key, option)}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   <input
                     type={field.type}

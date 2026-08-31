@@ -2,6 +2,7 @@
 
 namespace App\Domain\Metadata\Providers\Amazon;
 
+use App\Models\MetadataPlugin;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
@@ -97,14 +98,43 @@ use Illuminate\Support\Facades\Log;
  * German 'Untertitel' fallback for DVD/Blu-ray subtitles — see
  * `AmazonDvdBlurayProvider`'s docblock) rather than translating every
  * field speculatively.
+ *
+ * **Marketplace/country (GitHub issue #210)**: an admin-configurable
+ * `marketplace` setting (`configFields()` on each of the three concrete
+ * providers) lets `amazon.com` (English, default — unchanged behavior for
+ * anyone who hasn't touched the setting) be swapped for `amazon.de`
+ * (German). Read via `marketplace()`/`baseUrl()` below, using the exact
+ * same "fresh DB read at call time, keyed by provider_key" pattern
+ * `TmdbProvider::accessToken()`/`UpcMdbProvider::apiKey()` already
+ * establish — not constructor-injected, since `MetadataProviderInterface`
+ * gives concrete providers no constructor-injection point for config at
+ * all. `amazon.de` is a fully separate, natively German marketplace
+ * (confirmed live, GitHub issue #210: a plain `/dp/{asin}` and `/s?k=...`
+ * request against it returns real German content directly, HTTP 200, no
+ * CAPTCHA/block) — unlike the `__mk_de_DE`/`/-/de/` tricks for viewing
+ * *amazon.com itself* in German (see GitHub issue #141's own note on the
+ * latter), neither is needed or used here since this switches the actual
+ * host, not just the rendered language of the same one.
  */
 trait AmazonScraping
 {
-    private const BASE_URL = 'https://www.amazon.com';
-
     private const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
     private const TIMEOUT_SECONDS = 10;
+
+    /**
+     * Maps a-price-symbol's plain glyph (GitHub issue #211) to the 3-letter
+     * ISO code the rest of this trait uses for `currency` everywhere else
+     * (the JSON price-blob path's `currencySymbol` is, despite its name,
+     * already an ISO code — see amazonPriceAndCurrency()'s own docblock).
+     * Only the two marketplaces this trait can currently be configured for
+     * are covered; an unrecognized/future symbol falls back to
+     * defaultCurrency() rather than a wrong guess.
+     */
+    private const CURRENCY_SYMBOL_TO_ISO = [
+        '€' => 'EUR',
+        '$' => 'USD',
+    ];
 
     /**
      * Parses Amazon's search-results page for a query (a free-text search
@@ -127,7 +157,7 @@ trait AmazonScraping
      */
     private function amazonSearch(string $query): ?array
     {
-        $html = $this->amazonGet(self::BASE_URL.'/s', ['k' => $query]);
+        $html = $this->amazonGet($this->baseUrl().'/s', ['k' => $query]);
 
         if ($html === null) {
             return null;
@@ -190,7 +220,7 @@ trait AmazonScraping
      */
     private function amazonProductPage(string $asin): ?array
     {
-        $html = $this->amazonGet(self::BASE_URL."/dp/{$asin}");
+        $html = $this->amazonGet($this->baseUrl()."/dp/{$asin}");
 
         if ($html === null) {
             return null;
@@ -245,15 +275,32 @@ trait AmazonScraping
      * independently of the TLD. `currency` is therefore read from this
      * JSON now, never hardcoded.
      *
-     * The legacy `#corePrice_feature_div`/`#priceblock_ourprice`/
-     * `#priceblock_dealprice` DOM-based extraction (and its accompanying
-     * `"$24.99"`-style text parsing) is kept as a fallback for exactly
-     * the reason every other field in this trait stays defensive — a
-     * page that doesn't happen to carry the JSON blob (a different
-     * category, a stale cached response, a future markup change) still
-     * gets a chance at a price via the older mechanism, on the (still
-     * unverified beyond this one page) assumption that a fallback hit
-     * means USD, the only currency ever confirmed reachable that way.
+     * GitHub issue #211: a further live re-check (against amazon.de, done
+     * as part of #210's own research) found the JSON blob above gone
+     * entirely from a real, current product page, and `#corePrice_feature_div`
+     * itself renamed to `#corePriceDisplay_desktop_feature_div` — Amazon
+     * now renders the buy-box price as plain `a-price-whole`/
+     * `a-price-decimal`/`a-price-fraction`/`a-price-symbol` spans instead of
+     * either older mechanism. This looks like a general template change
+     * (a container id rename, not a locale-specific difference) rather than
+     * something specific to `amazon.de` — the same "geo-adapted
+     * independently of the TLD" reasoning #137 already established for the
+     * JSON path's own currency field — but this has not been independently
+     * re-confirmed against `amazon.com` itself (no authorization for a
+     * fresh check there in this session). Currency comes from
+     * `a-price-symbol`'s glyph via CURRENCY_SYMBOL_TO_ISO, since this shape
+     * carries no ISO code the way the JSON blob did.
+     *
+     * Both older mechanisms are kept as additional fallbacks regardless —
+     * the JSON blob may still appear on some page/category this trait
+     * hasn't seen, and the legacy `#corePrice_feature_div`/
+     * `#priceblock_ourprice`/`#priceblock_dealprice` DOM extraction (with
+     * its accompanying `"$24.99"`-style text parsing) stays for the same
+     * defensive reason every other field in this trait does. A legacy-path
+     * hit's currency is no longer hardcoded `'USD'` either (GitHub issue
+     * #210) — defaultCurrency() derives it from the configured marketplace
+     * instead, since a `.de`-configured scrape landing in that fallback
+     * would otherwise wrongly report a `.com`-only currency.
      *
      * @return array{price: ?float, currency: ?string}
      */
@@ -272,6 +319,33 @@ trait AmazonScraping
             }
         }
 
+        $priceToPayNode = $xpath->query(
+            '//*[@id="corePriceDisplay_desktop_feature_div"]//span[contains(concat(" ", normalize-space(@class), " "), " priceToPay ")]
+             | //*[contains(concat(" ", normalize-space(@class), " "), " apex-pricetopay-value ")]'
+        )->item(0);
+
+        if ($priceToPayNode instanceof DOMElement) {
+            $wholeNode = $xpath->query('.//span[contains(@class, "a-price-whole")]', $priceToPayNode)->item(0);
+            $fractionNode = $xpath->query('.//span[contains(@class, "a-price-fraction")]', $priceToPayNode)->item(0);
+            $symbolNode = $xpath->query('.//span[contains(@class, "a-price-symbol")]', $priceToPayNode)->item(0);
+
+            // a-price-whole's own leading text node holds the whole part
+            // (e.g. "38"); its nested a-price-decimal child (the separator
+            // glyph) is excluded by reading firstChild directly rather than
+            // the element's full textContent.
+            $wholeDigits = preg_replace('/\D/', '', $wholeNode?->firstChild?->nodeValue ?? '') ?? '';
+            $fractionDigits = preg_replace('/\D/', '', $fractionNode?->textContent ?? '') ?? '';
+
+            if ($wholeDigits !== '' && $fractionDigits !== '') {
+                $symbol = trim($symbolNode?->textContent ?? '');
+
+                return [
+                    'price' => (float) "{$wholeDigits}.{$fractionDigits}",
+                    'currency' => self::CURRENCY_SYMBOL_TO_ISO[$symbol] ?? $this->defaultCurrency(),
+                ];
+            }
+        }
+
         $legacyPriceNode = $xpath->query(
             '//*[@id="corePrice_feature_div"]//span[contains(@class, "a-offscreen")]
              | //*[@id="priceblock_ourprice"]
@@ -279,7 +353,7 @@ trait AmazonScraping
         )->item(0);
         $price = $this->parseAmazonPrice($this->cleanText($legacyPriceNode?->textContent));
 
-        return ['price' => $price, 'currency' => $price !== null ? 'USD' : null];
+        return ['price' => $price, 'currency' => $price !== null ? $this->defaultCurrency() : null];
     }
 
     /**
@@ -315,8 +389,17 @@ trait AmazonScraping
      * "$1,299.00" — strips the currency symbol/thousands separators and
      * parses the remaining decimal number. Deliberately not locale-aware
      * (no "24,99 €" comma-decimal handling): this path is only reached
-     * when amazonPriceAndCurrency() falls back to it, at which point
-     * `currency` is assumed to be USD (see that method's own docblock).
+     * when amazonPriceAndCurrency() falls back all the way to it, and the
+     * container it reads from (`#corePrice_feature_div`) was confirmed
+     * entirely absent from a real, current page during the GitHub issue
+     * #211 re-check — this is effectively dead code kept only for defensive
+     * "some other page/category still has it" reasons (see that method's
+     * own docblock), so speculatively adding comma-decimal handling here
+     * without a real example to confirm the format against would be
+     * guessing, not verifying — left as a known, accepted gap instead. If
+     * this path is ever actually reached on a `.de`-configured scrape, a
+     * "24,99 €"-style price would currently fail to parse (returns null)
+     * rather than being silently misread as e.g. 2499.0 or 24.0.
      */
     private function parseAmazonPrice(?string $text): ?float
     {
@@ -427,10 +510,43 @@ trait AmazonScraping
     }
 
     /**
+     * The admin-configured marketplace (GitHub issue #210), read fresh from
+     * `metadata_plugins.config` on every call — the same "no constructor
+     * injection point, re-query by provider_key at call time" pattern
+     * `TmdbProvider::accessToken()`/`UpcMdbProvider::apiKey()` already
+     * establish for a config-taking provider, since `$this->key()` (which
+     * differs per concrete class using this trait — `book.amazon`/
+     * `cd.amazon`/`dvd_bluray.amazon`) is only available once composed into
+     * one of those, not on the trait alone. Defaults to `'amazon.com'`,
+     * preserving this trait's original, unconfigured behavior exactly.
+     */
+    private function marketplace(): string
+    {
+        $config = MetadataPlugin::query()->where('provider_key', $this->key())->first()?->config;
+
+        return is_string($config['marketplace'] ?? null) ? $config['marketplace'] : 'amazon.com';
+    }
+
+    /** Full scheme+host for the configured marketplace() — see its own docblock. */
+    private function baseUrl(): string
+    {
+        return 'https://www.'.$this->marketplace();
+    }
+
+    /** The currency a price should default to when no ISO/symbol information is available at all (GitHub issue #210/#211) — 'EUR' for amazon.de, 'USD' otherwise, matching each marketplace's own native currency. */
+    private function defaultCurrency(): string
+    {
+        return $this->marketplace() === 'amazon.de' ? 'EUR' : 'USD';
+    }
+
+    /**
      * GET with a standard desktop-browser User-Agent (just to receive the
      * normal HTML a browser gets — see this trait's docblock for why that
-     * is not the same thing as fingerprint evasion) and en-US content
-     * negotiation. Best-effort like every other provider's request() —
+     * is not the same thing as fingerprint evasion) and marketplace-matched
+     * content negotiation (GitHub issue #210: `de-DE,de;q=0.9` for
+     * amazon.de, unchanged `en-US,en;q=0.9` otherwise — field extraction
+     * matches label text in that language, per this trait's own docblock).
+     * Best-effort like every other provider's request() —
      * any non-2xx status, transport failure, or empty body is simply "no
      * result", logged, never thrown; a CAPTCHA/"Robot Check" interstitial
      * page (still HTTP 200) is indistinguishable from a genuine empty
@@ -440,10 +556,12 @@ trait AmazonScraping
      */
     private function amazonGet(string $url, array $query = []): ?string
     {
+        $acceptLanguage = $this->marketplace() === 'amazon.de' ? 'de-DE,de;q=0.9' : 'en-US,en;q=0.9';
+
         try {
             $response = Http::withHeaders([
                 'User-Agent' => self::USER_AGENT,
-                'Accept-Language' => 'en-US,en;q=0.9',
+                'Accept-Language' => $acceptLanguage,
             ])->timeout(self::TIMEOUT_SECONDS)->get($url, $query);
         } catch (\Throwable $e) {
             Log::info('Amazon scrape request failed.', ['url' => $url, 'error' => $e->getMessage()]);

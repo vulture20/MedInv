@@ -4,15 +4,35 @@ namespace Tests\Feature;
 
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\DvdBluray\AmazonDvdBlurayProvider;
+use App\Models\MetadataPlugin;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /** AmazonDvdBlurayProvider (briefing 8.2, GitHub issue #50) — see AmazonBookProviderTest's docblock for the fixture-based testing approach and why. */
 class AmazonDvdBlurayProviderTest extends TestCase
 {
+    // See AmazonBookProviderTest's matching comment (GitHub issue #210).
+    use RefreshDatabase;
+
     private const SEARCH_API = 'https://www.amazon.com/s*';
 
     private const PRODUCT_API = 'https://www.amazon.com/dp/*';
+
+    private const PRODUCT_API_DE = 'https://www.amazon.de/dp/*';
+
+    private const SEARCH_API_DE = 'https://www.amazon.de/s*';
+
+    private function withMarketplace(string $marketplace): void
+    {
+        MetadataPlugin::query()->create([
+            'provider_key' => 'dvd_bluray.amazon',
+            'name' => 'Amazon',
+            'media_type' => 'dvd_bluray',
+            'enabled' => true,
+            'config' => ['marketplace' => $marketplace],
+        ]);
+    }
 
     private function searchResultHtml(): string
     {
@@ -264,6 +284,98 @@ class AmazonDvdBlurayProviderTest extends TestCase
         $provider = app(AmazonDvdBlurayProvider::class);
 
         $this->assertSame('Amazon', $provider->name());
-        $this->assertSame('v0.2-beta', $provider->version());
+        $this->assertSame('v0.3-beta', $provider->version());
+    }
+
+    /** GitHub issue #210: no API key, but a marketplace select is now the one config field. */
+    public function test_configuration_offers_only_the_marketplace_select(): void
+    {
+        $fields = app(AmazonDvdBlurayProvider::class)->configFields();
+
+        $this->assertCount(1, $fields);
+        $this->assertSame('marketplace', $fields[0]->key);
+        $this->assertSame(['amazon.com', 'amazon.de'], $fields[0]->options);
+    }
+
+    /** GitHub issue #210: an explicit amazon.de marketplace switches both the request host and Accept-Language. */
+    public function test_marketplace_can_be_configured_to_amazon_de(): void
+    {
+        $this->withMarketplace('amazon.de');
+        Http::fake([self::SEARCH_API_DE => Http::response($this->searchResultHtml(), 200)]);
+
+        app(AmazonDvdBlurayProvider::class)->search('blade runner');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.amazon.de/s')
+            && ($request->header('Accept-Language')[0] ?? '') === 'de-DE,de;q=0.9');
+    }
+
+    /**
+     * GitHub issue #210: real German fallback labels confirmed against a
+     * live amazon.de page (Ant-Man Blu-ray, B07447J2TS) — 'Sprache' (a
+     * #productOverview_feature_div row) and 'Synchronisiert:' (a
+     * #detailBullets_feature_div bullet) both describe the audio language.
+     */
+    public function test_languages_falls_back_to_the_confirmed_german_labels(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Ant-Man</span>'
+                .'<div id="detailBullets_feature_div"><ul>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Synchronisiert: &rlm;: &lrm;</span><span>Englisch</span></span></li>'
+                .'</ul></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('012569783680')[0];
+
+        $this->assertSame('Englisch', $candidate->attributes['languages']);
+    }
+
+    /** GitHub issue #210: 'Sprache' is the other confirmed German fallback, this one from #productOverview_feature_div rather than #detailBullets_feature_div. */
+    public function test_languages_falls_back_to_sprache_in_the_product_overview_table(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Ant-Man</span>'
+                .'<div id="productOverview_feature_div"><table><tbody>'
+                .'<tr class="a-spacing-small po-language"><td><span class="a-text-bold">Sprache</span></td><td><span class="po-break-word">Englisch</span></td></tr>'
+                .'</tbody></table></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('012569783680')[0];
+
+        $this->assertSame('Englisch', $candidate->attributes['languages']);
+    }
+
+    /**
+     * GitHub issue #211: see AmazonBookProviderTest's matching test for the
+     * full context — the same live-confirmed a-price-whole/-fraction/
+     * -symbol markup, this time also checking the $ symbol maps to USD.
+     */
+    public function test_price_is_read_from_the_current_price_to_pay_markup(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Blade Runner</span>'
+                .'<div id="corePriceDisplay_desktop_feature_div">'
+                .'<span class="a-price aok-align-center reinventPricePriceToPayMargin priceToPay apex-pricetopay-value">'
+                .'<span class="a-offscreen"> </span><span aria-hidden="true">'
+                .'<span class="a-price-whole">19<span class="a-price-decimal">.</span></span>'
+                .'<span class="a-price-fraction">99</span><span class="a-price-symbol">$</span>'
+                .'</span></span></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('012569783680')[0];
+
+        $this->assertSame(19.99, $candidate->attributes['price']);
+        $this->assertSame('USD', $candidate->attributes['currency']);
     }
 }

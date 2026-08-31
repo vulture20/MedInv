@@ -579,7 +579,14 @@
         "fields": {
           "api_key": "API-nyckel",
           "read_access_token": "API-läsåtkomsttoken",
-          "prompt": "Prompt"
+          "prompt": "Prompt",
+          "marketplace": "Marknad"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "Engelska (amazon.com)",
+            "amazon_de": "Tyska (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {

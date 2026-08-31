@@ -560,7 +560,14 @@
         "fields": {
           "api_key": "API Anahtarı",
           "read_access_token": "API okuma erişim jetonu",
-          "prompt": "Prompt"
+          "prompt": "Prompt",
+          "marketplace": "Pazar yeri"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "İngilizce (amazon.com)",
+            "amazon_de": "Almanca (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {

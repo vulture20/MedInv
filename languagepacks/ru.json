@@ -560,7 +560,14 @@
         "fields": {
           "api_key": "API-ключ",
           "read_access_token": "Токен доступа API для чтения",
-          "prompt": "Промпт"
+          "prompt": "Промпт",
+          "marketplace": "Магазин"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "Английский (amazon.com)",
+            "amazon_de": "Немецкий (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {

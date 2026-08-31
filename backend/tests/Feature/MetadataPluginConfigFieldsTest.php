@@ -29,10 +29,10 @@ class MetadataPluginConfigFieldsTest extends TestCase
         $this->assertSame([], $fields->get('book.open_library'));
         $this->assertSame([], $fields->get('cd.musicbrainz'));
         $this->assertSame([
-            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null],
+            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null, 'options' => null],
         ], $fields->get('dvd_bluray.upcmdb'));
         $this->assertSame([
-            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null],
+            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null, 'options' => null],
         ], $fields->get('book.hardcover'));
     }
 
@@ -46,10 +46,22 @@ class MetadataPluginConfigFieldsTest extends TestCase
             $apiKeyField = $fieldsForProvider->firstWhere('key', 'api_key');
             $promptField = $fieldsForProvider->firstWhere('key', 'prompt');
 
-            $this->assertSame(['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null], $apiKeyField);
+            $this->assertSame(['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null, 'options' => null], $apiKeyField);
             $this->assertSame('textarea', $promptField['type']);
             $this->assertFalse($promptField['required']);
             $this->assertNotEmpty($promptField['default']);
+        }
+    }
+
+    /** GitHub issue #210: the first provider anywhere in this app to declare a 'select' field — see MetadataProviderConfigField's own docblock for why $options travels as raw values, not {value,label} pairs. */
+    public function test_the_amazon_providers_expose_a_marketplace_select_with_two_options(): void
+    {
+        $fields = app(MetadataProviderRegistry::class)->configFieldsByProviderKey();
+
+        foreach (['book.amazon', 'cd.amazon', 'dvd_bluray.amazon'] as $providerKey) {
+            $this->assertSame([
+                ['key' => 'marketplace', 'type' => 'select', 'required' => false, 'default' => null, 'options' => ['amazon.com', 'amazon.de']],
+            ], $fields->get($providerKey));
         }
     }
 
@@ -65,7 +77,7 @@ class MetadataPluginConfigFieldsTest extends TestCase
         $openLibrary = collect($response->json())->firstWhere('provider_key', 'book.open_library');
 
         $this->assertSame([
-            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null],
+            ['key' => 'api_key', 'type' => 'password', 'required' => true, 'default' => null, 'options' => null],
         ], $upcmdb['config_fields']);
         $this->assertSame([], $openLibrary['config_fields']);
     }

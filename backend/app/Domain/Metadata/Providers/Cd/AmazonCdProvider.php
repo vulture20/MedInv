@@ -3,6 +3,7 @@
 namespace App\Domain\Metadata\Providers\Cd;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
+use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
@@ -18,6 +19,13 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * one in a stable, machine-parseable shape the way an actual music
  * database's API does, and getting it wrong (missing/misordered tracks)
  * would be worse than not attempting it at all.
+ *
+ * **Marketplace/country (GitHub issue #210)**: `configFields()` exposes the
+ * shared `marketplace` select — see `AmazonScraping`'s own docblock for the
+ * mechanics. As with `AmazonBookProvider`, no CD-specific German product
+ * page was live-checked as part of that research, so this class's own field
+ * labels (`Format`, `Release Date`) have no confirmed German fallback yet —
+ * only the shared marketplace/request-level plumbing is confirmed working.
  */
 class AmazonCdProvider implements MetadataProviderInterface
 {
@@ -39,10 +47,12 @@ class AmazonCdProvider implements MetadataProviderInterface
         return 'cd';
     }
 
-    /** No API key — there is no API. */
+    /** GitHub issue #210 — the only config: which Amazon marketplace/country to scrape. See AmazonScraping's docblock. */
     public function configFields(): array
     {
-        return [];
+        return [
+            new MetadataProviderConfigField('marketplace', type: 'select', options: ['amazon.com', 'amazon.de']),
+        ];
     }
 
     /**
@@ -53,11 +63,15 @@ class AmazonCdProvider implements MetadataProviderInterface
      * establishes) for GitHub issue #137's one-time live re-check, which
      * fixed AmazonScraping::amazonPriceAndCurrency() (shared by all three
      * Amazon providers) — the standing "hardcoded amazon.com always means
-     * USD" assumption was wrong, a real page checked showed EUR.
+     * USD" assumption was wrong, a real page checked showed EUR. Bumped
+     * again to v0.3-beta for #210's marketplace selector plus #211's shared
+     * price-extraction fix (both live-verified, see AmazonScraping's own
+     * docblock) — this class's own field labels stay unconfirmed for
+     * amazon.de specifically, see this class's own docblock.
      */
     public function version(): string
     {
-        return 'v0.2-beta';
+        return 'v0.3-beta';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes amazon.com's pages, see AmazonScraping's docblock. */

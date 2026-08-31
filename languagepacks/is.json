@@ -579,7 +579,14 @@
         "fields": {
           "api_key": "API-lykill",
           "read_access_token": "API lestrarað­gangs­tákn",
-          "prompt": "Prompt"
+          "prompt": "Prompt",
+          "marketplace": "Markaður"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "Enska (amazon.com)",
+            "amazon_de": "Þýska (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {

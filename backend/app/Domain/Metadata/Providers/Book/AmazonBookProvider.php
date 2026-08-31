@@ -3,6 +3,7 @@
 namespace App\Domain\Metadata\Providers\Book;
 
 use App\Domain\Metadata\Contracts\MetadataCandidate;
+use App\Domain\Metadata\Contracts\MetadataProviderConfigField;
 use App\Domain\Metadata\Contracts\MetadataProviderInterface;
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
@@ -12,6 +13,17 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * 8.2 — GitHub issue #50) — **Beta**, see AmazonScraping's docblock for
  * the full legal/technical/reliability picture this is built under, and
  * this class's own name()/version() for how that's surfaced to an admin.
+ *
+ * **Marketplace/country (GitHub issue #210)**: `configFields()` exposes the
+ * shared `marketplace` select — see `AmazonScraping`'s own docblock for the
+ * mechanics. Unlike `AmazonDvdBlurayProvider`, no book-specific German
+ * product page was live-checked as part of that research (only a DVD/
+ * Blu-ray page and a search page were), so none of this class's own field
+ * labels (`Publisher`, `Language`, `ISBN-13`, ...) have a confirmed German
+ * fallback yet — switching to `amazon.de` here works (the marketplace/
+ * request-level plumbing is shared and confirmed), but per-field German
+ * label matching for books specifically remains unconfirmed, not
+ * guessed at speculatively.
  */
 class AmazonBookProvider implements MetadataProviderInterface
 {
@@ -39,10 +51,12 @@ class AmazonBookProvider implements MetadataProviderInterface
         return 'book';
     }
 
-    /** No API key — there is no API. */
+    /** GitHub issue #210 — the only config: which Amazon marketplace/country to scrape. See AmazonScraping's docblock. */
     public function configFields(): array
     {
-        return [];
+        return [
+            new MetadataProviderConfigField('marketplace', type: 'select', options: ['amazon.com', 'amazon.de']),
+        ];
     }
 
     /**
@@ -55,10 +69,14 @@ class AmazonBookProvider implements MetadataProviderInterface
      * Amazon providers — the "always USD" assumption was wrong) and, book-
      * specifically, discovered `#bookDescription_feature_div` as the real
      * source for `description`, which had silently always been null before.
+     * Bumped again to v0.3-beta for #210's marketplace selector plus #211's
+     * shared price-extraction fix (both live-verified, see AmazonScraping's
+     * own docblock) — this class's own field labels stay unconfirmed for
+     * amazon.de specifically, see this class's own docblock.
      */
     public function version(): string
     {
-        return 'v0.2-beta';
+        return 'v0.3-beta';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes amazon.com's pages, see AmazonScraping's docblock. */

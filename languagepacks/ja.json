@@ -560,7 +560,14 @@
         "fields": {
           "api_key": "APIキー",
           "read_access_token": "APIリードアクセストークン",
-          "prompt": "プロンプト"
+          "prompt": "プロンプト",
+          "marketplace": "マーケット"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "英語 (amazon.com)",
+            "amazon_de": "ドイツ語 (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {

@@ -560,7 +560,14 @@
         "fields": {
           "api_key": "API 密钥",
           "read_access_token": "API 只读访问令牌",
-          "prompt": "提示词"
+          "prompt": "提示词",
+          "marketplace": "市场"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "英语 (amazon.com)",
+            "amazon_de": "德语 (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {

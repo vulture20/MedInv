@@ -4,15 +4,33 @@ namespace Tests\Feature;
 
 use App\Domain\Metadata\MetadataProviderRequestException;
 use App\Domain\Metadata\Providers\Cd\AmazonCdProvider;
+use App\Models\MetadataPlugin;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /** AmazonCdProvider (briefing 8.2, GitHub issue #50) — see AmazonBookProviderTest's docblock for the fixture-based testing approach and why. */
 class AmazonCdProviderTest extends TestCase
 {
+    // See AmazonBookProviderTest's matching comment (GitHub issue #210).
+    use RefreshDatabase;
+
     private const SEARCH_API = 'https://www.amazon.com/s*';
 
     private const PRODUCT_API = 'https://www.amazon.com/dp/*';
+
+    private const SEARCH_API_DE = 'https://www.amazon.de/s*';
+
+    private function withMarketplace(string $marketplace): void
+    {
+        MetadataPlugin::query()->create([
+            'provider_key' => 'cd.amazon',
+            'name' => 'Amazon',
+            'media_type' => 'cd',
+            'enabled' => true,
+            'config' => ['marketplace' => $marketplace],
+        ]);
+    }
 
     private function searchResultHtml(): string
     {
@@ -115,6 +133,28 @@ class AmazonCdProviderTest extends TestCase
         $provider = app(AmazonCdProvider::class);
 
         $this->assertSame('Amazon', $provider->name());
-        $this->assertSame('v0.2-beta', $provider->version());
+        $this->assertSame('v0.3-beta', $provider->version());
+    }
+
+    /** GitHub issue #210: no API key, but a marketplace select is now the one config field. */
+    public function test_configuration_offers_only_the_marketplace_select(): void
+    {
+        $fields = app(AmazonCdProvider::class)->configFields();
+
+        $this->assertCount(1, $fields);
+        $this->assertSame('marketplace', $fields[0]->key);
+        $this->assertSame(['amazon.com', 'amazon.de'], $fields[0]->options);
+    }
+
+    /** GitHub issue #210: an explicit amazon.de marketplace switches both the request host and Accept-Language — see AmazonBookProviderTest's matching test. */
+    public function test_marketplace_can_be_configured_to_amazon_de(): void
+    {
+        $this->withMarketplace('amazon.de');
+        Http::fake([self::SEARCH_API_DE => Http::response($this->searchResultHtml(), 200)]);
+
+        app(AmazonCdProvider::class)->search('ok computer');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.amazon.de/s')
+            && ($request->header('Accept-Language')[0] ?? '') === 'de-DE,de;q=0.9');
     }
 }

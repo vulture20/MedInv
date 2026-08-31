@@ -560,7 +560,14 @@
         "fields": {
           "api_key": "Chave de API",
           "read_access_token": "Token de acesso de leitura da API",
-          "prompt": "Prompt"
+          "prompt": "Prompt",
+          "marketplace": "Mercado"
+        },
+        "fieldOptions": {
+          "marketplace": {
+            "amazon_com": "Inglês (amazon.com)",
+            "amazon_de": "Alemão (amazon.de)"
+          }
         }
       },
       "pluginOrdering": {
