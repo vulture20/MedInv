@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Image Build
 
 # Builds docker/Dockerfile (the single image that bundles backend + frontend,
 # see CLAUDE.md's "Two apps, one deployable image" section) and publishes it
