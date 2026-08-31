@@ -109,6 +109,8 @@
         "price": "Cena",
         "currency": "Waluta",
         "location": "Lokalizacja",
+        "has_duplicates": "Występują duplikaty",
+        "duplicate_count": "Liczba duplikatów",
         "authors": "Autor(zy)",
         "format": "Format",
         "genre": "Gatunek",

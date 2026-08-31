@@ -109,6 +109,8 @@
         "price": "价格",
         "currency": "货币",
         "location": "存放位置",
+        "has_duplicates": "存在重复",
+        "duplicate_count": "重复数量",
         "authors": "作者",
         "format": "版本",
         "genre": "类型",

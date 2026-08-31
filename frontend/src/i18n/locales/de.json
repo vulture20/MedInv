@@ -143,6 +143,8 @@
       "price": "Preis",
       "currency": "Währung",
       "location": "Standort",
+      "has_duplicates": "Dubletten vorhanden",
+      "duplicate_count": "Anzahl der Dubletten",
       "authors": "Autor(en)",
       "format": "Format",
       "genre": "Genre",

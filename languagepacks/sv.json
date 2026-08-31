@@ -145,6 +145,8 @@
         "price": "Pris",
         "currency": "Valuta",
         "location": "Plats",
+        "has_duplicates": "Dubbletter finns",
+        "duplicate_count": "Antal dubbletter",
         "authors": "Författare",
         "format": "Format",
         "genre": "Genre",

@@ -143,6 +143,8 @@
       "price": "Price",
       "currency": "Currency",
       "location": "Location",
+      "has_duplicates": "Duplicates present",
+      "duplicate_count": "Number of duplicates",
       "authors": "Author(s)",
       "format": "Format",
       "genre": "Genre",

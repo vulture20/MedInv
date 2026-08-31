@@ -427,40 +427,63 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                 </fieldset>
               )}
 
-              {specs.map((field) => (
-                <label key={field.key}>
-                  {t(`mediaItem.fields.${field.key}`)}
-                  {field.type === 'textarea' ? (
-                    <textarea
-                      value={values[field.key] ?? ''}
-                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                    />
-                  ) : field.type === 'select' ? (
-                    // GitHub issue #114 — a fixed, browser-provided value
-                    // list (e.g. ISO 4217 currency codes) instead of free text.
-                    <select
-                      required={field.required}
-                      value={values[field.key] ?? ''}
-                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                    >
-                      <option value="">{t('mediaItem.selectValue')}</option>
-                      {field.options?.map((option) => (
-                        <option key={option} value={option}>
-                          {field.formatOption ? field.formatOption(option, i18n.language) : option}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type={field.type}
-                      required={field.required}
-                      step={field.type === 'number' ? 'any' : undefined}
-                      value={values[field.key] ?? ''}
-                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                    />
-                  )}
-                </label>
-              ))}
+              {specs.map((field) => {
+                // GitHub issue #208: duplicate_count only makes sense once
+                // has_duplicates is checked — see CreateMediaItemDialog.tsx's
+                // identical special case for the reasoning.
+                if (field.key === 'duplicate_count' && values.has_duplicates !== 'true') return null
+
+                return (
+                  <label key={field.key} className={field.type === 'boolean' ? 'media-item-dialog__checkbox-label' : undefined}>
+                    {field.type !== 'boolean' && t(`mediaItem.fields.${field.key}`)}
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        value={values[field.key] ?? ''}
+                        onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                      />
+                    ) : field.type === 'select' ? (
+                      // GitHub issue #114 — a fixed, browser-provided value
+                      // list (e.g. ISO 4217 currency codes) instead of free text.
+                      <select
+                        required={field.required}
+                        value={values[field.key] ?? ''}
+                        onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                      >
+                        <option value="">{t('mediaItem.selectValue')}</option>
+                        {field.options?.map((option) => (
+                          <option key={option} value={option}>
+                            {field.formatOption ? field.formatOption(option, i18n.language) : option}
+                          </option>
+                        ))}
+                      </select>
+                    ) : field.type === 'boolean' ? (
+                      <>
+                        <input
+                          type="checkbox"
+                          checked={values[field.key] === 'true'}
+                          onChange={(e) =>
+                            setValues((prev) => ({
+                              ...prev,
+                              [field.key]: e.target.checked ? 'true' : 'false',
+                              // GitHub issue #208 — see CreateMediaItemDialog.tsx's identical comment.
+                              ...(field.key === 'has_duplicates' && !e.target.checked ? { duplicate_count: '' } : {}),
+                            }))
+                          }
+                        />
+                        {t(`mediaItem.fields.${field.key}`)}
+                      </>
+                    ) : (
+                      <input
+                        type={field.type}
+                        required={field.required}
+                        step={field.type === 'number' ? 'any' : undefined}
+                        value={values[field.key] ?? ''}
+                        onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                      />
+                    )}
+                  </label>
+                )
+              })}
 
               {/* GitHub issue #90: a dedicated, non-FIELD_SPECS editor for a CD's track list (GitHub issue #92: now shared with CreateMediaItemDialog.tsx, see TrackListEditor.tsx) — mirrors the read-only <ol> below (shown only outside editing), since a track list isn't a single scalar value the generic loop above can represent. */}
               {library.media_type === 'cd' && <TrackListEditor tracks={tracks} onChange={setTracks} />}
@@ -477,7 +500,15 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
               <dt>{t('mediaItem.fields.ean')}</dt>
               <dd>{item.ean}</dd>
               {specs
-                .filter((f) => f.key !== 'title')
+                // GitHub issue #208: has_duplicates/duplicate_count are
+                // deliberately excluded from this generic loop — they don't
+                // follow its "always show a row, '—' when empty" rule (the
+                // request is explicit: show nothing at all, not even a "—"
+                // or "0", when there are no known duplicates), and the count
+                // has to appear right next to the "Bibliothek" row below
+                // instead of in FIELD_SPECS order. See the bespoke row
+                // right after this loop.
+                .filter((f) => f.key !== 'title' && f.key !== 'has_duplicates' && f.key !== 'duplicate_count')
                 .map((field) => (
                   <div key={field.key} className="media-item-dialog__row">
                     <dt>{t(`mediaItem.fields.${field.key}`)}</dt>
@@ -508,6 +539,13 @@ export function MediaItemDetailDialog({ library, item, libraries, onClose, onUpd
                 <dt>{t('mediaItem.fields.library')}</dt>
                 <dd>{library.name}</dd>
               </div>
+              {/* GitHub issue #208: only shown when duplicates are actually known — not even a "—"/"0" row otherwise, per the feature request. Placed directly under "Bibliothek" rather than in FIELD_SPECS order (see the .filter() above this loop). */}
+              {item.has_duplicates && (
+                <div className="media-item-dialog__row">
+                  <dt>{t('mediaItem.fields.duplicate_count')}</dt>
+                  <dd>{item.duplicate_count ?? '—'}</dd>
+                </div>
+              )}
             </dl>
           )}
 

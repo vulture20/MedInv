@@ -675,6 +675,26 @@ td {
   margin-bottom: 0;
 }
 
+/*
+ * GitHub issue #208: a checkbox field (has_duplicates) needs the same
+ * horizontal-row override the EAN editor's radio labels above already use
+ * — the label-above/input-below column layout every other
+ * .media-item-dialog label has doesn't suit a checkbox, which reads
+ * naturally as "box, then its own text" on one line, not stacked.
+ * `.media-item-dialog label` (0,1,1) outweighs a bare `.media-item-dialog__checkbox-label`
+ * (0,1,0) — confirmed live, the unqualified version silently lost this
+ * exact cascade fight — so this needs to match label's own specificity.
+ */
+.media-item-dialog label.media-item-dialog__checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.media-item-dialog__checkbox-label input[type='checkbox'] {
+  width: auto;
+}
+
 .media-item-dialog__ean-editor input[type='text'] {
   flex: 1;
   min-width: 0;

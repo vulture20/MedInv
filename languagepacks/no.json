@@ -145,6 +145,8 @@
         "price": "Pris",
         "currency": "Valuta",
         "location": "Plassering",
+        "has_duplicates": "Duplikater finnes",
+        "duplicate_count": "Antall duplikater",
         "authors": "Forfatter(e)",
         "format": "Format",
         "genre": "Sjanger",

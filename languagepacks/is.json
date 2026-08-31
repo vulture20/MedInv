@@ -145,6 +145,8 @@
         "price": "Verð",
         "currency": "Gjaldmiðill",
         "location": "Staðsetning",
+        "has_duplicates": "Afrit til staðar",
+        "duplicate_count": "Fjöldi afrita",
         "authors": "Höfundur/-ar",
         "format": "Snið",
         "genre": "Tegund",

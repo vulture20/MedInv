@@ -109,6 +109,8 @@
         "price": "Prix",
         "currency": "Devise",
         "location": "Emplacement",
+        "has_duplicates": "Doublons présents",
+        "duplicate_count": "Nombre de doublons",
         "authors": "Auteur(s)",
         "format": "Format",
         "genre": "Genre",

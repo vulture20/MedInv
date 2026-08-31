@@ -145,6 +145,8 @@
         "price": "Hinta",
         "currency": "Valuutta",
         "location": "Sijainti",
+        "has_duplicates": "Kaksoiskappaleita on",
+        "duplicate_count": "Kaksoiskappaleiden määrä",
         "authors": "Tekijä(t)",
         "format": "Muoto",
         "genre": "Genre",

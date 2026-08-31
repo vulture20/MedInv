@@ -535,6 +535,13 @@ class MediaItemController extends Controller
                 // list — same "records whatever the user says" stance
                 // `currency` above already takes.
                 'location' => ['nullable', 'string'],
+                // GitHub issue #208: the count is only meaningful once the
+                // flag is set — 'required_if' + 'nullable' together, same
+                // combination LibraryController/AdminSettingsController
+                // already use for an analogous "field B required only when
+                // flag A is true" relationship.
+                'has_duplicates' => ['nullable', 'boolean'],
+                'duplicate_count' => ['nullable', 'integer', 'min:0', 'required_if:has_duplicates,true'],
             ],
             'cd' => [
                 'title' => ['required', 'string', 'max:255'],
@@ -564,6 +571,9 @@ class MediaItemController extends Controller
                 'currency' => ['nullable', 'string', 'max:3'],
                 // GitHub issue #96.
                 'location' => ['nullable', 'string'],
+                // GitHub issue #208.
+                'has_duplicates' => ['nullable', 'boolean'],
+                'duplicate_count' => ['nullable', 'integer', 'min:0', 'required_if:has_duplicates,true'],
             ],
             'dvd_bluray' => [
                 'title' => ['required', 'string', 'max:255'],
@@ -590,6 +600,9 @@ class MediaItemController extends Controller
                 'currency' => ['nullable', 'string', 'max:3'],
                 // GitHub issue #96.
                 'location' => ['nullable', 'string'],
+                // GitHub issue #208.
+                'has_duplicates' => ['nullable', 'boolean'],
+                'duplicate_count' => ['nullable', 'integer', 'min:0', 'required_if:has_duplicates,true'],
             ],
         };
     }

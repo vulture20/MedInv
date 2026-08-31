@@ -219,40 +219,70 @@ export function CreateMediaItemDialog({ library, initialEan, initialAttributes, 
               {/* GitHub issue #151: no longer required — MediaItemController::store() generates a NoEAN-... placeholder when this is left empty. */}
               <input value={ean} onChange={(e) => setEan(e.target.value)} placeholder={t('mediaItem.eanOptionalHint')} />
             </label>
-            {specs.map((field) => (
-              <label key={field.key}>
-                {t(`mediaItem.fields.${field.key}`)}
-                {field.type === 'textarea' ? (
-                  <textarea
-                    value={values[field.key] ?? ''}
-                    onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  />
-                ) : field.type === 'select' ? (
-                  // GitHub issue #114 — a fixed, browser-provided value list
-                  // (e.g. ISO 4217 currency codes) instead of free text.
-                  <select
-                    required={field.required}
-                    value={values[field.key] ?? ''}
-                    onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  >
-                    <option value="">{t('mediaItem.selectValue')}</option>
-                    {field.options?.map((option) => (
-                      <option key={option} value={option}>
-                        {field.formatOption ? field.formatOption(option, i18n.language) : option}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type={field.type}
-                    required={field.required}
-                    step={field.type === 'number' ? 'any' : undefined}
-                    value={values[field.key] ?? ''}
-                    onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                  />
-                )}
-              </label>
-            ))}
+            {specs.map((field) => {
+              // GitHub issue #208: duplicate_count only makes sense once
+              // has_duplicates is checked — hiding its whole label rather
+              // than merely disabling the input is enough on its own, since
+              // payloadFromValues() only ever reads it as a plain FIELD_SPECS
+              // value alongside has_duplicates itself (same "hide, don't
+              // just disable" precedent LibrarySettingsDialog.tsx's own
+              // allUsersWrite toggle already uses).
+              if (field.key === 'duplicate_count' && values.has_duplicates !== 'true') return null
+
+              return (
+                <label key={field.key} className={field.type === 'boolean' ? 'media-item-dialog__checkbox-label' : undefined}>
+                  {field.type !== 'boolean' && t(`mediaItem.fields.${field.key}`)}
+                  {field.type === 'textarea' ? (
+                    <textarea
+                      value={values[field.key] ?? ''}
+                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    />
+                  ) : field.type === 'select' ? (
+                    // GitHub issue #114 — a fixed, browser-provided value list
+                    // (e.g. ISO 4217 currency codes) instead of free text.
+                    <select
+                      required={field.required}
+                      value={values[field.key] ?? ''}
+                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    >
+                      <option value="">{t('mediaItem.selectValue')}</option>
+                      {field.options?.map((option) => (
+                        <option key={option} value={option}>
+                          {field.formatOption ? field.formatOption(option, i18n.language) : option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : field.type === 'boolean' ? (
+                    <>
+                      <input
+                        type="checkbox"
+                        checked={values[field.key] === 'true'}
+                        onChange={(e) =>
+                          setValues((prev) => ({
+                            ...prev,
+                            [field.key]: e.target.checked ? 'true' : 'false',
+                            // GitHub issue #208: clear the paired count the
+                            // moment duplicates are unchecked, so an earlier
+                            // number never gets resent once it's no longer
+                            // shown/editable.
+                            ...(field.key === 'has_duplicates' && !e.target.checked ? { duplicate_count: '' } : {}),
+                          }))
+                        }
+                      />
+                      {t(`mediaItem.fields.${field.key}`)}
+                    </>
+                  ) : (
+                    <input
+                      type={field.type}
+                      required={field.required}
+                      step={field.type === 'number' ? 'any' : undefined}
+                      value={values[field.key] ?? ''}
+                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    />
+                  )}
+                </label>
+              )
+            })}
 
             {/* GitHub issue #92 — see TrackListEditor.tsx's own docblock for why this needed to be added here too, alongside #90's edit-dialog version. */}
             {library.media_type === 'cd' && <TrackListEditor tracks={tracks} onChange={setTracks} />}

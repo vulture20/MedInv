@@ -109,6 +109,8 @@
         "price": "価格",
         "currency": "通貨",
         "location": "保管場所",
+        "has_duplicates": "重複あり",
+        "duplicate_count": "重複数",
         "authors": "著者",
         "format": "形式",
         "genre": "ジャンル",

@@ -109,6 +109,8 @@
         "price": "Prezzo",
         "currency": "Valuta",
         "location": "Posizione",
+        "has_duplicates": "Duplicati presenti",
+        "duplicate_count": "Numero di duplicati",
         "authors": "Autore/i",
         "format": "Formato",
         "genre": "Genere",

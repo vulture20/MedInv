@@ -109,6 +109,8 @@
         "price": "Fiyat",
         "currency": "Para birimi",
         "location": "Konum",
+        "has_duplicates": "Kopya mevcut",
+        "duplicate_count": "Kopya sayısı",
         "authors": "Yazar(lar)",
         "format": "Format",
         "genre": "Tür",

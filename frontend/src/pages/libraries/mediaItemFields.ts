@@ -65,6 +65,9 @@ export interface MediaItem {
   currency?: string | null
   /** Free text, e.g. "Regal 3, Fach 2" — a second deliberate extension beyond briefing 6.1-6.3's fixed attribute set (GitHub issue #96), see the migration that added it for why. */
   location?: string | null
+  /** GitHub issue #208: whether known duplicate copies of this item exist, and how many — a third deliberate extension beyond briefing 6.1-6.3's fixed attribute set, see the migration that added it for why. `duplicate_count` is only meaningful (and only ever shown/sent) when `has_duplicates` is true — see valuesFromItem()/payloadFromValues() and MediaItemDetailDialog's read view. */
+  has_duplicates?: boolean
+  duplicate_count?: number | null
   // book
   authors?: string | null
   format?: string | null
@@ -100,7 +103,7 @@ export interface MediaItem {
   production_year?: number | null
 }
 
-type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'select'
+type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'select' | 'boolean'
 
 export interface FieldSpec {
   key: keyof MediaItem
@@ -165,6 +168,9 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'isbn13', type: 'text' },
     { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
+    // GitHub issue #208 — deliberately after description, per the feature request.
+    { key: 'has_duplicates', type: 'boolean' },
+    { key: 'duplicate_count', type: 'number' },
   ],
   cd: [
     { key: 'title', type: 'text', required: true },
@@ -178,6 +184,9 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'currency', type: 'select', options: CURRENCY_CODES, formatOption: currencyLabel },
     { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
+    // GitHub issue #208 — deliberately after description, per the feature request.
+    { key: 'has_duplicates', type: 'boolean' },
+    { key: 'duplicate_count', type: 'number' },
   ],
   dvd_bluray: [
     { key: 'title', type: 'text', required: true },
@@ -195,6 +204,9 @@ export const FIELD_SPECS: Record<MediaType, FieldSpec[]> = {
     { key: 'currency', type: 'select', options: CURRENCY_CODES, formatOption: currencyLabel },
     { key: 'location', type: 'text' },
     { key: 'description', type: 'textarea' },
+    // GitHub issue #208 — deliberately after description, per the feature request.
+    { key: 'has_duplicates', type: 'boolean' },
+    { key: 'duplicate_count', type: 'number' },
   ],
 }
 
@@ -271,16 +283,24 @@ export function valuesFromItem(item: MediaItem, specs: FieldSpec[]): Record<stri
   return Object.fromEntries(
     specs.map((f) => {
       const raw = item[f.key]
+      // GitHub issue #208: a checkbox's `checked` prop needs a stable
+      // 'true'/'false' string to compare against, not the generic
+      // null/undefined-becomes-'' fallback below (which would leave an
+      // explicitly-false has_duplicates indistinguishable from "no value
+      // known yet" — harmless for has_duplicates itself, which the backend
+      // always returns as a real boolean, but worth being explicit about).
+      if (f.type === 'boolean') return [f.key, raw === true ? 'true' : 'false']
       if (raw === null || raw === undefined) return [f.key, '']
       return [f.key, f.type === 'date' ? dateOnly(raw) : String(raw)]
     })
   )
 }
 
-export function payloadFromValues(values: Record<string, string>, specs: FieldSpec[]): Record<string, string | number | null> {
+export function payloadFromValues(values: Record<string, string>, specs: FieldSpec[]): Record<string, string | number | boolean | null> {
   return Object.fromEntries(
     specs.map((f) => {
       const raw = values[f.key] ?? ''
+      if (f.type === 'boolean') return [f.key, raw === 'true']
       if (raw === '') return [f.key, null]
       return [f.key, f.type === 'number' ? Number(raw) : raw]
     })

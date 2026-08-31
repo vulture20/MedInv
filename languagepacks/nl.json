@@ -109,6 +109,8 @@
         "price": "Prijs",
         "currency": "Valuta",
         "location": "Locatie",
+        "has_duplicates": "Duplicaten aanwezig",
+        "duplicate_count": "Aantal duplicaten",
         "authors": "Auteur(s)",
         "format": "Formaat",
         "genre": "Genre",

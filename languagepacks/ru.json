@@ -109,6 +109,8 @@
         "price": "Цена",
         "currency": "Валюта",
         "location": "Местоположение",
+        "has_duplicates": "Есть дубликаты",
+        "duplicate_count": "Количество дубликатов",
         "authors": "Автор(ы)",
         "format": "Формат",
         "genre": "Жанр",
