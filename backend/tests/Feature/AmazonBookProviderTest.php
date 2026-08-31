@@ -191,6 +191,56 @@ class AmazonBookProviderTest extends TestCase
         $this->assertSame('EUR', $candidate->attributes['currency']);
     }
 
+    /**
+     * GitHub issue #212 (user-reported against a real deployment): the JSON
+     * price blob's own `currencySymbol` field is not reliably an
+     * already-ISO code the way #137's one sample suggested — a real scrape
+     * came back with the literal glyph "€" instead, which used to be
+     * written straight into the database unnormalized (MediaItemController's
+     * `currency` validation rule, `max:3`, trivially accepts a one-character
+     * glyph). normalizeCurrency() now maps it to 'EUR' before it's ever
+     * returned.
+     */
+    public function test_a_currency_symbol_glyph_in_the_json_blob_is_normalized_to_an_iso_code(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune</span>'
+                .'<div id="corePrice_feature_div"></div>'
+                .'<div class="a-section aok-hidden twister-plus-buying-options-price-data">'
+                .'{"desktop_buybox_group_1":[{"displayPrice":"8,85 €","priceAmount":8.85,"currencySymbol":"€"}]}'
+                .'</div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertSame(8.85, $candidate->attributes['price']);
+        $this->assertSame('EUR', $candidate->attributes['currency']);
+    }
+
+    /** GitHub issue #212: a completely unrecognized currency value (neither a known symbol nor a plausible 3-letter code) falls back to the marketplace's own default rather than persisting the raw, unrecognized value. */
+    public function test_an_unrecognized_currency_value_falls_back_to_the_marketplace_default(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Dune</span>'
+                .'<div id="corePrice_feature_div"></div>'
+                .'<div class="a-section aok-hidden twister-plus-buying-options-price-data">'
+                .'{"desktop_buybox_group_1":[{"displayPrice":"8.85","priceAmount":8.85,"currencySymbol":"???"}]}'
+                .'</div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonBookProvider::class)->lookupByCode('9780441013593')[0];
+
+        $this->assertSame('USD', $candidate->attributes['currency']);
+    }
+
     /** GitHub issue #137: when the JSON price blob is absent (its markup shape wasn't confirmed for every category/page), the legacy DOM-based extraction — assumed USD, see AmazonScraping::amazonPriceAndCurrency()'s own docblock — still applies as a fallback. */
     public function test_falls_back_to_legacy_price_markup_when_the_json_blob_is_absent(): void
     {

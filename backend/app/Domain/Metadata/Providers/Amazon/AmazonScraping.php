@@ -123,17 +123,26 @@ trait AmazonScraping
     private const TIMEOUT_SECONDS = 10;
 
     /**
-     * Maps a-price-symbol's plain glyph (GitHub issue #211) to the 3-letter
-     * ISO code the rest of this trait uses for `currency` everywhere else
-     * (the JSON price-blob path's `currencySymbol` is, despite its name,
-     * already an ISO code — see amazonPriceAndCurrency()'s own docblock).
-     * Only the two marketplaces this trait can currently be configured for
-     * are covered; an unrecognized/future symbol falls back to
-     * defaultCurrency() rather than a wrong guess.
+     * Maps a plain currency glyph to its 3-letter ISO 4217 code — used by
+     * normalizeCurrency() (GitHub issue #212) against every raw currency
+     * value this trait extracts, not just a-price-symbol's glyph (GitHub
+     * issue #211): a real, user-reported production scrape showed the JSON
+     * price-blob path's own `currencySymbol` field returning the literal
+     * glyph `"€"` too, contradicting this trait's earlier assumption (see
+     * amazonPriceAndCurrency()'s own docblock) that it was already
+     * guaranteed to be an ISO code just because of a single sample checked
+     * for #137. £/¥ are included defensively even though this trait can
+     * currently only be configured for amazon.com/amazon.de — a future
+     * marketplace, or an amazon.com page geo-adapted to another currency
+     * the way #137 already found EUR unexpectedly appearing there, could
+     * plausibly surface either. An unrecognized/future symbol falls back to
+     * defaultCurrency() (see normalizeCurrency()) rather than a wrong guess.
      */
     private const CURRENCY_SYMBOL_TO_ISO = [
         '€' => 'EUR',
         '$' => 'USD',
+        '£' => 'GBP',
+        '¥' => 'JPY',
     ];
 
     /**
@@ -302,6 +311,17 @@ trait AmazonScraping
      * instead, since a `.de`-configured scrape landing in that fallback
      * would otherwise wrongly report a `.com`-only currency.
      *
+     * GitHub issue #212 (user-reported against a real deployment): the JSON
+     * path's own `currencySymbol` turned out to *not* reliably be an
+     * already-ISO code the way #137's one sample suggested — a real scrape
+     * came back with the literal glyph `"€"` instead, which nothing here
+     * caught (`MediaItemController::rulesFor()`'s `currency` rule is just
+     * `['nullable', 'string', 'max:3']`, which a one-character glyph trivially
+     * satisfies) and got persisted to the database as-is. Every path's raw
+     * currency value is now passed through normalizeCurrency() before this
+     * method returns it, rather than trusting any one path's own field to
+     * already be a valid ISO 4217 code.
+     *
      * @return array{price: ?float, currency: ?string}
      */
     private function amazonPriceAndCurrency(DOMXPath $xpath): array
@@ -314,7 +334,7 @@ trait AmazonScraping
             if ($offer !== null) {
                 return [
                     'price' => (float) $offer['priceAmount'],
-                    'currency' => is_string($offer['currencySymbol'] ?? null) ? $offer['currencySymbol'] : null,
+                    'currency' => $this->normalizeCurrency(is_string($offer['currencySymbol'] ?? null) ? $offer['currencySymbol'] : null),
                 ];
             }
         }
@@ -337,11 +357,9 @@ trait AmazonScraping
             $fractionDigits = preg_replace('/\D/', '', $fractionNode?->textContent ?? '') ?? '';
 
             if ($wholeDigits !== '' && $fractionDigits !== '') {
-                $symbol = trim($symbolNode?->textContent ?? '');
-
                 return [
                     'price' => (float) "{$wholeDigits}.{$fractionDigits}",
-                    'currency' => self::CURRENCY_SYMBOL_TO_ISO[$symbol] ?? $this->defaultCurrency(),
+                    'currency' => $this->normalizeCurrency(trim($symbolNode?->textContent ?? '')),
                 ];
             }
         }
@@ -537,6 +555,42 @@ trait AmazonScraping
     private function defaultCurrency(): string
     {
         return $this->marketplace() === 'amazon.de' ? 'EUR' : 'USD';
+    }
+
+    /**
+     * GitHub issue #212: the single point every raw currency value
+     * extracted anywhere in this trait must pass through before
+     * amazonPriceAndCurrency() returns it — a real, user-reported
+     * production scrape found the JSON price-blob path's `currencySymbol`
+     * field returning the literal glyph `"€"` rather than the ISO code
+     * `"EUR"` this trait had assumed it always was, and nothing downstream
+     * caught it: `MediaItemController::rulesFor()`'s `currency` rule is
+     * just `['nullable', 'string', 'max:3']`, which a one-character glyph
+     * trivially satisfies, so the invalid value was persisted as-is.
+     *
+     * Never passes an unrecognized raw value through: a known glyph maps
+     * via CURRENCY_SYMBOL_TO_ISO, an already-plausible-looking 3-letter
+     * code is upper-cased and kept, and anything else — including `null`,
+     * empty, or a completely unrecognized string — falls back to
+     * defaultCurrency() rather than risk writing something invalid again.
+     */
+    private function normalizeCurrency(?string $raw): string
+    {
+        $trimmed = trim($raw ?? '');
+
+        if ($trimmed === '') {
+            return $this->defaultCurrency();
+        }
+
+        if (isset(self::CURRENCY_SYMBOL_TO_ISO[$trimmed])) {
+            return self::CURRENCY_SYMBOL_TO_ISO[$trimmed];
+        }
+
+        if (preg_match('/^[A-Za-z]{3}$/', $trimmed) === 1) {
+            return strtoupper($trimmed);
+        }
+
+        return $this->defaultCurrency();
     }
 
     /**
