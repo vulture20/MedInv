@@ -3,7 +3,7 @@
 **Author:** Thorsten Schröpel · [🇩🇪 Deutsche Version](README.de.md)
 
 [![Docker Image](https://img.shields.io/badge/ghcr.io-vulture20%2Fmedinv-2496ED?logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
-[![Docker Pulls](https://ghcr-badge.elias.eu.org/shield/vulture20/MedInv/medinv)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
+[![Docker Pulls](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Fvulture20%2FMedInv%2Fmedinv&query=downloadCount&label=Docker%20Pulls&color=2496ED&logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
 [![Docker Image Build](https://github.com/vulture20/MedInv/actions/workflows/docker-image.yml/badge.svg)](https://github.com/vulture20/MedInv/actions/workflows/docker-image.yml)
 [![Status](https://img.shields.io/badge/status-early%20beta-orange)](#-project-status)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
