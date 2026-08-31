@@ -5,6 +5,7 @@
     "common": {
       "name": "Naam",
       "email": "E-mail",
+      "sourceCode": "Broncode",
       "loading": "Laden…"
     },
     "nav": {

@@ -5,6 +5,7 @@
     "common": {
       "name": "Имя",
       "email": "Эл. почта",
+      "sourceCode": "Исходный код",
       "loading": "Загрузка…"
     },
     "nav": {

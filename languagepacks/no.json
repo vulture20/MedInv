@@ -5,6 +5,7 @@
     "common": {
       "name": "Navn",
       "email": "E-post",
+      "sourceCode": "Kildekode",
       "loading": "Laster…"
     },
     "nav": {

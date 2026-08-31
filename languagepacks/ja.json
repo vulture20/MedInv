@@ -5,6 +5,7 @@
     "common": {
       "name": "名前",
       "email": "メールアドレス",
+      "sourceCode": "ソースコード",
       "loading": "読み込み中…"
     },
     "nav": {

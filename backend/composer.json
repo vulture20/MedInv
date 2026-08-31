@@ -4,7 +4,7 @@
     "type": "project",
     "description": "MedInv API — media library management (books, CDs, DVDs/Blu-ray).",
     "keywords": ["laravel", "medinv"],
-    "license": "MIT",
+    "license": "AGPL-3.0-or-later",
     "authors": [
         {
             "name": "Thorsten Schröpel"

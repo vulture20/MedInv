@@ -5,6 +5,7 @@
     "common": {
       "name": "名称",
       "email": "电子邮箱",
+      "sourceCode": "源代码",
       "loading": "加载中…"
     },
     "nav": {

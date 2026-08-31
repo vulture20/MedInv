@@ -5,6 +5,7 @@
     "common": {
       "name": "Nimi",
       "email": "Sähköposti",
+      "sourceCode": "Lähdekoodi",
       "loading": "Ladataan…"
     },
     "nav": {

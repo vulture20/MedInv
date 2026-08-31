@@ -5,6 +5,7 @@
     "common": {
       "name": "Ad",
       "email": "E-posta",
+      "sourceCode": "Kaynak kodu",
       "loading": "Yükleniyor…"
     },
     "nav": {

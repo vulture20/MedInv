@@ -5,6 +5,7 @@
     "common": {
       "name": "Namn",
       "email": "E-post",
+      "sourceCode": "Källkod",
       "loading": "Laddar…"
     },
     "nav": {

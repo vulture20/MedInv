@@ -20,6 +20,14 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 # --- Stage 3: application image ---------------------------------------------
 FROM php:8.4-fpm-alpine AS app
 
+# GitHub issue #207: MedInv relicensed from MIT to AGPL-3.0-or-later —
+# these two OCI-standard annotations are purely informational (read by
+# tools like `docker inspect`/registry UIs, not by the app itself) but
+# make the shipped image's license and source repository discoverable
+# without needing to already know to look in this project's LICENSE file.
+LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
+LABEL org.opencontainers.image.source="https://github.com/vulture20/MedInv"
+
 # GitHub issue #47: the GD extension (imagecreatefromstring() and friends,
 # CoverDownloadService::generateThumbnail()) used to be entirely missing
 # from this image — every single thumbnail-generation attempt, in every

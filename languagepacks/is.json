@@ -5,6 +5,7 @@
     "common": {
       "name": "Nafn",
       "email": "Tölvupóstur",
+      "sourceCode": "Frumkóði",
       "loading": "Hleð…"
     },
     "nav": {

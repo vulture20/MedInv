@@ -4,6 +4,7 @@
 
 [![Docker Image](https://img.shields.io/badge/ghcr.io-vulture20%2Fmedinv-2496ED?logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
 [![Status](https://img.shields.io/badge/status-fr%C3%BChe%20Beta-orange)](#-projektstatus)
+[![Lizenz: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 MedInv ist eine selbst gehostete, responsive Web-App zur zentralen Verwaltung physischer Mediensammlungen — **Bücher, CDs und DVDs/Blu-rays** — über mehrere unabhängige Bibliotheken hinweg, mit bibliotheksweiser Freigabe und rollenbasiertem Zugriff. Barcode scannen, MedInv holt Metadaten und Cover automatisch – und du behältst den Überblick, was du besitzt, was es wert ist und mit wem es geteilt wird.
 
@@ -139,3 +140,9 @@ npm run build             # Produktions-Build (frontend/dist)
 ```
 
 Das Docker-Image lokal bauen und betreiben (statt von ghcr.io zu ziehen) funktioniert genauso — siehe [`docker/.env.template`](docker/.env.template) und `docker compose up --build` aus `docker/` heraus.
+
+## ⚖️ Lizenz
+
+MedInv steht unter der [GNU Affero General Public License v3.0 or later](LICENSE) (AGPL-3.0-or-later).
+
+Kurz gefasst: Du darfst MedInv frei betreiben, verändern und selbst hosten. Die zusätzliche Pflicht, die AGPL im Vergleich zu einer gewöhnlichen GPL-Lizenz mit sich bringt: Wenn du eine **veränderte** Version von MedInv betreibst und anderen Nutzern über ein Netzwerk zugänglich machst (z. B. als gehosteten Dienst anbietest), musst du diesen Nutzern auch Zugriff auf deinen veränderten Quellcode geben — nicht nur Personen, denen du die Software direkt aushändigst. Der reine Betrieb einer unveränderten Kopie für dich selbst bringt über die üblichen Copyleft-Bedingungen hinaus keine zusätzliche Pflicht mit sich.

@@ -5,6 +5,7 @@
     "common": {
       "name": "Nombre",
       "email": "Correo electrónico",
+      "sourceCode": "Código fuente",
       "loading": "Cargando…"
     },
     "nav": {
