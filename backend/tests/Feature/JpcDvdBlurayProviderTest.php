@@ -286,6 +286,6 @@ class JpcDvdBlurayProviderTest extends TestCase
         $provider = app(JpcDvdBlurayProvider::class);
 
         $this->assertSame('JPC', $provider->name());
-        $this->assertSame('v1.0', $provider->version());
+        $this->assertSame('v1.1', $provider->version());
     }
 }

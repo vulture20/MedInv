@@ -65,10 +65,10 @@ class JpcDvdBlurayProvider implements MetadataProviderInterface
         return [];
     }
 
-    /** GitHub issue #145: no longer Beta — see this class's own docblock. */
+    /** GitHub issue #145: no longer Beta — see this class's own docblock. Bumped to v1.1 after GitHub issues #213–#216's reliability/coverage fixes (cast, description, disc_count). */
     public function version(): string
     {
-        return 'v1.0';
+        return 'v1.1';
     }
 
     /** See MetadataProviderInterface::sourceType()'s docblock (GitHub issue #55) — scrapes jpc.de's pages, see JpcScraping's docblock. */

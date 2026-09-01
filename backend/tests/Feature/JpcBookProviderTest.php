@@ -210,7 +210,7 @@ class JpcBookProviderTest extends TestCase
 
         $this->assertSame('JPC', $provider->name());
         $this->assertSame('book.jpc', $provider->key());
-        $this->assertSame('v1.0', $provider->version());
+        $this->assertSame('v1.1', $provider->version());
         $this->assertSame('scraping', $provider->sourceType());
     }
 }
