@@ -68,6 +68,8 @@ Then open **http://localhost:8080** and log in with the admin account you just s
 
 The `medinv-storage` volume is what makes your data (database, covers, backups, the auto-generated app encryption key) survive container restarts and updates — **always mount it**, or everything resets on the next `docker run`.
 
+`:latest` always points at the most recently released version (e.g. `:0.7` — the same tags stay available individually if you want to pin one). Prefer bleeding-edge, unreleased fixes instead? `:nightly` tracks the tip of the `main` branch on every push, with no release testing behind it.
+
 ### Key environment variables
 
 | Variable | Required | Default | What it does |

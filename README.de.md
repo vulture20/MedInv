@@ -68,6 +68,8 @@ Danach **http://localhost:8080** öffnen und mit dem gerade gesetzten Admin-Kont
 
 Das Volume `medinv-storage` sorgt dafür, dass deine Daten (Datenbank, Cover, Backups, der automatisch erzeugte App-Verschlüsselungsschlüssel) einen Container-Neustart und Updates überstehen — **immer mounten**, sonst setzt sich beim nächsten `docker run` alles zurück.
 
+`:latest` zeigt immer auf die zuletzt veröffentlichte Version (z. B. `:0.7` — die einzelnen Versions-Tags bleiben ebenfalls verfügbar, falls du eine konkrete Version festnageln willst). Lieber ungetestete, aktuellste Änderungen? `:nightly` folgt bei jedem Push dem aktuellen Stand des `main`-Branches, ohne jede Release-Prüfung dahinter.
+
 ### Wichtige Umgebungsvariablen
 
 | Variable | Erforderlich | Standard | Bedeutung |

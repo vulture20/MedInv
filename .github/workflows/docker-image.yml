@@ -4,10 +4,26 @@ name: Docker Image Build
 # see CLAUDE.md's "Two apps, one deployable image" section) and publishes it
 # to the GitHub Container Registry (ghcr.io) — no external registry account
 # or secrets needed, GITHUB_TOKEN is enough.
+#
+# Tag scheme: every push to main produces a `nightly` image (plus
+# `main`/`sha-<short>`), tracking unreleased tip-of-main. Pushing a real
+# version tag (e.g. `v0.7`, matching
+# backend/config/medinv.php's own two-component version format — see that
+# file's docblock for why there's deliberately no third/patch component)
+# additionally produces a numbered image tag (`0.7`) *and* `latest`, via
+# docker/metadata-action's default `flavor.latest=auto` behavior, which
+# auto-attaches `latest` to any `type=match`-derived tag. `latest` therefore
+# always tracks whichever version tag was most recently pushed — not a
+# registry-queried "highest" version, so version tags should be pushed in
+# ascending order for `latest` to stay meaningful.
 on:
   push:
     branches: ["main"]
-    tags: ["v*.*.*"]
+    # "v*.*" (not "v*.*.*"): this project's version tags are two-component
+    # (v0.7, not v0.7.0), matching medinv.php's own format — a wildcard glob
+    # still matches an occasional three-component tag too, since "*" can
+    # itself absorb an extra ".".
+    tags: ["v*.*"]
   pull_request:
     branches: ["main"]
   workflow_dispatch: # allows manually re-running a build from the Actions tab
@@ -54,10 +70,9 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=match,pattern=v(.*),group=1
             type=sha,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=nightly,enable={{is_default_branch}}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
