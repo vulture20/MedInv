@@ -227,7 +227,8 @@ class UserController extends Controller
         }
 
         Log::info('User deleted', ['actor_id' => $request->user()->id, 'user_id' => $user->id, 'email' => $user->email]);
-        $user->delete();
+        // GitHub issue #222: purges the user's other sessions alongside the account itself.
+        $this->userDeletionService->delete($user);
 
         return response()->noContent();
     }

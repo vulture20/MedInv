@@ -3,6 +3,7 @@
 namespace App\Domain\Users;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The two rules that must hold before any User row is actually deleted —
@@ -46,5 +47,37 @@ class UserDeletionService
         }
 
         return null;
+    }
+
+    /**
+     * The actual deletion, shared by both trigger paths (call this instead
+     * of `$user->delete()` directly) so a stale `sessions` row for this
+     * user can't outlive the account either way — GitHub issue #222, a
+     * privacy-review finding: unlike every other user-referencing table in
+     * this app (`library_shares`/`saved_searches`/`library_user_preferences`
+     * all `cascadeOnDelete()`, `captured_by_user_id` `nullOnDelete()`),
+     * Laravel's stock `sessions` table (created unconditionally by the base
+     * users-table migration, live whenever `SESSION_DRIVER=database` — this
+     * app's own default, see `.env.example`/`config/session.php`) carries
+     * no FK constraint on `user_id` at all. A deleted account's *other*
+     * active sessions (e.g. still logged in on a second device/browser —
+     * `AccountSettingsController::destroy()`'s own session invalidation
+     * only ever covers the *current* one, and `UserController::destroy()`
+     * has no "current session" to invalidate in the first place) previously
+     * persisted — each row carrying `ip_address`/`user_agent`, both
+     * personal data — until Laravel's own probabilistic session
+     * garbage-collection (`config/session.php`'s `lottery`) happened to
+     * sweep them, which can take a long time on a low-traffic instance.
+     * Not a live security issue (a deleted user's session can no longer
+     * resolve to a real account regardless — `EloquentUserProvider`
+     * re-resolves by ID on every request), but a real data-minimization
+     * gap. Deleted explicitly here rather than left to that lottery, the
+     * same "gone before it can be orphaned" treatment every other
+     * personal-data-bearing table above already gets via DB-level cascade.
+     */
+    public function delete(User $user): void
+    {
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+        $user->delete();
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Library;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -37,6 +38,34 @@ class UserDeletionOwnedLibrariesTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseMissing((new User)->getTable(), ['id' => $user->id]);
+    }
+
+    /**
+     * GitHub issue #222, a privacy-review finding: unlike every other
+     * user-referencing table, `sessions.user_id` has no FK constraint at
+     * all, so an admin deleting a user who's still logged in elsewhere
+     * (a second device/browser — this test's own row, not the admin's
+     * current session) used to leave that session row, with its
+     * ip_address/user_agent, orphaned until Laravel's own probabilistic
+     * garbage collection happened to sweep it.
+     */
+    public function test_deleting_a_user_purges_their_other_sessions(): void
+    {
+        $this->actingAsAdmin();
+        $user = User::factory()->create(['level' => 'user', 'is_active' => true]);
+        DB::table('sessions')->insert([
+            'id' => 'other-device-session',
+            'user_id' => $user->id,
+            'ip_address' => '203.0.113.5',
+            'user_agent' => 'Mozilla/5.0',
+            'payload' => base64_encode('irrelevant'),
+            'last_activity' => time(),
+        ]);
+
+        $response = $this->deleteJson("/api/admin/users/{$user->id}");
+
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('sessions', ['id' => 'other-device-session']);
     }
 
     public function test_deleting_a_user_who_owns_a_library_is_rejected(): void

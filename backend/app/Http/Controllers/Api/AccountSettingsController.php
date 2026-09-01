@@ -153,7 +153,11 @@ class AccountSettingsController extends Controller
         $request->session()->regenerateToken();
 
         Log::info('User deleted (self-service)', ['user_id' => $user->id, 'email' => $user->email]);
-        $user->delete();
+        // GitHub issue #222: purges the user's other sessions (e.g. a
+        // second device/browser still logged in) alongside the account
+        // itself — the session()->invalidate() call above only ever
+        // covers the current one.
+        $this->userDeletionService->delete($user);
 
         return response()->noContent();
     }

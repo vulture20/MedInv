@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Library;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
@@ -36,6 +37,31 @@ class AccountSelfDeletionTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseMissing((new User)->getTable(), ['id' => $user->id]);
+    }
+
+    /**
+     * GitHub issue #222, a privacy-review finding: same purge as the
+     * admin-initiated path (UserDeletionOwnedLibrariesTest) — this row
+     * represents a *second* device/browser still logged in, distinct from
+     * the current request's own session, which session()->invalidate()
+     * above already handles on its own.
+     */
+    public function test_deleting_own_account_purges_other_sessions(): void
+    {
+        $user = $this->actingAsUser();
+        DB::table('sessions')->insert([
+            'id' => 'other-device-session',
+            'user_id' => $user->id,
+            'ip_address' => '203.0.113.5',
+            'user_agent' => 'Mozilla/5.0',
+            'payload' => base64_encode('irrelevant'),
+            'last_activity' => time(),
+        ]);
+
+        $response = $this->withHeaders(['Origin' => 'http://localhost:5173'])->withSession([])->deleteJson('/api/me');
+
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('sessions', ['id' => 'other-device-session']);
     }
 
     /** Reachable by any level, not just 'user'/'admin' — a guest has just as much right to remove their own account. */
