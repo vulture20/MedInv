@@ -145,6 +145,10 @@ npm run build             # Produktions-Build (frontend/dist)
 
 Das Docker-Image lokal bauen und betreiben (statt von ghcr.io zu ziehen) funktioniert genauso — siehe [`docker/.env.template`](docker/.env.template) und `docker compose up --build` aus `docker/` heraus.
 
+## 📜 Änderungsprotokoll
+
+Siehe [`CHANGELOG.md`](CHANGELOG.md) (Englisch) für eine versionsweise Historie aller nennenswerten Änderungen.
+
 ## ⚖️ Lizenz
 
 MedInv steht unter der [GNU Affero General Public License v3.0 or later](LICENSE) (AGPL-3.0-or-later).
