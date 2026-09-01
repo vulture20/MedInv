@@ -5,12 +5,12 @@
 [![Docker Image](https://img.shields.io/badge/ghcr.io-vulture20%2Fmedinv-2496ED?logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
 [![Docker Pulls](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Fvulture20%2FMedInv%2Fmedinv&query=downloadCount&label=Docker%20Pulls&color=2496ED&logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
 [![Docker Image Build](https://github.com/vulture20/MedInv/actions/workflows/docker-image.yml/badge.svg)](https://github.com/vulture20/MedInv/actions/workflows/docker-image.yml)
-[![Status](https://img.shields.io/badge/status-fr%C3%BChe%20Beta-orange)](#-projektstatus)
+[![Status](https://img.shields.io/badge/status-Beta-orange)](#-projektstatus)
 [![Lizenz: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 MedInv ist eine selbst gehostete, responsive Web-App zur zentralen Verwaltung physischer Mediensammlungen — **Bücher, CDs und DVDs/Blu-rays** — über mehrere unabhängige Bibliotheken hinweg, mit bibliotheksweiser Freigabe und rollenbasiertem Zugriff. Barcode scannen, MedInv holt Metadaten und Cover automatisch – und du behältst den Überblick, was du besitzt, was es wert ist und mit wem es geteilt wird.
 
-> ⚠️ **Frühe Beta.** MedInv wird aktiv weiterentwickelt. Die Kernfunktionen laufen und sind durch eine automatisierte Testsuite abgedeckt, aber es gibt noch Ecken und Kanten – vor dem produktiven Einsatz mit echten Daten unbedingt Backups anlegen. Siehe [Projektstatus](#-projektstatus) weiter unten.
+> ⚠️ **Beta.** MedInv wird aktiv weiterentwickelt. Die Kernfunktionen laufen und sind durch eine automatisierte Testsuite abgedeckt, aber es gibt noch Ecken und Kanten – vor dem produktiven Einsatz mit echten Daten unbedingt Backups anlegen. Siehe [Projektstatus](#-projektstatus) weiter unten.
 
 Das vollständige Konzept-/Anforderungsdokument liegt unter [`docs/medinv-briefing.md`](docs/medinv-briefing.md) — es ist die maßgebliche Quelle für das Verhalten der Anwendung; dieses README beschreibt, wie die Implementierung betrieben und gebaut wird.
 
@@ -68,7 +68,7 @@ Danach **http://localhost:8080** öffnen und mit dem gerade gesetzten Admin-Kont
 
 Das Volume `medinv-storage` sorgt dafür, dass deine Daten (Datenbank, Cover, Backups, der automatisch erzeugte App-Verschlüsselungsschlüssel) einen Container-Neustart und Updates überstehen — **immer mounten**, sonst setzt sich beim nächsten `docker run` alles zurück.
 
-`:latest` zeigt immer auf die zuletzt veröffentlichte Version (z. B. `:0.7` — die einzelnen Versions-Tags bleiben ebenfalls verfügbar, falls du eine konkrete Version festnageln willst). Lieber ungetestete, aktuellste Änderungen? `:nightly` folgt bei jedem Push dem aktuellen Stand des `main`-Branches, ohne jede Release-Prüfung dahinter.
+`:latest` zeigt immer auf die zuletzt veröffentlichte Version (z. B. `:0.8` — die einzelnen Versions-Tags bleiben ebenfalls verfügbar, falls du eine konkrete Version festnageln willst). Lieber ungetestete, aktuellste Änderungen? `:nightly` folgt bei jedem Push dem aktuellen Stand des `main`-Branches, ohne jede Release-Prüfung dahinter.
 
 ### Wichtige Umgebungsvariablen
 

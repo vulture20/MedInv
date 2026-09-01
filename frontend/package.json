@@ -1,7 +1,7 @@
 {
   "name": "medinv-frontend",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "MedInv SPA — media library management (books, CDs, DVDs/Blu-ray).",
   "author": "Thorsten Schröpel",
   "license": "AGPL-3.0-or-later",

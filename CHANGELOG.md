@@ -7,6 +7,8 @@ Versioning follows the two-component `vMAJOR.MINOR` scheme used by
 
 ## [Unreleased]
 
+## [0.8] - 2026-09-01
+
 ### Added
 - Extract cast ("Darsteller") from JPC DVD/Blu-ray listings (#213)
 - Extract book/CD/DVD-Blu-ray descriptions from JPC's "Weiterlesen" synopsis box (#214)
@@ -44,6 +46,12 @@ Versioning follows the two-component `vMAJOR.MINOR` scheme used by
 - Normalize Amazon currency to a valid ISO code before it's ever returned (#212)
 - Fix JPC extracting the wrong "Weiterlesen" block (and gluing paragraphs together with no space) for books/CDs (#216)
 - Fix JPC's "Blu-ray Discs" collapsing to "Blu-ray Disc" instead of "Blu-ray" (#217)
+- Recombine a flattened "Last, First" Amazon Actors bullet into proper "First Last" names (#219)
+- Backfill the `capture.mergeKeepValue` translation key into all 15 bundled language packs (#220)
+
+### Security
+- Validate a metadata plugin's `select`-type config values (e.g. Amazon's `marketplace`) server-side against their declared options, closing an SSRF where an unvalidated value became the outbound scrape request's host (#221)
+- Purge a deleted user's other active sessions (e.g. a second device/browser) instead of leaving them until Laravel's own session garbage collection happened to sweep them (#222)
 
 ## [0.7] - 2026-08-24
 

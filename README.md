@@ -5,12 +5,12 @@
 [![Docker Image](https://img.shields.io/badge/ghcr.io-vulture20%2Fmedinv-2496ED?logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
 [![Docker Pulls](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Fvulture20%2FMedInv%2Fmedinv&query=downloadCount&label=Docker%20Pulls&color=2496ED&logo=docker&logoColor=white)](https://github.com/vulture20/MedInv/pkgs/container/medinv)
 [![Docker Image Build](https://github.com/vulture20/MedInv/actions/workflows/docker-image.yml/badge.svg)](https://github.com/vulture20/MedInv/actions/workflows/docker-image.yml)
-[![Status](https://img.shields.io/badge/status-early%20beta-orange)](#-project-status)
+[![Status](https://img.shields.io/badge/status-beta-orange)](#-project-status)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 MedInv is a self-hosted, responsive web app for centrally managing physical media collections — **books, CDs and DVDs/Blu-rays** — across multiple independent libraries, with per-library sharing and role-based access. Scan a barcode, let MedInv fetch the metadata and cover art for you, and keep track of what you own, what it's worth, and who it's shared with.
 
-> ⚠️ **Early beta.** MedInv is under active development. Core features work and are covered by an automated test suite, but expect rough edges, and take backups before relying on it with real data. See [Project status](#-project-status) below.
+> ⚠️ **Beta.** MedInv is under active development. Core features work and are covered by an automated test suite, but expect rough edges, and take backups before relying on it with real data. See [Project status](#-project-status) below.
 
 The full concept/requirements document lives at [`docs/medinv-briefing.md`](docs/medinv-briefing.md) (German) — it's the source of truth for behavior; this README covers running and building the implementation.
 
@@ -68,7 +68,7 @@ Then open **http://localhost:8080** and log in with the admin account you just s
 
 The `medinv-storage` volume is what makes your data (database, covers, backups, the auto-generated app encryption key) survive container restarts and updates — **always mount it**, or everything resets on the next `docker run`.
 
-`:latest` always points at the most recently released version (e.g. `:0.7` — the same tags stay available individually if you want to pin one). Prefer bleeding-edge, unreleased fixes instead? `:nightly` tracks the tip of the `main` branch on every push, with no release testing behind it.
+`:latest` always points at the most recently released version (e.g. `:0.8` — the same tags stay available individually if you want to pin one). Prefer bleeding-edge, unreleased fixes instead? `:nightly` tracks the tip of the `main` branch on every push, with no release testing behind it.
 
 ### Key environment variables
 

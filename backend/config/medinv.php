@@ -19,7 +19,7 @@
  */
 return [
     'name' => 'MedInv',
-    'version' => 'v0.7',
+    'version' => 'v0.8',
 
     // Bundled language packs (briefing 11.4/17., GitHub issues #12/#15),
     // App\Domain\Languages\BundledLanguagePackRegistry — plain JSON files
