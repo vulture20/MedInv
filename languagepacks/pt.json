@@ -203,6 +203,7 @@
       "cameraAccessError": "Não foi possível acessar a câmera. Conceda a permissão ou insira um EAN/ISBN manualmente.",
       "mergeCover": "Capa",
       "mergeKeepCover": "Manter capa atual",
+      "mergeKeepValue": "Manter valor atual",
       "mergeNoCover": "Sem capa",
       "mergeRejectField": "Não usar",
       "mergeConfirm": "Usar estes valores",

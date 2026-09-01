@@ -203,6 +203,7 @@
       "cameraAccessError": "Kameraya erişilemedi. İzin verin veya EAN/ISBN'i elle girin.",
       "mergeCover": "Kapak",
       "mergeKeepCover": "Mevcut kapağı koru",
+      "mergeKeepValue": "Mevcut değeri koru",
       "mergeNoCover": "Kapak yok",
       "mergeRejectField": "Bunu kullanma",
       "mergeConfirm": "Bu değerleri kullan",

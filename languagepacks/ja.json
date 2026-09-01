@@ -203,6 +203,7 @@
       "cameraAccessError": "カメラにアクセスできませんでした。アクセスを許可するか、EAN/ISBNを手動で入力してください。",
       "mergeCover": "カバー",
       "mergeKeepCover": "現在のカバーを維持",
+      "mergeKeepValue": "現在の値を維持",
       "mergeNoCover": "カバーなし",
       "mergeRejectField": "この値を使用しない",
       "mergeConfirm": "この値を使用",

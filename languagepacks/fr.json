@@ -203,6 +203,7 @@
       "cameraAccessError": "Impossible d'accéder à la caméra. Veuillez autoriser l'accès ou saisir un EAN/ISBN manuellement.",
       "mergeCover": "Pochette",
       "mergeKeepCover": "Conserver la pochette actuelle",
+      "mergeKeepValue": "Conserver la valeur actuelle",
       "mergeNoCover": "Aucune pochette",
       "mergeRejectField": "Ne pas utiliser",
       "mergeConfirm": "Utiliser ces valeurs",

@@ -203,6 +203,7 @@
       "cameraAccessError": "Geen toegang tot de camera. Verleen toestemming of voer handmatig een EAN/ISBN in.",
       "mergeCover": "Cover",
       "mergeKeepCover": "Cover behouden",
+      "mergeKeepValue": "Waarde behouden",
       "mergeNoCover": "Geen cover",
       "mergeRejectField": "Niet gebruiken",
       "mergeConfirm": "Deze waarden gebruiken",

@@ -197,6 +197,7 @@
       "rejectAll": "Avvis alle treff",
       "mergeCover": "Omslag",
       "mergeKeepCover": "Behold omslag",
+      "mergeKeepValue": "Behold verdi",
       "mergeNoCover": "Ikke noe omslag",
       "mergeRejectField": "Ikke bruk denne",
       "mergeConfirm": "Bruk disse verdiene",

@@ -203,6 +203,7 @@
       "cameraAccessError": "Nie można uzyskać dostępu do aparatu. Przyznaj uprawnienia lub wprowadź EAN/ISBN ręcznie.",
       "mergeCover": "Okładka",
       "mergeKeepCover": "Zachowaj okładkę",
+      "mergeKeepValue": "Zachowaj wartość",
       "mergeNoCover": "Brak okładki",
       "mergeRejectField": "Nie używaj",
       "mergeConfirm": "Użyj tych wartości",

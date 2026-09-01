@@ -203,6 +203,7 @@
       "cameraAccessError": "Не вдалося отримати доступ до камери. Надайте дозвіл або введіть EAN/ISBN вручну.",
       "mergeCover": "Обкладинка",
       "mergeKeepCover": "Зберегти обкладинку",
+      "mergeKeepValue": "Зберегти значення",
       "mergeNoCover": "Без обкладинки",
       "mergeRejectField": "Не використовувати",
       "mergeConfirm": "Використати ці значення",

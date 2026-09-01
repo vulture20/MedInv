@@ -197,6 +197,7 @@
       "rejectAll": "Hafna öllum niðurstöðum",
       "mergeCover": "Kápa",
       "mergeKeepCover": "Halda núverandi kápu",
+      "mergeKeepValue": "Halda núverandi gildi",
       "mergeNoCover": "Engin kápa",
       "mergeRejectField": "Ekki nota þetta",
       "mergeConfirm": "Nota þessi gildi",

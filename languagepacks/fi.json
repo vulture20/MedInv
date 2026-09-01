@@ -197,6 +197,7 @@
       "rejectAll": "Hylkää kaikki osumat",
       "mergeCover": "Kansikuva",
       "mergeKeepCover": "Säilytä nykyinen kansikuva",
+      "mergeKeepValue": "Säilytä nykyinen arvo",
       "mergeNoCover": "Ei kansikuvaa",
       "mergeRejectField": "Älä käytä tätä",
       "mergeConfirm": "Käytä näitä arvoja",

@@ -203,6 +203,7 @@
       "cameraAccessError": "Impossibile accedere alla fotocamera. Concedi l'autorizzazione oppure inserisci manualmente un EAN/ISBN.",
       "mergeCover": "Copertina",
       "mergeKeepCover": "Mantieni copertina attuale",
+      "mergeKeepValue": "Mantieni valore attuale",
       "mergeNoCover": "Nessuna copertina",
       "mergeRejectField": "Non utilizzare",
       "mergeConfirm": "Usa questi valori",

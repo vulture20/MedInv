@@ -197,6 +197,7 @@
       "rejectAll": "Avvisa alla träffar",
       "mergeCover": "Omslag",
       "mergeKeepCover": "Behåll omslag",
+      "mergeKeepValue": "Behåll värde",
       "mergeNoCover": "Inget omslag",
       "mergeRejectField": "Använd inte",
       "mergeConfirm": "Använd dessa värden",
