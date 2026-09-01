@@ -250,7 +250,8 @@ export function SearchFilterPanel({
         />
       </div>
 
-      <div className="search-filters__row">
+      <fieldset className="search-filters__row">
+        <legend>{t('search.filters.options')}</legend>
         <label className="search-filters__checkbox">
           <input type="checkbox" checked={draft.fuzzy} onChange={(e) => onChange({ fuzzy: e.target.checked })} />
           {t('search.fuzzy')}
@@ -264,7 +265,7 @@ export function SearchFilterPanel({
           />
           {t('search.duplicates')}
         </label>
-      </div>
+      </fieldset>
     </section>
   )
 }

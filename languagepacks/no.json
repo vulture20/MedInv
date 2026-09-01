@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} resultater",
       "filters": {
         "heading": "Filtre",
+        "options": "Alternativer",
         "query": "Søkeord",
         "summaryTitle": "Filterkriterier",
         "noneActive": "Ingen filterkriterier — viser alle synlige elementer.",

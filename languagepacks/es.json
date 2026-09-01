@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} resultados",
       "filters": {
         "heading": "Filtros",
+        "options": "Opciones",
         "query": "Término de búsqueda",
         "summaryTitle": "Criterios de filtro",
         "noneActive": "Sin criterios de filtro: se muestran todos los elementos visibles.",

@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} resultaten",
       "filters": {
         "heading": "Filters",
+        "options": "Opties",
         "query": "Zoekterm",
         "summaryTitle": "Filtercriteria",
         "noneActive": "Geen filtercriteria — alle zichtbare items worden getoond.",

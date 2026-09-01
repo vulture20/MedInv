@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} niðurstöður",
       "filters": {
         "heading": "Síur",
+        "options": "Valkostir",
         "query": "Leitarorð",
         "summaryTitle": "Síuskilyrði",
         "noneActive": "Engin síuskilyrði — sýnir alla sýnilega hluti.",

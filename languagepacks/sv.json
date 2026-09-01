@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} resultat",
       "filters": {
         "heading": "Filter",
+        "options": "Alternativ",
         "query": "Sökterm",
         "summaryTitle": "Filterkriterier",
         "noneActive": "Inga filterkriterier — visar alla synliga objekt.",

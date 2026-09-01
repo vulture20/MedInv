@@ -230,6 +230,7 @@
     "resultsTitle_other": "{{count}} results",
     "filters": {
       "heading": "Filters",
+      "options": "Options",
       "query": "Search term",
       "summaryTitle": "Filter criteria",
       "noneActive": "No filter criteria — showing every visible item.",

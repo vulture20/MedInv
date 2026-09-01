@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} sonuç",
       "filters": {
         "heading": "Filtreler",
+        "options": "Seçenekler",
         "query": "Arama terimi",
         "summaryTitle": "Filtre kriterleri",
         "noneActive": "Filtre kriteri yok — görünen tüm ögeler gösteriliyor.",

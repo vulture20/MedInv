@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} tulosta",
       "filters": {
         "heading": "Suodattimet",
+        "options": "Asetukset",
         "query": "Hakusana",
         "summaryTitle": "Suodatinehdot",
         "noneActive": "Ei suodatinehtoja — näytetään kaikki näkyvät kohteet.",

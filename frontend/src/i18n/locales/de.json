@@ -230,6 +230,7 @@
     "resultsTitle_other": "{{count}} Ergebnisse",
     "filters": {
       "heading": "Filter",
+      "options": "Optionen",
       "query": "Suchbegriff",
       "summaryTitle": "Filterkriterien",
       "noneActive": "Keine Filterkriterien — zeigt alle sichtbaren Einträge.",

@@ -233,6 +233,7 @@
       "resultsTitle_other": "{{count}} wyników",
       "filters": {
         "heading": "Filtry",
+        "options": "Opcje",
         "query": "Wyszukiwane hasło",
         "summaryTitle": "Kryteria filtrowania",
         "noneActive": "Brak kryteriów filtrowania — pokazano wszystkie widoczne pozycje.",
