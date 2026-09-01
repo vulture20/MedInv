@@ -704,47 +704,105 @@ trait JpcScraping
      * the same "Weiterlesen" (read more) collapsible box present on every
      * jpc.de product page type — `<div class="box content textlink"
      * id="red-text">` — nests the real synopsis/blurb text inside a
-     * `<div data-pd="…"><div class="collapsable">…<p>…</p></div></div>`
-     * block. Confirmed live for a film ("Ant-Man and the Wasp", the same
-     * page this trait's `Darsteller:`/GitHub issue #213 check used) —
+     * `<div data-pd="…"><div class="collapsable">…</div></div>` block.
+     * Confirmed live for a film ("Ant-Man and the Wasp", the same page
+     * this trait's `Darsteller:`/GitHub issue #213 check used) —
      * `description` had previously been left unset everywhere specifically
      * because earlier research never found this container (see the
      * "unconfirmed guess"/`description` history throughout this trait's
-     * own docblock and `JpcBookProvider`'s). Not independently
-     * re-confirmed here for CD/book pages, but the user reports this same
-     * element consistently holding a fitting description across the site,
-     * and `#red-text` is a generic, non-media-type-specific container ID,
-     * so this is wired into `jpcProductPage()` for all three media types.
+     * own docblock and `JpcBookProvider`'s).
+     *
+     * GitHub issue #216 re-verified this live for CD and book pages too
+     * (at the user's own explicit request), confirming the container
+     * generalizes but also finding it isn't quite as uniform as #214
+     * assumed:
+     *  - **CD** ("Mark Medlock: Back Into The Sun", EAN 4029759218739):
+     *    the real synopsis is split across several `<p>` elements with no
+     *    whitespace text node between them in the raw HTML (`</p><p>`) —
+     *    naively reading the block's whole `textContent` (#214's original
+     *    approach) silently glued adjacent paragraphs together with no
+     *    separating space at all (e.g. "...wie nie zuvor.Mit »Back into
+     *    the Sun«...").
+     *  - **Book** ("Kummer aller Art" by Mariana Leky, ISBN
+     *    9783832182168): `#red-text` holds *two* similarly-shaped
+     *    `.collapsable` blocks, not one — a `<h3>Klappentext</h3>`
+     *    (blurb/description, what `description` should hold) and a
+     *    separate `<h3>Biografie</h3>` (author biography, a different
+     *    thing entirely) further down the same container. #214's
+     *    original "just take the first `.collapsable` block" happened to
+     *    land on the right one here purely because Klappentext came
+     *    first in document order on this one page — not a principled
+     *    choice, and not guaranteed to hold on every book. Also, the
+     *    `<h3>` label's own text was being read as part of the value
+     *    itself (e.g. "Klappentext »Alle wirken innerlich blitzblank...").
+     *
+     * Both bugs are fixed by reading only the block's non-`<h3>` text
+     * *nodes* individually (`.//text()[not(ancestor::h3)]`) and joining
+     * them with an explicit space before collapsing whitespace — this
+     * naturally excludes any heading's own text and re-inserts the
+     * boundary space `</p><p>` (and similar adjacent-tag) transitions
+     * were missing, for every media type uniformly, without needing to
+     * special-case `<p>`-wrapped (CD/film) vs. bare-text (book) content.
+     * The right block itself is selected by explicitly preferring a
+     * `.collapsable` block containing a `<h3>` reading exactly
+     * "Klappentext" when one exists (book), falling back to the first
+     * `.collapsable` block otherwise (CD/film, which had no such heading
+     * at all on either page checked) — rather than continuing to rely on
+     * document order, which only accidentally produced the right answer
+     * before.
      *
      * Deliberately scoped to the `.collapsable` block specifically, not
      * every `<p>` under `#red-text` — that outer container also holds
      * unrelated content on the same page (a video-trailer preview, a
-     * translation-language selector, related-edition cards), none of
-     * which should ever end up in `description`. The "Weiterlesen"
-     * button's own `aria-controls` attribute names its real target as
-     * `id="primaryTextBlock-{hnum}"`, which the user asked this extraction
-     * be scoped to — but that id is never actually rendered into the
-     * static server HTML this app fetches (only referenced by the button,
-     * presumably assigned client-side by JS that never runs here), so it
-     * can't be selected directly. The `.collapsable` div is the same
-     * region semantically (the exact block that button expands/collapses)
-     * and *is* present in the static markup, so it's used instead.
+     * translation-language selector, related-edition cards, and now
+     * confirmed also a book's own "Biografie"/sales-rank/streaming-link
+     * blocks), none of which should ever end up in `description`. The
+     * "Weiterlesen" button's own `aria-controls` attribute names its real
+     * target as `id="primaryTextBlock-{hnum}"`, which the user originally
+     * asked this extraction be scoped to — but that id is never actually
+     * rendered into the static server HTML this app fetches (only
+     * referenced by the button, presumably assigned client-side by JS
+     * that never runs here), so it can't be selected directly. The
+     * `.collapsable` div is the same region semantically (the exact block
+     * that button expands/collapses) and *is* present in the static
+     * markup, so it's used instead.
      *
-     * Takes the full text of the first matching `.collapsable` block
-     * (not just its first `<p>`), so a description spanning more than one
-     * paragraph is still captured in full, just without the original
-     * paragraph breaks — the same flat-string treatment every other
-     * free-text field in this app already gets. A trailing source
-     * citation some descriptions carry (e.g. "(Filmstarts.de)") is kept
-     * as-is, not stripped — deliberately, since only this one live
+     * A trailing source citation some descriptions carry (e.g.
+     * "(Filmstarts.de)") is kept as-is, not stripped — deliberately,
+     * since only this one live
      * example is confirmed and a different, differently-worded citation
      * (or none at all) can't be ruled out.
      */
     private function jpcDescription(DOMXPath $xpath): ?string
     {
-        $node = $xpath->query('//*[@id="red-text"]//div[contains(concat(" ", normalize-space(@class), " "), " collapsable ")]')->item(0);
+        $collapsableQuery = '//*[@id="red-text"]//div[contains(concat(" ", normalize-space(@class), " "), " collapsable ")]';
 
-        return $node instanceof DOMElement ? $this->cleanText($node->textContent) : null;
+        // GitHub issue #216: prefer the block explicitly labeled
+        // "Klappentext" when one exists (books, which also have a
+        // separate "Biografie" block in the same #red-text container) —
+        // falling back to the first collapsable block otherwise (CD/film,
+        // which had no such heading on either page checked).
+        $node = $xpath->query($collapsableQuery.'[.//h3[normalize-space(.)="Klappentext"]]')->item(0)
+            ?? $xpath->query($collapsableQuery)->item(0);
+
+        if (! $node instanceof DOMElement) {
+            return null;
+        }
+
+        // GitHub issue #216: read each non-heading text node individually
+        // and join with an explicit space, rather than the block's whole
+        // textContent — real markup has adjacent elements (`</p><p>`, a
+        // `<h3>` immediately followed by body text) with no whitespace
+        // text node between them at all, which textContent alone glues
+        // together with no separator ("...zuvor.Mit »Back into..."). The
+        // `not(ancestor::h3)` filter is also what excludes a heading's
+        // own label text ("Klappentext"/"Biografie") from the value.
+        $parts = [];
+        foreach ($xpath->query('.//text()[not(ancestor::h3)]', $node) as $textNode) {
+            $parts[] = $textNode->textContent;
+        }
+
+        return $this->cleanText(implode(' ', $parts));
     }
 
     /**

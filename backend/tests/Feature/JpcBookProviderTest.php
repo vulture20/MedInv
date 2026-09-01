@@ -65,9 +65,15 @@ class JpcBookProviderTest extends TestCase
             </dl>
             <div class="box content textlink" id="red-text">
                 <button aria-controls="primaryTextBlock-10927986">Weiterlesen</button>
-                <div class="product-video-preview"><h3>Irrelevant</h3></div>
-                <div data-pd="j"><div class="collapsable is-collapsed">
-                    <p>Eine Frau erzählt die Geschichte ihres Lebens. (Verlagstext)</p>
+                <div data-pd="l"><div class="collapsable is-collapsed">
+                <div>
+                <h3>Klappentext</h3>
+                Eine Frau erzählt die Geschichte ihres Lebens.
+                </div>
+                </div></div>
+                <div data-pd="o"><div class="collapsable is-collapsed">
+                <h3>Biografie</h3>
+                Mariana Leky, geboren 1973 in Köln.
                 </div></div>
             </div>
             </body></html>
@@ -99,10 +105,14 @@ class JpcBookProviderTest extends TestCase
         // GitHub issue #135: price/currency now extracted via confirmed schema.org Microdata.
         $this->assertSame(22.00, $candidate->attributes['price']);
         $this->assertSame('EUR', $candidate->attributes['currency']);
-        // GitHub issue #214: extracted from the "Weiterlesen" collapsible
-        // box (#red-text) — see JpcScraping::jpcDescription()'s docblock.
-        // The trailing "(Verlagstext)" source note is kept, not stripped.
-        $this->assertSame('Eine Frau erzählt die Geschichte ihres Lebens. (Verlagstext)', $candidate->attributes['description']);
+        // GitHub issue #214/#216: extracted from the "Klappentext" block
+        // inside the "Weiterlesen" collapsible box (#red-text) — see
+        // JpcScraping::jpcDescription()'s docblock. Confirmed live that a
+        // real book page holds a second, similarly-shaped "Biografie"
+        // block in the same container, which must never end up here, and
+        // that the "Klappentext" heading's own text must not bleed into
+        // the value either.
+        $this->assertSame('Eine Frau erzählt die Geschichte ihres Lebens.', $candidate->attributes['description']);
     }
 
     /** A book title tag has no confirmed byline-signal in the title tag other than the trailing " - {Autor}" segment — since a title itself could legitimately contain " - ", this asserts the *last* occurrence is what's split on, not the first. */
@@ -120,6 +130,32 @@ class JpcBookProviderTest extends TestCase
 
         $this->assertSame('Vor dem Sturm - Ein Roman', $candidate->attributes['title']);
         $this->assertSame('Max Mustermann', $candidate->attributes['authors']);
+    }
+
+    /**
+     * GitHub issue #216: reversed order from the main fixture above
+     * (Biografie *before* Klappentext) — proves the "Klappentext" block
+     * is selected because of its heading, not because it happened to
+     * come first in document order on the one real page checked.
+     */
+    public function test_description_prefers_the_klappentext_block_regardless_of_document_order(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Some Book (Buch) – jpc.de</title></head><body>'
+                .'<div class="box content textlink" id="red-text">'
+                .'<div data-pd="o"><div class="collapsable is-collapsed"><h3>Biografie</h3> Die Biografie der Autorin.</div></div>'
+                .'<div data-pd="l"><div class="collapsable is-collapsed"><h3>Klappentext</h3> Der eigentliche Klappentext.</div></div>'
+                .'</div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcBookProvider::class)->lookupByCode('0000000000000')[0];
+
+        $this->assertSame('Der eigentliche Klappentext.', $candidate->attributes['description']);
     }
 
     public function test_falls_back_to_the_search_result_when_the_product_page_fetch_fails(): void
