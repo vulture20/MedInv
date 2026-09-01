@@ -116,6 +116,8 @@ class JpcCdProvider implements MetadataProviderInterface
                 'disc_count' => $page['disc_count'],
                 'release_date' => $page['release_date'],
                 'tracks' => $page['tracks'],
+                // GitHub issue #214.
+                'description' => $page['description'],
                 // The originally-scanned code, same as
                 // AmazonBookProvider::mapProductPageToCandidate()'s own
                 // 'ean' field — not the page-derived one, which may be

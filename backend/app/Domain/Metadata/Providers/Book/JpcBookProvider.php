@@ -19,9 +19,11 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * confirmed against a real jpc.de book page and which are best-effort
  * guesses — promotion out of Beta doesn't mean every field is confirmed.
  *
- * `description` is never set — see JpcScraping's own docblock (no
- * blurb/description of any kind was found on the one real book page
- * checked). `format` is deliberately read from the confirmed `Einband:`
+ * `description` (GitHub issue #214) comes from a source the user found,
+ * not this app's own research — see `JpcScraping::jpcDescription()`'s own
+ * docblock; independently confirmed only for a film page, not a real book
+ * one, but `#red-text` is a generic, non-media-type-specific container.
+ * `format` is deliberately read from the confirmed `Einband:`
  * detail row (e.g. "Gebunden"), not the title tag's generic "(Buch)" —
  * see JpcScraping::jpcProductPage()'s own docblock.
  *
@@ -124,6 +126,8 @@ class JpcBookProvider implements MetadataProviderInterface
             attributes: [
                 'title' => $page['title'],
                 'authors' => $page['byline'],
+                // GitHub issue #214.
+                'description' => $page['description'],
                 'genre' => $page['genre'],
                 'publisher' => $page['publisher'],
                 'page_count' => $page['page_count'],

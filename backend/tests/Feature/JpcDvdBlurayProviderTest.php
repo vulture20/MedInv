@@ -52,6 +52,13 @@ class JpcDvdBlurayProviderTest extends TestCase
               <dt><b>Sprache:</b></dt><dd>Deutsch, Japanisch</dd>
               <dt><b>Untertitel:</b></dt><dd>Deutsch</dd>
             </dl>
+            <div class="box content textlink" id="red-text">
+                <button aria-controls="primaryTextBlock-6171414">Weiterlesen</button>
+                <div class="product-video-preview"><h3>Filmausschnitte/Videotrailer</h3><p>Nicht die Beschreibung.</p></div>
+                <div data-pd="j"><div class="collapsable is-collapsed">
+                    <p>Sophie wird von einer Hexe in eine alte Frau verwandelt. (Filmstarts.de)</p>
+                </div></div>
+            </div>
             </body></html>
             HTML;
     }
@@ -89,6 +96,41 @@ class JpcDvdBlurayProviderTest extends TestCase
         // concatenates every <a> plus the ", " text nodes between them
         // into one clean, comma-separated name list.
         $this->assertSame('Chieko Baisho, Takuya Kimura', $candidate->attributes['cast']);
+        // GitHub issue #214: extracted from the "Weiterlesen" collapsible
+        // box (#red-text) — see JpcScraping::jpcDescription()'s docblock.
+        // The trailing "(Filmstarts.de)" source note is kept, not
+        // stripped, and the unrelated video-preview <p> right next to it
+        // within #red-text is correctly ignored (see the dedicated
+        // scoping test below).
+        $this->assertSame('Sophie wird von einer Hexe in eine alte Frau verwandelt. (Filmstarts.de)', $candidate->attributes['description']);
+    }
+
+    /**
+     * GitHub issue #214: `#red-text` also holds unrelated content on a
+     * real page (a video-trailer preview, a translation-language
+     * selector, related-edition cards) — jpcDescription() must only ever
+     * read the `.collapsable` block the "Weiterlesen" button actually
+     * expands/collapses, never anything else nested under that same
+     * outer container.
+     */
+    public function test_description_ignores_unrelated_content_inside_red_text(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Some Film (DVD) – jpc.de</title></head><body>'
+                .'<div class="box content textlink" id="red-text">'
+                .'<div class="product-video-preview"><h3>Videotrailer</h3><p>Nicht die Beschreibung.</p></div>'
+                .'<div data-pd="j"><div class="collapsable is-collapsed"><p>Die echte Beschreibung.</p></div></div>'
+                .'</div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('0000000000000')[0];
+
+        $this->assertSame('Die echte Beschreibung.', $candidate->attributes['description']);
     }
 
     /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Hogfather (Special Edition) (2 DVDs) – jpc.de" (EAN 4009750242353), the exact real title tag the reporting user's example resolved to. GitHub issue #138: "medium" no longer redundantly repeats the count disc_count already carries — "2 DVDs" becomes just "DVD". */

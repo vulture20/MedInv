@@ -63,6 +63,13 @@ class JpcBookProviderTest extends TestCase
                 <dt><b>Erscheinungstermin:</b></dt>
                 <dd>19.7.2022</dd>
             </dl>
+            <div class="box content textlink" id="red-text">
+                <button aria-controls="primaryTextBlock-10927986">Weiterlesen</button>
+                <div class="product-video-preview"><h3>Irrelevant</h3></div>
+                <div data-pd="j"><div class="collapsable is-collapsed">
+                    <p>Eine Frau erzählt die Geschichte ihres Lebens. (Verlagstext)</p>
+                </div></div>
+            </div>
             </body></html>
             HTML;
     }
@@ -92,8 +99,10 @@ class JpcBookProviderTest extends TestCase
         // GitHub issue #135: price/currency now extracted via confirmed schema.org Microdata.
         $this->assertSame(22.00, $candidate->attributes['price']);
         $this->assertSame('EUR', $candidate->attributes['currency']);
-        // Never populated for JPC at all — see JpcScraping's docblock.
-        $this->assertArrayNotHasKey('description', $candidate->attributes);
+        // GitHub issue #214: extracted from the "Weiterlesen" collapsible
+        // box (#red-text) — see JpcScraping::jpcDescription()'s docblock.
+        // The trailing "(Verlagstext)" source note is kept, not stripped.
+        $this->assertSame('Eine Frau erzählt die Geschichte ihres Lebens. (Verlagstext)', $candidate->attributes['description']);
     }
 
     /** A book title tag has no confirmed byline-signal in the title tag other than the trailing " - {Autor}" segment — since a title itself could legitimately contain " - ", this asserts the *last* occurrence is what's split on, not the first. */

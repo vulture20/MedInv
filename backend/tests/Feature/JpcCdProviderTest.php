@@ -92,6 +92,13 @@ class JpcCdProviderTest extends TestCase
                     <meta itemprop="price" content="36.99" />
                 </span>
             </tr>
+            <div class="box content textlink" id="red-text">
+                <button aria-controls="primaryTextBlock-12765025">Weiterlesen</button>
+                <div class="product-video-preview"><h3>Irrelevant</h3></div>
+                <div data-pd="j"><div class="collapsable is-collapsed">
+                    <p>Das neue Album von Mark Medlock. (Label-Info)</p>
+                </div></div>
+            </div>
             </body></html>
             HTML;
     }
@@ -123,6 +130,10 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame('Back Into The Sun', $candidate->attributes['tracks'][0]['title']);
         $this->assertNull($candidate->attributes['tracks'][0]['duration_seconds']);
         $this->assertSame('Mamacita (New Version)', $candidate->attributes['tracks'][1]['title']);
+        // GitHub issue #214: extracted from the "Weiterlesen" collapsible
+        // box (#red-text) — see JpcScraping::jpcDescription()'s docblock.
+        // The trailing "(Label-Info)" source note is kept, not stripped.
+        $this->assertSame('Das neue Album von Mark Medlock. (Label-Info)', $candidate->attributes['description']);
     }
 
     /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Pink Floyd: The Wall (remastered) (180g) (2 LPs) – jpc.de", a real multi-disc vinyl release, including that the earlier, unrelated "(180g)" parenthesized segment must not be mistaken for the format/disc-count one. GitHub issue #138: "medium" no longer redundantly repeats the count disc_count already carries — "2 LPs" becomes just "LP". */

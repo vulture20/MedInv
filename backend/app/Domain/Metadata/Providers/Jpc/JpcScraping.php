@@ -135,9 +135,9 @@ use Illuminate\Support\Facades\Log;
  *    #135's "very few attributes, no cover" report, and how it's now
  *    handled. A meta `<meta name="description" ... itemprop="description">`
  *    exists on every page type but is generic marketing boilerplate
- *    ("jetzt für X Euro kaufen"), not a real synopsis — deliberately
- *    still never used as `description`, now a *confirmed* content
- *    judgment rather than an absence-of-evidence one.
+ *    ("jetzt für X Euro kaufen"), not a real synopsis — never used as
+ *    `description` for that reason; see the `#red-text` bullet below for
+ *    where a real synopsis was later found instead (GitHub issue #214).
  *  - **`Darsteller:` (cast, DVD/Blu-ray)** — GitHub issue #213, a
  *    user-reported gap: the original #130/#135 research only ever
  *    checked one real film page, which happened to carry no such label,
@@ -154,6 +154,21 @@ use Illuminate\Support\Facades\Log;
  *    `<a>` and the comma text nodes between them into one clean,
  *    comma-separated name list, the same plain-string shape `cast`
  *    already has from `AmazonDvdBlurayProvider` (GitHub issue #173).
+ *  - **`description` (`#red-text`)** — GitHub issue #214, a source found
+ *    by the user, not this app's own research: the "Weiterlesen" (read
+ *    more) collapsible box present on every product page type
+ *    (`<div class="box content textlink" id="red-text">`) nests the real
+ *    synopsis/blurb text in a `<div data-pd="…"><div
+ *    class="collapsable">…<p>…</p></div></div>` block — confirmed live on
+ *    the same "Ant-Man and the Wasp" page `Darsteller:` was confirmed on
+ *    above. Independently confirmed only for that one film page, not for
+ *    CD/book, but `#red-text` is a generic, non-media-type-specific
+ *    container id and the user reports the same element consistently
+ *    holding a fitting description across the site — see
+ *    `jpcDescription()`'s own docblock for the exact scoping (deliberately
+ *    narrower than all of `#red-text`, which also holds unrelated content
+ *    like a video-trailer preview and a translation-language selector on
+ *    the same page).
  *  - **`absoluteJpcUrl()` only follows an absolute href that stays on
  *    jpc.de itself** (GitHub issue #146, a security-review finding) —
  *    that URL is fetched server-side by jpcProductPage(), so an
@@ -275,12 +290,12 @@ trait JpcScraping
      *
      * @param  bool  $splitTitleOnDash  Opt into the confirmed book-only `{Titel} - {Autor}` title-tag convention — see this trait's own docblock for why this isn't applied unconditionally to every media type. Only JpcBookProvider passes true.
      *
-     * `description` is deliberately never populated — see this trait's
-     * own docblock. `Label:` (record label) was confirmed as a real CD
-     * detail-row label too, but isn't extracted here at all: no in-scope
-     * model has a fillable column it would map to — extracting a value
-     * with nowhere to put it would just be dead code.
-     * @return array{title: ?string, byline: ?string, format: ?string, disc_count: ?int, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, subtitles: ?string, director: ?string, cast: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
+     * `description` (GitHub issue #214) comes from `jpcDescription()` — see
+     * that method's own docblock. `Label:` (record label) was confirmed
+     * as a real CD detail-row label too, but isn't extracted here at all:
+     * no in-scope model has a fillable column it would map to —
+     * extracting a value with nowhere to put it would just be dead code.
+     * @return array{title: ?string, byline: ?string, format: ?string, disc_count: ?int, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, subtitles: ?string, director: ?string, cast: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array, description: ?string}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
      */
     private function jpcProductPage(string $url, bool $splitTitleOnDash = false): ?array
     {
@@ -341,6 +356,8 @@ trait JpcScraping
             'price' => $offer['price'],
             'currency' => $offer['currency'],
             'tracks' => $this->jpcTracks($xpath),
+            // GitHub issue #214.
+            'description' => $this->jpcDescription($xpath),
         ];
     }
 
@@ -663,6 +680,54 @@ trait JpcScraping
         $stripped = preg_replace('/\s*Hörprobe\s+Track\s+\d+\s*:.*$/us', '', $title) ?? $title;
 
         return $this->cleanText($stripped);
+    }
+
+    /**
+     * GitHub issue #214, a user-found source (not this app's own research):
+     * the same "Weiterlesen" (read more) collapsible box present on every
+     * jpc.de product page type — `<div class="box content textlink"
+     * id="red-text">` — nests the real synopsis/blurb text inside a
+     * `<div data-pd="…"><div class="collapsable">…<p>…</p></div></div>`
+     * block. Confirmed live for a film ("Ant-Man and the Wasp", the same
+     * page this trait's `Darsteller:`/GitHub issue #213 check used) —
+     * `description` had previously been left unset everywhere specifically
+     * because earlier research never found this container (see the
+     * "unconfirmed guess"/`description` history throughout this trait's
+     * own docblock and `JpcBookProvider`'s). Not independently
+     * re-confirmed here for CD/book pages, but the user reports this same
+     * element consistently holding a fitting description across the site,
+     * and `#red-text` is a generic, non-media-type-specific container ID,
+     * so this is wired into `jpcProductPage()` for all three media types.
+     *
+     * Deliberately scoped to the `.collapsable` block specifically, not
+     * every `<p>` under `#red-text` — that outer container also holds
+     * unrelated content on the same page (a video-trailer preview, a
+     * translation-language selector, related-edition cards), none of
+     * which should ever end up in `description`. The "Weiterlesen"
+     * button's own `aria-controls` attribute names its real target as
+     * `id="primaryTextBlock-{hnum}"`, which the user asked this extraction
+     * be scoped to — but that id is never actually rendered into the
+     * static server HTML this app fetches (only referenced by the button,
+     * presumably assigned client-side by JS that never runs here), so it
+     * can't be selected directly. The `.collapsable` div is the same
+     * region semantically (the exact block that button expands/collapses)
+     * and *is* present in the static markup, so it's used instead.
+     *
+     * Takes the full text of the first matching `.collapsable` block
+     * (not just its first `<p>`), so a description spanning more than one
+     * paragraph is still captured in full, just without the original
+     * paragraph breaks — the same flat-string treatment every other
+     * free-text field in this app already gets. A trailing source
+     * citation some descriptions carry (e.g. "(Filmstarts.de)") is kept
+     * as-is, not stripped — deliberately, since only this one live
+     * example is confirmed and a different, differently-worded citation
+     * (or none at all) can't be ruled out.
+     */
+    private function jpcDescription(DOMXPath $xpath): ?string
+    {
+        $node = $xpath->query('//*[@id="red-text"]//div[contains(concat(" ", normalize-space(@class), " "), " collapsable ")]')->item(0);
+
+        return $node instanceof DOMElement ? $this->cleanText($node->textContent) : null;
     }
 
     /** Extracts the numeric `hnum` product identifier this trait's own docblock confirms is embedded in every product URL — falls back to the full URL if a page doesn't follow that shape. */

@@ -32,7 +32,12 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * extracted by `JpcScraping::jpcProductPage()` (used by
  * `JpcBookProvider` since MediaBook was the only model with a `genre`
  * column at the time), just never mapped here until `MediaDvdBluray`
- * gained one too.
+ * gained one too. Issue #140 also found jpc.de's DVD/Blu-ray pages carry
+ * no film-synopsis container of the kind it was looking for at the time
+ * (`<meta name="description">` only) — GitHub issue #214 later found a
+ * real one after all (`#red-text`, a generic "read more" box, not
+ * something #140's own check had reason to look for) — see
+ * `JpcScraping::jpcDescription()`'s own docblock.
  */
 class JpcDvdBlurayProvider implements MetadataProviderInterface
 {
@@ -126,6 +131,8 @@ class JpcDvdBlurayProvider implements MetadataProviderInterface
                 // GitHub issue #213.
                 'cast' => $page['cast'],
                 'genre' => $page['genre'],
+                // GitHub issue #214.
+                'description' => $page['description'],
                 'release_date' => $page['release_date'],
                 'production_year' => $page['release_date'] ? (int) substr($page['release_date'], 0, 4) : null,
                 // The originally-scanned code — see JpcCdProvider::mapProductPageToCandidate()'s matching comment.
