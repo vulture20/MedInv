@@ -410,6 +410,28 @@ class AmazonBookProviderTest extends TestCase
     }
 
     /**
+     * GitHub issue #221, a security-review finding: `updatePlugin()` now
+     * rejects a `marketplace` value outside `AmazonScraping::MARKETPLACES`
+     * at save time, but `marketplace()` itself stays defensive as a second,
+     * independent layer — a stored value that predates that validation (or
+     * otherwise bypassed it, e.g. a direct database write) must not be
+     * trusted verbatim as the outbound request host, since that would let
+     * the server issue a request to an arbitrary attacker-chosen host
+     * (SSRF). Falls back to the same `amazon.com` default as no
+     * configuration at all, rather than ever using the stored value as-is.
+     */
+    public function test_marketplace_falls_back_to_amazon_com_for_an_unrecognized_stored_value(): void
+    {
+        $this->withMarketplace('attacker-controlled.example');
+        Http::fake([self::SEARCH_API => Http::response($this->searchResultHtml(), 200)]);
+
+        app(AmazonBookProvider::class)->search('dune');
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://www.amazon.com/s'));
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'attacker-controlled.example'));
+    }
+
+    /**
      * GitHub issue #211: Amazon's buy-box price now renders as plain
      * a-price-whole/-decimal/-fraction/-symbol spans inside
      * #corePriceDisplay_desktop_feature_div (confirmed live against a real

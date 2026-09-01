@@ -16,6 +16,7 @@ use App\Models\Library;
 use App\Models\MetadataPlugin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Metadata search/import (briefing 8.). Chosen-candidate confirmation
@@ -280,11 +281,55 @@ class MetadataController extends Controller
             'config' => ['sometimes', 'array'],
         ]);
 
+        if (isset($data['config'])) {
+            $this->assertValidPluginConfig($plugin->provider_key, $data['config']);
+        }
+
         $plugin->update($data);
 
         Log::info('Metadata plugin updated', ['actor_id' => $request->user()->id, 'provider_key' => $plugin->provider_key, 'changes' => $this->redactedChanges($plugin, $data)]);
 
         return $plugin;
+    }
+
+    /**
+     * GitHub issue #221, a security-review finding: a `type: 'select'`
+     * config field (`MetadataProviderConfigField`'s own docblock — "a
+     * closed, small set of admin-chosen values ... where a free-text
+     * input would let an admin type an unsupported value", e.g. Amazon's
+     * `marketplace`) was previously only constrained by PluginsPage.tsx's
+     * `<select>` widget — `updatePlugin()` itself accepted any string for
+     * `config`, trivially bypassed by calling this endpoint directly. That
+     * mattered concretely for `marketplace`: `AmazonScraping::baseUrl()`
+     * uses it directly as the outbound scrape request's host, so an
+     * unvalidated value let an admin (intentionally or via a compromised
+     * admin session) point the server at an arbitrary attacker-chosen
+     * host — a real SSRF with host control, not just path control, whose
+     * response is then reflected back to whichever ordinary user's next
+     * metadata search happens to query that provider.
+     *
+     * Generic across every provider/field, not Amazon-specific: rejects
+     * (422) a submitted `config` value for any declared `select` field
+     * that isn't one of its own `options`. A key with no declared `select`
+     * field (or a field this provider doesn't declare at all) passes
+     * through unvalidated exactly as before — this only closes the gap
+     * `MetadataProviderConfigField` itself already claims to close.
+     */
+    private function assertValidPluginConfig(string $providerKey, array $config): void
+    {
+        $fields = $this->registry->providerByKey($providerKey)?->configFields() ?? [];
+
+        foreach ($fields as $field) {
+            if ($field->type !== 'select' || $field->options === null || ! array_key_exists($field->key, $config)) {
+                continue;
+            }
+
+            if (! in_array($config[$field->key], $field->options, true)) {
+                throw ValidationException::withMessages([
+                    "config.{$field->key}" => "The selected {$field->key} is invalid.",
+                ]);
+            }
+        }
     }
 
     /**

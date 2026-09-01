@@ -55,7 +55,7 @@ class AmazonBookProvider implements MetadataProviderInterface
     public function configFields(): array
     {
         return [
-            new MetadataProviderConfigField('marketplace', type: 'select', options: ['amazon.com', 'amazon.de']),
+            new MetadataProviderConfigField('marketplace', type: 'select', options: self::MARKETPLACES),
         ];
     }
 

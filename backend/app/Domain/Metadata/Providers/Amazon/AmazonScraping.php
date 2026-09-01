@@ -118,6 +118,17 @@ use Illuminate\Support\Facades\Log;
  */
 trait AmazonScraping
 {
+    /**
+     * GitHub issue #221, a security-review finding: the single source of
+     * truth for the `marketplace` config field's closed value set — used
+     * both by `marketplace()`'s own defense-in-depth fallback below and by
+     * each of the three concrete providers' `configFields()` (replacing
+     * three separately hardcoded `['amazon.com', 'amazon.de']` literals),
+     * so the two can no longer drift apart the way the original,
+     * unvalidated version of this field allowed.
+     */
+    public const MARKETPLACES = ['amazon.com', 'amazon.de'];
+
     private const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
     private const TIMEOUT_SECONDS = 10;
@@ -537,12 +548,23 @@ trait AmazonScraping
      * `cd.amazon`/`dvd_bluray.amazon`) is only available once composed into
      * one of those, not on the trait alone. Defaults to `'amazon.com'`,
      * preserving this trait's original, unconfigured behavior exactly.
+     *
+     * GitHub issue #221, a security-review finding: this value becomes
+     * `baseUrl()`'s request host directly, so a stored value outside
+     * `MARKETPLACES` — `updatePlugin()` now rejects one at save time, but
+     * this is the second, independent layer of defense for any config row
+     * that predates that fix, or however else an unvalidated value might
+     * have ended up stored — falls back to the same `'amazon.com'` default
+     * rather than being trusted verbatim, closing the SSRF an
+     * admin-controlled arbitrary host would otherwise let the server issue
+     * a request to.
      */
     private function marketplace(): string
     {
         $config = MetadataPlugin::query()->where('provider_key', $this->key())->first()?->config;
+        $marketplace = $config['marketplace'] ?? null;
 
-        return is_string($config['marketplace'] ?? null) ? $config['marketplace'] : 'amazon.com';
+        return is_string($marketplace) && in_array($marketplace, self::MARKETPLACES, true) ? $marketplace : 'amazon.com';
     }
 
     /** Full scheme+host for the configured marketplace() — see its own docblock. */
