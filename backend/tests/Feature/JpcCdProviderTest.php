@@ -92,6 +92,12 @@ class JpcCdProviderTest extends TestCase
                     <meta itemprop="price" content="36.99" />
                 </span>
             </tr>
+            <div class="box medium">
+                <span class="open-help-layer" data-layer=".help-layer-medium">
+                    CD
+                </span>
+                <button class="open-help-layer" data-layer=".help-layer-medium" aria-label="Hinweis zum Medium"></button>
+            </div>
             <div class="box content textlink" id="red-text">
                 <button aria-controls="primaryTextBlock-12765025">Weiterlesen</button>
                 <div class="product-video-preview"><h3>Irrelevant</h3></div>
@@ -114,6 +120,9 @@ class JpcCdProviderTest extends TestCase
 
         $this->assertSame('Back Into The Sun', $candidate->attributes['title']);
         $this->assertSame('Mark Medlock (DSDS)', $candidate->attributes['artist']);
+        // GitHub issue #215: sourced from the "box medium" span here (not
+        // the <title> tag), which agrees with the title-tag value on this
+        // fixture — proves no regression when both sources agree.
         $this->assertSame('CD', $candidate->attributes['medium']);
         // GitHub issue #136: no leading number in the format string here, so disc_count stays null (falls back to the DB's own default of 1) rather than a wrong guess.
         $this->assertNull($candidate->attributes['disc_count']);
@@ -153,6 +162,36 @@ class JpcCdProviderTest extends TestCase
         $this->assertSame('The Wall (remastered) (180g)', $candidate->attributes['title']);
         $this->assertSame('LP', $candidate->attributes['medium']);
         $this->assertSame(2, $candidate->attributes['disc_count']);
+    }
+
+    /**
+     * GitHub issue #215: not independently confirmed live on a real CD
+     * page (see JpcScraping::jpcMediumSpanText()'s own docblock — used
+     * here anyway on the "generic, non-media-type-specific container"
+     * reasoning already applied to `#red-text`). Models a case the
+     * <title>-tag-only approach could never handle at all: a format
+     * segment with no leading digit of its own (e.g. a boxed set titled
+     * generically), where the "box medium" span is the only source with
+     * the actual count.
+     */
+    public function test_disc_count_prefers_the_medium_span_when_present(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Pink Floyd: The Wall (Box Set) – jpc.de</title></head><body>'
+                .'<div class="box medium"><span class="open-help-layer" data-layer=".help-layer-medium">'
+                ."\n                                    3\n                        LPs\n            "
+                .'</span></div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcCdProvider::class)->lookupByCode('0602488213288')[0];
+
+        $this->assertSame('LP', $candidate->attributes['medium']);
+        $this->assertSame(3, $candidate->attributes['disc_count']);
     }
 
     /**

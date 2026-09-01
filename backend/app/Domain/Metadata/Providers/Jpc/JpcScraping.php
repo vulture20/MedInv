@@ -169,6 +169,17 @@ use Illuminate\Support\Facades\Log;
  *    narrower than all of `#red-text`, which also holds unrelated content
  *    like a video-trailer preview and a translation-language selector on
  *    the same page).
+ *  - **`format`/`disc_count` (`box medium` span)** — GitHub issue #215,
+ *    again a source the user found: `<div class="box medium">`'s own
+ *    `<span class="open-help-layer" data-layer=".help-layer-medium">`
+ *    (the site's dedicated, visible "Medium" display field, with its own
+ *    "Hinweis zum Medium" help tooltip) confirmed live on the same
+ *    "Ant-Man and the Wasp" page (holding just `"DVD"`, single disc) and
+ *    on a real multi-disc release ("Fringe Season 5", EAN
+ *    5051890205261 — holding `"5"`/`"DVDs"` on separate lines, collapsing
+ *    to `"5 DVDs"`). Preferred over the `<title>`-tag-derived format
+ *    string when present, falling back to that when it's not — see
+ *    `jpcMediumSpanText()`'s own docblock for why.
  *  - **`absoluteJpcUrl()` only follows an absolute href that stays on
  *    jpc.de itself** (GitHub issue #146, a security-review finding) —
  *    that URL is fetched server-side by jpcProductPage(), so an
@@ -307,6 +318,11 @@ trait JpcScraping
 
         $xpath = $this->xpathFor($html);
         $fromTitleTag = $this->parseJpcTitleTag($xpath->query('//title')->item(0)?->textContent, $splitTitleOnDash);
+        // GitHub issue #215: the dedicated "box medium" span, when
+        // present, is preferred over the <title>-tag-derived format
+        // string below for both `format` and `disc_count` — see
+        // jpcMediumSpanText()'s own docblock for why.
+        $rawFormat = $this->jpcMediumSpanText($xpath) ?? $fromTitleTag['format'];
         // UPC/EAN: (CD/film) or ISBN-13: (book, no UPC/EAN row observed there) — see this trait's own docblock.
         $ean = $this->jpcDetailValue($xpath, 'UPC/EAN:') ?? $this->jpcDetailValue($xpath, 'ISBN-13:');
         $offer = $this->jpcPrice($xpath);
@@ -318,18 +334,19 @@ trait JpcScraping
             // the leading disc count — see stripJpcDiscCount()'s own
             // docblock for why that was redundant now that disc_count
             // (below) already carries it as its own field.
-            'format' => $this->stripJpcDiscCount($fromTitleTag['format']),
-            // GitHub issue #136: jpc.de has no dedicated disc-count label
-            // at all — the count lives only inside the same
-            // title-tag-derived format string (e.g. "2 DVDs", "2 LPs"),
-            // confirmed on real multi-disc DVD and LP releases; a
-            // single-disc format ("CD", "Blu-ray", "Blu-ray & DVD im
-            // Steelbook") has no leading digit, so this stays null there
-            // — the same parseLeadingInt() reuse every other leading-
-            // number field in this trait already uses. Deliberately reads
-            // the *original*, unstripped format string, not the one
-            // above.
-            'disc_count' => $this->parseLeadingInt($fromTitleTag['format']),
+            'format' => $this->stripJpcDiscCount($rawFormat),
+            // GitHub issue #136: jpc.de has no dedicated disc-count
+            // *label* (like `Regie:`/`Genre:`), only a dedicated *display
+            // element* (GitHub issue #215's `box medium` span) or, absent
+            // that, the same title-tag-derived format string (e.g. "2
+            // DVDs", "2 LPs") — confirmed on real multi-disc DVD and LP
+            // releases; a single-disc format ("CD", "Blu-ray", "Blu-ray &
+            // DVD im Steelbook") has no leading digit, so this stays null
+            // there — the same parseLeadingInt() reuse every other
+            // leading-number field in this trait already uses.
+            // Deliberately reads the *original*, unstripped raw format
+            // string, not the one above.
+            'disc_count' => $this->parseLeadingInt($rawFormat),
             'ean' => $ean !== null ? preg_replace('/\D/', '', $ean) ?: null : null,
             'release_date' => $this->parseJpcDate($this->jpcDetailValue($xpath, 'Erscheinungstermin:')),
             'runtime_minutes' => $this->parseLeadingInt($this->jpcDetailValue($xpath, 'Spieldauer ca.:')),
@@ -726,6 +743,50 @@ trait JpcScraping
     private function jpcDescription(DOMXPath $xpath): ?string
     {
         $node = $xpath->query('//*[@id="red-text"]//div[contains(concat(" ", normalize-space(@class), " "), " collapsable ")]')->item(0);
+
+        return $node instanceof DOMElement ? $this->cleanText($node->textContent) : null;
+    }
+
+    /**
+     * GitHub issue #215, a source the user found (not this app's own
+     * research): the dedicated, visible "Medium" info box present on
+     * every product page — `<div class="box medium">…<span
+     * class="open-help-layer" data-layer=".help-layer-medium">…</span>…
+     * <button class="open-help-layer" data-layer=".help-layer-medium"
+     * aria-label="Hinweis zum Medium">…</button>…</div>` (the button
+     * opens a help tooltip explaining region codes/formats) — confirmed
+     * live on two real pages, both agreeing with the `<title>`-tag-
+     * derived format string this trait already parses:
+     *  - Single-disc ("Ant-Man and the Wasp", hnum 8721137): the span
+     *    holds just `"DVD"` (whitespace-padded in the real markup, no
+     *    leading count).
+     *  - Multi-disc ("Fringe Season 5", EAN 5051890205261, hnum 2808749):
+     *    the span holds `"5"` and `"DVDs"` on separate lines (real
+     *    markup, collapses to `"5 DVDs"` via `cleanText()`).
+     *
+     * `jpcProductPage()` prefers this over the title-tag-derived format
+     * string when present (falling back to that when it's not) — not
+     * because a specific real failure of the title-tag approach was
+     * confirmed, but because this is jpc.de's own dedicated, single-
+     * purpose display field for exactly this data (with its own
+     * explanatory tooltip), rather than a number parsed out of a
+     * `<title>` string generated for SEO/browser-tab purposes; preferring
+     * it can only match-or-improve accuracy, never regress it, since both
+     * sources agreed on the two pages checked here.
+     *
+     * Only confirmed on DVD/Blu-ray pages, not independently on a real CD
+     * page — used for both anyway, the same "generic, non-media-type-
+     * specific container" reasoning `jpcDescription()`'s own docblock
+     * already applies to `#red-text`.
+     *
+     * Restricted to the `span` tag specifically (not just the class/
+     * data-layer attributes) since the accompanying `<button>` shares
+     * both — on both real pages checked, exactly one `span` and one
+     * `button` carry `data-layer=".help-layer-medium"`, never more.
+     */
+    private function jpcMediumSpanText(DOMXPath $xpath): ?string
+    {
+        $node = $xpath->query('//span[contains(concat(" ", normalize-space(@class), " "), " open-help-layer ")][@data-layer=".help-layer-medium"]')->item(0);
 
         return $node instanceof DOMElement ? $this->cleanText($node->textContent) : null;
     }

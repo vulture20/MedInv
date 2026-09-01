@@ -52,6 +52,12 @@ class JpcDvdBlurayProviderTest extends TestCase
               <dt><b>Sprache:</b></dt><dd>Deutsch, Japanisch</dd>
               <dt><b>Untertitel:</b></dt><dd>Deutsch</dd>
             </dl>
+            <div class="box medium">
+                <span class="open-help-layer" data-layer=".help-layer-medium">
+                    Blu-ray &amp; DVD im Steelbook
+                </span>
+                <button class="open-help-layer" data-layer=".help-layer-medium" aria-label="Hinweis zum Medium"></button>
+            </div>
             <div class="box content textlink" id="red-text">
                 <button aria-controls="primaryTextBlock-6171414">Weiterlesen</button>
                 <div class="product-video-preview"><h3>Filmausschnitte/Videotrailer</h3><p>Nicht die Beschreibung.</p></div>
@@ -73,6 +79,9 @@ class JpcDvdBlurayProviderTest extends TestCase
         $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('0889853970292')[0];
 
         $this->assertSame('Das wandelnde Schloss', $candidate->attributes['title']);
+        // GitHub issue #215: sourced from the "box medium" span here (not
+        // the <title> tag), which agrees with the title-tag value on this
+        // fixture — proves no regression when both sources agree.
         $this->assertSame('Blu-ray & DVD im Steelbook', $candidate->attributes['medium']);
         // GitHub issue #136: no leading number in the format string here, so disc_count stays null (falls back to the DB's own default of 1) rather than a wrong guess.
         $this->assertNull($candidate->attributes['disc_count']);
@@ -149,6 +158,57 @@ class JpcDvdBlurayProviderTest extends TestCase
         $this->assertSame('Hogfather (Special Edition)', $candidate->attributes['title']);
         $this->assertSame('DVD', $candidate->attributes['medium']);
         $this->assertSame(2, $candidate->attributes['disc_count']);
+    }
+
+    /**
+     * GitHub issue #215: this page has no "box medium" span at all —
+     * proves jpcMediumSpanText() returning null correctly falls back to
+     * the <title>-tag-derived format string, exactly as before #215
+     * (same fixture/assertions as the test right above this one).
+     */
+    public function test_disc_count_falls_back_to_the_title_tag_when_no_medium_span_is_present(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Hogfather (Special Edition) (2 DVDs) – jpc.de</title></head><body></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('4009750242353')[0];
+
+        $this->assertSame('DVD', $candidate->attributes['medium']);
+        $this->assertSame(2, $candidate->attributes['disc_count']);
+    }
+
+    /**
+     * GitHub issue #215: confirmed live on "Fringe Season 5" (EAN
+     * 5051890205261, the same real 5-DVD TV-season box set GitHub issue
+     * #143 used) — the "box medium" span there reads "5" and "DVDs" on
+     * separate lines (real whitespace noise, collapsing via cleanText()
+     * to "5 DVDs"), agreeing with the <title> tag's own "(5 DVDs)"
+     * segment on this real page, but sourced from the dedicated span
+     * (the preferred source) rather than the title tag.
+     */
+    public function test_disc_count_prefers_the_medium_span_when_present(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Fringe Season 5 (5 DVDs) – jpc.de</title></head><body>'
+                .'<div class="box medium"><span class="open-help-layer" data-layer=".help-layer-medium">'
+                ."\n                                    5\n                        DVDs\n            "
+                .'</span></div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('5051890205261')[0];
+
+        $this->assertSame('DVD', $candidate->attributes['medium']);
+        $this->assertSame(5, $candidate->attributes['disc_count']);
     }
 
     /** GitHub issue #143: confirmed live on "Fringe Season 5" (EAN 5051890205261, a 5-DVD TV-season box set) — the Genre row there reads "Thriller, (13 Episoden)", not just "Thriller". */
