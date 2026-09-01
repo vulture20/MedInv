@@ -194,6 +194,7 @@
     "rejectAll": "Reject all matches",
     "mergeCover": "Cover",
     "mergeKeepCover": "Keep current cover",
+    "mergeKeepValue": "Keep current value",
     "mergeNoCover": "No cover",
     "mergeRejectField": "Don't use this",
     "mergeConfirm": "Use these values",

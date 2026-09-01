@@ -282,14 +282,31 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
   // option. `null` is the sentinel for that rejection option, distinct
   // from any real option's value the same way selectedCoverUrl already
   // uses `null` for "Kein Cover".
-  const [selectedValues, setSelectedValues] = useState<Record<string, string | number | null>>(() => {
-    const initial: Record<string, string | number | null> = {}
+  //
+  // GitHub issue #218: `undefined` is a third sentinel — "keep the item's
+  // current value" — for the case none of this round's fetched options
+  // happen to reproduce it (a genuine provider disagreement, or a
+  // provider-side bug like #217's own "Blu-ray Disc" vs. "Blu-ray"). This
+  // defaults to `undefined` specifically *because* no option matched;
+  // when one already does, that option itself represents "current" and is
+  // preselected exactly as before this issue — never a second, visually
+  // redundant "keep current" radio alongside an identical-looking option.
+  // Only reachable for a non-required field (required's own branch in
+  // confirm() below and its render block never look at this sentinel),
+  // same population `spec.required` already gates "Nicht übernehmen" on.
+  const [selectedValues, setSelectedValues] = useState<Record<string, string | number | null | undefined>>(() => {
+    const initial: Record<string, string | number | null | undefined> = {}
     for (const spec of specs) {
       const field = merged.fields[spec.key]
-      if (field && field.options.length > 0) {
-        const currentValue = current?.values[spec.key]
-        const matching = currentValue !== undefined ? field.options.find((option) => optionMatchesCurrentValue(option.value, currentValue, spec.type)) : undefined
-        initial[spec.key] = matching ? matching.value : field.options[0].value
+      if (!field || field.options.length === 0) continue
+      const currentValue = current?.values[spec.key]
+      const matching = currentValue !== undefined ? field.options.find((option) => optionMatchesCurrentValue(option.value, currentValue, spec.type)) : undefined
+      if (matching) {
+        initial[spec.key] = matching.value
+      } else if (!spec.required && currentValue !== undefined && currentValue !== '') {
+        initial[spec.key] = undefined
+      } else {
+        initial[spec.key] = field.options[0].value
       }
     }
     return initial
@@ -309,10 +326,16 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
     if (current) return current.coverUrl ? undefined : null
     return merged.covers[0]?.url ?? null
   })
-  const [selectedTracks, setSelectedTracks] = useState<Track[] | null>(() => {
+  // GitHub issue #218: same third "keep current" sentinel as
+  // selectedValues above, `undefined` here too — a current track list
+  // that no fetched option reproduces defaults to being kept rather than
+  // silently discarded in favor of the first fetched option.
+  const [selectedTracks, setSelectedTracks] = useState<Track[] | null | undefined>(() => {
     if (!tracksField || tracksField.agreed || tracksField.options.length === 0) return null
     const matching = current?.tracks ? tracksField.options.find((option) => tracksMatchCurrent(option.value, current.tracks!)) : undefined
-    return matching ? matching.value : tracksField.options[0].value
+    if (matching) return matching.value
+    if (current?.tracks && current.tracks.length > 0) return undefined
+    return tracksField.options[0].value
   })
   // GitHub issue #99: a larger view of a candidate cover, opened by clicking
   // its thumbnail — same native-<dialog> pattern as MediaItemDetailDialog's
@@ -358,7 +381,13 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
       // sentinel — an agreed field defaults there to its own (sole)
       // option, so confirming without touching anything still reproduces
       // the pre-#189 "just take the agreed value" behavior.
-      const value = selectedValues[spec.key] ?? null
+      const value = selectedValues[spec.key]
+      // GitHub issue #218: `undefined` is "keep the current value" — left
+      // out of `attributes` entirely (not sent as `null`) so
+      // MediaItemService::updateFromMetadata()'s Eloquent update() leaves
+      // this column untouched rather than erasing it, the same way an
+      // omitted key already behaves for every other endpoint in this app.
+      if (value === undefined) continue
       attributes[spec.key] = value
       if (value !== null) {
         field.options.find((option) => option.value === value)?.provider_keys.forEach((key) => providerKeys.add(key))
@@ -369,6 +398,11 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
         attributes.tracks = tracksField.value
         tracksField.options[0]?.provider_keys.forEach((key) => providerKeys.add(key))
       } else if (selectedTracks) {
+        // GitHub issue #218: `selectedTracks === undefined` ("keep the
+        // current track list") already falls through this truthy check
+        // exactly like `null` always did — `attributes.tracks` stays
+        // unset, the same "omitted key, column left untouched" behavior
+        // ordinary fields now get an explicit `continue` for above.
         attributes.tracks = selectedTracks
         // Reference equality, not structural: selectedTracks was set from this
         // exact same in-memory option.value (see the radio's onChange below), so
@@ -430,10 +464,33 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
         // pattern the cover picker's own "Kein Cover" already established,
         // rather than a separate checkbox next to a differently-styled
         // display.
+        //
+        // GitHub issue #218: the item's own current value for this field,
+        // shown as its own selectable option — only when there is one and
+        // no fetched option already reproduces it (optionMatchesCurrentValue,
+        // same check the initial selectedValues computation above already
+        // uses), so a genuine match never grows a second, visually
+        // identical radio next to the option that already represents it.
+        const currentValue = current?.values[spec.key]
+        const showKeepCurrent =
+          currentValue !== undefined && currentValue !== '' && !field.options.some((option) => optionMatchesCurrentValue(option.value, currentValue, spec.type))
+
         return (
           <div className="metadata-merge__field" key={spec.key}>
             <span className="metadata-merge__field-label">{t(`mediaItem.fields.${spec.key}`)}</span>
             <div className="metadata-merge__options" role="radiogroup" aria-label={t(`mediaItem.fields.${spec.key}`)}>
+              {showKeepCurrent && (
+                <label className="metadata-merge__option">
+                  <input
+                    type="radio"
+                    name={`${groupId}-${spec.key}`}
+                    checked={selectedValues[spec.key] === undefined}
+                    onChange={() => setSelectedValues((prev) => ({ ...prev, [spec.key]: undefined }))}
+                  />
+                  <span>{currentValue}</span>
+                  <span className="metadata-merge__option-source">{t('capture.mergeKeepValue')}</span>
+                </label>
+              )}
               {field.options.map((option) => (
                 <label key={String(option.value)} className="metadata-merge__option">
                   <input
@@ -483,6 +540,24 @@ export function MetadataMergeReview({ groupId, ean, mediaType, merged, current, 
             </span>
           ) : (
             <div className="metadata-merge__options" role="radiogroup" aria-label={t('mediaItem.tracklist')}>
+              {/*
+                GitHub issue #218: the item's own current track list, shown
+                as its own selectable option — same "only when nothing
+                fetched already reproduces it" gating as an ordinary
+                field's "keep current" radio above.
+              */}
+              {current?.tracks && current.tracks.length > 0 && !tracksField.options.some((option) => tracksMatchCurrent(option.value, current.tracks!)) && (
+                <label className="metadata-merge__option">
+                  <input
+                    type="radio"
+                    name={`${groupId}-tracks`}
+                    checked={selectedTracks === undefined}
+                    onChange={() => setSelectedTracks(undefined)}
+                  />
+                  <span>{t('capture.mergeTracksCount', { count: current.tracks.length })}</span>
+                  <span className="metadata-merge__option-source">{t('capture.mergeKeepValue')}</span>
+                </label>
+              )}
               {tracksField.options.map((option, index) => {
                 const duration = totalTracksDuration(option.value)
                 return (

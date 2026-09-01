@@ -194,6 +194,7 @@
     "rejectAll": "Alle Treffer ablehnen",
     "mergeCover": "Cover",
     "mergeKeepCover": "Cover beibehalten",
+    "mergeKeepValue": "Aktuellen Wert behalten",
     "mergeNoCover": "Kein Cover",
     "mergeRejectField": "Nicht übernehmen",
     "mergeConfirm": "Diese Werte übernehmen",
