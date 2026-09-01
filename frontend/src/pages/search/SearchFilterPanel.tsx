@@ -250,19 +250,21 @@ export function SearchFilterPanel({
         />
       </div>
 
-      <label className="search-filters__checkbox">
-        <input type="checkbox" checked={draft.fuzzy} onChange={(e) => onChange({ fuzzy: e.target.checked })} />
-        {t('search.fuzzy')}
-      </label>
+      <div className="search-filters__row">
+        <label className="search-filters__checkbox">
+          <input type="checkbox" checked={draft.fuzzy} onChange={(e) => onChange({ fuzzy: e.target.checked })} />
+          {t('search.fuzzy')}
+        </label>
 
-      <label className="search-filters__checkbox">
-        <input
-          type="checkbox"
-          checked={draft.duplicates}
-          onChange={(e) => onChange({ duplicates: e.target.checked })}
-        />
-        {t('search.duplicates')}
-      </label>
+        <label className="search-filters__checkbox">
+          <input
+            type="checkbox"
+            checked={draft.duplicates}
+            onChange={(e) => onChange({ duplicates: e.target.checked })}
+          />
+          {t('search.duplicates')}
+        </label>
+      </div>
     </section>
   )
 }
