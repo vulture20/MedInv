@@ -512,22 +512,52 @@ trait JpcScraping
      * `medium` too (e.g. "medium: 2 DVDs" *and* "disc_count: 2") became a
      * pointless, confusing redundancy — this strips it back down to just
      * "DVD". Confirmed real examples are simple English plurals ("2
-     * DVDs" → "DVD", "2 LPs" → "LP"), so this strips a leading "{n} " and
-     * then a trailing "s" from what's left, best-effort (same
-     * disclosed-limitation spirit as every other regex-based field in
-     * this trait — a hypothetical format that doesn't pluralize with a
-     * bare "s" isn't handled specially). A format with no leading number
-     * at all (a single-disc format like "CD"/"Blu-ray", or a compound
-     * description like "Blu-ray & DVD im Steelbook" with no disc-count
-     * prefix to begin with) is returned unchanged.
+     * DVDs" → "DVD", "2 LPs" → "LP"), stripped by removing a leading
+     * "{n} " and then a trailing "s" from what's left. A format with no
+     * leading number at all (a single-disc format like "CD"/"Blu-ray", or
+     * a compound description like "Blu-ray & DVD im Steelbook" with no
+     * disc-count prefix to begin with) is returned unchanged.
+     *
+     * GitHub issue #217, a user-reported gap (EAN 4042564242782, a real
+     * 25-disc Blu-ray box set — "Farscape - Verschollen im All"): that
+     * simple "strip a leading count, then a trailing 's'" rule doesn't
+     * hold for Blu-ray, confirmed live against the real product page —
+     * jpc.de's `box medium` span there reads "25"/"Blu-ray Discs", not
+     * "25 Blu-rays". Unlike "DVD"/"LP", which pluralize by adding "s"
+     * directly onto the format name itself, Blu-ray apparently gets a
+     * separate, generic "Disc"/"Discs" noun appended instead — stripping
+     * only the trailing "s" from "Blu-ray Discs" left "Blu-ray Disc", not
+     * this app's own established "Blu-ray" convention (every other
+     * confirmed single-disc format has no "Disc" suffix at all), which is
+     * exactly what made a fresh metadata refresh fail to recognize the
+     * item's own already-correct stored value: `medium` came back as a
+     * different, wrong string with no way to tell the two apart. Fixed by
+     * stripping a standalone trailing "Disc"/"Discs" *word* first,
+     * whenever present, before falling back to the ordinary
+     * leading-count-driven trailing-"s" strip above — this also
+     * defensively normalizes a hypothetical singular "Blu-ray Disc" with
+     * no leading count at all (never itself confirmed live) the same way,
+     * since that shape has no leading digit to trigger the ordinary
+     * branch below.
      */
     private function stripJpcDiscCount(?string $format): ?string
     {
-        if ($format === null || ! preg_match('/^\d+\s+(.+)$/u', $format, $matches)) {
+        if ($format === null) {
+            return null;
+        }
+
+        $hadLeadingCount = (bool) preg_match('/^\d+\s+(.+)$/u', $format, $matches);
+        $withoutCount = $hadLeadingCount ? $matches[1] : $format;
+
+        if (preg_match('/^(.+?)\s+Discs?$/u', $withoutCount, $discMatches)) {
+            return $discMatches[1];
+        }
+
+        if (! $hadLeadingCount) {
             return $format;
         }
 
-        return preg_replace('/s$/u', '', $matches[1]) ?? $matches[1];
+        return preg_replace('/s$/u', '', $withoutCount) ?? $withoutCount;
     }
 
     /** A confirmed `Verlag:` value is `"{Verlag}, MM/YYYY"` (e.g. "DuMont Buchverlag GmbH, 07/2022") — strips the trailing date so `publisher` doesn't carry it too (`release_date` already comes from the separate, more precise `Erscheinungstermin:` row). Returns the original trimmed string unchanged if it doesn't match that shape, same restraint as AmazonScraping::stripPublisherSuffix(). */

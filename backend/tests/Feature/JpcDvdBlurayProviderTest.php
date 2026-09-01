@@ -211,6 +211,33 @@ class JpcDvdBlurayProviderTest extends TestCase
         $this->assertSame(5, $candidate->attributes['disc_count']);
     }
 
+    /**
+     * GitHub issue #217: confirmed live on "Farscape - Verschollen im
+     * All" (EAN 4042564242782, a real 25-disc Blu-ray box set) — the "box
+     * medium" span there reads "25"/"Blu-ray Discs", which the ordinary
+     * "strip a leading count, then a trailing 's'" rule would collapse to
+     * "Blu-ray Disc", not this app's own "Blu-ray" convention.
+     */
+    public function test_a_blu_ray_box_set_strips_the_whole_discs_word_not_just_a_trailing_s(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><head><title>Farscape - Verschollen im All (Komplette Serie) (Blu-ray) – jpc.de</title></head><body>'
+                .'<div class="box medium"><span class="open-help-layer" data-layer=".help-layer-medium">'
+                ."\n                                    25\n                        Blu-ray Discs\n            "
+                .'</span></div>'
+                .'</body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(JpcDvdBlurayProvider::class)->lookupByCode('4042564242782')[0];
+
+        $this->assertSame('Blu-ray', $candidate->attributes['medium']);
+        $this->assertSame(25, $candidate->attributes['disc_count']);
+    }
+
     /** GitHub issue #143: confirmed live on "Fringe Season 5" (EAN 5051890205261, a 5-DVD TV-season box set) — the Genre row there reads "Thriller, (13 Episoden)", not just "Thriller". */
     public function test_genre_strips_a_trailing_episode_count_annotation(): void
     {
