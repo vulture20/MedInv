@@ -27,6 +27,20 @@ on:
   pull_request:
     branches: ["main"]
   workflow_dispatch: # allows manually re-running a build from the Actions tab
+    inputs:
+      ref:
+        description: >-
+          Git tag/branch/SHA to build, using today's tagging logic (this
+          input) rather than whatever tagging logic was committed at that
+          ref — a workflow run always otherwise executes the workflow file
+          as it existed at its trigger ref, so a plain re-dispatch against
+          an old release tag would silently rebuild with that tag's own,
+          possibly outdated, workflow definition instead. Useful for
+          backfilling/rebuilding an older release (e.g. "v0.7") against the
+          current tag scheme. Leave empty to build whatever ref triggered
+          this run, as normal.
+        required: false
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -45,6 +59,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # inputs.ref only has a value for a manual dispatch that set it
+          # (see the workflow_dispatch.inputs.ref description above);
+          # otherwise this checks out github.ref exactly as before.
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0 # full history/tags, needed for metadata-action's context: git below to resolve which tag is checked out
 
       - name: Lowercase image name
         run: echo "IMAGE_NAME_LC=${IMAGE_NAME,,}" >> "$GITHUB_ENV"
@@ -67,6 +87,14 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}
+          # "git" (rather than the default "workflow") re-derives ref/sha
+          # from the actual checked-out repository state instead of
+          # github.ref — needed so the manual `ref` input above (and its
+          # detached-HEAD checkout of an arbitrary historical tag) is what
+          # gets tagged. Only switched on for that manual-ref case, so the
+          # ordinary push-to-main/tag-push paths keep the exact behavior
+          # they had before this input existed.
+          context: ${{ inputs.ref && 'git' || 'workflow' }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
