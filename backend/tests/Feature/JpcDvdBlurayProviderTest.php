@@ -47,6 +47,7 @@ class JpcDvdBlurayProviderTest extends TestCase
               <dt><b>Erscheinungstermin:</b></dt><dd>5.5.2017</dd>
               <dt><b>Spieldauer ca.:</b></dt><dd>119 Min.</dd>
               <dt><b>Regie:</b></dt><dd>Hayao Miyazaki</dd>
+              <dt><b>Darsteller:</b></dt><dd><a href="/s/chieko+baisho">Chieko Baisho</a>, <a href="/s/takuya+kimura">Takuya Kimura</a></dd>
               <dt><b>Genre:</b></dt><dd>Anime</dd>
               <dt><b>Sprache:</b></dt><dd>Deutsch, Japanisch</dd>
               <dt><b>Untertitel:</b></dt><dd>Deutsch</dd>
@@ -83,8 +84,11 @@ class JpcDvdBlurayProviderTest extends TestCase
         // GitHub issue #135: price/currency now extracted via confirmed schema.org Microdata.
         $this->assertSame(29.99, $candidate->attributes['price']);
         $this->assertSame('EUR', $candidate->attributes['currency']);
-        // No confirmed "Darsteller" label — see this provider's docblock.
-        $this->assertArrayNotHasKey('cast', $candidate->attributes);
+        // GitHub issue #213: confirmed real "Darsteller:" label, same
+        // <dt>/<dd> sibling shape as "Regie:" above — the sibling walk
+        // concatenates every <a> plus the ", " text nodes between them
+        // into one clean, comma-separated name list.
+        $this->assertSame('Chieko Baisho, Takuya Kimura', $candidate->attributes['cast']);
     }
 
     /** GitHub issue #136: jpc.de has no dedicated disc-count label at all — confirmed live on "Hogfather (Special Edition) (2 DVDs) – jpc.de" (EAN 4009750242353), the exact real title tag the reporting user's example resolved to. GitHub issue #138: "medium" no longer redundantly repeats the count disc_count already carries — "2 DVDs" becomes just "DVD". */

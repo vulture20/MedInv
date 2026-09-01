@@ -15,8 +15,10 @@ use App\Domain\Metadata\Providers\Jpc\JpcScraping;
  * Beta/opt-in. See JpcScraping's docblock for the full legal/technical/
  * reliability picture this is still built under, including exactly which
  * parts were confirmed against real jpc.de pages and which are
- * best-effort guesses. `cast` is deliberately never set — see
- * JpcScraping's own docblock for why.
+ * best-effort guesses. `cast` (GitHub issue #213) comes from a confirmed
+ * real `Darsteller:` detail-row label, found on a further live check
+ * after the original research missed it entirely — see JpcScraping's own
+ * docblock for the full story.
  *
  * `disc_count` (GitHub issue #136) is parsed out of the *original*
  * title-tag format string (e.g. "2 DVDs") rather than from any dedicated
@@ -121,6 +123,8 @@ class JpcDvdBlurayProvider implements MetadataProviderInterface
                 // GitHub issue #140.
                 'subtitles' => $page['subtitles'],
                 'director' => $page['director'] ?? $page['byline'],
+                // GitHub issue #213.
+                'cast' => $page['cast'],
                 'genre' => $page['genre'],
                 'release_date' => $page['release_date'],
                 'production_year' => $page['release_date'] ? (int) substr($page['release_date'], 0, 4) : null,

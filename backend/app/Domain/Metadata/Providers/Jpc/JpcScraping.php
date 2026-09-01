@@ -118,8 +118,9 @@ use Illuminate\Support\Facades\Log;
  *    CD: `Label:`, `Aufnahmejahr ca.:`, `Artikelnummer:`, `UPC/EAN:`,
  *    `Erscheinungstermin:`; for a film, additionally: `Herkunftsland:`,
  *    `Altersfreigabe:`, `Serie:`, `Genre:`, `Spieldauer ca.:`, `Regie:`,
- *    `Filmmusik:`, `Originaltitel:`, `Sprache:`, `Tonformat:`, `Bild:`,
- *    `Untertitel:`; for a book: `Verlag:` (publisher, but combined with a
+ *    `Darsteller:` (GitHub issue #213 — see below), `Filmmusik:`,
+ *    `Originaltitel:`, `Sprache:`, `Tonformat:`, `Bild:`, `Untertitel:`;
+ *    for a book: `Verlag:` (publisher, but combined with a
  *    trailing `, MM/YYYY` that stripJpcPublisherSuffix() below strips
  *    off), `Einband:` (the specific binding, e.g. "Gebunden" — a much
  *    more useful book `format` value than the generic "(Buch)" the title
@@ -137,6 +138,22 @@ use Illuminate\Support\Facades\Log;
  *    ("jetzt für X Euro kaufen"), not a real synopsis — deliberately
  *    still never used as `description`, now a *confirmed* content
  *    judgment rather than an absence-of-evidence one.
+ *  - **`Darsteller:` (cast, DVD/Blu-ray)** — GitHub issue #213, a
+ *    user-reported gap: the original #130/#135 research only ever
+ *    checked one real film page, which happened to carry no such label,
+ *    so `cast` was left unset entirely (see `JpcDvdBlurayProvider`'s own
+ *    history). A further authorized, one-time byte-exact `curl` check
+ *    (against a real "Ant-Man and the Wasp" product page, hnum 8721137)
+ *    found a real `Darsteller:` label after all, in exactly the same DOM
+ *    shape as the already-confirmed `Regie:` label right next to it —
+ *    `<dt><b>Darsteller:</b></dt>` followed by a `<dd>` holding one `<a>`
+ *    per actor, separated by plain ", " text nodes. `jpcDetailValue()`'s
+ *    existing sibling-walk logic (its `string(.)`-based `<dt>`/`<th>`
+ *    branch, unchanged since #135) already resolves this correctly with
+ *    no new code — `$sibling->textContent` naturally concatenates every
+ *    `<a>` and the comma text nodes between them into one clean,
+ *    comma-separated name list, the same plain-string shape `cast`
+ *    already has from `AmazonDvdBlurayProvider` (GitHub issue #173).
  *  - **`absoluteJpcUrl()` only follows an absolute href that stays on
  *    jpc.de itself** (GitHub issue #146, a security-review finding) —
  *    that URL is fetched server-side by jpcProductPage(), so an
@@ -150,11 +167,6 @@ use Illuminate\Support\Facades\Log;
  *    re-verification), so this still matches generically on any anchor
  *    whose `href` contains the one confirmed constant, `/detail/-/art/`,
  *    rather than guessing at a results-container class.
- *  - **`cast` (DVD/Blu-ray)** — no "Darsteller"/"Besetzung"-style label
- *    or microdata was observed on the one real film page checked, so,
- *    unlike AmazonDvdBlurayProvider (which has a confirmed "Actors"
- *    bullet and a byline fallback), JpcDvdBlurayProvider never sets this
- *    field at all rather than guessing at an unconfirmed label.
  *  - **`Label:` (record label)** was confirmed as a real CD detail-row
  *    label but is never extracted — neither `MediaCd` nor any other
  *    in-scope model has a fillable column it would map to.
@@ -268,7 +280,7 @@ trait JpcScraping
      * detail-row label too, but isn't extracted here at all: no in-scope
      * model has a fillable column it would map to — extracting a value
      * with nowhere to put it would just be dead code.
-     * @return array{title: ?string, byline: ?string, format: ?string, disc_count: ?int, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, subtitles: ?string, director: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
+     * @return array{title: ?string, byline: ?string, format: ?string, disc_count: ?int, ean: ?string, release_date: ?string, runtime_minutes: ?int, languages: ?string, subtitles: ?string, director: ?string, cast: ?string, genre: ?string, publisher: ?string, page_count: ?int, binding: ?string, price: ?float, currency: ?string, tracks: ?array}|null Null when the page couldn't be fetched at all (blocked, network failure, ...).
      */
     private function jpcProductPage(string $url, bool $splitTitleOnDash = false): ?array
     {
@@ -311,6 +323,9 @@ trait JpcScraping
             // into JpcDvdBlurayProvider's own attributes until now.
             'subtitles' => $this->jpcDetailValue($xpath, 'Untertitel:'),
             'director' => $this->jpcDetailValue($xpath, 'Regie:'),
+            // GitHub issue #213: confirmed real "Darsteller:" label, same
+            // DOM shape as "Regie:" above — see this trait's own docblock.
+            'cast' => $this->jpcDetailValue($xpath, 'Darsteller:'),
             // GitHub issue #140: was already extracted here (confirmed
             // real "Genre:" label) but never mapped into
             // JpcDvdBlurayProvider's own attributes until now — MediaBook
