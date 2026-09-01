@@ -193,6 +193,57 @@ class AmazonDvdBlurayProviderTest extends TestCase
     }
 
     /**
+     * GitHub issue #219: confirmed live (ASIN B0CP79YKSD, "SAW 1-9 -
+     * Gesamtedition [Blu-ray]") that the "Actors" bullet isn't always the
+     * confirmed-good "{First} {Last}, ..." shape #173 found — this real
+     * product's bullet is flattened to "{Last}, {First}" with no
+     * structural way to pair name parts, which
+     * recombineSplitAmazonCastNames() undoes.
+     */
+    public function test_cast_recombines_a_flattened_last_first_actors_bullet(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">SAW 1-9</span>'
+                .'<div id="detailBullets_feature_div"><ul>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Actors &rlm;: &lrm;</span><span>Bell, Tobin, Elwes, Cary, Glover, Danny, Mandylor, Costas, Smith, Shawnee</span></span></li>'
+                .'</ul></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('4009750242353')[0];
+
+        $this->assertSame('Tobin Bell, Cary Elwes, Danny Glover, Costas Mandylor, Shawnee Smith', $candidate->attributes['cast']);
+    }
+
+    /**
+     * GitHub issue #219: an odd segment count can never be cleanly paired
+     * — left unchanged rather than guessed at, the same restraint the
+     * "any segment already has a space" branch (covered by the existing
+     * "Harrison Ford, Rutger Hauer, Sean Young" fixture elsewhere in this
+     * file) already shows.
+     */
+    public function test_cast_leaves_an_odd_segment_count_unchanged(): void
+    {
+        Http::fake([
+            self::SEARCH_API => Http::response($this->searchResultHtml(), 200),
+            self::PRODUCT_API => Http::response(
+                '<html><body><span id="productTitle">Some Film</span>'
+                .'<div id="detailBullets_feature_div"><ul>'
+                .'<li><span class="a-list-item"><span class="a-text-bold">Actors &rlm;: &lrm;</span><span>Bell, Tobin, Elwes</span></span></li>'
+                .'</ul></div></body></html>',
+                200
+            ),
+        ]);
+
+        $candidate = app(AmazonDvdBlurayProvider::class)->lookupByCode('4009750242353')[0];
+
+        $this->assertSame('Bell, Tobin, Elwes', $candidate->attributes['cast']);
+    }
+
+    /**
      * GitHub issue #141's real dump confirmed a German "Darsteller" bullet
      * holding exactly this same field's data, on the same real page that
      * later (GitHub issue #173) confirmed the English "Actors" label too

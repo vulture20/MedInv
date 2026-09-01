@@ -41,6 +41,19 @@ use App\Domain\Metadata\Providers\Amazon\AmazonScraping;
  * as `genre`/`director`/`subtitles` when their own bullet is absent)
  * rather than risking that same mixed-roles data again.
  *
+ * GitHub issue #219, a further user report: the `Actors` bullet's
+ * confirmed-good "{First} {Last}, ..." shape above isn't universal — a
+ * live, authorized check (ASIN B0CP79YKSD, "SAW 1-9 - Gesamtedition
+ * [Blu-ray]") found the exact same bullet, on a different real product,
+ * flattened to "{Last}, {First}" repeated with no structural way to tell
+ * an intra-name comma from an inter-actor one apart (e.g. "Bell, Tobin,
+ * Elwes, Cary, ..." for "Tobin Bell, Cary Elwes, ..."). `cast` is now
+ * additionally passed through `AmazonScraping::
+ * recombineSplitAmazonCastNames()`, a text-only heuristic that only acts
+ * when every comma-segment is a single bare word (never true for the
+ * already-correct shape above, where each segment already contains a
+ * space) — see that method's own docblock for the full reasoning.
+ *
  * `genre`/`subtitles` (GitHub issue #140) were originally best-effort
  * `amazonBullet()` label guesses ("Genre"/"Genres", "Subtitles") — GitHub
  * issue #141 tried three further live re-checks, all blocked by Amazon's
@@ -208,9 +221,12 @@ class AmazonDvdBlurayProvider implements MetadataProviderInterface
                 // GitHub issue #173 — see this class's own docblock for
                 // the real page that confirmed 'Actors' and for why there
                 // is deliberately no `?? $page['byline']` fallback here.
-                'cast' => $this->stripAmazonFormatContamination(
+                // GitHub issue #219: recombineSplitAmazonCastNames() undoes
+                // a confirmed "{Last}, {First}" flattening some pages use
+                // for this same bullet — see its own docblock.
+                'cast' => $this->recombineSplitAmazonCastNames($this->stripAmazonFormatContamination(
                     $this->amazonBullet($bullets, 'Actors', 'Actors:', 'Darsteller', 'Darsteller:')
-                ),
+                )),
                 'release_date' => $releaseDate,
                 'production_year' => $releaseDate ? (int) substr($releaseDate, 0, 4) : null,
                 'ean' => $code,

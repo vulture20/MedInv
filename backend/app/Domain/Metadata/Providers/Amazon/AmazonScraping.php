@@ -757,4 +757,61 @@ trait AmazonScraping
 
         return $this->cleanText($withoutFormat) ?? $this->cleanText($text);
     }
+
+    /**
+     * GitHub issue #219, a user-reported gap: the "Actors" detail bullet
+     * (`amazonBullet($bullets, 'Actors', ...)`) isn't consistently
+     * formatted "{First} {Last}, {First} {Last}, ..." the way GitHub
+     * issue #173's confirmation ("Paul Rudd, Evangeline Lilly, ...", the
+     * Ant-Man Blu-ray page) suggested. A live, authorized one-time check
+     * (ASIN B0CP79YKSD, "SAW 1-9 - Gesamtedition [Blu-ray]") found the
+     * exact same bullet, on a different real product, as a single flat
+     * text span with **no** DOM structure to pair name parts by —
+     * `"Bell, Tobin, Elwes, Cary, Glover, Danny, Mandylor, Costas, Smith,
+     * Shawnee"`, i.e. "{Last}, {First}" repeated per actor with no
+     * separator distinguishing an intra-name comma from an inter-actor
+     * one. Amazon evidently renders this bullet in genuinely different
+     * shapes for different products — not something this app's own join
+     * logic caused (`amazonBullet()` just returns this span's `textContent`
+     * verbatim).
+     *
+     * Disambiguates the two confirmed shapes with a simple, text-only
+     * heuristic (no real per-actor DOM element exists to key off — see
+     * above): split on `,`, and only if every resulting segment is a
+     * single word (no internal whitespace — true for "Bell"/"Tobin", false
+     * for "Paul Rudd") *and* the segment count is even (so every segment
+     * has a partner to pair with) are consecutive pairs recombined as
+     * "{First} {Last}". Any other shape — an odd segment count, or any
+     * segment that already contains a space (the confirmed-good #173
+     * shape) — is left completely unchanged, since that's either already
+     * correct or not a pattern this fix has any confirmed evidence about.
+     * Only verified against this one real "Last, First" example; a
+     * hypothetical page mixing both shapes in one bullet isn't handled
+     * (and isn't known to exist).
+     */
+    private function recombineSplitAmazonCastNames(?string $cast): ?string
+    {
+        if ($cast === null) {
+            return null;
+        }
+
+        $parts = array_map('trim', explode(',', $cast));
+
+        if (count($parts) < 2 || count($parts) % 2 !== 0) {
+            return $cast;
+        }
+
+        foreach ($parts as $part) {
+            if ($part === '' || str_contains($part, ' ')) {
+                return $cast;
+            }
+        }
+
+        $names = [];
+        for ($i = 0; $i < count($parts); $i += 2) {
+            $names[] = "{$parts[$i + 1]} {$parts[$i]}";
+        }
+
+        return implode(', ', $names);
+    }
 }
