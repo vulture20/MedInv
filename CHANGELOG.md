@@ -7,6 +7,9 @@ Versioning follows the two-component `vMAJOR.MINOR` scheme used by
 
 ## [Unreleased]
 
+### Security
+- Bump `league/commonmark` (a transitive dependency of `laravel/framework`) from 2.9.2 to 2.10.0, addressing GHSA-8rr7-cvq3-gmfh, a denial-of-service in its Attributes extension — never reachable in this app in practice, since that extension is never registered and no app code renders Markdown
+
 ## [0.8] - 2026-09-01
 
 ### Added
