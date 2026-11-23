@@ -9,6 +9,10 @@ Versioning follows the two-component `vMAJOR.MINOR` scheme used by
 
 ### Security
 - Bump `league/commonmark` (a transitive dependency of `laravel/framework`) from 2.9.2 to 2.10.0, addressing GHSA-8rr7-cvq3-gmfh, a denial-of-service in its Attributes extension — never reachable in this app in practice, since that extension is never registered and no app code renders Markdown
+- Bump `laravel/framework` from 13.25.0 to 13.43.0 (GHSA-f9x3-7vq9-cph6, GHSA-5wcm-3v2w-8362, GHSA-63hm-g96r-2m2q, GHSA-jh5r-qr3c-85q8), `symfony/*` 8.1 components to 8.1.9–8.1.11 (incl. GHSA-r925-mgvr-h9cc in `http-foundation` plus further `http-foundation`/`http-kernel`/`routing`/`mime` advisories reported by `composer audit`), `league/commonmark` to 2.10.7 (GHSA-3q6v-r5mr-hxv8, GHSA-97jj-33gv-5xf9) and `league/flysystem` to 3.36.0 (GHSA-cxf4-7mrp-vvpr) — most are not reachable in this app (no token guard, no `Concurrency` facade, no Markdown rendering), the Cache-Control ReDoS in `http-foundation` is, via any request header
+- Bump frontend `axios` from 1.19.0 to 1.21.1 (12 advisories, mostly in its Node-only HTTP/2/http/fetch adapters — the SPA uses the browser XHR adapter), `follow-redirects` to 1.16.3 (Node-only, via axios), and the build-time-only `vite` to 8.3.8 / `source-map-js` to 1.2.4 (dev server/build tooling, never shipped in the image's static `dist/`)
+- Build the frontend on Node 24 (`node:24-alpine`) instead of the end-of-life Node 20, which `@zxing/library` 0.23 no longer supports (`engines.node >= 24`)
+- Pin `APP_ENV=production` / `APP_DEBUG=false` explicitly in the Docker image (previously only implied by `config/app.php`'s defaults, since no `.env` ships in the image)
 
 ## [0.8] - 2026-09-01
 

@@ -1,7 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # --- Stage 1: build the React SPA ------------------------------------------
-FROM node:20-alpine AS frontend-build
+# Node 24 (Active LTS): Node 20 reached end-of-life in April 2026, and
+# @zxing/library >= 0.23 declares engines.node >= 24. Build-time only —
+# the final image ships just the static dist/, no Node runtime.
+FROM node:24-alpine AS frontend-build
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
@@ -19,6 +22,15 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 # --- Stage 3: application image ---------------------------------------------
 FROM php:8.4-fpm-alpine AS app
+
+# No .env ships in this image (.dockerignore), so Laravel already falls
+# back to config/app.php's production/debug-off defaults — pinned here
+# explicitly anyway so a deployed instance never shows the debug error
+# page (stack traces, env/config values; cf. GHSA-jh5r-qr3c-85q8) just
+# because a default changed or a stray APP_DEBUG crept in. Still
+# overridable per container (`-e APP_DEBUG=true`) for troubleshooting.
+ENV APP_ENV=production \
+    APP_DEBUG=false
 
 # GitHub issue #207: MedInv relicensed from MIT to AGPL-3.0-or-later —
 # these two OCI-standard annotations are purely informational (read by
