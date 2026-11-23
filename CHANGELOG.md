@@ -7,6 +7,8 @@ Versioning follows the two-component `vMAJOR.MINOR` scheme used by
 
 ## [Unreleased]
 
+## [0.9] - 2026-11-23
+
 ### Security
 - Bump `league/commonmark` (a transitive dependency of `laravel/framework`) from 2.9.2 to 2.10.0, addressing GHSA-8rr7-cvq3-gmfh, a denial-of-service in its Attributes extension — never reachable in this app in practice, since that extension is never registered and no app code renders Markdown
 - Bump `laravel/framework` from 13.25.0 to 13.43.0 (GHSA-f9x3-7vq9-cph6, GHSA-5wcm-3v2w-8362, GHSA-63hm-g96r-2m2q, GHSA-jh5r-qr3c-85q8), `symfony/*` 8.1 components to 8.1.9–8.1.11 (incl. GHSA-r925-mgvr-h9cc in `http-foundation` plus further `http-foundation`/`http-kernel`/`routing`/`mime` advisories reported by `composer audit`), `league/commonmark` to 2.10.7 (GHSA-3q6v-r5mr-hxv8, GHSA-97jj-33gv-5xf9) and `league/flysystem` to 3.36.0 (GHSA-cxf4-7mrp-vvpr) — most are not reachable in this app (no token guard, no `Concurrency` facade, no Markdown rendering), the Cache-Control ReDoS in `http-foundation` is, via any request header
